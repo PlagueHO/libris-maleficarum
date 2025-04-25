@@ -247,3 +247,64 @@ The repository is organized for clarity, scalability, and best practices for bot
 - **CI/CD and GitHub workflows** are in `.github/`.
 
 This structure supports modularity, testability, and maintainability for both backend and frontend codebases.
+
+## Automated Test Approaches
+
+A comprehensive automated testing strategy is essential for ensuring code quality, maintainability, and reliability across both frontend and backend.
+
+### Frontend (React + TypeScript)
+
+- **Unit Testing:**  
+  Use [Jest](https://jestjs.io/) as the primary test runner and assertion library for unit tests.  
+  [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) is used for testing React components in a way that simulates user interaction and focuses on behavior over implementation details.
+
+- **Component Testing:**  
+  Write focused tests for each React component, using mocks and stubs for dependencies.  
+  Use [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) to test component rendering, props, events, and state changes.
+
+- **Integration Testing:**  
+  Test the integration of multiple components and services, including API calls (mocked using [msw](https://mswjs.io/)).
+
+- **End-to-End (E2E) Testing:**  
+  Optionally, use [Cypress](https://www.cypress.io/) for E2E tests to simulate real user workflows in the browser.
+
+### Backend (.NET 8, Aspire.NET, EF Core)
+
+- **Unit Testing:**  
+  Use [xUnit](https://xunit.net/) for unit tests of application and domain logic.  
+  Mock dependencies using [Moq](https://github.com/moq/moq4).  
+  Use [FluentAssertions](https://fluentassertions.com/) for expressive assertions.
+
+- **Component/Integration Testing:**  
+  Write integration tests for repository implementations, service classes, and API endpoints.  
+  Use [TestServer](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.testhost.testserver) from ASP.NET Core for in-memory API/component testing.  
+  Use [Respawn](https://github.com/jbogard/Respawn) or similar tools to reset database state between tests.
+
+- **API Testing:**  
+  Test API endpoints using [xUnit](https://xunit.net/) and [FluentAssertions](https://fluentassertions.com/) for expressive assertions.  
+  Use [WebApplicationFactory](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.testing.webapplicationfactory-1) for end-to-end API tests.
+
+- **Test Data:**  
+  Use builders or test data factories to create domain objects for tests, ensuring clarity and maintainability.
+
+### General Strategies
+
+- **Arrange-Act-Assert (AAA) Pattern:**  
+  Structure all tests using the AAA pattern for clarity.
+
+- **Continuous Integration:**  
+  All tests are run automatically in CI pipelines (GitHub Actions) on pull requests and merges.
+
+- **Code Coverage:**  
+  Monitor code coverage for both frontend and backend, aiming for high coverage on critical logic.
+
+- **Test Organization:**  
+  - Frontend tests are located in `frontend/tests/` or colocated with components as `*.test.tsx`.
+  - Backend tests are in `backend/src/tests/`, mirroring the main project structure.
+
+### Summary of Testing Frameworks and Libraries
+
+| Layer     | Frameworks/Libraries                | Test Types                |
+|-----------|-------------------------------------|---------------------------|
+| Frontend  | Jest, React Testing Library, Cypress| Unit, Component, E2E      |
+| Backend   | xUnit, Moq, FluentAssertions, TestServer | Unit, Integration, API   |
