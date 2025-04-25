@@ -55,3 +55,5 @@ The Libris Maleficarum frontend is a modern, accessible, and visually engaging S
 ## Summary
 
 The frontend delivers a rich, modern, and accessible user experience, optimized for TTRPG world-building and campaign management. It leverages the latest React ecosystem tools and UI techniques, while maintaining a strong fantasy aesthetic and usability focus.
+
+**Note:** The frontend code resides in the `libris-maleficarum-app/` folder.

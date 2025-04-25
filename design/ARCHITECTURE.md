@@ -27,7 +27,7 @@
 
 ```mermaid
 graph TD
-    Frontend["Frontend (React + TypeScript)"]
+    Frontend["Frontend (React + TypeScript, libris-maleficarum-app)"]
     API["API Gateway (.NET 8 APIs with Aspire.NET)"]
     DomainServices["Domain & Application Services (Repositories)"]
     Identity["Identity & Authentication (Stubbed, future Entra ID CIAM)"]

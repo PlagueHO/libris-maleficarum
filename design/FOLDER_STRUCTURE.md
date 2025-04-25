@@ -23,7 +23,7 @@ The repository is organized for clarity, scalability, and best practices for bot
 │   │       ├── LibrisMaleficarum.Application.Tests/
 │   │       ├── LibrisMaleficarum.Domain.Tests/
 │   │       └── LibrisMaleficarum.Infrastructure.Tests/
-├── frontend/                # React + TypeScript frontend app
+├── libris-maleficarum-app/  # React + TypeScript frontend app
 │   ├── src/                 # Source code (components, hooks, services, types, etc.)
 │   │   ├── components/
 │   │   ├── hooks/
@@ -43,8 +43,8 @@ The repository is organized for clarity, scalability, and best practices for bot
 
 **Key Points:**
 - Backend code is under `backend/src/` following Clean/Hexagonal Architecture.
-- Frontend code is isolated in `frontend/`.
+- Frontend code is isolated in `libris-maleficarum-app/`.
 - Infrastructure as Code is in `infra/`.
 - Codespaces/devcontainer config is in `.devcontainer/`.
 - CI/CD and GitHub workflows are in `.github/`.
-- Tests are separated in `backend/src/tests/` and `frontend/tests/`.
+- Tests are separated in `backend/src/tests/` and `libris-maleficarum-app/tests/`.
