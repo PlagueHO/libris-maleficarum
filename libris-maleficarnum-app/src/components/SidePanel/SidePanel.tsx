@@ -20,26 +20,18 @@ const SidePanel: React.FC = () => {
         {isExpanded ? '⮜' : '⮞'}
       </button>
       <nav className={styles.toolsNav} aria-label="Side Navigation">
-        <ul>
-          <li>
-            <button className={styles.toolButton}>
-              <span className={styles.icon}>🌍</span>
-              {isExpanded && <span className={styles.label}>Worlds</span>}
-            </button>
-          </li>
-          <li>
-            <button className={styles.toolButton}>
-              <span className={styles.icon}>📜</span>
-              {isExpanded && <span className={styles.label}>Campaigns</span>}
-            </button>
-          </li>
-          <li>
-            <button className={styles.toolButton}>
-              <span className={styles.icon}>🏰</span>
-              {isExpanded && <span className={styles.label}>Entities</span>}
-            </button>
-          </li>
-        </ul>
+        <button className={styles.toolButton}>
+          <span className={styles.icon}>🌍</span>
+          {isExpanded && <span className={styles.label}>Worlds</span>}
+        </button>
+        <button className={styles.toolButton}>
+          <span className={styles.icon}>📜</span>
+          {isExpanded && <span className={styles.label}>Campaigns</span>}
+        </button>
+        <button className={styles.toolButton}>
+          <span className={styles.icon}>🏰</span>
+          {isExpanded && <span className={styles.label}>Entities</span>}
+        </button>
       </nav>
     </aside>
   );
