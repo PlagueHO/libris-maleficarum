@@ -74,6 +74,7 @@ graph TD
 
 - **Frontend:**
   - **React** with **TypeScript** (Create React App)
+  - **Redux** for state management
   - **Axios** for HTTP communication
   - Optionally **React Router** for multi-page interface
 
@@ -91,46 +92,136 @@ graph TD
 
 All TTRPG-related entities are stored in Azure Cosmos DB using a flexible, hierarchical model.
 
-### Document Structure
+### World Entity Container
 
-- **World**: The root entity for all campaign data. Each world can contain many nested document types.
-- **Nested Documents**: Examples include "Continent", "Country", "Region", "City", "Character", etc. These can be arbitrarily nested to support complex world-building.
-- **Hierarchy Container**: A dedicated container maintains the parent-child relationships and hierarchy of documents within each world.
-- **Indexing**: All documents are indexed by Azure AI Search for advanced semantic and full-text search.
+The World Entity container is the core of the data model, designed to support complex world-building and campaign management. The following key features are included:
 
-#### Example: World and Nested Documents
+- **WorldEntity**: The core document type for all campaign/world data. Each "WorldEntity" can represent a "World" (root), or any nested entity such as "Continent", "Country", "Region", "City", "Character", etc. Entities can be arbitrarily nested to support complex world-building.
+- **Hierarchy Container**: A dedicated container maintains the parent-child relationships and hierarchy of WorldEntities within each world.
+- **Ownership**: Every WorldEntity includes an `OwnerId` property (e.g., a user ID) to indicate the owner, though this may not be used yet.
+- **Document IDs**: All WorldEntities use a GUID for the `id` property to ensure uniqueness.
+- **Indexing**: All WorldEntities are indexed by Azure AI Search for advanced semantic and full-text search.
+
+#### EntityType Hierarchy
+
+The `EntityType` property defines the type of each WorldEntity. The following is a suggested hierarchy for TTRPG world/campaign/setting/adventure/scenario management:
+
+- **World** (root)
+  - **Locations**
+    - Continent
+    - Country
+    - Region
+    - City
+    - Settlement
+    - Landmark
+    - Dungeon
+    - Building
+    - Room
+    - Map
+  - **Geographies**
+    - Mountain
+    - River
+    - Lake
+    - Forest
+    - Desert
+    - Ocean
+    - Island
+    - ClimateZone
+  - **People**
+    - Character
+      - PlayerCharacter
+      - NonPlayerCharacter
+    - Organization
+    - Faction
+    - Family
+    - Race
+    - Culture
+  - **Events**
+    - HistoricalEvent
+    - CurrentEvent
+    - Quest
+    - Encounter
+    - Battle
+    - Festival
+    - Disaster
+  - **History**
+    - Timeline
+    - Era
+    - Chronicle
+    - Legend
+    - Myth
+  - **Lore**
+    - Religion
+    - Deity
+    - MagicSystem
+    - Artifact
+    - Technology
+    - Language
+    - Law
+    - Custom
+    - Story
+  - **Bestiary**
+    - Creature
+    - Monster
+    - Animal
+  - **Items**
+    - Equipment
+    - Weapon
+    - Armor
+    - Treasure
+    - Consumable
+  - **Adventures**
+    - Campaign
+    - Scenario
+    - Session
+    - Scene
+    - PlotHook
+    - Secret
+  - **Other**
+    - Note
+    - Image
+    - Audio
+    - Document
+    - Homebrew
+
+This hierarchy is extensible and can be expanded as needed for different TTRPG systems and campaign needs.
+
+#### Example: WorldEntity Documents
 
 ```json
-// World document
+// WorldEntity document (World)
 {
-  "id": "world-001",
-  "UserId": "user-abc",
+  "id": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "OwnerId": "user-abc",
   "Name": "Eldoria",
   "EntityType": "World",
   "CreatedDate": "2024-06-01T10:00:00Z"
 }
 
-// Continent document (child of World)
+// WorldEntity document (Continent, child of World)
 {
-  "id": "continent-001",
-  "WorldId": "world-001",
-  "ParentId": "world-001",
+  "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+  "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "ParentId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "OwnerId": "user-abc",
   "Name": "Arcanis",
   "EntityType": "Continent"
 }
 
-// Country document (child of Continent)
+// WorldEntity document (Country, child of Continent)
 {
-  "id": "country-001",
-  "WorldId": "world-001",
-  "ParentId": "continent-001",
+  "id": "c9d8e7f6-5a4b-3c2d-1e0f-9a8b7c6d5e4f",
+  "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "ParentId": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+  "OwnerId": "user-abc",
   "Name": "Valoria",
   "EntityType": "Country"
 }
 ```
 
-- Each document includes a reference to its parent (`ParentId`) and the root world (`WorldId`).
-- The hierarchy container enables efficient traversal and management of nested structures.
+- Each WorldEntity includes a reference to its parent (`ParentId`), the root world (`WorldId`), and an `OwnerId`.
+- The `id` for every WorldEntity is a GUID.
+- The hierarchy container enables efficient traversal and management of nested WorldEntities.
 
 ---
 
