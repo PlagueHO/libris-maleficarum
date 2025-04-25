@@ -1,6 +1,6 @@
 # Libris Maleficarum
 
-**Libris Maleficarum** (Latin for "Book of Witchcraft") is an AI-enhanced campaign management and narrative tool designed for tabletop RPGs. While it's currently aimed at providing campaign, session, and character management, its flexible design and architecutre will allow it to evolve into a general TTRPG assistant platform.
+**Libris Maleficarum** (Latin for "Book of Witchcraft") is an AI-enhanced campaign management and narrative tool designed for tabletop RPGs. While it's currently aimed at providing campaign, session, and character management, its flexible design and architecture will allow it to evolve into a general TTRPG assistant platform.
 
 ---
 
@@ -8,9 +8,9 @@
 
 Libris Maleficarum is built with modern, scalable technologies:
 
-- A **.NET 8** backend using **Aspire.NET** for lightweight API scaffolding.
+- A **.NET 8** backend using **Aspire** for cloud-native application composition, orchestration, and developer productivity.
 - **Entity Framework Core** (Cosmos DB provider) alongside the **Repository Pattern** for data access.
-- A single Azure Cosmos DB container employing a composite partition key approach (using synthetic properties if necessary).
+- Azure Cosmos DB using multiple containers to support flexible, hierarchical, and extensible data structures.
 - A **React** + **TypeScript** frontend that communicates with the backend via RESTful APIs.
 - A stubbed identity service for future multi-user support and eventual integration with Entra ID CIAM.
 
@@ -32,9 +32,10 @@ Libris Maleficarum is built with modern, scalable technologies:
   - Future integration with MSAL.js for authentication.
 
 - **Data Storage (Azure Cosmos DB):**
-  - A single container ("LibrisMaleficarumContainer") that stores all entities.
-  - Composite partition key defined by the properties `UserId` and `CampaignId` (or a synthetic property combining them).
-  - Documents include a common `EntityType` field for type discrimination (e.g., "Campaign", "Session", etc.).
+  - Multiple containers to support hierarchical and flexible document structures.
+  - Core entity is "World" at the root. Each "World" can contain nested documents (e.g., "Continent", "Country", etc.).
+  - A dedicated container maintains the hierarchical structure of documents within each world.
+  - Documents are indexed by Azure AI Search for advanced querying and semantic search.
 
 - **Future Enhancements:**
   - Integration with Entra ID CIAM for secure, multi-user authentication.
@@ -48,12 +49,16 @@ graph TD
     API["API Gateway (.NET 8 APIs with Aspire.NET)"]
     DomainServices["Domain & Application Services (Repositories)"]
     Identity["Identity & Authentication (Stubbed, future Entra ID CIAM)"]
-    CosmosDB["Cosmos DB (Single Container)"]
+    CosmosDB["Azure Cosmos DB (Multiple Containers)"]
+    HierarchyContainer["Hierarchy Container (World/Hierarchy Structure)"]
+    AIIndex["Azure AI Search (Indexing Documents)"]
 
     Frontend -->|Axios HTTP| API
     API --> DomainServices
     API --> Identity
     DomainServices --> CosmosDB
+    CosmosDB --> HierarchyContainer
+    CosmosDB --> AIIndex
     Identity --> CosmosDB
 ```
 
@@ -73,7 +78,7 @@ graph TD
   - Optionally **React Router** for multi-page interface
 
 - **Data Storage:**
-  - **Azure Cosmos DB** using a single container and composite partition key strategy
+  - **Azure Cosmos DB** using multiple containers for hierarchical, flexible entity storage and a dedicated container for document hierarchy.
 
 - **Deployment & DevOps:**
   - Local development using the Cosmos DB Emulator
@@ -84,31 +89,50 @@ graph TD
 
 ## Data Model & Cosmos DB Design
 
-All TTRPG-related entities are stored in one container.
+All TTRPG-related entities are stored in Azure Cosmos DB using a flexible, hierarchical model.
 
 ### Document Structure
 
-Each document includes:
+- **World**: The root entity for all campaign data. Each world can contain many nested document types.
+- **Nested Documents**: Examples include "Continent", "Country", "Region", "City", "Character", etc. These can be arbitrarily nested to support complex world-building.
+- **Hierarchy Container**: A dedicated container maintains the parent-child relationships and hierarchy of documents within each world.
+- **Indexing**: All documents are indexed by Azure AI Search for advanced semantic and full-text search.
 
-- `id`: Unique document identifier.
-- `UserId`: Identifies the owner (supports multi-user capabilities).
-- `CampaignId`: For campaign documents, this is the same as the campaign's `id`. For sub-entities like Sessions, Characters, and Events, this references the parent campaign.
-- `EntityType`: Type discriminator (e.g., "Campaign", "Session", "Character", "Event").
-- *(Optionally)* `PartitionKey`: A synthetic property combining `UserId` and `CampaignId` (e.g., `"{UserId}:{CampaignId}"`) if needed.
-
-### Example: Campaign Document
+#### Example: World and Nested Documents
 
 ```json
+// World document
 {
-  "id": "campaign-123",
+  "id": "world-001",
   "UserId": "user-abc",
-  "CampaignId": "campaign-123",
-  "EntityType": "Campaign",
-  "Name": "The Dark Coven",
-  "Description": "A campaign of intrigue and forbidden magic.",
-  "CreatedDate": "2023-10-05T10:23:00Z"
+  "Name": "Eldoria",
+  "EntityType": "World",
+  "CreatedDate": "2024-06-01T10:00:00Z"
+}
+
+// Continent document (child of World)
+{
+  "id": "continent-001",
+  "WorldId": "world-001",
+  "ParentId": "world-001",
+  "Name": "Arcanis",
+  "EntityType": "Continent"
+}
+
+// Country document (child of Continent)
+{
+  "id": "country-001",
+  "WorldId": "world-001",
+  "ParentId": "continent-001",
+  "Name": "Valoria",
+  "EntityType": "Country"
 }
 ```
+
+- Each document includes a reference to its parent (`ParentId`) and the root world (`WorldId`).
+- The hierarchy container enables efficient traversal and management of nested structures.
+
+---
 
 ## Azure Architecture
 
@@ -123,15 +147,15 @@ Libris Maleficarum leverages Azure cloud services for scalability, security, and
   - All backend communications routed through ACA-hosted APIs.
 
 - **Data Storage:**
-  - **Azure Cosmos DB** (single container with composite partition keys: `UserId` + `CampaignId`).
+  - **Azure Cosmos DB** (multiple containers for hierarchical world/entity storage and hierarchy management).
   - **Azure Storage (Blob Storage)** for static assets (images, documents, etc.).
 
 - **AI & Search Services:**
-  - **Azure AI Search** for specialized indexing (e.g., embeddings).
+  - **Azure AI Search** for specialized indexing (e.g., embeddings, semantic search).
   - **Azure AI Services (multi-service account)** for AI-driven features (e.g., narrative generation, analytics).
 
 - **Messaging & Eventing:**
-  - **Azure Service Bus** for asynchronous messaging and event-driven communication between backend components. This enables decoupled, scalable, and reliable message handling for background tasks and event-driven workflows.
+  - **Azure Service Bus** for asynchronous messaging and event-driven communication between backend components.
 
 - **Security & Secrets Management:**
   - **Azure Key Vault** for secure storage and management of secrets and configuration.
@@ -151,7 +175,8 @@ graph TD
     AzureFrontDoor["Azure Front Door (Optional)"]
     StaticWebApps["Azure Static Web Apps<br/>(React + TypeScript)"]
     ContainerApps["Azure Container Apps<br/>(.NET 8 APIs with Aspire.NET)"]
-    CosmosDB["Azure Cosmos DB<br/>(Data Store)"]
+    CosmosDB["Azure Cosmos DB<br/>(Multiple Containers)"]
+    HierarchyContainer["Hierarchy Container<br/>(World/Hierarchy Structure)"]
     AzureStorage["Azure Storage<br/>(Static Assets)"]
     AISearch["Azure AI Search<br/>(Specialized Indexing)"]
     ServiceBus["Azure Service Bus<br/>(Async Messaging)"]
@@ -163,8 +188,9 @@ graph TD
     AzureFrontDoor --> StaticWebApps
     StaticWebApps --> ContainerApps
     ContainerApps --> CosmosDB
+    CosmosDB --> HierarchyContainer
+    CosmosDB --> AISearch
     ContainerApps --> AzureStorage
-    ContainerApps --> AISearch
     ContainerApps --> ServiceBus
     ContainerApps --> AIServices
 
