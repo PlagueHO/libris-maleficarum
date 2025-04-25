@@ -1,0 +1,36 @@
+{
+  "name": "Libris Maleficarum Codespace",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:8.0",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    },
+    "ghcr.io/devcontainers/features/azure-cli:1": {}
+  },
+  "postCreateCommand": "dotnet restore && npm install --prefix frontend",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true
+      },
+      "extensions": [
+        "ms-dotnettools.csharp",
+        "ms-azuretools.vscode-docker",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-vscode.vscode-node-azure-pack",
+        "ms-azuretools.vscode-azurefunctions"
+      ]
+    }
+  },
+  "forwardPorts": [5173, 3000, 7071, 8080, 5000, 5001],
+  "portsAttributes": {
+    "5173": { "label": "Vite/React Dev Server", "onAutoForward": "openPreview" },
+    "3000": { "label": "React Dev Server", "onAutoForward": "openPreview" },
+    "7071": { "label": "Azure Functions", "onAutoForward": "openPreview" },
+    "8080": { "label": "API", "onAutoForward": "openPreview" },
+    "5000": { "label": "ASP.NET Core", "onAutoForward": "openPreview" },
+    "5001": { "label": "ASP.NET Core SSL", "onAutoForward": "openPreview" }
+  }
+}
