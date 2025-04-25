@@ -197,7 +197,7 @@ Continuous Integration and Continuous Deployment (CI/CD) will be implemented usi
 
 The repository is organized for clarity, scalability, and best practices for both .NET 8 backend and React/TypeScript frontend development.
 
-```
+```text
 /
 ├── .devcontainer/           # GitHub Codespaces/dev container config
 ├── .github/                 # GitHub Actions workflows and community files
@@ -236,7 +236,8 @@ The repository is organized for clarity, scalability, and best practices for bot
 └── ...                      # Solution-level files, .editorconfig, etc.
 ```
 
-**Key Points:**
+### Key Points
+
 - **Backend** follows Clean/Hexagonal Architecture, with all projects and the solution file under `backend/src/`.
 - **Backend tests** are in `backend/src/tests/` and mirror the main project structure.
 - **Frontend** is in `frontend/` and follows React/TypeScript best practices: `src/components`, `src/hooks`, `src/services`, `src/types`, etc.
