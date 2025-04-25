@@ -97,12 +97,83 @@ All TTRPG-related entities are stored in Azure Cosmos DB using a flexible, hiera
 The World Entity container is the core of the data model, designed to support complex world-building and campaign management. The following key features are included:
 
 - **WorldEntity**: The core document type for all campaign/world data. Each "WorldEntity" can represent a "World" (root), or any nested entity such as "Continent", "Country", "Region", "City", "Character", etc. Entities can be arbitrarily nested to support complex world-building.
-- **Hierarchy Container**: A dedicated container maintains the parent-child relationships and hierarchy of WorldEntities within each world.
 - **Ownership**: Every WorldEntity includes an `OwnerId` property (e.g., a user ID) to indicate the owner, though this may not be used yet.
 - **Document IDs**: All WorldEntities use a GUID for the `id` property to ensure uniqueness.
+- **Partition Key**: The partition key for the WorldEntity container is `/WorldId`. This ensures efficient lookups and RU/s usage, as most queries will be scoped to a single world.
 - **Indexing**: All WorldEntities are indexed by Azure AI Search for advanced semantic and full-text search.
 
-#### EntityType Hierarchy
+#### Example: WorldEntity Documents
+
+```json
+// WorldEntity document (World)
+{
+  "id": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "OwnerId": "user-abc",
+  "Name": "Eldoria",
+  "EntityType": "World",
+  "CreatedDate": "2024-06-01T10:00:00Z",
+  "ModifiedDate": "2024-06-01T10:00:00Z"
+  // ... properties for WorldEntity (e.g., description, lore, etc.)
+}
+
+// WorldEntity document (Continent, child of World)
+{
+  "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+  "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "OwnerId": "user-abc",
+  "Name": "Arcanis",
+  "EntityType": "Continent",
+  "CreatedDate": "2024-06-01T10:00:00Z",
+  "ModifiedDate": "2024-06-01T10:00:00Z"
+  // ... properties for WorldEntity (e.g., description, lore, etc.)
+
+}
+
+// WorldEntity document (Country, child of Continent)
+{
+  "id": "c9d8e7f6-5a4b-3c2d-1e0f-9a8b7c6d5e4f",
+  "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "OwnerId": "user-abc",
+  "Name": "Valoria",
+  "EntityType": "Country",
+  "CreatedDate": "2024-06-01T10:00:00Z",
+  "ModifiedDate": "2024-06-01T10:00:00Z"
+  // ... properties for WorldEntity (e.g., description, lore, etc.)
+}
+```
+
+- Each WorldEntity includes a reference to its parent (`ParentId`), the root world (`WorldId`), and an `OwnerId`.
+- The `id` for every WorldEntity is a GUID.
+- The partition key is `/WorldId` for efficient partitioning and query performance.
+- The hierarchy container enables efficient traversal and management of nested WorldEntities.
+
+### World Entity Hierarchy Container
+
+A dedicated **World Entity Hierarchy container** is used to efficiently store and manage the relationships between WorldEntities (e.g., parent-child relationships). This container enables:
+
+- Fast traversal of the world structure (e.g., finding all children of a given entity, or the full path to a root).
+- Efficient queries for hierarchical operations (e.g., moving, copying, or deleting subtrees).
+- **Partition Key**: The partition key for the hierarchy container is `/WorldId-ParentId` (a synthetic/composite key combining `WorldId` and `ParentId`). This ensures efficient queries for all children of a given parent within a world, which is the most common access pattern.
+
+#### Example: WorldEntityHierarchy Document
+
+```json
+{
+  "id": "f1e2d3c4-b5a6-7890-1234-56789abcdef0",
+  "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "ParentId": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+  "ChildIds": [],  // Added to represent child entities
+  "Name": "Valoria",
+  "EntityType": "Country"
+}
+```
+
+- Each document in the hierarchy container represents a relationship (e.g., parent-child) between two WorldEntities.
+- The `PartitionKey` is a hierarchical of `WorldId` and `ParentId` for efficient access to all children of a parent within a world.
+- This structure supports advanced queries and operations on the world graph.
+
+#### WorldEntity.EntityType and WorldEntityHierarchy.EntityType Properties
 
 The `EntityType` property defines the type of each WorldEntity. The following is a suggested hierarchy for TTRPG world/campaign/setting/adventure/scenario management:
 
@@ -186,42 +257,7 @@ The `EntityType` property defines the type of each WorldEntity. The following is
 
 This hierarchy is extensible and can be expanded as needed for different TTRPG systems and campaign needs.
 
-#### Example: WorldEntity Documents
-
-```json
-// WorldEntity document (World)
-{
-  "id": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
-  "OwnerId": "user-abc",
-  "Name": "Eldoria",
-  "EntityType": "World",
-  "CreatedDate": "2024-06-01T10:00:00Z"
-}
-
-// WorldEntity document (Continent, child of World)
-{
-  "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
-  "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
-  "ParentId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
-  "OwnerId": "user-abc",
-  "Name": "Arcanis",
-  "EntityType": "Continent"
-}
-
-// WorldEntity document (Country, child of Continent)
-{
-  "id": "c9d8e7f6-5a4b-3c2d-1e0f-9a8b7c6d5e4f",
-  "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
-  "ParentId": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
-  "OwnerId": "user-abc",
-  "Name": "Valoria",
-  "EntityType": "Country"
-}
-```
-
-- Each WorldEntity includes a reference to its parent (`ParentId`), the root world (`WorldId`), and an `OwnerId`.
-- The `id` for every WorldEntity is a GUID.
-- The hierarchy container enables efficient traversal and management of nested WorldEntities.
+There will need to be some form of rules engine or validation to ensure that WorldEntity heirarchy is valid, e.g. a "Continent" cannot be a child of a "Monster", but a "Monster" can be a child of a "Continent". We could use AI validation for this, or a simple rules engine.
 
 ---
 
