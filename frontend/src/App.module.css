@@ -1,0 +1,15 @@
+.appRoot {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: 'Inter', sans-serif; /* Modern font */
+  background-color: #1e1e2f; /* Dark background */
+  color: #e0e0e0; /* Neutral text color */
+}
+
+.layoutContainer {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
