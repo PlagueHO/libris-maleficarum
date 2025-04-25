@@ -9,9 +9,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest",
-    "start": "vite" 
+    "start": "vite"
   },
   "dependencies": {
+    "@fluentui/react": "^8.122.15",
     "@reduxjs/toolkit": "^2.7.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

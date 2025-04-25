@@ -6,6 +6,7 @@ import SidePanel from './components/SidePanel/SidePanel';
 import MainPanel from './components/MainPanel/MainPanel';
 import ChatWindow from './components/ChatWindow/ChatWindow';
 import styles from './App.module.css';
+import { PrimaryButton } from '@fluentui/react';
 
 const App: React.FC = () => (
   <Provider store={store}>
@@ -16,6 +17,7 @@ const App: React.FC = () => (
         <MainPanel />
         <ChatWindow />
       </div>
+      <PrimaryButton text="Click Me" onClick={() => alert('Fluent UI Button Clicked')} />
     </div>
   </Provider>
 );
