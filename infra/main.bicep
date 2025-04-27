@@ -47,6 +47,39 @@ var virtualNetworkName = '${abbrs.networkVirtualNetworks}${environmentName}'
 var storageAccounName = toLower(replace('${abbrs.storageStorageAccounts}${environmentName}', '-', ''))
 var keyVaultName = toLower(replace('${abbrs.keyVaultVaults}${environmentName}', '-', ''))
 
+var subnets = [
+  {
+    // Default subnet (generally not used)
+    name: 'Default'
+    addressPrefix: '10.0.0.0/24'
+  }
+  {
+    // Azure Container App Services Subnet
+    name: '${abbrs.networkVirtualNetworksSubnets}AppServices'
+    addressPrefix: '10.0.1.0/24'
+  }
+  {
+    // App Storage Subnet (storage acconts, databases etc.)
+    name: '${abbrs.networkVirtualNetworksSubnets}AppStorage'
+    addressPrefix: '10.0.2.0/24'
+  }
+  {
+    // Azure AI Services Subnet (AI Search, AI Services, etc.)
+    name: '${abbrs.networkVirtualNetworksSubnets}AiServices'
+    addressPrefix: '10.0.3.0/24'
+  }
+  {
+    // Shared Services Subnet (key vaults, monitoring, etc.)
+    name: '${abbrs.networkVirtualNetworksSubnets}SharedServices'
+    addressPrefix: '10.0.4.0/24'
+  }
+  {
+    // Bastion Gateway Subnet
+    name: 'AzureBastionSubnet'
+    addressPrefix: '10.0.255.0/27'
+  }
+]
+
 // Organize resources in a resource group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
@@ -77,38 +110,7 @@ module virtualNetwork 'core/networking/virtual-network.bicep' = {
     addressPrefixes: [
       '10.0.0.0/16'
     ]
-    subnets: [
-      {
-        // Default subnet (generally not used)
-        name: 'Default'
-        addressPrefix: '10.0.0.0/24'
-      }
-      {
-        // Azure Container App Services Subnet
-        name: '${abbrs.networkVirtualNetworksSubnets}AppServices'
-        addressPrefix: '10.0.1.0/24'
-      }
-      {
-        // App Storage Subnet (storage acconts, databases etc.)
-        name: '${abbrs.networkVirtualNetworksSubnets}AppStorage'
-        addressPrefix: '10.0.2.0/24'
-      }
-      {
-        // Azure AI Services Subnet (AI Search, AI Services, etc.)
-        name: '${abbrs.networkVirtualNetworksSubnets}AiServices'
-        addressPrefix: '10.0.3.0/24'
-      }
-      {
-        // Shared Services Subnet (key vaults, monitoring, etc.)
-        name: '${abbrs.networkVirtualNetworksSubnets}SharedServices'
-        addressPrefix: '10.0.4.0/24'
-      }
-      {
-        // Bastion Gateway Subnet
-        name: 'AzureBastionSubnet'
-        addressPrefix: '10.0.255.0/27'
-      }
-    ]
+    subnets: subnets
   }
 }
 
@@ -132,7 +134,11 @@ module keyVault 'core/security/keyvault.bicep' = {
     location: location
     tags: tags
     publicNetworkAccess: 'Disabled'
-    subnetId: virtualNetwork.outputs.subnetIds[5]
+    // Look up the subnet ID for the Key Vault using the name
+    subnetId: filter(
+      virtualNetwork.outputs.subnetIds,
+      subnets => subnets.name == '${abbrs.networkVirtualNetworksSubnets}SharedServices'
+    )[0]
   }
 }
 
