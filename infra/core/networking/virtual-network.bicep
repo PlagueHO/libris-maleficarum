@@ -41,8 +41,13 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
   }
 }
 
+@description('The resource ID of the virtual network.')
 output virtualNetworkId string = virtualNetwork.id
+
+@description('The name of the virtual network.')
 output virtualNetworkName string = virtualNetwork.name
+
+@description('An array of resource IDs for all subnets in the virtual network.')
 output subnetIds array = [
   for subnet in subnets: resourceId('Microsoft.Network/virtualNetworks/subnets', name, subnet.name)
 ]

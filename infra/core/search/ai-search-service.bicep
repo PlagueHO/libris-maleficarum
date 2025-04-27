@@ -62,9 +62,11 @@ param replicaCount int = 1
 ])
 param semanticSearch string = 'disabled'
 
-var searchIdentityProvider = (sku.name == 'free') ? null : {
-  type: 'SystemAssigned'
-}
+var searchIdentityProvider = (sku.name == 'free')
+  ? null
+  : {
+      type: 'SystemAssigned'
+    }
 
 resource search 'Microsoft.Search/searchServices@2021-04-01-preview' = {
   name: name
@@ -87,7 +89,14 @@ resource search 'Microsoft.Search/searchServices@2021-04-01-preview' = {
   sku: sku
 }
 
+@description('The resource ID of the Azure AI Search service.')
 output id string = search.id
+
+@description('The endpoint URI of the Azure AI Search service.')
 output endpoint string = 'https://${name}.search.windows.net/'
+
+@description('The name of the Azure AI Search service.')
 output name string = search.name
+
+@description('The principal ID of the managed identity for the Azure AI Search service, if enabled.')
 output principalId string = !empty(searchIdentityProvider) ? search.identity.principalId : ''

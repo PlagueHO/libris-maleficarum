@@ -28,7 +28,7 @@ param searchServiceName string = ''
 param searchConnectionName string = ''
 param tags object = {}
 
-module hubDependencies '../ai/hub-dependencies.bicep' = {
+module hubDependencies 'hub-dependencies.bicep' = {
   name: 'hubDependencies'
   params: {
     location: location
@@ -44,7 +44,7 @@ module hubDependencies '../ai/hub-dependencies.bicep' = {
   }
 }
 
-module hub '../ai/hub.bicep' = {
+module hub 'hub.bicep' = {
   name: 'hub'
   params: {
     location: location
@@ -62,7 +62,7 @@ module hub '../ai/hub.bicep' = {
   }
 }
 
-module project '../ai/project.bicep' = {
+module project 'project.bicep' = {
   name: 'project'
   params: {
     location: location

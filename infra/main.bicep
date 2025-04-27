@@ -46,6 +46,7 @@ var applicationInsightsName = '${abbrs.insightsComponents}${environmentName}'
 var virtualNetworkName = '${abbrs.networkVirtualNetworks}${environmentName}'
 var storageAccounName = toLower(replace('${abbrs.storageStorageAccounts}${environmentName}', '-', ''))
 var keyVaultName = toLower(replace('${abbrs.keyVaultVaults}${environmentName}', '-', ''))
+var cosmosDbAccountName = toLower(replace('${abbrs.documentDBDatabaseAccounts}${environmentName}', '-', ''))
 
 var subnets = [
   {
@@ -125,7 +126,7 @@ module keyVaultPrivateDnsZone 'core/networking/private-dns-zone.bicep' = {
   }
 }
 
-// Create a Key Vault to use for the AI services
+// Create a Key Vault with private endpoint in the Shared Services subnet
 module keyVault 'core/security/key-vault.bicep' = {
   name: 'key-vault'
   scope: rg
@@ -152,7 +153,7 @@ module storagePrivateDnsZone 'core/networking/private-dns-zone.bicep' = {
   }
 }
 
-// Create a Storage Account to use for the AI services
+// Create a Storage Account with private endpoint in the SharedServices subnet
 module storageAccount 'core/storage/storage-account.bicep' = {
   name: 'storage-account'
   scope: rg
@@ -178,6 +179,33 @@ module storageAccount 'core/storage/storage-account.bicep' = {
     privateEndpointVnetName: virtualNetworkName
     privateEndpointSubnetName: 'SharedServices'
     logAnalyticsWorkspaceId: monitoring.outputs.logAnalyticsWorkspaceId
+  }
+}
+
+// Create Private DNS Zone for the Cosmos DB account to be used by Private Link
+module cosmosDbPrivateDnsZone 'core/networking/private-dns-zone.bicep' = {
+  name: 'cosmosdb-private-dns-zone'
+  scope: rg
+  params: {
+    privateDnsZoneName: 'privatelink.documents.azure.com'
+    location: 'global'
+    tags: tags
+  }
+}
+
+// Create a Cosmos DB account with private endpoint in the AppStorage subnet
+module cosmosDbAccount 'core/database/cosmos-account.bicep' = {
+  name: 'cosmos-db-account'
+  scope: rg
+  params: {
+    name: cosmosDbAccountName
+    location: location
+    tags: tags
+    keyVaultName: keyVaultName
+    kind: 'GlobalDocumentDB'
+    enablePrivateEndpoint: true
+    privateEndpointVnetName: virtualNetworkName
+    privateEndpointSubnetName: 'AppStorage'
   }
 }
 
@@ -233,6 +261,11 @@ module bastion 'core/networking/bastion-host.bicep' = if (createBastionHost) {
   }
 }
 
+@description('The Azure region where resources are deployed.')
 output AZURE_LOCATION string = location
+
+@description('The Azure Active Directory tenant ID.')
 output AZURE_TENANT_ID string = tenant().tenantId
+
+@description('The URI of the deployed static web app.')
 output STATIC_WEB_APP_URI string = staticWebApp.outputs.uri

@@ -131,12 +131,14 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
       deleteRetentionPolicy: deleteRetentionPolicy
     }
 
-    resource container 'containers@2023-05-01' = [for container in containers: {
-      name: container.name
-      properties: {
-        publicAccess: container.?publicAccess ?? 'None'
+    resource container 'containers@2023-05-01' = [
+      for container in containers: {
+        name: container.name
+        properties: {
+          publicAccess: container.?publicAccess ?? 'None'
+        }
       }
-    }]
+    ]
   }
 
   resource fileServices 'fileServices@2023-05-01' = if (!empty(files)) {
@@ -153,12 +155,14 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
     name: 'default'
     properties: {}
 
-    resource queue 'queues' = [for queue in queues: {
-      name: queue.name
-      properties: {
-        metadata: {}
+    resource queue 'queues' = [
+      for queue in queues: {
+        name: queue.name
+        properties: {
+          metadata: {}
+        }
       }
-    }]
+    ]
   }
 
   resource tableServices 'tableServices@2023-05-01' = if (!empty(tables)) {
@@ -177,14 +181,18 @@ var blobServiceLogCategories = [
 var blobServiceMetricCategories = [
   'Transaction'
 ]
-var blobServiceLogs = [for category in blobServiceLogCategories: {
-  category: category
-  enabled: true
-}]
-var blobServiceMetrics = [for category in blobServiceMetricCategories: {
-  category: category
-  enabled: true
-}]
+var blobServiceLogs = [
+  for category in blobServiceLogCategories: {
+    category: category
+    enabled: true
+  }
+]
+var blobServiceMetrics = [
+  for category in blobServiceMetricCategories: {
+    category: category
+    enabled: true
+  }
+]
 
 resource blobServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(logAnalyticsWorkspaceId)) {
   name: blobServiceDiagnosticSettingsName
@@ -210,6 +218,11 @@ module blobServicePrivateEndpoint 'storage-account-private-endpoint.bicep' = if 
   }
 }
 
+@description('The resource ID of the storage account.')
 output id string = storageAccount.id
+
+@description('The name of the storage account.')
 output name string = storageAccount.name
+
+@description('The primary endpoints of the storage account.')
 output primaryEndpoints object = storageAccount.properties.primaryEndpoints
