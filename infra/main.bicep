@@ -134,11 +134,7 @@ module keyVault 'core/security/keyvault.bicep' = {
     location: location
     tags: tags
     publicNetworkAccess: 'Disabled'
-    // Look up the subnet ID for the Key Vault using the name
-    subnetId: filter(
-      virtualNetwork.outputs.subnetIds,
-      subnets => subnets.name == '${abbrs.networkVirtualNetworksSubnets}SharedServices'
-    )[0]
+    subnetId: virtualNetwork.outputs.subnetIds[5]
   }
 }
 
