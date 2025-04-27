@@ -111,9 +111,9 @@ module applicationInsights 'br/public:avm/res/insights/component:0.6.0' = {
   }
 }
 
-// Virtual Network to host all AI services and supporting resources
-module virtualNetwork 'core/networking/virtual-network.bicep' = {
-  name: 'virtual-network'
+// Create the Virtual Network and subnets using Azure Verified Modules (AVM)
+module virtualNetwork 'br/public:avm/res/network/virtual-network:0.6.1' = {
+  name: 'virtualNetwork'
   scope: rg
   params: {
     name: virtualNetworkName
@@ -293,7 +293,7 @@ module bastion 'core/networking/bastion-host.bicep' = if (createBastionHost) {
     name: '${abbrs.networkBastionHosts}${environmentName}'
     location: location
     tags: tags
-    virtualNetworkId: virtualNetwork.outputs.virtualNetworkId
+    virtualNetworkId: virtualNetwork.outputs.resourceId
     publicIpName: '${abbrs.networkPublicIPAddresses}${abbrs.networkBastionHosts}${environmentName}'
     publicIpSku: 'Standard'
   }
