@@ -209,7 +209,7 @@ module cosmosDbAccount 'core/database/cosmos-account.bicep' = {
   }
 }
 
-// Create Private DNS Zone for Azure AI Search
+// Create Private DNS Zone for Azure AI Search to be used by Private Link
 module searchPrivateDnsZone 'core/networking/private-dns-zone.bicep' = {
   name: 'search-private-dns-zone'
   scope: rg
@@ -219,7 +219,7 @@ module searchPrivateDnsZone 'core/networking/private-dns-zone.bicep' = {
   }
 }
 
-// Create Azure AI Search service
+// Create Azure AI Search service with private endpoint in the AiServices subnet
 module aiSearchService 'core/search/ai-search-service.bicep' = {
   name: 'ai-search-service'
   scope: rg
@@ -230,6 +230,9 @@ module aiSearchService 'core/search/ai-search-service.bicep' = {
     sku: {
       name: 'standard'
     }
+    enablePrivateEndpoint: true
+    privateEndpointVnetName: virtualNetworkName
+    privateEndpointSubnetName: 'AiServices'
   }
 }
 
