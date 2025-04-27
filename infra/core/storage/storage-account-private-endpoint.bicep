@@ -83,10 +83,23 @@ resource storageAccountPrivateDnsZoneGroupName 'Microsoft.Network/privateEndpoin
   }
 }
 
+@description('The resource ID of the Storage Account private endpoint.')
 output storageAccountPrivateEndpointId string = storageAccountPrivateEndpoint.id
+
+@description('The resource ID of the Storage Account private DNS zone group.')
 output storageAccountPrivateDnsZoneGroupId string = storageAccountPrivateDnsZoneGroupName.id
+
+@description('The resource ID of the Storage Account private DNS zone virtual network link.')
 output storageAccountPrivateDnsZoneVirtualNetworkLinkId string = storageAccountPrivateDnsZoneVirtualNetworkLink.id
+
+@description('The resource ID of the Storage Account private DNS zone.')
 output storageAccountPrivateDnsZoneId string = storageAccountPrivateDnsZone.id
+
+@description('The name of the Storage Account private DNS zone.')
 output storageAccountPrivateDnsZoneName string = storageAccountPrivateDnsZone.name
+
+@description('The resource ID of the Storage Account private DNS zone.')
 output storageAccountPrivateDnsZoneResourceId string = storageAccountPrivateDnsZone.id
+
+@description('The name of the Storage Account private DNS zone virtual network link.')
 output storageAccountPrivateDnsZoneVirtualNetworkLinkName string = storageAccountPrivateDnsZoneVirtualNetworkLink.name

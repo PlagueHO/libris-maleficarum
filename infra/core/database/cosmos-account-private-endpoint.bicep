@@ -79,10 +79,23 @@ resource cosmosAccountPrivateDnsZoneGroupName 'Microsoft.Network/privateEndpoint
   }
 }
 
+@description('The resource ID of the Cosmos DB private endpoint.')
 output cosmosAccountPrivateEndpointId string = cosmosAccountPrivateEndpoint.id
+
+@description('The resource ID of the Cosmos DB private DNS zone group.')
 output cosmosAccountPrivateDnsZoneGroupId string = cosmosAccountPrivateDnsZoneGroupName.id
+
+@description('The resource ID of the Cosmos DB private DNS zone virtual network link.')
 output cosmosAccountPrivateDnsZoneVirtualNetworkLinkId string = cosmosAccountPrivateDnsZoneVirtualNetworkLink.id
+
+@description('The resource ID of the Cosmos DB private DNS zone.')
 output cosmosAccountPrivateDnsZoneId string = cosmosAccountPrivateDnsZone.id
+
+@description('The name of the Cosmos DB private DNS zone.')
 output cosmosAccountPrivateDnsZoneName string = cosmosAccountPrivateDnsZone.name
+
+@description('The resource ID of the Cosmos DB private DNS zone.')
 output cosmosAccountPrivateDnsZoneResourceId string = cosmosAccountPrivateDnsZone.id
+
+@description('The name of the Cosmos DB private DNS zone virtual network link.')
 output cosmosAccountPrivateDnsZoneVirtualNetworkLinkName string = cosmosAccountPrivateDnsZoneVirtualNetworkLink.name

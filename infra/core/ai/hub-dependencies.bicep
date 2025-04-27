@@ -93,36 +93,33 @@ module storageAccount '../storage/storage-account.bicep' = {
   }
 }
 
-module logAnalytics '../monitor/loganalytics.bicep' =
-  if (!empty(logAnalyticsName)) {
-    name: 'logAnalytics'
-    params: {
-      location: location
-      tags: tags
-      name: logAnalyticsName
-    }
+module logAnalytics '../monitor/loganalytics.bicep' = if (!empty(logAnalyticsName)) {
+  name: 'logAnalytics'
+  params: {
+    location: location
+    tags: tags
+    name: logAnalyticsName
   }
+}
 
-module applicationInsights '../monitor/applicationinsights.bicep' =
-  if (!empty(applicationInsightsName) && !empty(logAnalyticsName)) {
-    name: 'applicationInsights'
-    params: {
-      location: location
-      tags: tags
-      name: applicationInsightsName
-      logAnalyticsWorkspaceId: !empty(logAnalyticsName) ? logAnalytics.outputs.id : ''
-    }
+module applicationInsights '../monitor/applicationinsights.bicep' = if (!empty(applicationInsightsName) && !empty(logAnalyticsName)) {
+  name: 'applicationInsights'
+  params: {
+    location: location
+    tags: tags
+    name: applicationInsightsName
+    logAnalyticsWorkspaceId: !empty(logAnalyticsName) ? logAnalytics.outputs.id : ''
   }
+}
 
-module containerRegistry '../host/container-registry.bicep' =
-  if (!empty(containerRegistryName)) {
-    name: 'containerRegistry'
-    params: {
-      location: location
-      tags: tags
-      name: containerRegistryName
-    }
+module containerRegistry '../host/container-registry.bicep' = if (!empty(containerRegistryName)) {
+  name: 'containerRegistry'
+  params: {
+    location: location
+    tags: tags
+    name: containerRegistryName
   }
+}
 
 module cognitiveServices '../ai/cognitiveservices.bicep' = {
   name: 'cognitiveServices'
@@ -135,15 +132,14 @@ module cognitiveServices '../ai/cognitiveservices.bicep' = {
   }
 }
 
-module searchService '../search/search-services.bicep' =
-  if (!empty(searchServiceName)) {
-    name: 'searchService'
-    params: {
-      location: location
-      tags: tags
-      name: searchServiceName
-    }
+module searchService '../search/ai-search-services.bicep' = if (!empty(searchServiceName)) {
+  name: 'searchService'
+  params: {
+    location: location
+    tags: tags
+    name: searchServiceName
   }
+}
 
 output keyVaultId string = keyVault.outputs.id
 output keyVaultName string = keyVault.outputs.name
