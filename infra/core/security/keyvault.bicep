@@ -9,9 +9,6 @@ param location string = resourceGroup().location
 @description('Tags to apply to the Azure Key Vault.')
 param tags object = {}
 
-@description('Principal ID to grant access policies to the Azure Key Vault.')
-param principalId string = ''
-
 @description('Allow the key vault to be used during resource creation (e.g., VM disk encryption).')
 param enabledForDeployment bool = false
 
@@ -28,22 +25,14 @@ param enabledForDiskEncryption bool = false
 ])
 param publicNetworkAccess string = 'Enabled'
 
-@description('Network ACLs configuration for the Azure Key Vault.')
-param networkAcls object = {
-  bypass: 'AzureServices'
-  defaultAction: 'Allow'
-  ipRules: []
-  virtualNetworkRules: []
-}
+@description('The ID of the virtual network to which the Key Vault will be linked.')
+param vnetId string = ''
 
 @description('Soft delete retention period in days for the Azure Key Vault.')
 param softDeleteRetentionInDays int = 90
 
 @description('Enable or disable purge protection for the Azure Key Vault.')
 param enablePurgeProtection bool = true
-
-@description('List of access policies to apply to the Azure Key Vault.')
-param accessPolicies array = []
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   name: name
@@ -55,7 +44,6 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
       family: 'A'
       name: 'standard'
     }
-    accessPolicies: accessPolicies
     enabledForDeployment: enabledForDeployment
     enabledForTemplateDeployment: enabledForTemplateDeployment
     enabledForDiskEncryption: enabledForDiskEncryption
@@ -63,6 +51,18 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
     enablePurgeProtection: enablePurgeProtection
     enableSoftDelete: true
     softDeleteRetentionInDays: softDeleteRetentionInDays
+    enableRbacAuthorization: true
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Allow'
+      ipRules: []
+      virtualNetworkRules: [
+        {
+          id: vnetId
+          ignoreMissingVnetServiceEndpoint: false
+        }
+      ]
+    }
   }
 }
 

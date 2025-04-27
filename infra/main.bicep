@@ -132,56 +132,7 @@ module keyVault 'core/security/keyvault.bicep' = {
     location: location
     tags: tags
     publicNetworkAccess: 'Disabled'
-    networkAcls: {
-      bypass: 'None'
-      defaultAction: 'Allow'
-      ipRules: []
-      virtualNetworkRules: [
-        {
-          id: virtualNetwork.outputs.virtualNetworkId
-          ignoreMissingVnetServiceEndpoint: true
-        }
-      ]
-    }
-    accessPolicies: [
-      {
-        tenantId: subscription().tenantId
-        objectId: subscription().tenantId
-        permissions: {
-          keys: [
-            'get'
-            'list'
-            'create'
-            'import'
-            'delete'
-            'update'
-            'backup'
-            'restore'
-            'recover'
-          ]
-          secrets: [
-            'get'
-            'list'
-            'set'
-            'delete'
-            'backup'
-            'restore'
-            'recover'
-          ]
-          certificates: [
-            'get'
-            'list'
-            'create'
-            'import'
-            'delete'
-            'update'
-            'managecontacts'
-            'manageissuers'
-            'setissuersettings'
-          ]
-        }
-      }
-    ]
+    vnetId: virtualNetwork.outputs.virtualNetworkId
   }
 }
 
