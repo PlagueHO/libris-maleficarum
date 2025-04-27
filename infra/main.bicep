@@ -228,7 +228,7 @@ module aiSearchService 'core/search/ai-search-service.bicep' = {
     location: location
     tags: tags
     sku: {
-      name: 'standard'
+      name: 'basic'
     }
     enablePrivateEndpoint: true
     privateEndpointVnetName: virtualNetworkName
