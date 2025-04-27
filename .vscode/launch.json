@@ -2,9 +2,9 @@
   "version": "0.2.0",
   "compounds": [
     {
-      "name": "libris-maleficarnum",
+      "name": "libris-maleficarum",
       "configurations": [
-        "app: libris-maleficarnum-app"
+        "app: libris-maleficarum-app"
       ]
     }
   ],
@@ -12,8 +12,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "app: libris-maleficarnum-app",
-      "cwd": "${workspaceFolder}/libris-maleficarnum-app",
+      "name": "app: libris-maleficarum-app",
+      "cwd": "${workspaceFolder}/libris-maleficarum-app",
       "skipFiles": ["<node_internals>/**"],
       "console": "integratedTerminal",
       "runtimeExecutable": "npm",
