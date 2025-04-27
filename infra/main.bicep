@@ -88,15 +88,26 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
-// Create the monitoring resources for the environment
-module monitoring 'core/monitor/monitoring.bicep' = {
-  name: 'monitoring'
+// Create the Log Analytics workspace using Azure Verified Module (AVM)
+module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.11.1' = {
+  name: 'logAnalyticsWorkspace'
   scope: rg
   params: {
+    name: logAnalyticsName
     location: location
     tags: tags
-    logAnalyticsName: logAnalyticsName
-    applicationInsightsName: applicationInsightsName
+  }
+}
+
+// Create the Application Insights resource using Azure Verified Module (AVM)
+module applicationInsights 'br/public:avm/res/insights/component:0.6.0' = {
+  name: 'applicationInsights'
+  scope: rg
+  params: {
+    name: applicationInsightsName
+    location: location
+    tags: tags
+    workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
   }
 }
 
@@ -178,7 +189,7 @@ module storageAccount 'core/storage/storage-account.bicep' = {
     enablePrivateEndpoint: true
     privateEndpointVnetName: virtualNetworkName
     privateEndpointSubnetName: 'SharedServices'
-    logAnalyticsWorkspaceId: monitoring.outputs.logAnalyticsWorkspaceId
+    logAnalyticsWorkspaceId: logAnalyticsWorkspace.outputs.resourceId
   }
 }
 
