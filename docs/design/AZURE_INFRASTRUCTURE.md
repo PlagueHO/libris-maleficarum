@@ -44,6 +44,91 @@ graph TD
     LogAnalytics
 ```
 
+## Networking
+
+The solution uses a single Azure Virtual Network (VNet) with multiple subnets to segment and secure resources. Private Endpoints are used to securely connect Azure PaaS services to the VNet, ensuring all traffic remains on the Microsoft backbone.
+
+### Subnet Structure
+
+| Subnet Name         | Address Prefix  | Purpose / Linked Services                                      |
+|---------------------|-----------------|----------------------------------------------------------------|
+| Default             | 10.0.0.0/24     | Reserved (not used by default)                                 |
+| AppServices         | 10.0.1.0/24     | Azure Container Apps (API backend)                             |
+| AppStorage          | 10.0.2.0/24     | Cosmos DB Private Endpoint, Storage Account Private Endpoint   |
+| AiServices          | 10.0.3.0/24     | Azure AI Search Private Endpoint, AI Services Private Endpoint |
+| SharedServices      | 10.0.4.0/24     | Key Vault Private Endpoint, Monitoring, other shared services  |
+| AzureBastionSubnet  | 10.0.255.0/27   | Azure Bastion Host                                             |
+
+### Service-to-Subnet Mapping
+
+- **Azure Container Apps:** Deployed in `AppServices` subnet.
+- **Azure Cosmos DB:** Private Endpoint in `AppStorage` subnet.
+- **Azure Storage Account:** Private Endpoint in `AppStorage` subnet.
+- **Azure AI Search:** Private Endpoint in `AiServices` subnet.
+- **Azure AI Services:** Private Endpoint in `AiServices` subnet.
+- **Azure Key Vault:** Private Endpoint in `SharedServices` subnet.
+- **Monitoring (App Insights, Log Analytics):** Linked via `SharedServices` subnet.
+- **Azure Bastion:** Deployed in `AzureBastionSubnet`.
+
+### Networking Design Diagram
+
+```mermaid
+flowchart TD
+    VNet["Azure Virtual Network (10.0.0.0/16)"]
+
+    subgraph Default["Default (10.0.0.0/24)"]
+    end
+
+    subgraph AppServices["AppServices (10.0.1.0/24)"]
+      ACA["Azure Container Apps"]
+    end
+
+    subgraph AppStorage["AppStorage (10.0.2.0/24)"]
+      CosmosPE["Cosmos DB Private Endpoint"]
+      StoragePE["Storage Account Private Endpoint"]
+    end
+
+    subgraph AiServices["AiServices (10.0.3.0/24)"]
+      AISearchPE["AI Search Private Endpoint"]
+      AIServicesPE["AI Services Private Endpoint"]
+    end
+
+    subgraph SharedServices["SharedServices (10.0.4.0/24)"]
+      KeyVaultPE["Key Vault Private Endpoint"]
+      Monitoring["Monitoring / Diagnostics"]
+    end
+
+    subgraph Bastion["AzureBastionSubnet (10.0.255.0/27)"]
+      BastionHost["Azure Bastion Host"]
+    end
+
+    VNet --> Default
+    VNet --> AppServices
+    VNet --> AppStorage
+    VNet --> AiServices
+    VNet --> SharedServices
+    VNet --> Bastion
+
+    ACA -.-> CosmosPE
+    ACA -.-> StoragePE
+    ACA -.-> AISearchPE
+    ACA -.-> AIServicesPE
+    ACA -.-> KeyVaultPE
+    ACA -.-> Monitoring
+
+    BastionHost -.-> ACA
+    BastionHost -.-> CosmosPE
+    BastionHost -.-> StoragePE
+    BastionHost -.-> AISearchPE
+    BastionHost -.-> AIServicesPE
+    BastionHost -.-> KeyVaultPE
+```
+
+**Notes:**
+- All PaaS services are accessed via Private Endpoints, ensuring secure, private connectivity.
+- Subnet design allows for clear separation of concerns and simplifies network security management.
+- Azure Bastion provides secure RDP/SSH connectivity to resources without exposing public IPs.
+
 ## Infrastructure as Code (IaC)
 
 - **Bicep Templates Location:** `infra/`
