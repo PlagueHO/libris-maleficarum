@@ -55,22 +55,22 @@ var subnets = [
   }
   {
     // Azure Container App Services Subnet
-    name: '${abbrs.networkVirtualNetworksSubnets}AppServices'
+    name: 'AppServices'
     addressPrefix: '10.0.1.0/24'
   }
   {
     // App Storage Subnet (storage acconts, databases etc.)
-    name: '${abbrs.networkVirtualNetworksSubnets}AppStorage'
+    name: 'AppStorage'
     addressPrefix: '10.0.2.0/24'
   }
   {
     // Azure AI Services Subnet (AI Search, AI Services, etc.)
-    name: '${abbrs.networkVirtualNetworksSubnets}AiServices'
+    name: 'AiServices'
     addressPrefix: '10.0.3.0/24'
   }
   {
     // Shared Services Subnet (key vaults, monitoring, etc.)
-    name: '${abbrs.networkVirtualNetworksSubnets}SharedServices'
+    name: 'SharedServices'
     addressPrefix: '10.0.4.0/24'
     serviceEndpoints: [
       {
@@ -178,7 +178,7 @@ module storageAccount 'core/storage/storage-account.bicep' = {
     publicNetworkAccess: 'Disabled'
     enablePrivateEndpoint: true
     privateEndpointVnetName: virtualNetworkName
-    privateEndpointSubnetName: '${abbrs.networkVirtualNetworksSubnets}SharedServices'
+    privateEndpointSubnetName: 'SharedServices'
     logAnalyticsWorkspaceId: monitoring.outputs.logAnalyticsWorkspaceId
   }
 }
