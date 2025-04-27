@@ -26,9 +26,16 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
     subnets: [
       for subnet in subnets: {
         name: subnet.name
-        properties: {
-          addressPrefix: subnet.addressPrefix
-        }
+        properties: union(
+          {
+            addressPrefix: subnet.addressPrefix
+          },
+          empty(subnet.serviceEndpoints)
+            ? {}
+            : {
+                serviceEndpoints: subnet.serviceEndpoints
+              }
+        )
       }
     ]
   }

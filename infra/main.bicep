@@ -72,6 +72,11 @@ var subnets = [
     // Shared Services Subnet (key vaults, monitoring, etc.)
     name: '${abbrs.networkVirtualNetworksSubnets}SharedServices'
     addressPrefix: '10.0.4.0/24'
+    serviceEndpoints: [
+      {
+        service: 'Microsoft.KeyVault'
+      }
+    ]
   }
   {
     // Bastion Gateway Subnet
