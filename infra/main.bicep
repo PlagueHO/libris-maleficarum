@@ -132,7 +132,7 @@ module keyVault 'core/security/keyvault.bicep' = {
     location: location
     tags: tags
     publicNetworkAccess: 'Disabled'
-    vnetId: virtualNetwork.outputs.virtualNetworkId
+    subnetId: virtualNetwork.outputs.subnetIds[5]
   }
 }
 

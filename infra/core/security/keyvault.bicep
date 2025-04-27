@@ -25,8 +25,8 @@ param enabledForDiskEncryption bool = false
 ])
 param publicNetworkAccess string = 'Enabled'
 
-@description('The ID of the virtual network to which the Key Vault will be linked.')
-param vnetId string = ''
+@description('The ID of the subnet to which the Key Vault will be linked.')
+param subnetId string = ''
 
 @description('Soft delete retention period in days for the Azure Key Vault.')
 param softDeleteRetentionInDays int = 90
@@ -58,7 +58,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
       ipRules: []
       virtualNetworkRules: [
         {
-          id: vnetId
+          id: subnetId
           ignoreMissingVnetServiceEndpoint: false
         }
       ]
