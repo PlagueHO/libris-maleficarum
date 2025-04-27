@@ -236,6 +236,30 @@ module aiSearchService 'core/search/ai-search-service.bicep' = {
   }
 }
 
+// Create Private DNS Zone for Azure AI Services to be used by Private Link
+module aiServicesPrivateDnsZone 'core/networking/private-dns-zone.bicep' = {
+  name: 'aiservices-private-dns-zone'
+  scope: rg
+  params: {
+    privateDnsZoneName: 'privatelink.cognitiveservices.azure.com'
+    tags: tags
+  }
+}
+
+// Create Azure AI Services instance with private endpoint in the AiServices subnet
+module aiServices 'core/ai/ai-services.bicep' = {
+  name: 'ai-services'
+  scope: rg
+  params: {
+    name: '${abbrs.aiServicesAccounts}${environmentName}'
+    location: location
+    tags: tags
+    enablePrivateEndpoint: true
+    privateEndpointVnetName: virtualNetworkName
+    privateEndpointSubnetName: 'AiServices'
+  }
+}
+
 // Create a Static Web App for the application
 module staticWebApp 'core/host/staticwebapp.bicep' = {
   name: 'static-web-app'
