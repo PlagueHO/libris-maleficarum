@@ -30,11 +30,11 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
           {
             addressPrefix: subnet.addressPrefix
           },
-          empty(subnet.serviceEndpoints)
-            ? {}
-            : {
+          contains(subnet, 'serviceEndpoints')
+            ? {
                 serviceEndpoints: subnet.serviceEndpoints
               }
+            : {}
         )
       }
     ]
