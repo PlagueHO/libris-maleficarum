@@ -23,7 +23,7 @@ param resourceGroupName string = ''
 
 // Should an Azure Bastion be created?
 @description('Should an Azure Bastion be created?')
-param createBastionHost bool = true
+param createBastionHost bool = false
 
 @description('SKU for the Static Web App.')
 param staticWebAppSku string = 'Standard'
@@ -45,6 +45,7 @@ var logAnalyticsName = '${abbrs.operationalInsightsWorkspaces}${environmentName}
 var applicationInsightsName = '${abbrs.insightsComponents}${environmentName}'
 var virtualNetworkName = '${abbrs.networkVirtualNetworks}${environmentName}'
 var storageAccounName = toLower(replace('${abbrs.storageStorageAccounts}${environmentName}', '-', ''))
+var keyVaultName = toLower(replace('${abbrs.keyVaultVaults}${environmentName}', '-', ''))
 
 // Organize resources in a resource group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -127,7 +128,7 @@ module keyVault 'core/security/keyvault.bicep' = {
   name: 'key-vault'
   scope: rg
   params: {
-    name: '${abbrs.keyVaultVaults}${environmentName}'
+    name: keyVaultName
     location: location
     tags: tags
     publicNetworkAccess: 'Disabled'
