@@ -72,11 +72,6 @@ var subnets = [
     // Shared Services Subnet (key vaults, monitoring, etc.)
     name: 'SharedServices'
     addressPrefix: '10.0.4.0/24'
-    serviceEndpoints: [
-      {
-        service: 'Microsoft.KeyVault'
-      }
-    ]
   }
   {
     // Bastion Gateway Subnet
@@ -131,7 +126,7 @@ module keyVaultPrivateDnsZone 'core/networking/private-dns-zone.bicep' = {
 }
 
 // Create a Key Vault to use for the AI services
-module keyVault 'core/security/keyvault.bicep' = {
+module keyVault 'core/security/key-vault.bicep' = {
   name: 'key-vault'
   scope: rg
   params: {
@@ -139,7 +134,10 @@ module keyVault 'core/security/keyvault.bicep' = {
     location: location
     tags: tags
     publicNetworkAccess: 'Disabled'
-    subnetId: virtualNetwork.outputs.subnetIds[5]
+    enablePrivateEndpoint: true
+    privateEndpointVnetName: virtualNetworkName
+    privateEndpointSubnetName: 'SharedServices'
+    privateEndpointName: '${keyVaultName}-pe'
   }
 }
 
