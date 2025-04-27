@@ -40,7 +40,6 @@ var resourceToken = toLower(uniqueString(subscription().id, environmentName, loc
 
 var logAnalyticsName = '${abbrs.operationalInsightsWorkspaces}${environmentName}'
 var applicationInsightsName = '${abbrs.insightsComponents}${environmentName}'
-var applicationInsightsDashboardName = '${abbrs.portalDashboards}${environmentName}'
 var virtualNetworkName = '${abbrs.networkVirtualNetworks}${environmentName}'
 var storageAccounName = toLower(replace('${abbrs.storageStorageAccounts}${environmentName}', '-', ''))
 
@@ -60,7 +59,6 @@ module monitoring 'core/monitor/monitoring.bicep' = {
     tags: tags
     logAnalyticsName: logAnalyticsName
     applicationInsightsName: applicationInsightsName
-    applicationInsightsDashboardName: applicationInsightsDashboardName
   }
 }
 
