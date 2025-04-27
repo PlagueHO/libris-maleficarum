@@ -1,40 +1,55 @@
 # Folder Structure
 
-The repository is organized for clarity, scalability, and best practices for both .NET 8 backend and React/TypeScript frontend development.
+The repository is organized for clarity, scalability, and best practices for both .NET 8 backend services and React/TypeScript frontend development.
 
 ```text
 /
 ├── .devcontainer/           # GitHub Codespaces/dev container config
 ├── .github/                 # GitHub Actions workflows and community files
 ├── infra/                   # Infrastructure as Code (Bicep templates, deployment scripts)
-├── backend/                 # .NET 8 backend solution
+├── libris-maleficarum-service/      # .NET 8 backend solution
 │   ├── src/                         # All backend projects and solution
-│   │   ├── LibrisMaleficarum.sln            # Solution file
+│   │   ├── LibrisMaleficarum.sln           # Solution file
 │   │   ├── Api/                            # ASP.NET Core minimal API project
-│   │   │   └── LibrisMaleficarum.Api.csproj
-│   │   ├── Application/                    # Application layer (CQRS, services, DTOs)
-│   │   │   └── LibrisMaleficarum.Application.csproj
+│   │   │   ├── LibrisMaleficarum.Api.csproj
+│   │   │   ├── Controllers/                # API controllers
+│   │   │   ├── Middleware/                 # Custom middleware
+│   │   │   ├── Extensions/                 # Extension methods for API setup
+│   │   │   └── Program.cs                  # Entry point for the API
 │   │   ├── Domain/                         # Domain entities, value objects, interfaces
-│   │   │   └── LibrisMaleficarum.Domain.csproj
+│   │   │   ├── LibrisMaleficarum.Domain.csproj
+│   │   │   ├── Entities/                   # Domain entities
+│   │   │   ├── ValueObjects/               # Value objects
+│   │   │   ├── Interfaces/                 # Domain interfaces
+│   │   │   └── Events/                     # Domain events
 │   │   ├── Infrastructure/                 # EF Core, Cosmos DB, repository implementations
-│   │   │   └── LibrisMaleficarum.Infrastructure.csproj
-│   │   └── tests/                          # Backend unit/integration tests
-│   │       ├── LibrisMaleficarum.Api.Tests/
-│   │       ├── LibrisMaleficarum.Application.Tests/
-│   │       ├── LibrisMaleficarum.Domain.Tests/
-│   │       └── LibrisMaleficarum.Infrastructure.Tests/
+│   │   │   ├── LibrisMaleficarum.Infrastructure.csproj
+│   │   │   ├── Persistence/                # EF Core DbContext and migrations
+│   │   │   ├── Repositories/               # Repository implementations
+│   │   │   ├── Configurations/             # Entity configurations for EF Core
+│   │   │   └── Services/                   # Infrastructure services (e.g., email, logging)
+│   │   ├── Orchestration/                  # Aspire.NET orchestration layer
+│   │   │   ├── LibrisMaleficarum.Orchestration.csproj
+│   │   │   ├── Workflows/                  # Workflow definitions
+│   │   │   ├── Activities/                 # Activity implementations
+│   │   │   └── Extensions/                 # Orchestration extensions
+│   │   └── Tests/                          # Backend unit/integration tests
+│   │       ├── Api.Tests/                  # Tests for API layer
+│   │       ├── Domain.Tests/               # Tests for Domain layer
+│   │       ├── Infrastructure.Tests/       # Tests for Infrastructure layer
+│   │       └── Orchestration.Tests/        # Tests for Orchestration layer
 ├── libris-maleficarum-app/  # React + TypeScript frontend app
 │   ├── src/                 # Source code (components, hooks, services, types, etc.)
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── services/
-│   │   ├── types/
-│   │   ├── App.tsx
-│   │   └── index.tsx
+│   │   ├── components/      # React components
+│   │   ├── hooks/           # Custom React hooks
+│   │   ├── services/        # API calls and business logic
+│   │   ├── types/           # TypeScript type definitions
+│   │   ├── App.tsx          # Main application component
+│   │   └── index.tsx        # Entry point for the app
 │   ├── public/              # Static assets (index.html, images, etc.)
 │   ├── tests/               # Frontend unit/integration tests
-│   ├── package.json
-│   ├── tsconfig.json
+│   ├── package.json         # Node.js dependencies
+│   ├── tsconfig.json        # TypeScript configuration
 │   └── ...                  # Other config files (vite.config.ts, .env, etc.)
 ├── README.md                # Project overview and getting started
 ├── DESIGN.md                # Architecture and design documentation
@@ -42,6 +57,7 @@ The repository is organized for clarity, scalability, and best practices for bot
 ```
 
 **Key Points:**
+
 - Backend code is under `backend/src/` following Clean/Hexagonal Architecture.
 - Frontend code is isolated in `libris-maleficarum-app/`.
 - Infrastructure as Code is in `infra/`.

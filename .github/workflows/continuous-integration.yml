@@ -1,0 +1,14 @@
+name: continuous-integration
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  checks: write
+  pull-requests: write
+
+jobs:
+  lint-and-publish-bicep:
+    uses: ./.github/workflows/lint-and-publish-bicep.yml

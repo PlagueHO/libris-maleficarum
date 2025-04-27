@@ -1,0 +1,71 @@
+name: deploy-infrastructure
+
+on:
+  workflow_call:
+    inputs:
+      ENVIRONMENT:
+        description: "The environment to validate the application infrastructure for"
+        required: true
+        type: string
+      BUILD_VERSION:
+        description: "The version of the build to deploy to the application resources"
+        required: true
+        type: string
+      AZURE_LOCATION:
+        description: "The Azure region to deploy the application resources to"
+        required: true
+        type: string
+      AZURE_ENV_NAME:
+        description: "The name of the Azure environment"
+        required: true
+        type: string
+          
+    secrets:
+      AZURE_TENANT_ID:
+        description: "The Azure tenant ID to use for authentication to Azure for deployment"
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        description: "The Azure subscription ID to use for authentication to Azure for deployment"
+        required: true
+      AZURE_CLIENT_ID:
+        description: "The Azure client ID to use for authentication to Azure for deployment"
+        required: true
+
+jobs:
+  deploy-infrastructure:
+    name: Deploy Infrastructure ${{ inputs.ENVIRONMENT }}
+    environment: ${{ inputs.ENVIRONMENT }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+
+      - name: Deploy Azure Infrastructure
+        id: deploy-azure-infrastructure
+        uses: azure/bicep-deploy@v2
+        with:
+          type: deployment
+          operation: create
+          name: ${{ inputs.AZURE_ENV_NAME }}-${{inputs.AZURE_LOCATION}}-${{ inputs.ENVIRONMENT }}-${{ github.action_ref }}-${{ github.run_number }}
+          scope: subscription
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          location: ${{ inputs.AZURE_LOCATION }}
+          template-file: ./infrastructure_bicep/main.bicep
+          parameters: >
+            {
+              "location": "${{ inputs.AZURE_LOCATION }}",
+              "environmentName": "${{ inputs.AZURE_ENV_NAME }}"
+            }
+
+      - name: Display Deployment Outputs
+        run: |
+          echo "AZURE_LOCATION: ${{ steps.deploy-azure-infrastructure.outputs.AZURE_LOCATION }}"
+          echo "AZURE_TENANT_ID: ${{ steps.deploy-azure-infrastructure.outputs.AZURE_TENANT_ID }}"

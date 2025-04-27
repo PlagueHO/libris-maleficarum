@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, toggle } from '../../store/store';
 import styles from './SidePanel.module.css';
 
 const SidePanel: React.FC = () => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const isExpanded = useSelector((state: RootState) => state.sidePanel.isExpanded);
+  const dispatch = useDispatch();
 
-  const handleToggle = () => setIsExpanded((prev) => !prev);
+  const handleToggle = () => dispatch(toggle());
 
   return (
     <aside

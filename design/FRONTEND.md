@@ -1,6 +1,6 @@
 # Frontend Design
 
-The Libris Maleficarum frontend is a modern, accessible, and visually engaging Single Page Application (SPA) built with React and TypeScript.
+The Libris Maleficarum frontend is a modern, accessible, and visually engaging Single Page Application (SPA) built with React and TypeScript. The frontend code resides in the `libris-maleficarum-app/` folder.
 
 ## Application Structure
 
@@ -10,11 +10,11 @@ The Libris Maleficarum frontend is a modern, accessible, and visually engaging S
 - **Layout:**  
   - **Top Toolbar:**  
     A persistent toolbar at the top provides access to global navigation, search, notifications, user profile, and quick actions. This is always visible and anchors the application.
-  - **Expandable Tools Panel (Left):**  
-    A collapsible sidebar on the left provides access to navigation, world/campaign tools, entity management, and quick actions. This panel can be expanded or collapsed as needed.
-  - **Main Work Panel (Center):**  
+  - **Side Panel (Left, Expandable):**  
+    A collapsible sidebar on the left provides access to navigation, world selection (drop down), campaign structure and entities, entity management, and quick actions. This panel can be expanded or collapsed as needed. The panel will contain a settings button to open a settings modal for user preferences and application settings at the bottom.
+  - **Main Panel (Center):**  
     The central area is the primary workspace for world-building, campaign management, editing entities, and viewing content. It adapts contextually to the user's current task.
-  - **Collapsible Chat Window (Right):**  
+  - **Chat Window (Right, Collapsible ):**  
     A chat/AI assistant panel on the right can be shown or hidden. This enables real-time collaboration, AI-driven suggestions, and contextual chat with the system or other users.
 
 - **UI/UX Principles:**  
@@ -55,5 +55,3 @@ The Libris Maleficarum frontend is a modern, accessible, and visually engaging S
 ## Summary
 
 The frontend delivers a rich, modern, and accessible user experience, optimized for TTRPG world-building and campaign management. It leverages the latest React ecosystem tools and UI techniques, while maintaining a strong fantasy aesthetic and usability focus.
-
-**Note:** The frontend code resides in the `libris-maleficarum-app/` folder.
