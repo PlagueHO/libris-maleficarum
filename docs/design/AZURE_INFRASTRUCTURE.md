@@ -125,6 +125,7 @@ flowchart TD
 ```
 
 **Notes:**
+
 - All PaaS services are accessed via Private Endpoints, ensuring secure, private connectivity.
 - Subnet design allows for clear separation of concerns and simplifies network security management.
 - Azure Bastion provides secure RDP/SSH connectivity to resources without exposing public IPs.
@@ -135,3 +136,4 @@ flowchart TD
 - **Deployment:** Automated via GitHub Actions workflows stored in the `.github` folder.
 - **Secrets Management:** Secrets and sensitive configuration values securely managed via **Azure Key Vault**.
 - **Monitoring & Observability:** Integrated with **Azure Application Insights** and **Log Analytics** for comprehensive monitoring and diagnostics.
+- **Azure Verified Modules:** All Azure resources are deployed using [Azure Verified Modules (AVM)](https://aka.ms/avm) for Bicep wherever AVM modules are available. AVM ensures best practices, security, and maintainability for infrastructure code. Custom Bicep modules are only used for resources not yet supported by AVM.
