@@ -25,6 +25,9 @@ param resourceGroupName string = ''
 @description('Should an Azure Bastion be created?')
 param createBastionHost bool = true
 
+@description('SKU for the Static Web App.')
+param staticWebAppSku string = 'Standard'
+
 var abbrs = loadJsonContent('./abbreviations.json')
 
 // tags that should be applied to all resources.
@@ -245,6 +248,20 @@ module aiSearchService 'core/search/ai-search-service.bicep' = {
   }
 }
 
+// Create a Static Web App for the application
+module staticWebApp 'core/host/staticwebapp.bicep' = {
+  name: 'static-web-app'
+  scope: rg
+  params: {
+    name: '${abbrs.webStaticSites}${environmentName}'
+    location: location
+    tags: tags
+    sku: {
+      name: staticWebAppSku
+    }
+  }
+}
+
 // Optional: Create an Azure Bastion host in the virtual network.
 module bastion 'core/networking/bastion-host.bicep' = if (createBastionHost) {
   name: 'bastion-host'
@@ -261,3 +278,4 @@ module bastion 'core/networking/bastion-host.bicep' = if (createBastionHost) {
 
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
+output STATIC_WEB_APP_URI string = staticWebApp.outputs.uri
