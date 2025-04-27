@@ -12,11 +12,12 @@ param location string = resourceGroup().location
 @description('Tags to apply to the Application Insights dashboard.')
 param tags object = {}
 
-resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-preview' = {
+resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2023-08-01' = {
   name: name
   location: location
   tags: tags
   properties: {
+    displayName: 'Application Insights Dashboard'
     lenses: [
       {
         order: 0
@@ -39,7 +40,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   value: '1.0'
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/AppInsightsExtension/PartType/AspNetOverviewPinnedPart'
               asset: {
                 idInputName: 'id'
@@ -70,7 +70,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   value: '1.0'
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/AppInsightsExtension/PartType/ProactiveDetectionAsyncPart'
               asset: {
                 idInputName: 'ComponentId'
@@ -101,7 +100,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   value: '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Insights/components/${applicationInsights.name}'
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/AppInsightsExtension/PartType/QuickPulseButtonSmallPart'
               asset: {
                 idInputName: 'ComponentId'
@@ -142,7 +140,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   value: '1.0'
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/AppInsightsExtension/PartType/AvailabilityNavButtonPart'
               asset: {
                 idInputName: 'ComponentId'
@@ -183,7 +180,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   value: '78ce933e-e864-4b05-a27b-71fd55a6afad'
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/AppInsightsExtension/PartType/AppMapButtonPart'
               asset: {
                 idInputName: 'ComponentId'
@@ -241,7 +237,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   }
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/AppInsightsExtension/PartType/UsageUsersOverviewPart'
               asset: {
                 idInputName: 'ComponentId'
@@ -303,7 +298,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/AppInsightsExtension/PartType/CuratedBladeFailuresPinnedPart'
               isAdapter: true
               asset: {
@@ -367,7 +361,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/AppInsightsExtension/PartType/CuratedBladePerformancePinnedPart'
               isAdapter: true
               asset: {
@@ -458,7 +451,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   value: '1.0'
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/AppInsightsExtension/PartType/MetricsExplorerBladePinnedPart'
               asset: {
                 idInputName: 'ComponentId'
@@ -544,7 +536,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {}
             }
@@ -614,7 +605,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {}
             }
@@ -684,7 +674,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {}
             }
@@ -779,7 +768,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {}
             }
@@ -849,7 +837,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {}
             }
@@ -920,7 +907,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {}
             }
@@ -991,7 +977,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {}
             }
@@ -1050,7 +1035,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {}
             }
@@ -1109,7 +1093,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {}
             }
@@ -1168,7 +1151,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {}
             }
@@ -1227,7 +1209,6 @@ resource applicationInsightsDashboard 'Microsoft.Portal/dashboards@2022-12-01-pr
                   isOptional: true
                 }
               ]
-              #disable-next-line BCP036
               type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {}
             }
