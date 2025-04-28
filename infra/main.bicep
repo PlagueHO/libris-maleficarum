@@ -136,19 +136,38 @@ module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
   }
 }
 
-// Create a Key Vault with private endpoint in the Shared Services subnet
-module keyVault 'core/security/key-vault.bicep' = {
-  name: 'key-vault'
+// Create a Key Vault with private endpoint in the Shared Services subnet using Azure Verified Module (AVM)
+module vault 'br/public:avm/res/key-vault/vault:0.12.1' = {
+  name: 'keyVault'
   scope: rg
   params: {
     name: keyVaultName
-    location: location
+    diagnosticSettings: [
+      {
+        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+      }
+    ]
+    enablePurgeProtection: false
+    enableRbacAuthorization: true
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+    }
+    privateEndpoints: [
+      {
+        privateDnsZoneGroup: {
+          privateDnsZoneGroupConfigs: [
+            {
+              privateDnsZoneResourceId: keyVaultPrivateDnsZone.outputs.resourceId
+            }
+          ]
+        }
+        service: 'vault'
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[4].id
+      }
+    ]
+    softDeleteRetentionInDays: 7
     tags: tags
-    publicNetworkAccess: 'Disabled'
-    enablePrivateEndpoint: true
-    privateEndpointVnetName: virtualNetworkName
-    privateEndpointSubnetName: 'SharedServices'
-    privateEndpointName: '${keyVaultName}-pe'
   }
 }
 
