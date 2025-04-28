@@ -171,7 +171,6 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.12.1' = {
         subnetResourceId: virtualNetwork.outputs.subnetResourceIds[4]
       }
     ]
-    softDeleteRetentionInDays: 7
   }
 }
 
