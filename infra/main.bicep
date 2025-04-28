@@ -220,8 +220,8 @@ module cosmosDbAccount 'core/database/cosmos-account.bicep' = {
 }
 
 // Create Private DNS Zone for Azure AI Search to be used by Private Link using Azure Verified Module (AVM)
-module searchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1' = {
-  name: 'search-private-dns-zone'
+module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1' = {
+  name: 'ai-search-private-dns-zone'
   scope: rg
   params: {
     name: 'privatelink.search.windows.net'
