@@ -137,7 +137,7 @@ module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 }
 
 // Create a Key Vault with private endpoint in the Shared Services subnet using Azure Verified Module (AVM)
-module vault 'br/public:avm/res/key-vault/vault:0.12.1' = {
+module keyVault 'br/public:avm/res/key-vault/vault:0.12.1' = {
   name: 'keyVault'
   scope: rg
   params: {
@@ -163,7 +163,7 @@ module vault 'br/public:avm/res/key-vault/vault:0.12.1' = {
           ]
         }
         service: 'vault'
-        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[4].id
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[4]
       }
     ]
     softDeleteRetentionInDays: 7
