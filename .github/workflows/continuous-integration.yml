@@ -12,3 +12,6 @@ permissions:
 jobs:
   lint-and-publish-bicep:
     uses: ./.github/workflows/lint-and-publish-bicep.yml
+
+  build-and-publish-app:
+    uses: ./.github/workflows/build-and-publish-app.yml

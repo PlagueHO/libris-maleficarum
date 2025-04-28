@@ -8,7 +8,7 @@ on:
       - v*
 
   workflow_dispatch:
-  
+
 permissions:
   id-token: write
   contents: read
@@ -21,6 +21,9 @@ jobs:
 
   lint-and-publish-bicep:
     uses: ./.github/workflows/lint-and-publish-bicep.yml
+
+  build-and-publish-app:
+    uses: ./.github/workflows/build-and-publish-app.yml
 
   validate-infrastructure-test:
     needs:
@@ -36,7 +39,7 @@ jobs:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-  
+
   deploy-infrastructure-test:
     needs:
       - set-build-variables
@@ -50,4 +53,4 @@ jobs:
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}     
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
