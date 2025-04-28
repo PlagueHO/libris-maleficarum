@@ -1,0 +1,43 @@
+name: Deploy React App to Azure Static Web App
+
+on:
+  workflow_call:
+    inputs:
+      BUILD_ARTIFACT_NAME:
+        description: "Name of the build artifact produced by build workflow"
+        required: true
+        type: string
+      STATIC_WEB_APP_NAME:
+        description: "Azure Static Web App resource name"
+        required: true
+        type: string
+    secrets:
+      AZURE_STATIC_WEB_APPS_API_TOKEN:
+        description: "Deployment token for the target Static Web App"
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download React build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.BUILD_ARTIFACT_NAME }}
+          path: app
+
+      - name: Deploy to Azure Static Web Apps
+        id: swa-deploy
+        uses: azure/static-web-apps-deploy@v2
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          sku: "Standard"
+          app_location: "app" # path where artifact was extracted
+          api_location: ""
+          skip_app_build: true
+          production_branch: "main"
+          # The action deduces the SWA from the token; STATIC_WEB_APP_NAME kept for clarity/logging
+          output_location: "app" # already built
+
+      - name: Log deployment status
+        run: echo "Deployment complete for ${{ inputs.STATIC_WEB_APP_NAME }}"
