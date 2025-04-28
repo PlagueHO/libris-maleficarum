@@ -213,7 +213,6 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.19.0' = {
     enableHierarchicalNamespace: false
     enableNfsV3: false
     enableSftp: false
-    fileServices: {}
     largeFileSharesState: 'Enabled'
     location: location
     managedIdentities: {
@@ -233,10 +232,8 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.19.0' = {
         tags: tags
       }
     ]
-    queueServices: {}
     sasExpirationPeriod: '180.00:00:00'
     skuName: 'Standard_LRS'
-    tableServices: {}
     tags: tags
   }
 }
