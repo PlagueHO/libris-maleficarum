@@ -90,7 +90,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 
 // Create the Log Analytics workspace using Azure Verified Module (AVM)
 module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.11.1' = {
-  name: 'logAnalyticsWorkspace'
+  name: 'logAnalytics-workspace-deployment'
   scope: rg
   params: {
     name: logAnalyticsName
@@ -101,7 +101,7 @@ module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
 
 // Create the Application Insights resource using Azure Verified Module (AVM)
 module applicationInsights 'br/public:avm/res/insights/component:0.6.0' = {
-  name: 'applicationInsights'
+  name: 'application-insights-deployment'
   scope: rg
   params: {
     name: applicationInsightsName
@@ -113,7 +113,7 @@ module applicationInsights 'br/public:avm/res/insights/component:0.6.0' = {
 
 // Create the Virtual Network and subnets using Azure Verified Modules (AVM)
 module virtualNetwork 'br/public:avm/res/network/virtual-network:0.6.1' = {
-  name: 'virtualNetwork'
+  name: 'virtual-network-deployment'
   scope: rg
   params: {
     name: virtualNetworkName
@@ -128,20 +128,23 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.6.1' = {
 
 // Create the Private DNS Zone for the Key Vault to be used by Private Link using Azure Verified Module (AVM)
 module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1' = {
-  name: 'keyvault-private-dns-zone'
+  name: 'keyvault-private-dns-zone-deployment'
   scope: rg
   params: {
     name: 'privatelink.vaultcore.azure.net'
     location: 'global'
+    tags: tags
   }
 }
 
 // Create a Key Vault with private endpoint in the Shared Services subnet using Azure Verified Module (AVM)
 module keyVault 'br/public:avm/res/key-vault/vault:0.12.1' = {
-  name: 'keyVault'
+  name: 'keyvault'
   scope: rg
   params: {
     name: keyVaultName
+    location: location
+    tags: tags
     diagnosticSettings: [
       {
         workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
@@ -167,13 +170,12 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.12.1' = {
       }
     ]
     softDeleteRetentionInDays: 7
-    tags: tags
   }
 }
 
 // Create Private DNS Zone for the Storage Account blob service to be used by Private Link using Azure Verified Module (AVM)
 module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1' = {
-  name: 'storage-blobservice-private-dns-zone'
+  name: 'storage-blobservice-private-dns-zone-deployment'
   scope: rg
   params: {
     name: 'privatelink.blob.${environment().suffixes.storage}'
@@ -184,7 +186,7 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7
 
 // Create a Storage Account with private endpoint in the SharedServices subnet
 module storageAccount 'core/storage/storage-account.bicep' = {
-  name: 'storage-account'
+  name: 'storage-account-deployment'
   scope: rg
   params: {
     name: storageAccounName
@@ -213,7 +215,7 @@ module storageAccount 'core/storage/storage-account.bicep' = {
 
 // Create Private DNS Zone for the Cosmos DB account to be used by Private Link using Azure Verified Module (AVM)
 module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1' = {
-  name: 'cosmosdb-private-dns-zone'
+  name: 'cosmosdb-private-dns-zone-deployment'
   scope: rg
   params: {
     name: 'privatelink.documents.azure.com'
@@ -223,18 +225,45 @@ module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 }
 
 // Create a Cosmos DB account with private endpoint in the AppStorage subnet
-module cosmosDbAccount 'core/database/cosmos-account.bicep' = {
-  name: 'cosmos-db-account'
+
+module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.13.0' = {
+  name: 'cosmos-db-account-deployment'
   scope: rg
   params: {
     name: cosmosDbAccountName
     location: location
     tags: tags
-    keyVaultName: keyVaultName
-    kind: 'GlobalDocumentDB'
-    enablePrivateEndpoint: true
-    privateEndpointVnetName: virtualNetworkName
-    privateEndpointSubnetName: 'AppStorage'
+    automaticFailover: true
+    diagnosticSettings: [
+      {
+        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+      }
+    ]
+    disableKeyBasedMetadataWriteAccess: true
+    disableLocalAuth: true
+    minimumTlsVersion: 'Tls12'
+    networkRestrictions: {
+      networkAclBypass: 'None'
+      publicNetworkAccess: 'Disabled'
+    }
+    privateEndpoints: [
+      {
+        privateDnsZoneGroup: {
+          privateDnsZoneGroupConfigs: [
+            {
+              privateDnsZoneResourceId: cosmosDbPrivateDnsZone.outputs.resourceId
+            }
+          ]
+        }
+        service: 'Sql'
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[2]
+      }
+    ]
+    sqlDatabases: [
+      {
+        name: 'no-containers-specified'
+      }
+    ]
   }
 }
 
