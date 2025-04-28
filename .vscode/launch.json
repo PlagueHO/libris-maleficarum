@@ -16,7 +16,7 @@
       "cwd": "${workspaceFolder}/libris-maleficarum-app",
       "skipFiles": ["<node_internals>/**"],
       "console": "integratedTerminal",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": ["run", "dev"]
     }
   ]
