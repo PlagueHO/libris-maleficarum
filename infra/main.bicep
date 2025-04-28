@@ -72,7 +72,7 @@ var subnets = [
     addressPrefix: '10.0.3.0/24'
   }
   {
-    // Shared Services Subnet (key vaults, monitoring, etc.)
+    // Shared Services Subnet (key vaults, etc.)
     name: 'SharedServices'
     addressPrefix: '10.0.4.0/24'
   }
@@ -186,7 +186,7 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7
   }
 }
 
-// Create a Storage Account with private endpoint in the SharedServices subnet using Azure Verified Module (AVM)
+// Create a Storage Account with private endpoint in the AppStorage subnet using Azure Verified Module (AVM)
 module storageAccount 'br/public:avm/res/storage/storage-account:0.19.0' = {
   name: 'storage-account-deployment'
   scope: rg
@@ -252,7 +252,7 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.19.0' = {
           ]
         }
         service: 'blob'
-        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[4]
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[2]
         tags: tags
       }
     ]
@@ -367,7 +367,7 @@ module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 }
 
 // Create Azure AI Search service with private endpoint in the AiServices subnet using Azure Verified Module (AVM)
-module searchService 'br/public:avm/res/search/search-service:0.9.2' = {
+module aiSearchService 'br/public:avm/res/search/search-service:0.9.2' = {
   name: 'ai-search-service-deployment'
   scope: rg
   params: {
@@ -416,7 +416,7 @@ module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.
 }
 
 // Create Azure AI Services instance with private endpoint in the AiServices subnet using Azure Verified Module (AVM)
-module account 'br/public:avm/res/cognitive-services/account:0.10.2' = {
+module aiServicesAccount 'br/public:avm/res/cognitive-services/account:0.10.2' = {
   name: 'ai-services-account-deployment'
   scope: rg
   params: {
