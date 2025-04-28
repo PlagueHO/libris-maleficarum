@@ -197,17 +197,6 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.19.0' = {
       automaticSnapshotPolicyEnabled: false
       containerDeleteRetentionPolicyEnabled: false
       deleteRetentionPolicyEnabled: false
-      diagnosticSettings: [
-        {
-          metricCategories: [
-            {
-              category: 'AllMetrics'
-            }
-          ]
-          name: sendTologAnalyticsCustomSettingName
-          workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
-        }
-      ]
       lastAccessTimeTrackingPolicyEnabled: true
     }
     diagnosticSettings: [
@@ -224,19 +213,7 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.19.0' = {
     enableHierarchicalNamespace: false
     enableNfsV3: false
     enableSftp: false
-    fileServices: {
-      diagnosticSettings: [
-        {
-          metricCategories: [
-            {
-              category: 'AllMetrics'
-            }
-          ]
-          name: sendTologAnalyticsCustomSettingName
-          workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
-        }
-      ]
-    }
+    fileServices: {}
     largeFileSharesState: 'Enabled'
     location: location
     managedIdentities: {
@@ -256,34 +233,10 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.19.0' = {
         tags: tags
       }
     ]
-    queueServices: {
-      diagnosticSettings: [
-        {
-          metricCategories: [
-            {
-              category: 'AllMetrics'
-            }
-          ]
-          name: sendTologAnalyticsCustomSettingName
-          workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
-        }
-      ]
-    }
+    queueServices: {}
     sasExpirationPeriod: '180.00:00:00'
     skuName: 'Standard_LRS'
-    tableServices: {
-      diagnosticSettings: [
-        {
-          metricCategories: [
-            {
-              category: 'AllMetrics'
-            }
-          ]
-          name: sendTologAnalyticsCustomSettingName
-          workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
-        }
-      ]
-    }
+    tableServices: {}
     tags: tags
   }
 }
