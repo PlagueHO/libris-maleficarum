@@ -25,9 +25,6 @@ param resourceGroupName string = ''
 @description('Should an Azure Bastion be created?')
 param createBastionHost bool = false
 
-@description('SKU for the Static Web App.')
-param staticWebAppSku string = 'Standard'
-
 var abbrs = loadJsonContent('./abbreviations.json')
 
 // tags that should be applied to all resources.
@@ -42,11 +39,16 @@ var tags = {
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 
 var logAnalyticsName = '${abbrs.operationalInsightsWorkspaces}${environmentName}'
+var sendTologAnalyticsCustomSettingName = 'send-to-${logAnalyticsName}'
 var applicationInsightsName = '${abbrs.insightsComponents}${environmentName}'
 var virtualNetworkName = '${abbrs.networkVirtualNetworks}${environmentName}'
 var storageAccounName = toLower(replace('${abbrs.storageStorageAccounts}${environmentName}', '-', ''))
 var keyVaultName = toLower(replace('${abbrs.keyVaultVaults}${environmentName}', '-', ''))
 var cosmosDbAccountName = toLower(replace('${abbrs.cosmosDBAccounts}${environmentName}', '-', ''))
+var aiSearchName = '${abbrs.aiSearchSearchServices}${environmentName}'
+var aiServicesName = '${abbrs.aiServicesAccounts}${environmentName}'
+var bastionHostName = '${abbrs.networkBastionHosts}${environmentName}'
+var staticSiteName = toLower(replace('${abbrs.webStaticSites}${environmentName}', '-', ''))
 
 var subnets = [
   {
@@ -139,7 +141,7 @@ module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 
 // Create a Key Vault with private endpoint in the Shared Services subnet using Azure Verified Module (AVM)
 module keyVault 'br/public:avm/res/key-vault/vault:0.12.1' = {
-  name: 'keyvault'
+  name: 'keyvault-deployment'
   scope: rg
   params: {
     name: keyVaultName
@@ -184,32 +186,106 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7
   }
 }
 
-// Create a Storage Account with private endpoint in the SharedServices subnet
-module storageAccount 'core/storage/storage-account.bicep' = {
+// Create a Storage Account with private endpoint in the SharedServices subnet using Azure Verified Module (AVM)
+module storageAccount 'br/public:avm/res/storage/storage-account:0.19.0' = {
   name: 'storage-account-deployment'
   scope: rg
   params: {
     name: storageAccounName
-    location: location
-    tags: tags
-    accessTier: 'Hot'
     allowBlobPublicAccess: false
-    allowCrossTenantReplication: false
-    allowSharedKeyAccess: true
-    defaultToOAuthAuthentication: true
-    deleteRetentionPolicy: {
-      enabled: true
-      days: 7
+    blobServices: {
+      automaticSnapshotPolicyEnabled: false
+      containerDeleteRetentionPolicyEnabled: false
+      deleteRetentionPolicyEnabled: false
+      diagnosticSettings: [
+        {
+          metricCategories: [
+            {
+              category: 'AllMetrics'
+            }
+          ]
+          name: sendTologAnalyticsCustomSettingName
+          workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+        }
+      ]
+      lastAccessTimeTrackingPolicyEnabled: true
     }
-    dnsEndpointType: 'Standard'
-    isHnsEnabled: false
-    kind: 'StorageV2'
-    minimumTlsVersion: 'TLS1_2'
-    publicNetworkAccess: 'Disabled'
-    enablePrivateEndpoint: true
-    privateEndpointVnetName: virtualNetworkName
-    privateEndpointSubnetName: 'SharedServices'
-    logAnalyticsWorkspaceId: logAnalyticsWorkspace.outputs.resourceId
+    diagnosticSettings: [
+      {
+        metricCategories: [
+          {
+            category: 'AllMetrics'
+          }
+        ]
+        name: sendTologAnalyticsCustomSettingName
+        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+      }
+    ]
+    enableHierarchicalNamespace: false
+    enableNfsV3: false
+    enableSftp: false
+    fileServices: {
+      diagnosticSettings: [
+        {
+          metricCategories: [
+            {
+              category: 'AllMetrics'
+            }
+          ]
+          name: sendTologAnalyticsCustomSettingName
+          workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+        }
+      ]
+    }
+    largeFileSharesState: 'Enabled'
+    location: location
+    managedIdentities: {
+      systemAssigned: true
+    }
+    privateEndpoints: [
+      {
+        privateDnsZoneGroup: {
+          privateDnsZoneGroupConfigs: [
+            {
+              privateDnsZoneResourceId: storageBlobPrivateDnsZone.outputs.resourceId
+            }
+          ]
+        }
+        service: 'blob'
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[4]
+        tags: tags
+      }
+    ]
+    queueServices: {
+      diagnosticSettings: [
+        {
+          metricCategories: [
+            {
+              category: 'AllMetrics'
+            }
+          ]
+          name: sendTologAnalyticsCustomSettingName
+          workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+        }
+      ]
+    }
+    requireInfrastructureEncryption: true
+    sasExpirationPeriod: '180.00:00:00'
+    skuName: 'Standard_LRS'
+    tableServices: {
+      diagnosticSettings: [
+        {
+          metricCategories: [
+            {
+              category: 'AllMetrics'
+            }
+          ]
+          name: sendTologAnalyticsCustomSettingName
+          workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+        }
+      ]
+    }
+    tags: tags
   }
 }
 
@@ -224,7 +300,7 @@ module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
   }
 }
 
-// Create a Cosmos DB account with private endpoint in the AppStorage subnet
+// Create a Cosmos DB account with private endpoint in the AppStorage subnet using Azure Verified Module (AVM)
 
 module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.13.0' = {
   name: 'cosmos-db-account-deployment'
@@ -233,7 +309,18 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.13.0' =
     name: cosmosDbAccountName
     location: location
     tags: tags
-    automaticFailover: true
+    locations: [
+      {
+        failoverPriority: 0
+        isZoneRedundant: false
+        locationName: location
+      }
+    ]
+    automaticFailover: false
+    capabilitiesToAdd: [
+      'EnableServerless'
+    ]
+    databaseAccountOfferType: 'Standard'
     diagnosticSettings: [
       {
         workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
@@ -259,6 +346,7 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.13.0' =
         subnetResourceId: virtualNetwork.outputs.subnetResourceIds[2]
       }
     ]
+    backupStorageRedundancy: 'Local'
     sqlDatabases: [
       {
         name: 'no-containers-specified'
@@ -278,20 +366,41 @@ module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
   }
 }
 
-// Create Azure AI Search service with private endpoint in the AiServices subnet
-module aiSearchService 'core/search/ai-search-service.bicep' = {
-  name: 'ai-search-service'
+// Create Azure AI Search service with private endpoint in the AiServices subnet using Azure Verified Module (AVM)
+module searchService 'br/public:avm/res/search/search-service:0.9.2' = {
+  name: 'ai-search-service-deployment'
   scope: rg
   params: {
-    name: '${abbrs.aiSearchSearchServices}${environmentName}'
+    name: aiSearchName
     location: location
+    sku: 'standard'
+    semanticSearch: 'standard'
+    diagnosticSettings: [
+      {
+        metricCategories: [
+          {
+            category: 'AllMetrics'
+          }
+        ]
+        name: sendTologAnalyticsCustomSettingName
+        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+      }
+    ]
+    privateEndpoints: [
+      {
+        privateDnsZoneGroup: {
+          privateDnsZoneGroupConfigs: [
+            {
+              privateDnsZoneResourceId: aiSearchPrivateDnsZone.outputs.resourceId
+            }
+          ]
+        }
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[3]
+        tags: tags
+      }
+    ]
+    publicNetworkAccess: 'Disabled'
     tags: tags
-    sku: {
-      name: 'basic'
-    }
-    enablePrivateEndpoint: true
-    privateEndpointVnetName: virtualNetworkName
-    privateEndpointSubnetName: 'AiServices'
   }
 }
 
@@ -306,45 +415,62 @@ module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.
   }
 }
 
-// Create Azure AI Services instance with private endpoint in the AiServices subnet
-module aiServices 'core/ai/ai-services.bicep' = {
-  name: 'ai-services'
+// Create Azure AI Services instance with private endpoint in the AiServices subnet using Azure Verified Module (AVM)
+module account 'br/public:avm/res/cognitive-services/account:0.10.2' = {
+  name: 'ai-services-account-deployment'
   scope: rg
   params: {
-    name: '${abbrs.aiServicesAccounts}${environmentName}'
+    kind: 'AIServices'
+    name: aiServicesName
     location: location
-    tags: tags
-    enablePrivateEndpoint: true
-    privateEndpointVnetName: virtualNetworkName
-    privateEndpointSubnetName: 'AiServices'
+    sku: 'S0'
+    diagnosticSettings: [
+      {
+        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+      }
+    ]
+    privateEndpoints: [
+      {
+        privateDnsZoneGroup: {
+          privateDnsZoneGroupConfigs: [
+            {
+              privateDnsZoneResourceId: aiServicesPrivateDnsZone.outputs.resourceId
+            }
+          ]
+        }
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[3]
+        tags: tags
+      }
+    ]
+    publicNetworkAccess: 'Disabled'
   }
 }
 
-// Create a Static Web App for the application
-module staticWebApp 'core/host/staticwebapp.bicep' = {
-  name: 'static-web-app'
+// Create a Static Web App for the application using Azure Verified Module (AVM)
+module staticSite 'br/public:avm/res/web/static-site:0.9.0' = {
+  name: 'static-site-deployment'
   scope: rg
   params: {
-    name: '${abbrs.webStaticSites}${environmentName}'
+    name: staticSiteName
     location: location
+    allowConfigFileUpdates: true
+    enterpriseGradeCdnStatus: 'Disabled'
+    sku: 'Standard'
+    stagingEnvironmentPolicy: 'Enabled'
     tags: tags
-    sku: {
-      name: staticWebAppSku
-    }
   }
 }
 
-// Optional: Create an Azure Bastion host in the virtual network.
-module bastion 'core/networking/bastion-host.bicep' = if (createBastionHost) {
-  name: 'bastion-host'
+// Optional: Create an Azure Bastion host in the virtual network using Azure Verified Module (AVM)
+module bastionHost 'br/public:avm/res/network/bastion-host:0.6.1' = if (createBastionHost) {
+  name: 'bastion-host-deployment'
   scope: rg
   params: {
-    name: '${abbrs.networkBastionHosts}${environmentName}'
+    name: bastionHostName
     location: location
+    virtualNetworkResourceId: virtualNetwork.outputs.resourceId
+    skuName: 'Developer'
     tags: tags
-    virtualNetworkId: virtualNetwork.outputs.resourceId
-    publicIpName: '${abbrs.networkPublicIPAddresses}${abbrs.networkBastionHosts}${environmentName}'
-    publicIpSku: 'Standard'
   }
 }
 
@@ -355,4 +481,4 @@ output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 
 @description('The URI of the deployed static web app.')
-output STATIC_WEB_APP_URI string = staticWebApp.outputs.uri
+output STATIC_WEB_APP_URI string = staticSite.outputs.defaultHostname
