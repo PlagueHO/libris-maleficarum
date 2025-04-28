@@ -47,8 +47,9 @@ var keyVaultName = toLower(replace('${abbrs.keyVaultVaults}${environmentName}', 
 var cosmosDbAccountName = toLower(replace('${abbrs.cosmosDBAccounts}${environmentName}', '-', ''))
 var aiSearchName = '${abbrs.aiSearchSearchServices}${environmentName}'
 var aiServicesName = '${abbrs.aiServicesAccounts}${environmentName}'
-var bastionHostName = '${abbrs.networkBastionHosts}${environmentName}'
+var aiServicesCustomSubDomainName = toLower(replace(environmentName, '-', ''))
 var staticSiteName = toLower(replace('${abbrs.webStaticSites}${environmentName}', '-', ''))
+var bastionHostName = '${abbrs.networkBastionHosts}${environmentName}'
 
 var subnets = [
   {
@@ -422,6 +423,7 @@ module aiServicesAccount 'br/public:avm/res/cognitive-services/account:0.10.2' =
     kind: 'AIServices'
     name: aiServicesName
     location: location
+    customSubDomainName: aiServicesCustomSubDomainName
     sku: 'S0'
     diagnosticSettings: [
       {
