@@ -1,10 +1,11 @@
-name: Build and Publish React App
+name: Build and Publish Frontend App
 
 on:
   workflow_call:
 
 jobs:
-  build-and-publish:
+  build-and-publish-frontend-app:
+    name: Build and Publish Frontend App
     runs-on: ubuntu-latest
     defaults:
       run:

@@ -1,9 +1,13 @@
-name: continuous-integration
+name: Continuous Integration
 
 on:
   pull_request:
     branches:
       - main
+    paths:
+      - infra/**
+      - libris-maleficarum-app/**
+  workflow_dispatch:
 
 permissions:
   checks: write
@@ -11,7 +15,9 @@ permissions:
 
 jobs:
   lint-and-publish-bicep:
+    name: Lint and Publish Bicep
     uses: ./.github/workflows/lint-and-publish-bicep.yml
 
-  build-and-publish-app:
-    uses: ./.github/workflows/build-and-publish-app.yml
+  build-and-publish-frontend-app:
+    name: Build and Publish Frontend App
+    uses: ./.github/workflows/build-and-publish-frontend.yml

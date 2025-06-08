@@ -1,4 +1,4 @@
-name: deploy-infrastructure
+name: Provision Infrastructure
 
 on:
   workflow_call:

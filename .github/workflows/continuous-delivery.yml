@@ -1,4 +1,4 @@
-name: continuous-deployment
+name: Continuous Delivery
 
 on:
   push:
@@ -6,6 +6,9 @@ on:
       - main
     tags:
       - v*
+    paths:
+      - infra/**
+      - libris-maleficarum-app/**
 
   workflow_dispatch:
 
@@ -17,15 +20,19 @@ permissions:
 
 jobs:
   set-build-variables:
+    name: Set Build Variables
     uses: ./.github/workflows/set-build-variables.yml
 
   lint-and-publish-bicep:
+    name: Lint and Publish Bicep
     uses: ./.github/workflows/lint-and-publish-bicep.yml
 
-  build-and-publish-app:
-    uses: ./.github/workflows/build-and-publish-app.yml
+  build-and-publish-frontend-app:
+    name: Build and Publish Frontend App
+    uses: ./.github/workflows/build-and-publish-frontend-app.yml
 
-  validate-infrastructure-test:
+  validate-infrastructure:
+    name: Validate Infrastructure
     needs:
       - set-build-variables
       - lint-and-publish-bicep
@@ -34,36 +41,34 @@ jobs:
       ENVIRONMENT: Test
       BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_ENV_NAME: ${{ format('gaidbexp-{0}', github.run_id) }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-
-  deploy-infrastructure-test:
+  e2e-test-v1:
     needs:
       - set-build-variables
-      - validate-infrastructure-test
-    uses: ./.github/workflows/deploy-infrastructure.yml
+      - validate-infrastructure
+    strategy:
+      max-parallel: 1
+      matrix:
+        include:
+          - name: public
+            AZURE_NETWORK_ISOLATION: "false"
+            DEPLOY_SAMPLE_OPENAI_MODELS: "true"
+          - name: isolated
+            AZURE_NETWORK_ISOLATION: "true"
+            DEPLOY_SAMPLE_OPENAI_MODELS: "false"
+
+    name: E2E Test
+    uses: ./.github/workflows/e2e-test.yml
     with:
       ENVIRONMENT: Test
       BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_ENV_NAME: ${{ format('aifjv1-{0}-{1}', matrix.name, github.run_id) }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-
-  publish-static-webapp:
-    name: Publish React App to Static Web App
-    needs:
-      - set-build-variables
-      - build-and-publish-app
-      - deploy-infrastructure-test
-    uses: ./.github/workflows/deploy-app.yml
-    with:
-      BUILD_ARTIFACT_NAME: libris-maleficanum-app
-      STATIC_WEB_APP_NAME: ${{ needs.deploy-infrastructure-test.outputs.STATIC_WEB_APP_NAME }}
-    secrets:
-      AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ needs.deploy-infrastructure-test.outputs.STATIC_WEB_APP_TOKEN }}

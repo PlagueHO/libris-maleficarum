@@ -1,4 +1,4 @@
-name: validate-infrastructure
+name: Validate Infrastructure
 
 on:
   workflow_call:
@@ -30,7 +30,7 @@ on:
       AZURE_CLIENT_ID:
         description: "The Azure client ID to use for authentication to Azure for deployment"
         required: true
-  
+
 jobs:
   validate-infrastructure:
     name: Validate Infrastructure ${{ inputs.ENVIRONMENT }}
