@@ -31,57 +31,41 @@ on:
         description: "The Azure client ID to use for authentication to Azure for deployment"
         required: true
 
-    outputs:
-      STATIC_WEB_APP_NAME:
-        description: "Name of the Azure Static Web App resource"
-        value: ${{ jobs.deploy-infrastructure.outputs.STATIC_WEB_APP_NAME }}
-      STATIC_WEB_APP_TOKEN:
-        description: "Deployment token for Azure Static Web App"
-        value: ${{ jobs.deploy-infrastructure.outputs.STATIC_WEB_APP_TOKEN }}
-
 jobs:
-  deploy-infrastructure:
-    name: Deploy Infrastructure ${{ inputs.ENVIRONMENT }}
-    environment: ${{ inputs.ENVIRONMENT }}
+  provision-infrastructure:
+    name: Provision Infrastructure ${{ inputs.ENVIRONMENT }}
     runs-on: ubuntu-latest
+    environment: ${{ inputs.ENVIRONMENT }}
+    env:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ inputs.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
+      AZURE_PRINCIPAL_ID_TYPE: "ServicePrincipal"
+
     outputs:
-      STATIC_WEB_APP_NAME: ${{ steps.set-deploy-outputs.outputs.static_web_app_name }}
-      STATIC_WEB_APP_TOKEN: ${{ steps.set-deploy-outputs.outputs.static_web_app_token }}
+      STATIC_WEB_APP_URI: ${{ steps.get_endpoints.outputs.STATIC_WEB_APP_URI }}
 
     steps:
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      - name: Install azd
+        uses: Azure/setup-azd@v2.1.0
 
-      - name: Deploy Azure Infrastructure
-        id: deploy-azure-infrastructure
-        uses: azure/bicep-deploy@v2
-        with:
-          type: deployment
-          operation: create
-          name: ${{ inputs.AZURE_ENV_NAME }}-${{inputs.AZURE_LOCATION}}-${{ inputs.ENVIRONMENT }}-${{ github.action_ref }}-${{ github.run_number }}
-          scope: subscription
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          location: ${{ inputs.AZURE_LOCATION }}
-          template-file: ./infrastructure_bicep/main.bicep
-          parameters: >
-            {
-              "location": "${{ inputs.AZURE_LOCATION }}",
-              "environmentName": "${{ inputs.AZURE_ENV_NAME }}"
-            }
-
-      - name: Display Deployment Outputs
+      - name: Authenticate azd (Federated Credentials)
         run: |
-          echo "AZURE_LOCATION: ${{ steps.deploy-azure-infrastructure.outputs.AZURE_LOCATION }}"
-          echo "AZURE_TENANT_ID: ${{ steps.deploy-azure-infrastructure.outputs.AZURE_TENANT_ID }}"
-      - name: Set job outputs
-        id: set-deploy-outputs
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider "github" \
+            --tenant-id "$AZURE_TENANT_ID"
+
+      - name: Provision Infrastructure
+        run: azd provision --no-prompt
+
+      - name: Get Output Endpoints
+        id: get_endpoints
         run: |
-          echo "static_web_app_name=${{ steps.deploy-azure-infrastructure.outputs.staticWebAppName }}" >> $GITHUB_OUTPUT
-          echo "static_web_app_token=${{ steps.deploy-azure-infrastructure.outputs.staticWebAppApiToken }}" >> $GITHUB_OUTPUT
+          STATIC_WEB_APP_URI=$(azd env get-values | grep STATIC_WEB_APP_URI | cut -d'=' -f2- | xargs)
+          echo "STATIC_WEB_APP_URI=$STATIC_WEB_APP_URI" >> $GITHUB_OUTPUT
