@@ -92,7 +92,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 }
 
 // Create the Log Analytics workspace using Azure Verified Module (AVM)
-module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.11.1' = {
+module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.11.2' = {
   name: 'logAnalytics-workspace-deployment'
   scope: rg
   params: {
@@ -115,7 +115,7 @@ module applicationInsights 'br/public:avm/res/insights/component:0.6.0' = {
 }
 
 // Create the Virtual Network and subnets using Azure Verified Modules (AVM)
-module virtualNetwork 'br/public:avm/res/network/virtual-network:0.6.1' = {
+module virtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0' = {
   name: 'virtual-network-deployment'
   scope: rg
   params: {
@@ -141,7 +141,7 @@ module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 }
 
 // Create a Key Vault with private endpoint in the Shared Services subnet using Azure Verified Module (AVM)
-module keyVault 'br/public:avm/res/key-vault/vault:0.12.1' = {
+module keyVault 'br/public:avm/res/key-vault/vault:0.13.0' = {
   name: 'keyvault-deployment'
   scope: rg
   params: {
@@ -187,7 +187,7 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7
 }
 
 // Create a Storage Account with private endpoint in the AppStorage subnet using Azure Verified Module (AVM)
-module storageAccount 'br/public:avm/res/storage/storage-account:0.19.0' = {
+module storageAccount 'br/public:avm/res/storage/storage-account:0.20.0' = {
   name: 'storage-account-deployment'
   scope: rg
   params: {
@@ -251,14 +251,14 @@ module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 
 // Create a Cosmos DB account with private endpoint in the AppStorage subnet using Azure Verified Module (AVM)
 
-module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.13.0' = {
+module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.15.0' = {
   name: 'cosmos-db-account-deployment'
   scope: rg
   params: {
     name: cosmosDbAccountName
     location: location
     tags: tags
-    locations: [
+    failoverLocations: [
       {
         failoverPriority: 0
         isZoneRedundant: false
@@ -276,7 +276,7 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.13.0' =
       }
     ]
     disableKeyBasedMetadataWriteAccess: true
-    disableLocalAuth: true
+    disableLocalAuthentication: true
     minimumTlsVersion: 'Tls12'
     networkRestrictions: {
       networkAclBypass: 'None'
@@ -316,7 +316,7 @@ module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 }
 
 // Create Azure AI Search service with private endpoint in the AiServices subnet using Azure Verified Module (AVM)
-module aiSearchService 'br/public:avm/res/search/search-service:0.9.2' = {
+module aiSearchService 'br/public:avm/res/search/search-service:0.10.0' = {
   name: 'ai-search-service-deployment'
   scope: rg
   params: {
@@ -365,7 +365,7 @@ module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.
 }
 
 // Create Azure AI Services instance with private endpoint in the AiServices subnet using Azure Verified Module (AVM)
-module aiServicesAccount 'br/public:avm/res/cognitive-services/account:0.10.2' = {
+module aiServicesAccount 'br/public:avm/res/cognitive-services/account:0.11.0' = {
   name: 'ai-services-account-deployment'
   scope: rg
   params: {
