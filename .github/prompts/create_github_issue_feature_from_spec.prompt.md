@@ -1,7 +1,7 @@
 ---
-mode: "agent"
-description: "Create a GitHub Issue for a feature request using the GitHub Issue template feature_request.yml from a specification file."
-tools: ["codebase", "filesystem", "github", "websearch"]
+mode: 'agent'
+description: 'Create a GitHub Issue for a feature request using the GitHub Issue template feature_request.yml from a specification file.'
+tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'githubRepo', 'openSimpleBrowser', 'problems', 'runTasks', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI']
 ---
 
 Create a GitHub Issue in this GitHub repo using the `create_issue` tool for a feature request to implement the specification in the spec file [${input:SpecFile}](../spec/${input:SpecFile}) using the GitHub Issue template [feature_request.yml](../ISSUE_TEMPLATE/feature_request.yml).

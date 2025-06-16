@@ -1,7 +1,7 @@
 ---
-mode: "agent"
-description: "Create a new specification file for the solution, optimized for Generative AI consumption"
-tools: ["codebase", "filesystem", "github"]
+mode: 'agent'
+description: 'Create a new specification file for the solution, optimized for Generative AI consumption'
+tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'githubRepo', 'openSimpleBrowser', 'problems', 'runTasks', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI']
 ---
 
 Your goal is to create a new specification file for `${input:SpecPurpose}` for this application Libris Maleficarnum, which is a world-building and narrative generation tool.
