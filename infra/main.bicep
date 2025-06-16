@@ -14,10 +14,9 @@ param environmentName string
 param location string
 
 // Optional parameters to override the default azd resource naming conventions.
-// Add the following to main.parameters.json to provide values:
-// "resourceGroupName": {
-//      "value": "myGroupName"
-// }
+// Add the following to main.bicepparam to provide values:
+// param resourceGroupName = readEnvironmentVariable('AZURE_RESOURCE_GROUP', 'myGroupName')
+//
 @description('Name of the resource group to create.')
 param resourceGroupName string = ''
 
@@ -84,17 +83,21 @@ var subnets = [
   }
 ]
 
-// Organize resources in a resource group
-resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
-  location: location
-  tags: tags
+// Organize resources in a resource group using Azure Verified Module (AVM)
+module rg 'br/public:avm/res/resources/resource-group:0.4.1' = {
+  name: 'resource-group-deployment'
+  scope: subscription()
+  params: {
+    name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
+    location: location
+    tags: tags
+  }
 }
 
 // Create the Log Analytics workspace using Azure Verified Module (AVM)
 module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.11.2' = {
   name: 'logAnalytics-workspace-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: logAnalyticsName
     location: location
@@ -105,7 +108,7 @@ module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
 // Create the Application Insights resource using Azure Verified Module (AVM)
 module applicationInsights 'br/public:avm/res/insights/component:0.6.0' = {
   name: 'application-insights-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: applicationInsightsName
     location: location
@@ -117,7 +120,7 @@ module applicationInsights 'br/public:avm/res/insights/component:0.6.0' = {
 // Create the Virtual Network and subnets using Azure Verified Modules (AVM)
 module virtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0' = {
   name: 'virtual-network-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: virtualNetworkName
     location: location
@@ -132,7 +135,7 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0' = {
 // Create the Private DNS Zone for the Key Vault to be used by Private Link using Azure Verified Module (AVM)
 module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1' = {
   name: 'keyvault-private-dns-zone-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: 'privatelink.vaultcore.azure.net'
     location: 'global'
@@ -143,7 +146,7 @@ module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 // Create a Key Vault with private endpoint in the Shared Services subnet using Azure Verified Module (AVM)
 module keyVault 'br/public:avm/res/key-vault/vault:0.13.0' = {
   name: 'keyvault-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: keyVaultName
     location: location
@@ -178,7 +181,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.13.0' = {
 // Create Private DNS Zone for the Storage Account blob service to be used by Private Link using Azure Verified Module (AVM)
 module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1' = {
   name: 'storage-blobservice-private-dns-zone-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: 'privatelink.blob.${environment().suffixes.storage}'
     location: 'global'
@@ -189,7 +192,7 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7
 // Create a Storage Account with private endpoint in the AppStorage subnet using Azure Verified Module (AVM)
 module storageAccount 'br/public:avm/res/storage/storage-account:0.20.0' = {
   name: 'storage-account-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: storageAccounName
     allowBlobPublicAccess: false
@@ -241,7 +244,7 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.20.0' = {
 // Create Private DNS Zone for the Cosmos DB account to be used by Private Link using Azure Verified Module (AVM)
 module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1' = {
   name: 'cosmosdb-private-dns-zone-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: 'privatelink.documents.azure.com'
     location: 'global'
@@ -253,7 +256,7 @@ module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 
 module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.15.0' = {
   name: 'cosmos-db-account-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: cosmosDbAccountName
     location: location
@@ -307,7 +310,7 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.15.0' =
 // Create Private DNS Zone for Azure AI Search to be used by Private Link using Azure Verified Module (AVM)
 module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1' = {
   name: 'ai-search-private-dns-zone'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: 'privatelink.search.windows.net'
     location: 'global'
@@ -318,7 +321,7 @@ module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 // Create Azure AI Search service with private endpoint in the AiServices subnet using Azure Verified Module (AVM)
 module aiSearchService 'br/public:avm/res/search/search-service:0.10.0' = {
   name: 'ai-search-service-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: aiSearchName
     location: location
@@ -356,7 +359,7 @@ module aiSearchService 'br/public:avm/res/search/search-service:0.10.0' = {
 // Create Private DNS Zone for Azure AI Services to be used by Private Link using Azure Verified Module (AVM)
 module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1' = {
   name: 'ai-services-private-dns-zone'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: 'privatelink.cognitiveservices.azure.com'
     location: 'global'
@@ -367,7 +370,7 @@ module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.
 // Create Azure AI Services instance with private endpoint in the AiServices subnet using Azure Verified Module (AVM)
 module aiServicesAccount 'br/public:avm/res/cognitive-services/account:0.11.0' = {
   name: 'ai-services-account-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     kind: 'AIServices'
     name: aiServicesName
@@ -399,7 +402,7 @@ module aiServicesAccount 'br/public:avm/res/cognitive-services/account:0.11.0' =
 // Create a Static Web App for the application using Azure Verified Module (AVM)
 module staticSite 'br/public:avm/res/web/static-site:0.9.0' = {
   name: 'static-site-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: staticSiteName
     location: location
@@ -414,7 +417,7 @@ module staticSite 'br/public:avm/res/web/static-site:0.9.0' = {
 // Optional: Create an Azure Bastion host in the virtual network using Azure Verified Module (AVM)
 module bastionHost 'br/public:avm/res/network/bastion-host:0.6.1' = if (createBastionHost) {
   name: 'bastion-host-deployment'
-  scope: rg
+  scope: resourceGroup(rg.name)
   params: {
     name: bastionHostName
     location: location
@@ -426,6 +429,9 @@ module bastionHost 'br/public:avm/res/network/bastion-host:0.6.1' = if (createBa
 
 @description('The Azure region where resources are deployed.')
 output AZURE_LOCATION string = location
+
+@description('The name of the resource group.')
+output AZURE_RESOURCE_GROUP string = rg.outputs.name
 
 @description('The Azure Active Directory tenant ID.')
 output AZURE_TENANT_ID string = tenant().tenantId
