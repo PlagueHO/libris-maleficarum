@@ -45,39 +45,42 @@ var storageAccounName = toLower(replace('${abbrs.storageStorageAccounts}${enviro
 var keyVaultName = toLower(replace('${abbrs.keyVaultVaults}${environmentName}', '-', ''))
 var cosmosDbAccountName = toLower(replace('${abbrs.cosmosDBAccounts}${environmentName}', '-', ''))
 var aiSearchName = '${abbrs.aiSearchSearchServices}${environmentName}'
-var aiServicesName = '${abbrs.aiServicesAccounts}${environmentName}'
-var aiServicesCustomSubDomainName = toLower(replace(environmentName, '-', ''))
+var aiFoundryName = '${abbrs.aiServicesAccounts}${environmentName}'
+var aiFoundryCustomSubDomainName = toLower(replace(environmentName, '-', ''))
 var staticSiteName = toLower(replace('${abbrs.webStaticSites}${environmentName}', '-', ''))
 var bastionHostName = '${abbrs.networkBastionHosts}${environmentName}'
+var containerAppsEnvironmentName = '${abbrs.appManagedEnvironments}${environmentName}'
 
-var subnets = [
-  {
-    // Default subnet (generally not used)
-    name: 'Default'
-    addressPrefix: '10.0.0.0/24'
-  }
-  {
-    // Azure Container App Services Subnet
-    name: 'AppServices'
+var subnets = [  {
+    // Frontend subnet for frontend applications and static web apps
+    name: 'frontend'
     addressPrefix: '10.0.1.0/24'
+    networkSecurityGroupResourceId: frontendNsg.outputs.resourceId
   }
   {
-    // App Storage Subnet (storage acconts, databases etc.)
-    name: 'AppStorage'
+    // Backend subnet for backend services and databases
+    name: 'backend'
     addressPrefix: '10.0.2.0/24'
+    networkSecurityGroupResourceId: backendNsg.outputs.resourceId
+    privateEndpointNetworkPolicies: 'Enabled'
+    privateLinkServiceNetworkPolicies: 'Enabled'
   }
   {
-    // Azure AI Services Subnet (AI Search, AI Services, etc.)
-    name: 'AiServices'
+    // Gateway subnet for application gateways and load balancers
+    name: 'gateway'
     addressPrefix: '10.0.3.0/24'
+    networkSecurityGroupResourceId: gatewayNsg.outputs.resourceId
   }
   {
-    // Shared Services Subnet (key vaults, etc.)
-    name: 'SharedServices'
+    // Shared subnet for shared services like Key Vault, monitoring
+    name: 'shared'
     addressPrefix: '10.0.4.0/24'
+    networkSecurityGroupResourceId: sharedNsg.outputs.resourceId
+    privateEndpointNetworkPolicies: 'Enabled'
+    privateLinkServiceNetworkPolicies: 'Enabled'
   }
   {
-    // Bastion Gateway Subnet
+    // Bastion Gateway Subnet (required name for Azure Bastion)
     name: 'AzureBastionSubnet'
     addressPrefix: '10.0.255.0/27'
   }
@@ -140,10 +143,15 @@ module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
     name: 'privatelink.vaultcore.azure.net'
     location: 'global'
     tags: tags
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: virtualNetwork.outputs.resourceId
+      }
+    ]
   }
 }
 
-// Create a Key Vault with private endpoint in the Shared Services subnet using Azure Verified Module (AVM)
+// Create a Key Vault with private endpoint in the shared subnet using Azure Verified Module (AVM)
 module keyVault 'br/public:avm/res/key-vault/vault:0.13.0' = {
   name: 'keyvault-deployment'
   scope: resourceGroup(rg.name)
@@ -172,9 +180,45 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.13.0' = {
           ]
         }
         service: 'vault'
-        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[4]
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[3] // shared subnet
       }
     ]
+  }
+}
+
+// Create a Static Web App for the application using Azure Verified Module (AVM)
+module staticSite 'br/public:avm/res/web/static-site:0.9.0' = {
+  name: 'static-site-deployment'
+  scope: resourceGroup(rg.name)
+  params: {
+    name: staticSiteName
+    location: location
+    allowConfigFileUpdates: true
+    enterpriseGradeCdnStatus: 'Disabled'
+    sku: 'Standard'
+    stagingEnvironmentPolicy: 'Enabled'
+    tags: tags
+  }
+}
+
+// Create Azure Container Apps Environment in the frontend subnet using Azure Verified Module (AVM)
+module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.11.2' = {
+  name: 'container-apps-environment-deployment'
+  scope: resourceGroup(rg.name)
+  params: {
+    name: containerAppsEnvironmentName
+    location: location
+    tags: tags
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logAnalyticsWorkspace.outputs.logAnalyticsWorkspaceId
+        sharedKey: logAnalyticsWorkspace.outputs.primarySharedKey
+      }
+    }
+    infrastructureSubnetResourceId: virtualNetwork.outputs.subnetResourceIds[0] // frontend subnet
+    internal: true
+    zoneRedundant: false
   }
 }
 
@@ -186,10 +230,15 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7
     name: 'privatelink.blob.${environment().suffixes.storage}'
     location: 'global'
     tags: tags
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: virtualNetwork.outputs.resourceId
+      }
+    ]
   }
 }
 
-// Create a Storage Account with private endpoint in the AppStorage subnet using Azure Verified Module (AVM)
+// Create a Storage Account with private endpoint in the backend subnet using Azure Verified Module (AVM)
 module storageAccount 'br/public:avm/res/storage/storage-account:0.20.0' = {
   name: 'storage-account-deployment'
   scope: resourceGroup(rg.name)
@@ -231,7 +280,7 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.20.0' = {
           ]
         }
         service: 'blob'
-        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[2]
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[1] // backend subnet
         tags: tags
       }
     ]
@@ -249,11 +298,15 @@ module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
     name: 'privatelink.documents.azure.com'
     location: 'global'
     tags: tags
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: virtualNetwork.outputs.resourceId
+      }
+    ]
   }
 }
 
-// Create a Cosmos DB account with private endpoint in the AppStorage subnet using Azure Verified Module (AVM)
-
+// Create a Cosmos DB account with private endpoint in the backend subnet using Azure Verified Module (AVM)
 module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.15.0' = {
   name: 'cosmos-db-account-deployment'
   scope: resourceGroup(rg.name)
@@ -295,7 +348,7 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.15.0' =
           ]
         }
         service: 'Sql'
-        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[2]
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[1] // backend subnet
       }
     ]
     backupStorageRedundancy: 'Local'
@@ -315,10 +368,15 @@ module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
     name: 'privatelink.search.windows.net'
     location: 'global'
     tags: tags
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: virtualNetwork.outputs.resourceId
+      }
+    ]
   }
 }
 
-// Create Azure AI Search service with private endpoint in the AiServices subnet using Azure Verified Module (AVM)
+// Create Azure AI Search service with private endpoint in the shared subnet using Azure Verified Module (AVM)
 module aiSearchService 'br/public:avm/res/search/search-service:0.10.0' = {
   name: 'ai-search-service-deployment'
   scope: resourceGroup(rg.name)
@@ -341,13 +399,12 @@ module aiSearchService 'br/public:avm/res/search/search-service:0.10.0' = {
     privateEndpoints: [
       {
         privateDnsZoneGroup: {
-          privateDnsZoneGroupConfigs: [
-            {
+          privateDnsZoneGroupConfigs: [            {
               privateDnsZoneResourceId: aiSearchPrivateDnsZone.outputs.resourceId
             }
           ]
         }
-        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[3]
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[3] // shared subnet
         tags: tags
       }
     ]
@@ -364,18 +421,23 @@ module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.
     name: 'privatelink.cognitiveservices.azure.com'
     location: 'global'
     tags: tags
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: virtualNetwork.outputs.resourceId
+      }
+    ]
   }
 }
 
-// Create Azure AI Services instance with private endpoint in the AiServices subnet using Azure Verified Module (AVM)
-module aiServicesAccount 'br/public:avm/res/cognitive-services/account:0.11.0' = {
-  name: 'ai-services-account-deployment'
+// Create Azure AI Foundry instance with private endpoint in the shared subnet using Azure Verified Module (AVM)
+module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.11.0' = {
+  name: 'ai-foundry-account-deployment'
   scope: resourceGroup(rg.name)
   params: {
     kind: 'AIServices'
-    name: aiServicesName
+    name: aiFoundryName
     location: location
-    customSubDomainName: aiServicesCustomSubDomainName
+    customSubDomainName: aiFoundryCustomSubDomainName
     sku: 'S0'
     diagnosticSettings: [
       {
@@ -385,32 +447,16 @@ module aiServicesAccount 'br/public:avm/res/cognitive-services/account:0.11.0' =
     privateEndpoints: [
       {
         privateDnsZoneGroup: {
-          privateDnsZoneGroupConfigs: [
-            {
+          privateDnsZoneGroupConfigs: [            {
               privateDnsZoneResourceId: aiServicesPrivateDnsZone.outputs.resourceId
             }
           ]
         }
-        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[3]
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[3] // shared subnet
         tags: tags
       }
     ]
     publicNetworkAccess: 'Disabled'
-  }
-}
-
-// Create a Static Web App for the application using Azure Verified Module (AVM)
-module staticSite 'br/public:avm/res/web/static-site:0.9.0' = {
-  name: 'static-site-deployment'
-  scope: resourceGroup(rg.name)
-  params: {
-    name: staticSiteName
-    location: location
-    allowConfigFileUpdates: true
-    enterpriseGradeCdnStatus: 'Disabled'
-    sku: 'Standard'
-    stagingEnvironmentPolicy: 'Enabled'
-    tags: tags
   }
 }
 
@@ -427,6 +473,190 @@ module bastionHost 'br/public:avm/res/network/bastion-host:0.6.1' = if (createBa
   }
 }
 
+// Create Network Security Groups for each subnet using Azure Verified Modules (AVM)
+
+// Frontend NSG for frontend applications
+module frontendNsg 'br/public:avm/res/network/network-security-group:0.5.1' = {
+  name: 'frontend-nsg-deployment'
+  scope: resourceGroup(rg.name)
+  params: {
+    name: '${abbrs.networkNetworkSecurityGroups}frontend-${environmentName}'
+    location: location
+    tags: tags
+    securityRules: [
+      {
+        name: 'AllowHttpsInbound'
+        properties: {
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: 'Internet'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1000
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'AllowHttpInbound'
+        properties: {
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '80'
+          sourceAddressPrefix: 'Internet'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1001
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'AllowContainerAppsManagement'
+        properties: {
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '5671'
+          sourceAddressPrefix: 'AzureContainerApps'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1002
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'AllowContainerAppsHealth'
+        properties: {
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '9000'
+          sourceAddressPrefix: 'AzureLoadBalancer'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1003
+          direction: 'Inbound'
+        }
+      }
+    ]
+  }
+}
+
+// Backend NSG for backend services and databases
+module backendNsg 'br/public:avm/res/network/network-security-group:0.5.1' = {
+  name: 'backend-nsg-deployment'
+  scope: resourceGroup(rg.name)
+  params: {
+    name: '${abbrs.networkNetworkSecurityGroups}backend-${environmentName}'
+    location: location
+    tags: tags
+    securityRules: [
+      {
+        name: 'AllowVnetInbound'
+        properties: {
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 1000
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'DenyInternetInbound'
+        properties: {
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: 'Internet'
+          destinationAddressPrefix: '*'
+          access: 'Deny'
+          priority: 4000
+          direction: 'Inbound'
+        }
+      }
+    ]
+  }
+}
+
+// Gateway NSG for application gateways and load balancers
+module gatewayNsg 'br/public:avm/res/network/network-security-group:0.5.1' = {
+  name: 'gateway-nsg-deployment'
+  scope: resourceGroup(rg.name)
+  params: {
+    name: '${abbrs.networkNetworkSecurityGroups}gateway-${environmentName}'
+    location: location
+    tags: tags
+    securityRules: [
+      {
+        name: 'AllowGatewayManagerInbound'
+        properties: {
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '65200-65535'
+          sourceAddressPrefix: 'GatewayManager'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1000
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'AllowHttpsInbound'
+        properties: {
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: 'Internet'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1001
+          direction: 'Inbound'
+        }
+      }
+    ]
+  }
+}
+
+// Shared NSG for shared services
+module sharedNsg 'br/public:avm/res/network/network-security-group:0.5.1' = {
+  name: 'shared-nsg-deployment'
+  scope: resourceGroup(rg.name)
+  params: {
+    name: '${abbrs.networkNetworkSecurityGroups}shared-${environmentName}'
+    location: location
+    tags: tags
+    securityRules: [
+      {
+        name: 'AllowVnetInbound'
+        properties: {
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 1000
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'DenyInternetInbound'
+        properties: {
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: 'Internet'
+          destinationAddressPrefix: '*'
+          access: 'Deny'
+          priority: 4000
+          direction: 'Inbound'
+        }
+      }
+    ]
+  }
+}
+
 @description('The Azure region where resources are deployed.')
 output AZURE_LOCATION string = location
 
@@ -438,3 +668,12 @@ output AZURE_TENANT_ID string = tenant().tenantId
 
 @description('The URI of the deployed static web app.')
 output STATIC_WEB_APP_URI string = staticSite.outputs.defaultHostname
+
+@description('The resource ID of the Container Apps Environment.')
+output CONTAINER_APPS_ENVIRONMENT_ID string = containerAppsEnvironment.outputs.resourceId
+
+@description('The name of the Container Apps Environment.')
+output CONTAINER_APPS_ENVIRONMENT_NAME string = containerAppsEnvironment.outputs.name
+
+@description('The default domain of the Container Apps Environment.')
+output CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = containerAppsEnvironment.outputs.defaultDomain
