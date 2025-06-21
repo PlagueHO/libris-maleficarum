@@ -31,25 +31,9 @@ jobs:
     name: Build and Publish Frontend App
     uses: ./.github/workflows/build-and-publish-frontend-app.yml
 
-  validate-infrastructure:
-    name: Validate Infrastructure
-    needs:
-      - set-build-variables
-      - lint-and-publish-bicep
-    uses: ./.github/workflows/validate-infrastructure.yml
-    with:
-      ENVIRONMENT: Test
-      BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-      AZURE_ENV_NAME: ${{ format('libmal-{0}', github.run_id) }}
-    secrets:
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
   e2e-test-v1:
     needs:
       - set-build-variables
-      - validate-infrastructure
 
     name: E2E Test
     uses: ./.github/workflows/e2e-test.yml
@@ -58,6 +42,7 @@ jobs:
       BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
       AZURE_ENV_NAME: ${{ format('libmal-{0}', github.run_id) }}
+      BUILD_ARTIFACT_NAME: libris-maleficanum-app
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

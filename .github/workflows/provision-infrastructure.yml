@@ -20,6 +20,17 @@ on:
         required: true
         type: string
 
+    outputs:
+      STATIC_WEB_APP_URI:
+        description: "The URI of the Static Web App"
+        value: ${{ jobs.provision-infrastructure.outputs.STATIC_WEB_APP_URI }}
+      STATIC_WEB_APP_NAME:
+        description: "The name of the Static Web App"
+        value: ${{ jobs.provision-infrastructure.outputs.STATIC_WEB_APP_NAME }}
+      STATIC_WEB_APP_TOKEN:
+        description: "The deployment token for the Static Web App"
+        value: ${{ jobs.provision-infrastructure.outputs.STATIC_WEB_APP_TOKEN }}
+
     secrets:
       AZURE_TENANT_ID:
         description: "The Azure tenant ID to use for authentication to Azure for deployment"
@@ -46,6 +57,8 @@ jobs:
 
     outputs:
       STATIC_WEB_APP_URI: ${{ steps.get_endpoints.outputs.STATIC_WEB_APP_URI }}
+      STATIC_WEB_APP_NAME: ${{ steps.get_endpoints.outputs.STATIC_WEB_APP_NAME }}
+      STATIC_WEB_APP_TOKEN: ${{ steps.get_endpoints.outputs.STATIC_WEB_APP_TOKEN }}
 
     steps:
       - name: Checkout
@@ -69,3 +82,11 @@ jobs:
         run: |
           STATIC_WEB_APP_URI=$(azd env get-values | grep STATIC_WEB_APP_URI | cut -d'=' -f2- | xargs)
           echo "STATIC_WEB_APP_URI=$STATIC_WEB_APP_URI" >> $GITHUB_OUTPUT
+          
+          # Get Static Web App name from the resource group
+          STATIC_WEB_APP_NAME=$(az staticwebapp list --resource-group "rg-${{ inputs.AZURE_ENV_NAME }}" --query "[0].name" -o tsv)
+          echo "STATIC_WEB_APP_NAME=$STATIC_WEB_APP_NAME" >> $GITHUB_OUTPUT
+          
+          # Get deployment token for the Static Web App
+          STATIC_WEB_APP_TOKEN=$(az staticwebapp secrets list --name "$STATIC_WEB_APP_NAME" --resource-group "rg-${{ inputs.AZURE_ENV_NAME }}" --query "properties.apiKey" -o tsv)
+          echo "STATIC_WEB_APP_TOKEN=$STATIC_WEB_APP_TOKEN" >> $GITHUB_OUTPUT
