@@ -12,6 +12,8 @@
   - Modern, responsive UI.
   - Communication with the backend using Axios.
   - Future integration with MSAL.js for authentication.
+  - Uses Fluent UI for consistent design and user experience [https://react.fluentui.dev/](https://react.fluentui.dev/).
+  - Uses Prompt-Kit for AI user experience components [https://github.com/ibelick/prompt-kit](https://github.com/ibelick/prompt-kit).
 
 - **Data Storage (Azure Cosmos DB):**
   - Multiple containers to support hierarchical and flexible document structures.
