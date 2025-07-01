@@ -24,8 +24,6 @@ updates:
       - "dependencies"
       - "nuget"
       - ".net"
-    reviewers:
-      - "PlagueHO"
     rebase-strategy: "auto"
     groups:
       nuget-dependencies:
@@ -46,8 +44,6 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
-    reviewers:
-      - "PlagueHO"
     rebase-strategy: "auto"
     groups:
       gh-actions:
@@ -67,8 +63,6 @@ updates:
       - "dependencies"
       - "npm"
       - "react"
-    reviewers:
-      - "PlagueHO"
     rebase-strategy: "auto"
     groups:
       npm-dependencies:
