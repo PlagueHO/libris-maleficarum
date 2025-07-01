@@ -2,7 +2,7 @@
     "typescript.tsdk": "node_modules/typescript/lib",
     "eslint.validate": ["javascript", "typescript", "typescriptreact"],
     "chat.mcp.serverSampling": {
-        "Libris-Maleficarum/.vscode/mcp.json: github": {
+        "libris-maleficarum/.vscode/mcp.json: github": {
             "allowedModels": [
                 "github.copilot-chat/claude-3.5-sonnet",
                 "github.copilot-chat/claude-3.7-sonnet",
