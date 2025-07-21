@@ -98,7 +98,7 @@ module rg 'br/public:avm/res/resources/resource-group:0.4.1' = {
 }
 
 // Create the Log Analytics workspace using Azure Verified Module (AVM)
-module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.11.2' = {
+module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.12.0' = {
   name: 'logAnalytics-workspace-deployment'
   scope: resourceGroup(rg.name)
   params: {
@@ -239,7 +239,7 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7
 }
 
 // Create a Storage Account with private endpoint in the backend subnet using Azure Verified Module (AVM)
-module storageAccount 'br/public:avm/res/storage/storage-account:0.20.0' = {
+module storageAccount 'br/public:avm/res/storage/storage-account:0.25.1' = {
   name: 'storage-account-deployment'
   scope: resourceGroup(rg.name)
   params: {
@@ -377,7 +377,7 @@ module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 }
 
 // Create Azure AI Search service with private endpoint in the shared subnet using Azure Verified Module (AVM)
-module aiSearchService 'br/public:avm/res/search/search-service:0.10.0' = {
+module aiSearchService 'br/public:avm/res/search/search-service:0.11.0' = {
   name: 'ai-search-service-deployment'
   scope: resourceGroup(rg.name)
   params: {
@@ -430,7 +430,7 @@ module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.
 }
 
 // Create Azure AI Foundry instance with private endpoint in the shared subnet using Azure Verified Module (AVM)
-module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.11.0' = {
+module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.12.0' = {
   name: 'ai-foundry-account-deployment'
   scope: resourceGroup(rg.name)
   params: {
@@ -461,7 +461,7 @@ module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.11.0' = 
 }
 
 // Optional: Create an Azure Bastion host in the virtual network using Azure Verified Module (AVM)
-module bastionHost 'br/public:avm/res/network/bastion-host:0.6.1' = if (createBastionHost) {
+module bastionHost 'br/public:avm/res/network/bastion-host:0.7.0' = if (createBastionHost) {
   name: 'bastion-host-deployment'
   scope: resourceGroup(rg.name)
   params: {
