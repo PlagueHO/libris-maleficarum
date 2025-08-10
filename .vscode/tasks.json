@@ -1,0 +1,15 @@
+{
+  // Runs the frontend dev server via pnpm from the app folder
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "app: dev",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      }
+    }
+  ]
+}

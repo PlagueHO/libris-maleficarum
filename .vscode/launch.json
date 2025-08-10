@@ -4,20 +4,25 @@
     {
       "name": "libris-maleficarum",
       "configurations": [
-        "app: libris-maleficarum-app"
+        "app: libris-maleficarum-app",
+        "open: browser"
       ]
     }
   ],
   "configurations": [
     {
-      "type": "node",
+      "type": "node-terminal",
       "request": "launch",
       "name": "app: libris-maleficarum-app",
-      "cwd": "${workspaceFolder}/libris-maleficarum-app",
-      "skipFiles": ["<node_internals>/**"],
-      "console": "integratedTerminal",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["run", "dev"]
+      "command": "pnpm dev",
+      "cwd": "${workspaceFolder}/libris-maleficarum-app"
+    },
+    {
+      "name": "open: browser",
+      "request": "launch",
+      "type": "msedge",
+      "url": "http://127.0.0.1:4000/",
+      "presentation": { "hidden": true }
     }
   ]
 }
