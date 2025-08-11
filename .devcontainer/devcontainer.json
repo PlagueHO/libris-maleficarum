@@ -7,7 +7,7 @@
     },
     "ghcr.io/devcontainers/features/azure-cli:1": {}
   },
-  "postCreateCommand": "dotnet restore && npm install --prefix frontend",
+  "postCreateCommand": "pnpm install --dir libris-maleficarum-app",
   "customizations": {
     "vscode": {
       "settings": {
@@ -20,7 +20,8 @@
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
         "ms-vscode.vscode-node-azure-pack",
-        "ms-azuretools.vscode-azurefunctions"
+        "ms-azuretools.vscode-azurefunctions",
+        "GitHub.copilot-chat"
       ]
     }
   },
