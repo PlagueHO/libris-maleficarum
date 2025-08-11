@@ -399,3 +399,40 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Node.js, React, TypeScript standard ignores
+node_modules/
+dist/
+build/
+.env
+.env.*
+.next/
+.turbo/
+coverage/
+*.log
+*.tsbuildinfo
+*.eslintcache
+*.cache
+/.parcel-cache/
+/.yarn/
+.yarnrc.yml
+.npmrc
+/.output/
+/.vercel/
+/.firebase/
+/.DS_Store
+/.idea/
+/.sass-cache/
+/.nyc_output/
+/.storybook/
+storybook-static/
+/.cache-loader/
+/.tmp/
+tmp/
+temp/
+/.env.local
+/.env.development.local
+/.env.test.local
+/.env.production.local
+.pnpm/
+**/.pnpm/

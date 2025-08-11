@@ -1,9 +1,9 @@
 {
   "name": "Libris Maleficarum Codespace",
-  "image": "mcr.microsoft.com/devcontainers/dotnet:8.0",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:9.0",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "18"
+      "version": "22"
     },
     "ghcr.io/devcontainers/features/azure-cli:1": {}
   },
