@@ -436,3 +436,4 @@ temp/
 /.env.production.local
 .pnpm/
 **/.pnpm/
+.pnpm-store/

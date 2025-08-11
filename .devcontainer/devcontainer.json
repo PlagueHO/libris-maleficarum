@@ -7,7 +7,7 @@
     },
     "ghcr.io/devcontainers/features/azure-cli:1": {}
   },
-  "postCreateCommand": "pnpm install --dir libris-maleficarum-app",
+  "postCreateCommand": "cd libris-maleficarum-app; pnpm install",
   "customizations": {
     "vscode": {
       "settings": {

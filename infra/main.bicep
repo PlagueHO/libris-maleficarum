@@ -152,7 +152,7 @@ module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.1'
 }
 
 // Create a Key Vault with private endpoint in the shared subnet using Azure Verified Module (AVM)
-module keyVault 'br/public:avm/res/key-vault/vault:0.13.0' = {
+module keyVault 'br/public:avm/res/key-vault/vault:0.13.1' = {
   name: 'keyvault-deployment'
   scope: resourceGroup(rg.name)
   params: {
@@ -187,7 +187,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.13.0' = {
 }
 
 // Create a Static Web App for the application using Azure Verified Module (AVM)
-module staticSite 'br/public:avm/res/web/static-site:0.9.0' = {
+module staticSite 'br/public:avm/res/web/static-site:0.9.1' = {
   name: 'static-site-deployment'
   scope: resourceGroup(rg.name)
   params: {
@@ -239,7 +239,7 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7
 }
 
 // Create a Storage Account with private endpoint in the backend subnet using Azure Verified Module (AVM)
-module storageAccount 'br/public:avm/res/storage/storage-account:0.25.1' = {
+module storageAccount 'br/public:avm/res/storage/storage-account:0.26.0' = {
   name: 'storage-account-deployment'
   scope: resourceGroup(rg.name)
   params: {
@@ -430,7 +430,7 @@ module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.7.
 }
 
 // Create Azure AI Foundry instance with private endpoint in the shared subnet using Azure Verified Module (AVM)
-module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.12.0' = {
+module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.13.0' = {
   name: 'ai-foundry-account-deployment'
   scope: resourceGroup(rg.name)
   params: {

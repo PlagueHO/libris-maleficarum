@@ -1,24 +1,2 @@
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  background-color: #2a2a3b; /* Dark background for the main panel */
-  color: #ffffff; /* Text color */
-  overflow-y: auto;
-}
-
-.contentSection {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.heading {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 16px;
-  text-align: center;
-}
+/* Deprecated: MainPanel now uses Fluent UI v9 makeStyles. */
+/* Intentionally left blank; retained temporarily until global cleanup (Phase 6). */

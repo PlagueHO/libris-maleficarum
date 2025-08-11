@@ -15,8 +15,7 @@
     "moduleResolution": "Node", // Use Node.js module resolution
     "resolveJsonModule": true, // Allow importing JSON files
     "isolatedModules": true, // Ensure each file can be transpiled independently
-    "outDir": "./dist", // Output directory for compiled files
-    "rootDir": "./src", // Root directory of source files
+  "outDir": "./dist", // Output directory for compiled files
     "declaration": true, // Generate declaration files
     "declarationMap": true, // Generate source maps for declaration files
     "sourceMap": true, // Generate source maps for debugging
@@ -29,9 +28,8 @@
     "useDefineForClassFields": true, // Use `define` for class fields
     "jsx": "react-jsx" // Enable React JSX transformation
   },
-  "include": ["src", "vite.config.ts"], // Include all source files
+  "files": ["vite.config.ts"],
   "exclude": ["node_modules", "dist"], // Exclude unnecessary directories
-  "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
