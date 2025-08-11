@@ -10,6 +10,33 @@
       "options": {
         "cwd": "${workspaceFolder}/libris-maleficarum-app"
       }
+    },
+    {
+      "label": "app: install",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["install"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      }
+    },
+    {
+      "label": "app: test",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["test"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      }
+    },
+    {
+      "label": "app: build",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["build"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      }
     }
   ]
 }

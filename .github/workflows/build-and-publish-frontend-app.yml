@@ -30,6 +30,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Run unit tests
+        run: pnpm exec vitest run --reporter=junit --reporter=github --outputFile=test-results/junit.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-results
+          path: libris-maleficarum-app/test-results
+
       - name: Build app
         run: pnpm run build
 
