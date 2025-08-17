@@ -31,12 +31,4 @@ jobs:
           echo "Successfully authenticated to Azure!"
           az account show
           az group list --query "[].{Name:name, Location:location}" --output table
-      
-      - name: Set up Azure CLI extensions
-        run: |
-          az extension add --name containerapp --upgrade
-          az extension add --name application-insights --upgrade
-
-      - name: List Azure Resources
-        run: |
-          az resource list --query "[].{Name:name, Type:type, Location:location}" --output table
+          
