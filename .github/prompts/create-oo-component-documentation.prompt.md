@@ -1,7 +1,7 @@
 ---
 mode: 'agent'
 description: 'Create comprehensive, standardized documentation for object-oriented components following industry best practices and architectural documentation standards.'
-tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'githubRepo', 'openSimpleBrowser', 'problems', 'runTasks', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI']
+tools: ['edit', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'Microsoft Docs/*', 'context7/*', 'Node.js Docs/*', 'FluentUI Docs/*', 'React Docs/*', 'Agent Framework Docs/*', 'TypeScript Docs/*', 'usages', 'vscodeAPI', 'think', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'todos']
 ---
 # Generate Standard OO Component Documentation
 

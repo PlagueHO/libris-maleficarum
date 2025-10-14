@@ -21,6 +21,30 @@
 			],
 			"type": "stdio",
 			"env": {}
+		},
+        "Agent Framework Docs": {
+            "url": "https://gitmcp.io/microsoft/agent-framework",
+            "type": "sse"
+        },
+        "React Docs": {
+            "url": "https://gitmcp.io/facebook/react",
+            "type": "sse"
+        },
+		"TypeScript Docs": {
+			"url": "https://gitmcp.io/microsoft/TypeScript",
+			"type": "sse"
+		},
+		"Node.js Docs": {
+			"url": "https://gitmcp.io/nodejs/node",
+			"type": "sse"
+		},
+		"FluentUI Docs": {
+			"url": "https://gitmcp.io/microsoft/fluentui",
+			"type": "sse"
+		},
+		"Azure Verified Module Bicep Docs": {
+			"type": "sse",
+			"url": "https://gitmcp.io/Azure/bicep-registry-modules"
 		}
 	}
 }
