@@ -1,7 +1,7 @@
 ---
-mode: 'agent'
+agent: 'agent'
 description: 'Create GitHub Issues from implementation plan phases using feature_request.yml or chore_request.yml templates.'
-tools: ['search', 'Azure MCP/search', 'github/*']
+tools: ['search', 'github/*']
 ---
 # Create GitHub Issue from Implementation Plan
 

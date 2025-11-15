@@ -1,7 +1,7 @@
 ---
-mode: 'agent'
+agent: 'agent'
 description: 'Create GitHub Issues for unimplemented requirements from specification files using feature_request.yml template.'
-tools: ['search', 'Azure MCP/search', 'github/*']
+tools: ['search', 'github/*']
 ---
 # Create GitHub Issues for Unmet Specification Requirements
 
