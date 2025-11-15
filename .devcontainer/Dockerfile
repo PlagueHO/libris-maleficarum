@@ -1,5 +1,5 @@
-# [Optional] Extend from the official .NET 8 dev container image
-FROM mcr.microsoft.com/devcontainers/dotnet:8.0
+# [Optional] Extend from the official .NET 9 dev container image
+FROM mcr.microsoft.com/devcontainers/dotnet:9.0
 
 # Install additional tools if needed
 RUN apt-get update && \

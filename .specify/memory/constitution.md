@@ -8,7 +8,7 @@ Modified Principles:
 - NEW: I. Cloud-Native Architecture (defines Azure-first deployment strategy with network isolation)
 - NEW: II. Clean Architecture & Separation of Concerns (establishes layered architecture principles)
 - NEW: III. Test-Driven Development (NON-NEGOTIABLE) (mandates TDD with accessibility testing)
-- NEW: IV. Framework & Technology Standards (specifies React 19+, .NET 8+, Aspire.NET, Microsoft Agent Framework)
+- NEW: IV. Framework & Technology Standards (specifies React 19+, .NET 9+, Aspire.NET, Microsoft Agent Framework)
 - NEW: V. Developer Experience & Inner Loop (establishes Aspire.NET for local orchestration)
 - NEW: VI. Security & Privacy by Default (enforces Zero Trust security model)
 - NEW: VII. Semantic Versioning & Breaking Changes (defines versioning strategy with GitVersion)
@@ -35,7 +35,7 @@ Key Changes:
 - Mandated Aspire.NET for developer inner loop orchestration
 - Required Microsoft Agent Framework (NOT Semantic Kernel) for AI interactions
 - Enforced network isolation with private endpoints and NSGs
-- Specified exact technology versions (React 19+, .NET 8+, Fluent UI v9)
+- Specified exact technology versions (React 19+, .NET 9+, Fluent UI v9)
 - Defined semantic versioning strategy with GitVersion automation
 - Established Zero Trust security model with Azure Entra ID + RBAC
 -->
@@ -64,7 +64,7 @@ Tests MUST be written before implementation. Frontend MUST include accessibility
 
 ### IV. Framework & Technology Standards
 
-Frontend MUST use React 19+ with TypeScript, Fluent UI v9, Vitest, and Redux Toolkit. Backend MUST use .NET 8+ with Aspire.NET for orchestration and EF Core with Cosmos DB provider. AI interactions MUST use Microsoft Agent Framework (NOT Semantic Kernel). All infrastructure MUST use Azure Verified Modules (AVM) for Bicep.
+Frontend MUST use React 19+ with TypeScript, Fluent UI v9, Vitest, and Redux Toolkit. Backend MUST use .NET 9+ with Aspire.NET for orchestration and EF Core with Cosmos DB provider. AI interactions MUST use Microsoft Agent Framework (NOT Semantic Kernel). All infrastructure MUST use Azure Verified Modules (AVM) for Bicep.
 
 **Rationale**: Standardizes on modern, well-supported frameworks that align with Microsoft ecosystem and enable rapid development with strong typing.
 

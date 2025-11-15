@@ -7,7 +7,7 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 - **Frontend**: React 19 + TypeScript app in `libris-maleficarum-app/` (Vite + Vitest, Redux Toolkit state). Entry: `src/main.tsx`, `src/App.tsx`. Store/slice: `src/store/store.ts`.
   - **UI**: Fluent UI React v9 components in `src/components/*` (example: `TopToolbar/TopToolbar.tsx`, `SidePanel/SidePanel.tsx`). Docs: https://react.fluentui.dev/?path=/docs/concepts-introduction--docs
   - **Styles**: CSS Modules per component (e.g., `App.module.css`, `MainPanel/MainPanel.module.css`).
-- **Backend**: Planned .NET 8 + Aspire.NET with EF Core (Cosmos provider), Clean/Hexagonal architecture. Not yet implemented.
+- **Backend**: Planned .NET 9 + Aspire.NET with EF Core (Cosmos provider), Clean/Hexagonal architecture. Not yet implemented.
   - **Aspire.NET**: AppHost orchestration for local dev inner loop (service discovery, connection management, observability)
   - **AI Framework**: Microsoft Agent Framework for all generative AI interactions (replaces Semantic Kernel)
 - **Data**: Azure Cosmos DB with hierarchical WorldEntity model (see `docs/design/DATA_MODEL.md`). Partition key: `/WorldId` for entities, composite `/WorldId-ParentId` for hierarchy.
@@ -16,6 +16,16 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
   - Core resources: VNet (10.0.0.0/16) with 4 subnets + NSGs, Log Analytics, App Insights, Container Apps Environment, Static Web App.
 - **Docs**: Design/architecture in `docs/design/` (see `ARCHITECTURE.md`, `TECHNOLOGY.md`, `DATA_MODEL.md`, `FOLDER_STRUCTURE.md`).
 - **Azure Developer CLI (azd)**: Root `azure.yaml` connects infra path and the app service.
+
+## Development environment
+
+### DevContainer setup
+
+- **Image**: `mcr.microsoft.com/devcontainers/dotnet:9.0` with Node 22, Azure CLI, Azure Developer CLI (azd), and Aspire CLI
+- **VS Code extensions**: C# DevKit, Bicep, Docker, Azure Functions, GitHub Copilot (with Chat), Markdown linting/preview, ESLint, Prettier
+- **Port forwarding**: 5173 (Vite), 3000 (React), 7071 (Azure Functions), 8080 (API), 5000/5001 (ASP.NET Core)
+- **Post-create**: Installs Aspire CLI globally and runs `pnpm install` in app folder
+- **Dockerfile**: Optional (not referenced by devcontainer.json); Azure CLI now installed via feature
 
 ## Day-1 workflows
 
@@ -109,7 +119,7 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 
 ## Backend architecture (future)
 
-- **Planned backend**: .NET 8 + Aspire.NET with EF Core (Cosmos provider), Clean/Hexagonal architecture. Not yet implemented.
+- **Planned backend**: .NET 9 + Aspire.NET with EF Core (Cosmos provider), Clean/Hexagonal architecture. Not yet implemented.
 - **When implemented**: Code under `libris-maleficarum-service/`, follow conventions from `.github/instructions/csharp-14-best-practices.instructions.md`
 
 ### Aspire.NET orchestration (developer inner loop)

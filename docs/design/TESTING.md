@@ -9,7 +9,7 @@ A comprehensive automated testing strategy is essential for ensuring code qualit
 - **Integration Testing:** msw for API mocking
 - **End-to-End (E2E) Testing:** Cypress (optional)
 
-## Backend (.NET 8, Aspire.NET, EF Core)
+## Backend (.NET 9, Aspire.NET, EF Core)
 
 - **Unit Testing:** xUnit, Moq, FluentAssertions
 - **Component/Integration Testing:** TestServer, Respawn
