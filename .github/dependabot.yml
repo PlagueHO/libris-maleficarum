@@ -6,12 +6,35 @@
 
 version: 2
 updates:
+  # DevContainer features and configuration
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "devcontainer"
+    rebase-strategy: "auto"
 
-  # .NET dependencies
+  # Docker dependencies for containerization
+  - package-ecosystem: "docker"
+    directory: "/.devcontainer"
+    schedule:
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "docker"
+    rebase-strategy: "auto"
+
+  # .NET 9+ dependencies (backend services)
   - package-ecosystem: "nuget"
     directory: "/libris-maleficarum-service/src"
     schedule:
@@ -26,9 +49,31 @@ updates:
       - ".net"
     rebase-strategy: "auto"
     groups:
-      nuget-dependencies:
+      aspire-packages:
         patterns:
-          - "*"
+          - "Aspire.*"
+        update-types:
+          - "minor"
+          - "patch"
+      microsoft-packages:
+        patterns:
+          - "Microsoft.*"
+        update-types:
+          - "minor"
+          - "patch"
+      efcore-packages:
+        patterns:
+          - "Microsoft.EntityFrameworkCore.*"
+        update-types:
+          - "minor"
+          - "patch"
+      agent-framework:
+        patterns:
+          - "Microsoft.Agents.*"
+          - "Microsoft.Extensions.AI.*"
+        update-types:
+          - "minor"
+          - "patch"
     allow:
       - dependency-type: "all"
 
@@ -44,29 +89,89 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+      - "ci-cd"
     rebase-strategy: "auto"
     groups:
-      gh-actions:
+      actions-dependencies:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
-  # NPM dependencies for React app
+  # NPM dependencies for React 19+ app
   - package-ecosystem: "npm"
     directory: "/libris-maleficarum-app"
     schedule:
       interval: "weekly"
       time: "06:00"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     commit-message:
       prefix: "deps"
     labels:
       - "dependencies"
       - "npm"
       - "react"
+      - "frontend"
     rebase-strategy: "auto"
     groups:
-      npm-dependencies:
+      react-ecosystem:
         patterns:
-          - "*"
+          - "react"
+          - "react-dom"
+          - "react-redux"
+          - "@reduxjs/toolkit"
+        update-types:
+          - "minor"
+          - "patch"
+      fluentui:
+        patterns:
+          - "@fluentui/*"
+        update-types:
+          - "minor"
+          - "patch"
+      vite-tooling:
+        patterns:
+          - "vite"
+          - "vitest"
+          - "@vitejs/*"
+        update-types:
+          - "minor"
+          - "patch"
+      testing-libraries:
+        patterns:
+          - "@testing-library/*"
+          - "jest-axe"
+          - "@axe-core/*"
+        update-types:
+          - "minor"
+          - "patch"
+      typescript:
+        patterns:
+          - "typescript"
+          - "@types/*"
+        update-types:
+          - "minor"
+          - "patch"
+      eslint-prettier:
+        patterns:
+          - "eslint"
+          - "eslint-*"
+          - "prettier"
+          - "@typescript-eslint/*"
+        update-types:
+          - "minor"
+          - "patch"
     allow:
       - dependency-type: "all"
+    ignore:
+      # Ignore major React updates until verified with constitution
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+
+  # Azure Bicep modules (infrastructure as code)
+  # Note: Dependabot doesn't natively support Bicep registries
+  # This is a placeholder for future support or custom tooling
+  # For now, use manual checks via update-avm-modules-in-bicep.prompt.md

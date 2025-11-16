@@ -3,41 +3,161 @@
   "image": "mcr.microsoft.com/devcontainers/dotnet:9.0",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "22"
+      "version": "22",
+      "nodeGypDependencies": true,
+      "nvmInstallPath": "/usr/local/share/nvm"
     },
-    "ghcr.io/devcontainers/features/azure-cli:1": {},
-    "ghcr.io/azure/azure-dev/azd:latest": {}
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "version": "latest",
+      "extensions": "azure-devops"
+    },
+    "ghcr.io/azure/azure-dev/azd:latest": {},
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "version": "latest",
+      "moby": true,
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest",
+      "ppa": true
+    },
+    "ghcr.io/devcontainers/features/git-lfs:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "installOhMyZshConfig": true,
+      "configureZshAsDefaultShell": false,
+      "upgradePackages": true,
+      "username": "vscode",
+      "userUid": "automatic",
+      "userGid": "automatic"
+    },
+    "ghcr.io/devcontainers/features/powershell:1": {
+      "version": "latest"
+    }
   },
   "postCreateCommand": "dotnet tool install -g Aspire.Cli --prerelease && cd libris-maleficarum-app && pnpm install",
   "customizations": {
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "typescript.tsdk": "libris-maleficarum-app/node_modules/typescript/lib",
+        "files.associations": {
+          "*.bicep": "bicep"
+        },
+        "[bicep]": {
+          "editor.defaultFormatter": "ms-azuretools.vscode-bicep"
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[json]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[jsonc]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[markdown]": {
+          "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+        },
+        "[csharp]": {
+          "editor.defaultFormatter": "ms-dotnettools.csharp"
+        }
       },
       "extensions": [
         "ms-dotnettools.csharp",
         "ms-dotnettools.csdevkit",
+        "ms-dotnettools.vscode-dotnet-runtime",
         "ms-azuretools.vscode-docker",
         "ms-azuretools.vscode-bicep",
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
         "ms-vscode.vscode-node-azure-pack",
         "ms-azuretools.vscode-azurefunctions",
+        "ms-vscode.azure-account",
+        "ms-vscode.azurecli",
         "GitHub.copilot",
         "GitHub.copilot-chat",
         "davidanson.vscode-markdownlint",
-        "yzhang.markdown-all-in-one"
+        "yzhang.markdown-all-in-one",
+        "redhat.vscode-yaml",
+        "editorconfig.editorconfig",
+        "visualstudioexptteam.vscodeintellicode",
+        "visualstudioexptteam.intellicode-api-usage-examples",
+        "christian-kohler.npm-intellisense",
+        "christian-kohler.path-intellisense",
+        "mikestead.dotenv"
       ]
     }
   },
-  "forwardPorts": [5173, 3000, 7071, 8080, 5000, 5001],
+  "forwardPorts": [4000, 5173, 3000, 7071, 8080, 5000, 5001, 18081, 18888],
   "portsAttributes": {
-    "5173": { "label": "Vite/React Dev Server", "onAutoForward": "openPreview" },
-    "3000": { "label": "React Dev Server", "onAutoForward": "openPreview" },
-    "7071": { "label": "Azure Functions", "onAutoForward": "openPreview" },
-    "8080": { "label": "API", "onAutoForward": "openPreview" },
-    "5000": { "label": "ASP.NET Core", "onAutoForward": "openPreview" },
-    "5001": { "label": "ASP.NET Core SSL", "onAutoForward": "openPreview" }
-  }
+    "4000": { 
+      "label": "Vite HTTPS Dev Server", 
+      "onAutoForward": "openBrowserOnce",
+      "protocol": "https"
+    },
+    "5173": { 
+      "label": "Vite HTTP Dev Server", 
+      "onAutoForward": "ignore" 
+    },
+    "3000": { 
+      "label": "React Dev Server", 
+      "onAutoForward": "openBrowserOnce" 
+    },
+    "7071": { 
+      "label": "Azure Functions", 
+      "onAutoForward": "notify" 
+    },
+    "8080": { 
+      "label": "API", 
+      "onAutoForward": "notify" 
+    },
+    "5000": { 
+      "label": "ASP.NET Core HTTP", 
+      "onAutoForward": "notify" 
+    },
+    "5001": { 
+      "label": "ASP.NET Core HTTPS", 
+      "onAutoForward": "notify",
+      "protocol": "https"
+    },
+    "18081": { 
+      "label": "Aspire Dashboard", 
+      "onAutoForward": "openBrowserOnce",
+      "protocol": "https"
+    },
+    "18888": { 
+      "label": "Aspire Dashboard (alt)", 
+      "onAutoForward": "ignore" 
+    }
+  },
+  "remoteEnv": {
+    "ASPNETCORE_ENVIRONMENT": "Development",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
+    "DOTNET_NOLOGO": "1",
+    "ASPNETCORE_Kestrel__Certificates__Default__Path": "/home/vscode/.aspnet/https/aspnetapp.pfx",
+    "ASPNETCORE_Kestrel__Certificates__Default__Password": "password"
+  },
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.azure,target=/home/vscode/.azure,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
+  ],
+  "remoteUser": "vscode"
 }
