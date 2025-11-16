@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@fluentui-contrib/react-chat": "^0.1.11",
-    "@fluentui/react-components": "^9.61.3",
-    "@fluentui/react-icons": "^2.0.264",
+    "@fluentui/react-components": "^9.72.7",
+    "@fluentui/react-icons": "^2.0.314",
     "@reduxjs/toolkit": "^2.8.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
