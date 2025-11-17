@@ -150,7 +150,34 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
   - Orchestrate multi-agent systems with different specializations
   - Use `RunAsync` for single-turn interactions or `RunStreamingAsync` for streaming
   - Handle long-running operations with status polling
+- **AG-UI Protocol Integration**:
+  - Native AG-UI support via `MapAGUIAgent()` extension method in ASP.NET Core
+  - Exposes agents as AG-UI endpoints for CopilotKit frontend consumption
+  - Supports Server-Sent Events (SSE) and binary protocol for streaming
+  - Event-driven architecture with 16 standardized event types
+  - Bidirectional communication for shared state and frontend actions
 - **Documentation**: See Microsoft Agent Framework docs on GitHub
+
+### CopilotKit (Frontend Agentic UI)
+
+- **Use CopilotKit** for all agent-user interactions in the React frontend
+- **Core components**:
+  - `<CopilotKit>`: Root provider component wrapping the app
+  - `<CopilotChat>`: Drop-in chat interface for agent conversations
+  - `<CopilotSidebar>`: Collapsible sidebar for AI assistance
+  - `<CopilotTextarea>`: AI-powered text editing with suggestions
+- **Key features**:
+  - **Shared State**: Use `useCopilotReadable()` to expose app state to agents
+  - **Frontend Actions**: Use `useCopilotAction()` to define agent-callable frontend operations
+  - **Generative UI**: Render agent responses as custom React components
+  - **Human-in-the-Loop**: User approval workflows for critical operations
+- **Integration pattern**:
+  - Configure `runtimeUrl` to point to AG-UI backend endpoint (e.g., `/api/copilotkit`)
+  - Wrap app with `<CopilotKit>` provider at root level
+  - Use hooks to expose WorldEntity hierarchy and user context to agents
+  - Handle agent events and update Redux state accordingly
+- **Testing**: CopilotKit components are testable with React Testing Library + jest-axe
+- **Documentation**: See https://docs.copilotkit.ai/microsoft-agent-framework
 
 ### Data model
 

@@ -61,15 +61,15 @@
   - **IUserContextService** (stubbed; replace with Entra ID CIAM integration later)
   - **Repository layer** abstracting data operations.
   - **Stubbed identity** (via `IUserContextService`) to handle multi-user scenarios.
-  - **Semantic Kernel** for AI capabilities (optional, depending on future AI integration needs).
+  - **Microsoft Agent Framework** for AI agent orchestration, tools, and capabilities.
+  - **AG-UI Protocol** for agent-to-user interaction (native support in Microsoft Agent Framework).
 
 - **Frontend:**
-  - **React** with **TypeScript** (Create React App)
-  - **Redux** for state management
-  - **Axios** for HTTP communication
-  - Optionally **React Router** for multi-page interface
-  - **Fluent UI** for consistent design and user experience [https://react.fluentui.dev/](https://react.fluentui.dev/).
-  - **Prompt-Kit** for AI user experience components [https://github.com/ibelick/prompt-kit](https://github.com/ibelick/prompt-kit).
+  - **React 19** with **TypeScript** (Vite)
+  - **Redux Toolkit** for state management
+  - **Fluent UI v9** for consistent design and user experience [https://react.fluentui.dev/](https://react.fluentui.dev/).
+  - **CopilotKit** for agentic user experiences and AG-UI client [https://docs.copilotkit.ai/](https://docs.copilotkit.ai/).
+  - **AG-UI Protocol** for standardized agent-user communication [https://docs.ag-ui.com/](https://docs.ag-ui.com/).
 
 - **Data Storage:**
   - **Azure Cosmos DB** using multiple containers for hierarchical, flexible entity storage and a dedicated container for document hierarchy.

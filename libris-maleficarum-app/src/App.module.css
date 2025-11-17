@@ -7,9 +7,14 @@
   color: #e0e0e0; /* Neutral text color */
 }
 
+.themeToggle {
+  padding: 8px;
+}
+
 .layoutContainer {
   display: flex;
-  flex: 1;
+  flex-direction: row;
+  flex-grow: 1;
   overflow: hidden;
 }
 

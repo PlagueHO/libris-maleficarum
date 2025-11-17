@@ -130,6 +130,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      copilotkit:
+        patterns:
+          - "@copilotkit/*"
+        update-types:
+          - "minor"
+          - "patch"
       vite-tooling:
         patterns:
           - "vite"

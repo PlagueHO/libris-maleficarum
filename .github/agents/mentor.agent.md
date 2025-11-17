@@ -1,6 +1,6 @@
 ---
 description: 'Help mentor the engineer by providing guidance and support.'
-tools: ['edit', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'Microsoft Docs/*', 'context7/*', 'Agent Framework Docs/*', 'React Docs/*', 'TypeScript Docs/*', 'Node.js Docs/*', 'FluentUI Docs/*', 'runSubagent', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'todos']
+tools: ['edit', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'Microsoft Docs/*', 'Agent Framework Docs/*', 'context7/*', 'React Docs/*', 'TypeScript Docs/*', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'todos', 'runSubagent']
 ---
 # Mentor mode instructions
 

@@ -25,25 +25,33 @@ The Libris Maleficarum frontend is a modern, accessible, and visually engaging S
 
 ## Technology & Patterns
 
-- **React + TypeScript:**  
+- **React 19 + TypeScript:**  
   All components are implemented as functional components using hooks, following best practices for maintainability and performance.
 
-- **Redux:**  
-  Application state is managed using Redux, enabling predictable state management, undo/redo, and time-travel debugging.
+- **Redux Toolkit:**  
+  Application state is managed using Redux Toolkit, enabling predictable state management, undo/redo, and time-travel debugging.
+
+- **CopilotKit Integration:**  
+  - **Agentic UI Components:** `<CopilotChat />`, `<CopilotSidebar />`, `<CopilotTextarea />` for AI-powered interactions.
+  - **Shared State:** Bidirectional synchronization between frontend state and backend agents via AG-UI protocol.
+  - **Frontend Actions:** User-triggered AI operations that execute in the frontend with agent coordination.
+  - **Generative UI:** Dynamic component rendering based on agent responses and tool outputs.
+  - **Human-in-the-Loop:** User approval workflows for critical agent operations.
+  - **AG-UI Client:** Native protocol support for agent-user interaction (SSE/WebSocket).
 
 - **CSS Modules:**  
   Component-level styling is achieved using CSS modules for encapsulation and maintainability.
 
-- **Component Library & UI Techniques:**  
-  - Utilizes the latest React component patterns (e.g., compound components, context, custom hooks).
-  - Leverages modern UI libraries (e.g., Radix UI, Headless UI, or custom fantasy-themed components).
-  - Responsive design for desktop and tablet use, with mobile support planned.
+- **Fluent UI v9:**  
+  - Microsoft's design system for consistent, accessible, and performant UI components.
+  - Seamlessly integrates with CopilotKit components for unified styling.
   - Theming support for light/dark/fantasy modes.
 
 - **Accessibility:**  
   - All interactive elements are accessible via keyboard.
   - ARIA roles and labels are used throughout.
   - High-contrast and screen reader support.
+  - CopilotKit components are accessible by default and testable with jest-axe.
 
 ## Visual Theme
 

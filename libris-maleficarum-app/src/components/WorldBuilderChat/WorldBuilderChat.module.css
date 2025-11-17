@@ -1,0 +1,44 @@
+.chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/* Override CopilotKit default styles for fantasy theme */
+.chat :global(.copilotKitMessages) {
+  font-family: var(--fontFamilyBase);
+}
+
+.chat :global(.copilotKitInput) {
+  border-radius: 8px;
+  border: 2px solid var(--colorNeutralStroke1);
+}
+
+.chat :global(.copilotKitInput:focus-within) {
+  border-color: var(--colorBrandStroke1);
+}
+
+.chat :global(.copilotKitButton) {
+  background-color: var(--colorBrandBackground);
+  color: var(--colorNeutralForegroundOnBrand);
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.chat :global(.copilotKitButton:hover) {
+  background-color: var(--colorBrandBackgroundHover);
+}
+
+.chat :global(.copilotKitButton:active) {
+  background-color: var(--colorBrandBackgroundPressed);
+}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Provider } from 'react-redux';
+import { CopilotKit } from '@copilotkit/react-core';
 import { store } from './store/store';
 import TopToolbar from './components/TopToolbar/TopToolbar';
 import SidePanel from './components/SidePanel/SidePanel';
@@ -7,28 +8,51 @@ import MainPanel from './components/MainPanel/MainPanel';
 import ChatWindow from './components/ChatWindow/ChatWindow';
 import styles from './App.module.css';
 import { Switch } from '@fluentui/react-components';
+import { useCopilotWorldContext } from './hooks/useCopilotWorldContext';
 
-const App: React.FC = () => {
+/**
+ * AppContent component provides CopilotKit context to the application.
+ * Separated to allow hooks to access Redux state after Provider mount.
+ */
+const AppContent: React.FC = () => {
   // temporary theme toggle (state-only) per migration plan
   const [darkMode, setDarkMode] = useState(false);
+  
+  // Expose world-building context to CopilotKit agents
+  useCopilotWorldContext();
 
   return (
-    <Provider store={store}>
-      <div className={styles.appRoot} role="application" aria-label="Libris Maleficarum App">
-        <TopToolbar />
-        <div style={{ padding: '8px' }}>
-          <Switch
-            checked={darkMode}
-            onChange={(_ev: unknown, data: { checked?: boolean }) => setDarkMode(!!data?.checked)}
-            label={darkMode ? 'Dark mode' : 'Light mode'}
-          />
-        </div>
-        <div className={styles.layoutContainer}>
-          <SidePanel />
-          <MainPanel />
-          <ChatWindow />
-        </div>
+    <div className={styles.appRoot} role="application" aria-label="Libris Maleficarum App">
+      <TopToolbar />
+      <div className={styles.themeToggle}>
+        <Switch
+          checked={darkMode}
+          onChange={(_ev: unknown, data: { checked?: boolean }) => setDarkMode(!!data?.checked)}
+          label={darkMode ? 'Dark mode' : 'Light mode'}
+        />
       </div>
+      <div className={styles.layoutContainer}>
+        <SidePanel />
+        <MainPanel />
+        <ChatWindow />
+      </div>
+    </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <Provider store={store}>
+      <CopilotKit
+        // Mock runtime URL - will be replaced with AG-UI backend endpoint (/api/copilotkit)
+        // once Microsoft Agent Framework backend is implemented
+        runtimeUrl="https://mock-agent.example.com/api/copilotkit"
+        agent="world-builder-poc"
+        // Disable network requests for POC (CopilotKit will work in demo mode)
+        publicApiKey="demo-mode"
+      >
+        <AppContent />
+      </CopilotKit>
     </Provider>
   );
 };

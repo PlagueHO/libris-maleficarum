@@ -1,30 +1,20 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Button,
-  Card,
-  CardHeader,
-  Divider,
-  Spinner,
-  Text,
-  Textarea,
   makeStyles,
   shorthands,
   tokens,
 } from '@fluentui/react-components';
-import { ChevronLeft24Regular, ChevronRight24Regular, Send24Regular } from '@fluentui/react-icons';
-import { Chat, ChatMyMessage } from '@fluentui-contrib/react-chat';
-
-type ChatMessage = {
-  id: string;
-  text: string;
-};
+import { ChevronLeft24Regular, ChevronRight24Regular } from '@fluentui/react-icons';
+import { WorldBuilderChat } from '../WorldBuilderChat/WorldBuilderChat';
 
 const useStyles = makeStyles({
   root: {
     display: 'flex',
     flexDirection: 'column',
     ...shorthands.borderLeft('1px', 'solid', tokens.colorNeutralStroke1),
-    width: '300px',
+    width: '400px',
+    height: '100%',
   },
   hidden: {
     display: 'none',
@@ -36,63 +26,41 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     ...shorthands.borderLeft('1px', 'solid', tokens.colorNeutralStroke1),
   },
-  card: {
+  chatContainer: {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    ...shorthands.padding('8px'),
+    position: 'relative',
   },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    overflowY: 'auto',
-    flexGrow: 1,
-    ...shorthands.padding('8px'),
-  },
-  inputRow: {
-    display: 'flex',
-    alignItems: 'flex-end',
-    gap: '8px',
-    ...shorthands.padding('8px'),
-  },
-  textarea: {
-    flexGrow: 1,
+  toggleButton: {
+    position: 'absolute',
+    top: '8px',
+    right: '8px',
+    zIndex: 1000,
   },
 });
 
+/**
+ * ChatWindow component provides a collapsible chat interface
+ * powered by CopilotKit and AG-UI protocol.
+ * 
+ * This is a proof-of-concept that demonstrates:
+ * - CopilotKit integration with Fluent UI v9
+ * - AG-UI protocol readiness (via mock endpoint)
+ * - Shared state between Redux and agents
+ * - Frontend actions callable by agents
+ * 
+ * Once Microsoft Agent Framework backend is implemented,
+ * this will connect to /api/copilotkit endpoint.
+ */
 const ChatWindow: React.FC = () => {
   const styles = useStyles();
   const [visible, setVisible] = useState<boolean>(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
-  const [sending, setSending] = useState(false);
-
-  const canSend = useMemo(() => input.trim().length > 0 && !sending, [input, sending]);
 
   const handleToggle = () => setVisible((prev) => !prev);
 
-  const sendMessage = useCallback(async () => {
-    if (!canSend) return;
-    setSending(true);
-    // Simulate async send
-    const text = input.trim();
-    setInput('');
-    setMessages((prev) => [...prev, { id: String(Date.now()), text }]);
-    // Simulated latency
-    await new Promise((r) => setTimeout(r, 200));
-    setSending(false);
-  }, [canSend, input]);
-
-  const onKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      void sendMessage();
-    }
-  };
-
   return (
-    <aside aria-label="Chat Window" aria-hidden={!visible} tabIndex={visible ? 0 : -1}>
+    <aside aria-label="Chat Window" aria-hidden={visible ? 'false' : 'true'} tabIndex={visible ? 0 : -1}>
       {/* Collapsed rail */}
       {!visible && (
         <div className={styles.toggleRail} role="complementary" aria-label="Collapsed Chat Rail">
@@ -105,55 +73,19 @@ const ChatWindow: React.FC = () => {
         </div>
       )}
 
-      {/* Expanded chat */}
+      {/* Expanded chat with CopilotKit */}
       {visible && (
-        <div className={styles.root} role="region" aria-label="AI Assistant Chat">
-          <Card className={styles.card}>
-            <CardHeader header={<Text weight="semibold">AI Assistant</Text>} />
-            <Divider />
-
-            <div className={styles.list} aria-live="polite">
-              {messages.length === 0 ? (
-                <Text size={300} aria-label="Empty Chat">No messages yet</Text>
-              ) : (
-                <Chat>
-                  {messages.map((m) => (
-                    <ChatMyMessage key={m.id}>{m.text}</ChatMyMessage>
-                  ))}
-                </Chat>
-              )}
-              {sending && (
-                <div>
-                  <Spinner label="Sending" />
-                </div>
-              )}
-            </div>
-
-            <div className={styles.inputRow}>
-              <Textarea
-                className={styles.textarea}
-                resize="vertical"
-                aria-label="Message input"
-                placeholder="Type a message"
-                value={input}
-                onChange={(e) => setInput((e.target as HTMLTextAreaElement).value)}
-                onKeyDown={onKeyDown}
-              />
-              <Button
-                aria-label="Send message"
-                appearance="primary"
-                icon={<Send24Regular />}
-                onClick={sendMessage}
-                disabled={!canSend}
-              />
-              <Button
-                aria-label="Hide Chat Window"
-                appearance="subtle"
-                icon={<ChevronRight24Regular />}
-                onClick={handleToggle}
-              />
-            </div>
-          </Card>
+        <div className={styles.root} role="region" aria-label="World Builder AI Assistant">
+          <div className={styles.chatContainer}>
+            <Button
+              aria-label="Hide Chat Window"
+              appearance="subtle"
+              icon={<ChevronRight24Regular />}
+              onClick={handleToggle}
+              className={styles.toggleButton}
+            />
+            <WorldBuilderChat />
+          </div>
         </div>
       )}
     </aside>
