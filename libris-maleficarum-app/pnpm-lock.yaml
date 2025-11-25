@@ -15,8 +15,8 @@ importers:
         specifier: ^1.10.6
         version: 1.10.6(@types/react@19.2.6)(graphql@16.12.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@fluentui-contrib/react-chat':
-        specifier: ^0.1.11
-        version: 0.1.11(@fluentui/react-components@9.72.7(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(scheduler@0.27.0))(@fluentui/react-icons@2.0.315(react@19.2.0))(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        specifier: ^0.2.2
+        version: 0.2.2(@fluentui/react-components@9.72.7(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(scheduler@0.27.0))(@fluentui/react-icons@2.0.315(react@19.2.0))(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@fluentui/react-components':
         specifier: ^9.72.7
         version: 9.72.7(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(scheduler@0.27.0)
@@ -491,15 +491,15 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@fluentui-contrib/react-chat@0.1.11':
-    resolution: {integrity: sha512-44d3JnNZ+hhxLdHey9/kwfAvkskl2TAcQU7gWtOykV6q/YXbGMRLELgE0FaA7WGOiJA70qms0zbgtdwSZBiXDA==}
+  '@fluentui-contrib/react-chat@0.2.2':
+    resolution: {integrity: sha512-bU2sK5qVMGKc3+abecs2Gg5q2SwIo2CfUu7LDDXnpL8ORZZaZYHZ+u1aqn3WvqbRy6z5o/tnfcTrToq98ehzpQ==}
     peerDependencies:
-      '@fluentui/react-components': '>=9.25.1 <10.0.0'
+      '@fluentui/react-components': '>=9.70.0 <10.0.0'
       '@fluentui/react-icons': '>=2.0.204 <3.0.0'
-      '@types/react': '>=16.8.0 <19.0.0'
-      '@types/react-dom': '>=16.8.0 <19.0.0'
-      react: '>=16.8.0 <19.0.0'
-      react-dom: '>=16.8.0 <19.0.0'
+      '@types/react': '>=16.8.0 <20.0.0'
+      '@types/react-dom': '>=16.8.0 <20.0.0'
+      react: '>=16.8.0 <20.0.0'
+      react-dom: '>=16.8.0 <20.0.0'
 
   '@fluentui/keyboard-keys@9.0.8':
     resolution: {integrity: sha512-iUSJUUHAyTosnXK8O2Ilbfxma+ZyZPMua5vB028Ys96z80v+LFwntoehlFsdH3rMuPsA8GaC1RE7LMezwPBPdw==}
@@ -3490,7 +3490,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@fluentui-contrib/react-chat@0.1.11(@fluentui/react-components@9.72.7(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(scheduler@0.27.0))(@fluentui/react-icons@2.0.315(react@19.2.0))(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@fluentui-contrib/react-chat@0.2.2(@fluentui/react-components@9.72.7(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(scheduler@0.27.0))(@fluentui/react-icons@2.0.315(react@19.2.0))(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@fluentui/react-components': 9.72.7(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(scheduler@0.27.0)
       '@fluentui/react-icons': 2.0.315(react@19.2.0)
