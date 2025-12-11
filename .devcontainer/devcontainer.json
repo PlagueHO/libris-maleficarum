@@ -41,7 +41,7 @@
       "version": "latest"
     }
   },
-  "postCreateCommand": "dotnet tool install -g Aspire.Cli --prerelease && cd libris-maleficarum-app && pnpm install",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {
       "settings": {
@@ -86,7 +86,6 @@
         "dbaeumer.vscode-eslint",
         "ms-vscode.vscode-node-azure-pack",
         "ms-azuretools.vscode-azurefunctions",
-        "ms-vscode.azure-account",
         "ms-vscode.azurecli",
         "GitHub.copilot",
         "GitHub.copilot-chat",
@@ -95,10 +94,10 @@
         "redhat.vscode-yaml",
         "editorconfig.editorconfig",
         "visualstudioexptteam.vscodeintellicode",
-        "visualstudioexptteam.intellicode-api-usage-examples",
-        "christian-kohler.npm-intellisense",
-        "christian-kohler.path-intellisense",
-        "mikestead.dotenv"
+        "mikestead.dotenv",
+        "microsoft-aspire.aspire-vscode",
+        "ms-vscode.vscode-typescript-next",
+        "msjsdiag.vscode-react-native"
       ]
     }
   },
