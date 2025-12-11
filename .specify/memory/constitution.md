@@ -64,7 +64,7 @@ Tests MUST be written before implementation. Frontend MUST include accessibility
 
 ### IV. Framework & Technology Standards
 
-Frontend MUST use React 19+ with TypeScript, Fluent UI v9, Vitest, and Redux Toolkit. Backend MUST use .NET 9+ with Aspire.NET for orchestration and EF Core with Cosmos DB provider. AI interactions MUST use Microsoft Agent Framework (NOT Semantic Kernel). All infrastructure MUST use Azure Verified Modules (AVM) for Bicep.
+Frontend MUST use React 19+ with TypeScript, Fluent UI v9, Vitest, and Redux Toolkit. Backend MUST use .NET 10+ with Aspire.NET for orchestration and EF Core with Cosmos DB provider. AI interactions MUST use Microsoft Agent Framework (NOT Semantic Kernel). All infrastructure MUST use Azure Verified Modules (AVM) for Bicep.
 
 **Rationale**: Standardizes on modern, well-supported frameworks that align with Microsoft ecosystem and enable rapid development with strong typing.
 
@@ -115,6 +115,7 @@ Version format MUST be MAJOR.MINOR.PATCH following Semantic Versioning 2.0.0. MA
 ### Infrastructure Standards
 
 - All Bicep files MUST pass `bicep lint` with zero errors/warnings
+- Use Azure Verified Module for all Bicep resource declarations where available
 - AVM module versions MUST be kept current
 - Network Security Groups (NSGs) MUST be defined for each subnet
 - Subnet allocation: Frontend (10.0.1.0/24), Backend (10.0.2.0/24), Gateway (10.0.3.0/24), Shared (10.0.4.0/24)

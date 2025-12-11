@@ -34,7 +34,7 @@ updates:
       - "docker"
     rebase-strategy: "auto"
 
-  # .NET 9+ dependencies (backend services)
+  # .NET 10+ dependencies (backend services)
   - package-ecosystem: "nuget"
     directory: "/libris-maleficarum-service/src"
     schedule:

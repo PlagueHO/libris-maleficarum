@@ -1,13 +1,13 @@
 # Folder Structure
 
-The repository is organized for clarity, scalability, and best practices for both .NET 9 backend services and React/TypeScript frontend development.
+The repository is organized for clarity, scalability, and best practices for both .NET 10 backend services and React/TypeScript frontend development.
 
 ```text
 /
 ├── .devcontainer/           # GitHub Codespaces/dev container config
 ├── .github/                 # GitHub Actions workflows and community files
 ├── infra/                   # Infrastructure as Code (Bicep templates, deployment scripts)
-├── libris-maleficarum-service/      # .NET 9 backend solution
+├── libris-maleficarum-service/      # .NET 10 backend solution
 │   ├── src/                         # All backend projects and solution
 │   │   ├── LibrisMaleficarum.sln           # Solution file
 │   │   ├── Api/                            # ASP.NET Core minimal API project

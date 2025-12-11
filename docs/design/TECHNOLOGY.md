@@ -56,7 +56,7 @@
 ## Application Technology Stack
 
 - **Backend:**
-  - **.NET 9** & **Aspire.NET**
+  - **.NET 10** & **Aspire.NET**
   - **Entity Framework Core** (Cosmos DB provider)
   - **IUserContextService** (stubbed; replace with Entra ID CIAM integration later)
   - **Repository layer** abstracting data operations.
