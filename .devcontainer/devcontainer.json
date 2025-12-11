@@ -93,7 +93,6 @@
         "yzhang.markdown-all-in-one",
         "redhat.vscode-yaml",
         "editorconfig.editorconfig",
-        "visualstudioexptteam.vscodeintellicode",
         "mikestead.dotenv",
         "microsoft-aspire.aspire-vscode",
         "ms-vscode.vscode-typescript-next",
@@ -103,44 +102,44 @@
   },
   "forwardPorts": [4000, 5173, 3000, 7071, 8080, 5000, 5001, 18081, 18888],
   "portsAttributes": {
-    "4000": { 
-      "label": "Vite HTTPS Dev Server", 
+    "4000": {
+      "label": "Vite HTTPS Dev Server",
       "onAutoForward": "openBrowserOnce",
       "protocol": "https"
     },
-    "5173": { 
-      "label": "Vite HTTP Dev Server", 
-      "onAutoForward": "ignore" 
+    "5173": {
+      "label": "Vite HTTP Dev Server",
+      "onAutoForward": "ignore"
     },
-    "3000": { 
-      "label": "React Dev Server", 
-      "onAutoForward": "openBrowserOnce" 
+    "3000": {
+      "label": "React Dev Server",
+      "onAutoForward": "openBrowserOnce"
     },
-    "7071": { 
-      "label": "Azure Functions", 
-      "onAutoForward": "notify" 
+    "7071": {
+      "label": "Azure Functions",
+      "onAutoForward": "notify"
     },
-    "8080": { 
-      "label": "API", 
-      "onAutoForward": "notify" 
+    "8080": {
+      "label": "API",
+      "onAutoForward": "notify"
     },
-    "5000": { 
-      "label": "ASP.NET Core HTTP", 
-      "onAutoForward": "notify" 
+    "5000": {
+      "label": "ASP.NET Core HTTP",
+      "onAutoForward": "notify"
     },
-    "5001": { 
-      "label": "ASP.NET Core HTTPS", 
+    "5001": {
+      "label": "ASP.NET Core HTTPS",
       "onAutoForward": "notify",
       "protocol": "https"
     },
-    "18081": { 
-      "label": "Aspire Dashboard", 
+    "18081": {
+      "label": "Aspire Dashboard",
       "onAutoForward": "openBrowserOnce",
       "protocol": "https"
     },
-    "18888": { 
-      "label": "Aspire Dashboard (alt)", 
-      "onAutoForward": "ignore" 
+    "18888": {
+      "label": "Aspire Dashboard (alt)",
+      "onAutoForward": "ignore"
     }
   },
   "remoteEnv": {
