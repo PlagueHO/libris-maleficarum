@@ -22,27 +22,31 @@
       "type": "stdio",
       "env": {}
     },
-    "Agent Framework Docs": {
+    "microsoft-learn": {
+      "url": "https://learn.microsoft.com/api/mcp",
+      "type": "http"
+    },
+    "agent-framework-docs": {
       "url": "https://gitmcp.io/microsoft/agent-framework",
       "type": "sse"
     },
-    "Azure Verified Module Bicep Docs": {
+    "azure-verified-module-bicep-docs": {
       "type": "sse",
       "url": "https://gitmcp.io/Azure/bicep-registry-modules"
     },
-    "React Docs": {
+    "react-docs": {
       "url": "https://gitmcp.io/facebook/react",
       "type": "sse"
     },
-    "TypeScript Docs": {
+    "typescript-docs": {
       "url": "https://gitmcp.io/microsoft/TypeScript",
       "type": "sse"
     },
-    "Node.js Docs": {
+    "nodejs-docs": {
       "url": "https://gitmcp.io/nodejs/node",
       "type": "sse"
     },
-    "FluentUI Docs": {
+    "fluentui-docs": {
       "url": "https://gitmcp.io/microsoft/fluentui",
       "type": "sse"
     },
