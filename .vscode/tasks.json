@@ -37,6 +37,17 @@
       "options": {
         "cwd": "${workspaceFolder}/libris-maleficarum-app"
       }
+    },
+    {
+      "label": "app: lint",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["lint"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      },
+      "problemMatcher": ["$eslint-stylish"],
+      "group": "test"
     }
   ]
 }

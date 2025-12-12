@@ -1,61 +1,59 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
-import { Provider } from "react-redux";
-import { CopilotKit } from "@copilotkit/react-core";
-import { store } from "../../store/store";
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { axe, toHaveNoViolations } from "jest-axe";
+import { ThemeProvider } from "../../theme/ThemeProvider";
 import { WorldBuilderChat } from "./WorldBuilderChat";
 
-// TODO: CopilotKit CSS import issue - need to configure Vitest to handle katex CSS in node_modules
-// See: https://github.com/vitest-dev/vitest/issues/2834
-describe.skip("WorldBuilderChat", () => {
-  const renderWithProviders = (component: React.ReactElement) => {
-    return render(
-      <Provider store={store}>
-        <CopilotKit
-          runtimeUrl="https://mock-agent.example.com/api/copilotkit"
-          agent="test-agent"
-          publicApiKey="demo-mode"
-        >
-          {component}
-        </CopilotKit>
-      </Provider>
-    );
-  };
+expect.extend(toHaveNoViolations);
 
-  it("should render the chat component", async () => {
-    const { container } = renderWithProviders(<WorldBuilderChat />);
-    // CopilotKit renders the chat container - wait for it to appear
-    await waitFor(
-      () => {
-        expect(container.querySelector(".copilotKitChat")).toBeInTheDocument();
-      },
-      { timeout: 3000 }
+// Mock CopilotChat to avoid CSS import issues with katex
+vi.mock("@copilotkit/react-ui", () => ({
+  CopilotChat: ({
+    labels,
+    className,
+  }: {
+    labels?: { title?: string; initial?: string };
+    className?: string;
+  }) => (
+    <div data-testid="copilot-chat" className={className}>
+      <h2>{labels?.title || "Chat"}</h2>
+      <p>{labels?.initial || "Welcome"}</p>
+    </div>
+  ),
+}));
+
+describe("WorldBuilderChat", () => {
+  it("renders the chat component with correct title", () => {
+    render(
+      <ThemeProvider>
+        <WorldBuilderChat />
+      </ThemeProvider>
     );
+
+    expect(screen.getByTestId("copilot-chat")).toBeInTheDocument();
+    expect(screen.getByText(/World Builder Assistant/i)).toBeInTheDocument();
   });
 
-  it("should display the initial welcome message", async () => {
-    renderWithProviders(<WorldBuilderChat />);
-    // CopilotKit displays the initial message - wait for it to appear
-    await waitFor(
-      () => {
-        expect(
-          screen.getByText(/Welcome to Libris Maleficarum/i)
-        ).toBeInTheDocument();
-      },
-      { timeout: 3000 }
+  it("displays the initial welcome message", () => {
+    render(
+      <ThemeProvider>
+        <WorldBuilderChat />
+      </ThemeProvider>
     );
+
+    expect(
+      screen.getByText(/Welcome to Libris Maleficarum/i)
+    ).toBeInTheDocument();
   });
 
-  it("should have a text input for messages", async () => {
-    renderWithProviders(<WorldBuilderChat />);
-    // CopilotKit provides a message input - wait for it to appear
-    await waitFor(
-      () => {
-        expect(
-          screen.getByPlaceholderText(/Type a message/i)
-        ).toBeInTheDocument();
-      },
-      { timeout: 3000 }
+  it("has no obvious a11y violations", async () => {
+    const { container } = render(
+      <ThemeProvider>
+        <WorldBuilderChat />
+      </ThemeProvider>
     );
+
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 });

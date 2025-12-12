@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Run linting
+        run: pnpm lint
+
       - name: Run unit tests
         run: pnpm exec vitest run --reporter=junit --reporter=verbose --reporter=github-actions --outputFile=test-results/junit.xml
 
