@@ -31,7 +31,7 @@ jobs:
         run: pnpm install
 
       - name: Run unit tests
-        run: pnpm exec vitest run --reporter=junit --reporter=github-actions --outputFile=test-results/junit.xml
+        run: pnpm exec vitest run --reporter=junit --reporter=verbose --reporter=github-actions --outputFile=test-results/junit.xml
 
       - name: Upload test results
         if: always()
