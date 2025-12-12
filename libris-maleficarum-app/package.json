@@ -13,8 +13,8 @@
     "start": "vite"
   },
   "dependencies": {
-    "@copilotkit/react-core": "^1.10.6",
-    "@copilotkit/react-ui": "^1.10.6",
+    "@copilotkit/react-core": "^1.50.0",
+    "@copilotkit/react-ui": "^1.50.0",
     "@fluentui-contrib/react-chat": "^0.2.2",
     "@fluentui/react-components": "^9.72.8",
     "@fluentui/react-icons": "^2.0.316",
