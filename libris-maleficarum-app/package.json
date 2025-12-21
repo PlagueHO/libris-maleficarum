@@ -16,7 +16,7 @@
     "@copilotkit/react-core": "^1.50.1",
     "@copilotkit/react-ui": "^1.50.1",
     "@fluentui-contrib/react-chat": "^0.2.2",
-    "@fluentui/react-components": "^9.72.8",
+    "@fluentui/react-components": "^9.72.9",
     "@fluentui/react-icons": "^2.0.316",
     "@reduxjs/toolkit": "^2.11.2",
     "react": "^19.2.3",
