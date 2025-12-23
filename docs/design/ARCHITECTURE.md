@@ -9,7 +9,7 @@ The Libris Maleficarum solution uses a **network-isolated architecture** where a
 The solution uses a hub-and-spoke network architecture with the following subnets:
 
 | Subnet | Address Space | Purpose | Resources |
-|--------|---------------|---------|-----------|
+| ------ | ------------- | ------- | --------- |
 | frontend | 10.0.1.0/24 | Frontend applications and static web apps | Static Web Apps, Container Apps Environment, Application Gateways |
 | backend | 10.0.2.0/24 | Backend services and databases | Storage Accounts, Cosmos DB, Private Endpoints |
 | gateway | 10.0.3.0/24 | Application gateways and load balancers | Application Gateway, Load Balancers |
@@ -53,7 +53,7 @@ The following resources are always deployed as part of the Libris Maleficarum ar
 ### Infrastructure and Networking
 
 | Resource | Purpose | AVM Reference |
-|----------|---------|---------------|
+| -------- | ------- | ------------- |
 | Resource Group | Container for all resources | [avm/res/resources/resource-group](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/resources/resource-group) |
 | Virtual Network | Network isolation with 10.0.0.0/16 address space | [avm/res/network/virtual-network](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/network/virtual-network) |
 | Network Security Groups | Security policies for each subnet | [avm/res/network/network-security-group](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/network/network-security-group) |
@@ -62,14 +62,14 @@ The following resources are always deployed as part of the Libris Maleficarum ar
 ### Monitoring and Observability
 
 | Resource | Purpose | AVM Reference |
-|----------|---------|---------------|
+| -------- | ------- | ------------- |
 | Log Analytics Workspace | Centralized logging and monitoring | [avm/res/operational-insights/workspace](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/operational-insights/workspace) |
 | Application Insights | Application performance monitoring | [avm/res/insights/component](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/insights/component) |
 
 ### Storage and Data
 
 | Resource | Purpose | AVM Reference |
-|----------|---------|---------------|
+| -------- | ------- | ------------- |
 | Storage Account | Blob storage with private endpoint | [avm/res/storage/storage-account](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/storage/storage-account) |
 | Cosmos DB | NoSQL database with private endpoint | [avm/res/document-db/database-account](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/document-db/database-account) |
 | Key Vault | Secure secret management with private endpoint | [avm/res/key-vault/vault](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/key-vault/vault) |
@@ -77,21 +77,21 @@ The following resources are always deployed as part of the Libris Maleficarum ar
 ### AI and Cognitive Services
 
 | Resource | Purpose | AVM Reference |
-|----------|---------|---------------|
+| -------- | ------- | ------------- |
 | Azure AI Services | Multi-service AI capabilities with private endpoint | [avm/res/cognitive-services/account](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/cognitive-services/account) |
 | Azure AI Search | Search and indexing with private endpoint | [avm/res/search/search-service](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/search/search-service) |
 
 ### Application Hosting
 
 | Resource | Purpose | AVM Reference |
-|----------|---------|---------------|
+| -------- | ------- | ------------- |
 | Container Apps Environment | Managed environment for containerized applications | [avm/res/app/managed-environment](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/app/managed-environment) |
 | Static Web App | Frontend hosting for web applications | [avm/res/web/static-site](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/web/static-site) |
 
 ## Optional Resources
 
 | Resource | When Deployed | Purpose | AVM Reference |
-|----------|---------------|---------|---------------|
+| -------- | ------------- | ------- | ------------- |
 | Azure Bastion | `createBastionHost=true` | Secure remote access to VMs | [avm/res/network/bastion-host](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/network/bastion-host) |
 
 ## Deployment Architecture
@@ -111,7 +111,7 @@ The Libris Maleficarum solution follows a zero-trust network architecture with t
 The solution supports the following configuration parameters:
 
 | Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
+| --------- | ---- | ------- | ----------- |
 | `environmentName` | string | *required* | Name used to generate unique resource names |
 | `location` | string | *required* | Azure region for all resources |
 | `resourceGroupName` | string | `''` | Optional custom resource group name |
@@ -151,7 +151,7 @@ azd env set AZURE_NETWORK_ISOLATION true
 The Bicep template provides the following outputs that can be used by applications or other infrastructure components:
 
 | Output | Description | Use Case |
-|--------|-------------|----------|
+| -------- | ------------- | ------- |
 | `AZURE_LOCATION` | Azure region where resources are deployed | Application configuration |
 | `AZURE_RESOURCE_GROUP` | Name of the resource group | Resource management |
 | `AZURE_TENANT_ID` | Azure AD tenant ID | Authentication configuration |
@@ -165,7 +165,7 @@ The Bicep template provides the following outputs that can be used by applicatio
 The following private DNS zones are automatically created and linked to the Virtual Network:
 
 | Service | Private DNS Zone | Purpose |
-|---------|------------------|---------|
+| -------- | ------------- | ------- |
 | Key Vault | `privatelink.vaultcore.azure.net` | Key Vault private endpoint resolution |
 | Storage Account | `privatelink.blob.core.windows.net` | Blob storage private endpoint resolution |
 | Cosmos DB | `privatelink.documents.azure.com` | Cosmos DB private endpoint resolution |
