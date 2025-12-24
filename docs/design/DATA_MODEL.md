@@ -5,56 +5,118 @@ All TTRPG-related entities are stored in Azure Cosmos DB using a flexible, hiera
 ## World Entity Container
 
 - **WorldEntity**: The core document type for all campaign/world data. Each "WorldEntity" can represent a "World" (root), or any nested entity such as "Continent", "Country", "Region", "City", "Character", etc. Entities can be arbitrarily nested to support complex world-building.
-- **Ownership**: Every WorldEntity includes an `OwnerId` property (e.g., a user ID) to indicate the owner, though this may not be used yet.
+- **Ownership**: Every WorldEntity includes an `OwnerId` property (e.g., a user ID) to indicate the owner.
 - **Document IDs**: All WorldEntities use a GUID for the `id` property to ensure uniqueness.
-- **Partition Key**: The partition key for the WorldEntity container is `/WorldId`. This ensures efficient lookups and RU/s usage, as most queries will be scoped to a single world.
-- **Indexing**: All WorldEntities are indexed by Azure AI Search for advanced semantic and full-text search.
+- **Hierarchical Partition Key**: The container uses a **3-level hierarchical partition key** (`[/WorldId, /ParentId, /id]`) to:
+  - **Level 1** (`/WorldId`): Tenant isolation - ensures all entities for a world are co-located on same physical partitions
+  - **Level 2** (`/ParentId`): Hierarchy locality - enables efficient parent-child queries without cross-partition scans
+  - **Level 3** (`/id`): Uniqueness guarantee - ensures no logical partition exceeds 20 GB limit, allowing infinite world scaling
+- **Query Optimization**: This partition strategy enables:
+  - Point reads: 1 RU (when all 3 keys specified)
+  - Children queries: ~2.5 RUs (WorldId + ParentId prefix)
+  - World tree queries: ~2.5 RUs × minimal partitions (WorldId prefix)
+  - Avoids hot partitions during write-heavy sessions
+- **Denormalization**: Each entity includes a `Children` array containing child entity IDs for efficient tree traversal without additional queries
+- **Vector Indexing**: Entities include a `DescriptionEmbedding` vector field (1536 dimensions for OpenAI embeddings) with DiskANN index for semantic search within world scope
+- **External Indexing**: All WorldEntities are also indexed by Azure AI Search for advanced semantic ranking, hybrid search, and cross-world discovery
 
 ### Example: WorldEntity Documents
 
 ```json
-
-// WorldEntity document (World)
+// WorldEntity document (World - root entity)
 {
   "id": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
   "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "ParentId": null,  // Root entity has no parent
   "OwnerId": "user-abc",
   "Name": "Eldoria",
   "EntityType": "World",
+  "Description": "A high-fantasy realm of magic and mystery...",
+  "DescriptionEmbedding": [0.021, -0.015, 0.032, ...],  // 1536-dim vector
+  "Children": [
+    "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",  // Arcanis continent
+    "f9e8d7c6-b5a4-3210-fedc-ba9876543210"   // Another continent
+  ],
+  "Path": ["Eldoria"],
+  "Depth": 0,
   "CreatedDate": "2024-06-01T10:00:00Z",
-  "ModifiedDate": "2024-06-01T10:00:00Z"
-  // ... properties for WorldEntity (e.g., description, lore, etc.)
+  "ModifiedDate": "2024-06-01T10:00:00Z",
+  "IsDeleted": false
 }
 
 // WorldEntity document (Continent, child of World)
 {
   "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
   "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "ParentId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",  // Parent is World
   "OwnerId": "user-abc",
   "Name": "Arcanis",
   "EntityType": "Continent",
+  "Description": "A vast landmass of ancient forests and towering mountains...",
+  "DescriptionEmbedding": [0.045, -0.023, 0.011, ...],
+  "Children": [
+    "c9d8e7f6-5a4b-3c2d-1e0f-9a8b7c6d5e4f",  // Valoria country
+    "d1e2f3a4-b5c6-7890-1234-567890abcdef"   // Another country
+  ],
+  "Path": ["Eldoria", "Arcanis"],
+  "Depth": 1,
   "CreatedDate": "2024-06-01T10:00:00Z",
-  "ModifiedDate": "2024-06-01T10:00:00Z"
-  // ... properties for WorldEntity (e.g., description, lore, etc.)
-
+  "ModifiedDate": "2024-06-01T10:00:00Z",
+  "IsDeleted": false
 }
 
 // WorldEntity document (Country, child of Continent)
-{
-  "id": "c9d8e7f6-5a4b-3c2d-1e0f-9a8b7c6d5e4f",
-  "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
-  "OwnerId": "user-abc",
-  "Name": "Valoria",
-  "EntityType": "Country",
-  "CreatedDate": "2024-06-01T10:00:00Z",
-  "ModifiedDate": "2024-06-01T10:00:00Z"
-  // ... properties for WorldEntity (e.g., description, lore, etc.)
-}
+{Container Structure
+
+**Single Container Design**: The WorldEntity container uses hierarchical partition keys to efficiently store both entities and their relationships. This eliminates the need for a separate hierarchy container, reducing:
+- RU costs (no duplicate queries across containers)
+- Data synchronization complexity
+- Storage costs (no denormalized relationship documents)
+
+**Hierarchy Management**: Parent-child relationships are managed through:
+1. **ParentId field**: Each entity references its parent's `id`
+2. **Children array**: Denormalized list of child IDs for fast tree traversal
+3. **Path array**: Breadcrumb from root for validation and UI display
+4. **Depth field**: Hierarchy level for query optimization
+
+**Hierarchical Operations**:
+```typescript
+// Get all children of an entity (e.g., expand tree node)
+SELECT * FROM c 
+WHERE c.WorldId = @worldId 
+  AND c.ParentId = @parentId
+  AND c.IsDeleted = false
+// Cost: ~2.5 RUs (single partition query)
+
+// Get entire world tree (e.g., load side panel)
+SELECT * FROM c 
+WHERE c.WorldId = @worldId 
+  AND c.IsDeleted = false
+ORDER BY c.Depth, c.Name
+// Cost: ~2.5 RUs × (partitions containing world data)
+
+// Move entity to new parent (transactional batch)
+// 1. Update entity's ParentId, Path, Depth
+// 2. Remove from old parent's Children array
+// 3. Add to new parent's Children array
+// Cost: ~3-6 RUs (within same world partition)
 ```
 
-- Each WorldEntity includes a reference to its parent (`ParentId`), the root world (`WorldId`), and an `OwnerId`.
-- The `id` for every WorldEntity is a GUID.
-- The partition key is `/WorldId` for efficient partitioning and query performance.
+**Change Feed Integration**: The Change Feed processor automatically:
+- Updates parent's `Children` array when child created/deleted
+- Syncs to Azure AI Search index for cross-world search
+- Triggers vector embedding generation for new/updated descriptions
+```
+
+**Key Design Points**:
+- **Hierarchical Partition Key**: `[WorldId, ParentId, id]` enables efficient queries and infinite scaling
+- **ParentId**: `null` for root World entities, otherwise references the parent entity's `id`
+- **Children**: Denormalized array of child IDs for efficient tree navigation (updated on child create/delete)
+- **Path**: Denormalized breadcrumb array for UI display and hierarchy validation
+- **Depth**: Hierarchy level for query optimization and UI rendering
+- **DescriptionEmbedding**: Vector for semantic search within world scope (Cosmos DB DiskANN index)
+- **Properties**: Type-specific fields stored as flexible object (different EntityTypes have different properties)
+- **IsDeleted**: Soft delete flag for undo/recovery functionality
 
 ## World Entity Hierarchy Container
 
