@@ -1,6 +1,6 @@
 # Data Model and Persistence Strategy
 
-The purpose of this document is to describe the structure and strategy for persisting TTRPG-related data in Azure Cosmos DB. It covers the main entity types, their properties, relationships, and indexing strategies to support efficient querying, scalability, and flexibility for various TTRPG systems.
+The purpose of this document is to describe the structure and strategy for persisting TTRPG-related world entities, assets and hierarchies. It covers the main entity types, their properties, relationships, and indexing strategies to support efficient querying, scalability, and flexibility for various TTRPG systems.
 
 This document is intended for backend developers, database architects, and system designers. An API specification document will complement this by detailing RESTful endpoints.
 
@@ -13,17 +13,16 @@ The core data model revolves around the concept of a "World" or "Campaign", whic
 
 ## Cosmos DB Containers
 
-Four containers store all TTRPG data, each with optimized partition keys for their access patterns:
+Three core containers store all TTRPG data, each with optimized partition keys for their access patterns:
 
 | Container | Purpose | Partition Key | Key Characteristics |
 | --------- | ------- | ------------- | ------------------- |
 | **WorldEntity** | Active world/campaign data | `[/WorldId, /id]` | All entities (worlds, locations, characters, campaigns, etc.) with hierarchical relationships via `ParentId` |
-| **WorldMetadata** | Materialized world hierarchy and metadata | `/WorldId` | Single document per world; lightweight hierarchy tree for efficient UI rendering (1 RU point read); max 5000 entities per world |
 | **Asset** | Asset metadata (images, audio, video, documents) | `[/WorldId, /EntityId]` | References to Azure Blob Storage; separate from entities to prevent document bloat; partitioned by entity for efficient entity-scoped queries |
 | **DeletedWorldEntity** | Soft-deleted entities | `[/WorldId, /id]` | Moved from WorldEntity after 30-day grace period; TTL auto-purges after 90 days |
 
 > [!IMPORTANT]
-> Partition key design for each container is critical to ensure RU usage is kept as low as possible. Hot partitions must also be avoided. Hierarchical partition keys (e.g., `[/WorldId, /id]`, `[/WorldId, /EntityId]`) enable efficient queries while distributing load across partitions. WorldMetadata uses simple key `/WorldId` since one document per world is optimal.
+> Partition key design for each container is critical to ensure RU usage is kept as low as possible. Hot partitions must also be avoided. Hierarchical partition keys (e.g., `[/WorldId, /id]`, `[/WorldId, /EntityId]`) enable efficient queries while distributing load across partitions.
 
 ## Common Operations
 
@@ -32,9 +31,8 @@ This section outlines common operations and their estimated RU costs for each co
 | Operation | Container | Parameters | RU Cost | Notes |
 | --------- | --------- | ---------- | ------- | ----- |
 | **Get entity by ID** | WorldEntity | `worldId`, `entityId` | 1 RU | Point read with both partition keys |
-| **Get world children** | WorldEntity | `worldId`, `parentId` | 2-5 RUs | Single-partition query |
-| **Get world hierarchy** | WorldMetadata | `worldId` | 1 RU | Point read; lightweight tree structure for UI navigation |
-| **List all world entities** | WorldEntity | `worldId` | 5-15 RUs | Partition prefix query for full entity data; use WorldMetadata for hierarchy-only queries |
+| **Get entity children** | WorldEntity | `worldId`, `parentId` | 2-5 RUs | Filtered partition prefix query; used for lazy-loading tree nodes |
+| **List all world entities** | WorldEntity | `worldId` | 5-15 RUs | Partition prefix query for full entity data |
 | **List entities by type** | WorldEntity | `worldId`, `entityType` | 3-8 RUs | Filtered partition prefix query |
 | **Search entities** | WorldEntity | `worldId`, `searchTerm` | 5-12 RUs | Name/tag search within world |
 | **Count children** | WorldEntity | `worldId`, `parentId` | 2-3 RUs | Aggregate query |
@@ -144,7 +142,7 @@ public record CharacterEntity : BaseWorldEntity
 // Example: Location entity with hybrid property system
 public record LocationEntity : BaseWorldEntity
 {
-    // EntityType: "Continent", "Country", "City", "Dungeon", etc.
+    // EntityType: "Continent", "GeographicRegion", "PoliticalRegion", "Country", "City", "Dungeon", etc.
     // SchemaId: "fantasy-location", "scifi-location", "modern-location", etc.
     
     // Properties (common):
@@ -154,6 +152,23 @@ public record LocationEntity : BaseWorldEntity
     // - MagicLevel: "High"
     // - Resources: ["mithril", "ancient artifacts"]
     // - Coordinates: { Latitude: 45.5, Longitude: -122.6 }
+}
+
+// Example: GeographicRegion entity for organizational grouping
+public record GeographicRegionEntity : BaseWorldEntity
+{
+    // EntityType: "GeographicRegion"
+    // SchemaId: "geographic-region"
+    
+    // Properties (common):
+    // - Area: 2500000 (km²)
+    // - Climate: "Temperate"
+    // - Terrain: "Mixed"
+    // - Population: 195000000 (aggregate)
+    
+    // SystemProperties (optional):
+    // - DefiningFeatures: ["Atlantic coastline", "Major river systems"]
+    // - EconomicZone: "Industrial"
 }
 
 // Example: Campaign entity with hybrid property system
@@ -180,19 +195,20 @@ System property schemas/templates are stored in a separate container or configur
 // Property Schema/Template Document (stored separately in Cosmos DB)
 public record PropertySchema
 {
-    public required string id { get; init; }           // "dnd5e-character"
-    public required string Name { get; init; }         // "D&D 5e Character"
-    public required string EntityType { get; init; }   // "Character"
+    public required string id { get; init; }           // "dnd5e-character", "geographic-region"
+    public required string Name { get; init; }         // "D&D 5e Character", "Geographic Region"
+    public required string EntityType { get; init; }   // "Character", "GeographicRegion"
     public string? Description { get; init; }          // "Properties for D&D 5th Edition characters"
     public List<PropertyDefinition>? CommonProperties { get; init; }  // Common property definitions
     public List<PropertyDefinition>? SystemProperties { get; init; }  // System-specific definitions
+    public List<string>? AllowedChildTypes { get; init; }  // Validation: allowed child EntityTypes
     public DateTime CreatedDate { get; init; }
     public DateTime ModifiedDate { get; init; }
 }
 
 public record PropertyDefinition
 {
-    public required string Name { get; init; }         // "Level", "ArmorClass", etc.
+    public required string Name { get; init; }         // "Level", "ArmorClass", "Area", etc.
     public required string DataType { get; init; }     // "string", "int", "object", "array"
     public bool Required { get; init; }                // Is this property required?
     public object? DefaultValue { get; init; }         // Default value if not specified
@@ -200,137 +216,103 @@ public record PropertyDefinition
     public string? DisplayName { get; init; }          // "Armor Class" (for UI)
     public string? Description { get; init; }          // Help text for UI
 }
+
+// Example: PropertySchema for GeographicRegion
+{
+    "id": "geographic-region",
+    "Name": "Geographic Region",
+    "EntityType": "GeographicRegion",
+    "Description": "Organizational grouping for geographic areas",
+    "CommonProperties": [
+        { "Name": "Area", "DataType": "number", "DisplayName": "Area (km²)", "Description": "Total area in square kilometers" },
+        { "Name": "Climate", "DataType": "string", "DisplayName": "Climate", "ValidationRule": "enum:Tropical,Arid,Temperate,Continental,Polar" },
+        { "Name": "Terrain", "DataType": "string", "DisplayName": "Terrain", "ValidationRule": "enum:Mountains,Plains,Forest,Desert,Mixed" },
+        { "Name": "Population", "DataType": "number", "DisplayName": "Population (aggregate)" }
+    ],
+    "SystemProperties": [],
+    "AllowedChildTypes": ["Country", "Province", "Region", "GeographicRegion"],
+    "CreatedDate": "2024-01-01T00:00:00Z",
+    "ModifiedDate": "2024-01-01T00:00:00Z"
+}
 ```
 
-## WorldMetadata Container
+## Hierarchy Navigation Strategy
 
-The WorldMetadata container stores a materialized view of each world's entity hierarchy for efficient UI rendering. This follows the CQRS pattern, separating read-optimized hierarchy queries from write-optimized entity storage.
+The application uses **on-demand lazy loading** to build the entity hierarchy tree. This approach queries children as tree nodes are expanded, providing scalability and fresh data without entity count limits.
 
-**Purpose**: Avoid expensive partition prefix queries when loading world navigation trees.
-
-**Performance**: 
-- **Without WorldMetadata**: Loading hierarchy for 1000-entity world = 50-200 RUs (query all entities)
-- **With WorldMetadata**: Loading hierarchy = 1 RU (point read single document)
-
-**Partition Key**: `/WorldId` (simple key - one document per world)
-
-**Hard Limit**: Maximum 5000 entities per world to keep document size <2MB (Cosmos DB limit)
-
-### WorldMetadata Schema
+### Query Pattern
 
 ```csharp
-// WorldMetadata Container - Read model for world hierarchy
-public record WorldMetadata
+// Get children of a specific entity
+[HttpGet("worlds/{worldId}/entities/{parentId}/children")]
+public async Task<IEnumerable<EntityNode>> GetChildren(
+    string worldId, 
+    string parentId)
 {
-    // === Identity ===
-    public required string id { get; init; }              // Same as WorldId (enables point reads)
-    public required string WorldId { get; init; }         // Partition key
+    var query = container.GetItemLinqQueryable<BaseWorldEntity>()
+        .Where(e => e.WorldId == worldId && e.ParentId == parentId && !e.IsDeleted)
+        .OrderBy(e => e.Name)
+        .Select(e => new EntityNode 
+        { 
+            Id = e.id, 
+            Name = e.Name, 
+            EntityType = e.EntityType,
+            IconAssetId = e.IconAssetId 
+        });
     
-    // === Hierarchy (Materialized View) ===
-    public required WorldHierarchyNode HierarchyRoot { get; init; }
-    
-    // === Metadata ===
-    public required DateTime LastUpdated { get; init; }
-    public required string LastUpdatedBy { get; init; }
-    public required int Version { get; init; }            // Optimistic concurrency control
-    
-    // Future: Could include aggregated statistics (TotalEntities, EntitiesByType, etc.)
+    return await query.ToListAsync();
 }
-
-// Lightweight hierarchy node - no Properties/SystemProperties to minimize size
-public record WorldHierarchyNode
-{
-    public required string Id { get; init; }              // Entity ID
-    public required string Name { get; init; }            // Display name
-    public required string EntityType { get; init; }      // For UI icons/styling
-    public int Depth { get; init; }                       // Hierarchy depth
-    public string? IconAssetId { get; init; }             // Custom icon reference
-    public bool IsDeleted { get; init; }                  // Show/hide in tree
-    public List<WorldHierarchyNode>? Children { get; init; }  // Nested child entities
-}
+// Cost: 2-5 RUs per node expansion
 ```
 
-### Synchronization Strategy
+### Client-Side Implementation
 
-WorldMetadata documents are kept in sync with WorldEntity changes via **Azure Functions Change Feed Processor**:
+**Tree Loading Flow**:
 
-1. **Change Detection**: Change Feed on WorldEntity container triggers when entities are created, updated, or deleted
-2. **Hierarchy Update**: Function reads current WorldMetadata document, applies incremental changes to hierarchy tree
-3. **Write Back**: Updated WorldMetadata document written with optimistic concurrency (Version/ETag)
-4. **Consistency**: Eventual consistency (~1 second typical latency) - acceptable for UI navigation
+1. Initial load: Query root-level entities (`ParentId = WorldId`)
+2. User expands node: Query children of that entity (`ParentId = expandedEntityId`)
+3. Cache results client-side with 5-minute TTL
+4. Refresh on demand or via real-time notifications
 
-**Update Operations**:
-- Entity created/updated: Upsert node in hierarchy tree (update Name, EntityType, IconAssetId)
-- Entity deleted: Mark node as `IsDeleted = true` or remove from tree
-- Entity moved: Update parent reference in tree structure
+**Benefits**:
 
-**Change Feed Configuration**:
-- Lease container: Tracks processing state across function instances
-- Start from: Beginning (on first run) or continuation token (on restart)
-- Batch size: 100-500 changes per batch for efficiency
+- ✅ **Scalable**: No entity count limits per world
+- ✅ **Fresh data**: Always queries latest state
+- ✅ **Simple architecture**: No Change Feed processor needed
+- ✅ **Memory efficient**: Only expanded branches loaded
+- ✅ **Multi-user friendly**: Real-time updates via SignalR
 
-### Query Patterns
+**Performance**:
 
-```sql
--- Get full world hierarchy (point read - 1 RU)
-SELECT * FROM m
-WHERE m.id = @worldId
-  AND m.WorldId = @worldId
+- Root load: 2-5 RUs (typically 5-20 root entities)
+- Node expansion: 2-5 RUs per expanded node
+- Typical session (expand 5-10 nodes): 15-30 RUs
 
--- Example result structure
-{
-  "id": "world-guid",
-  "WorldId": "world-guid",
-  "HierarchyRoot": {
-    "Id": "world-guid",
-    "Name": "Eldoria",
-    "EntityType": "World",
-    "Depth": 0,
-    "Children": [
-      {
-        "Id": "continent-guid",
-        "Name": "Arcanis",
-        "EntityType": "Continent",
-        "Depth": 1,
-        "Children": [
-          {
-            "Id": "country-guid",
-            "Name": "Valoria",
-            "EntityType": "Country",
-            "Depth": 2,
-            "Children": []
-          }
-        ]
-      }
-    ]
-  },
-  "LastUpdated": "2024-06-25T10:30:00Z",
-  "LastUpdatedBy": "change-feed-processor",
-  "Version": 142
-}
+### Real-Time Synchronization
+
+```typescript
+// SignalR notification when entities change
+signalR.on('EntityChanged', (change) => {
+  if (change.ChangeType === 'created' || change.ChangeType === 'deleted') {
+    // Invalidate parent's children cache
+    hierarchyCache.invalidate(change.ParentId);
+    
+    // Auto-refresh if node is currently expanded
+    if (isNodeExpanded(change.ParentId)) {
+      loadChildren(change.ParentId, { forceRefresh: true });
+    }
+  }
+});
 ```
 
-### Size Estimation
+### Future Optimization: WorldMetadata Container
 
-- **Average node size**: ~200 bytes (id, name, type, depth, children array references)
-- **1000 entities**: ~200 KB document
-- **5000 entities** (hard limit): ~1 MB document (safe margin below 2 MB Cosmos limit)
+For worlds with very frequent full-tree loads and minimal updates, a **WorldMetadata** container could be added as an optimization:
 
-**Document Size Management**:
-- Monitor document size via Application Insights
-- Warn users approaching 4500 entities (90% of limit)
-- Block entity creation at 5000 entities per world
-- Recommend splitting into multiple worlds for very large campaigns
-
-### Cost Analysis
-
-| Operation | Without WorldMetadata | With WorldMetadata | Savings |
-|-----------|----------------------|-------------------|--------|
-| Load world tree (1000 entities) | 50-200 RUs | 1 RU | 98-99% |
-| Update single entity | 6-12 RUs | 6-12 RUs (entity) + 6-10 RUs (hierarchy) | -50% overhead |
-| Typical session (10 loads, 5 updates) | 500-2000 RUs | 10 + 30-60 + 30-50 = 70-120 RUs | 85-95% |
-
-**Net Benefit**: Read-heavy workloads (typical for world navigation) see massive RU savings despite write amplification.
+- Single document per world containing pre-materialized hierarchy tree
+- 1 RU initial load vs 15-30 RUs for on-demand loading
+- Trade-offs: 5000 entity limit, eventual consistency, write amplification, added complexity
+- **Recommendation**: Only implement if profiling shows hierarchy queries are a bottleneck
 
 ## Asset Container
 
@@ -342,6 +324,7 @@ Asset metadata is stored in a dedicated `Asset` container (separate from WorldEn
 - **Simplify Lifecycle**: Assets can be managed independently (cleanup, migration, archival)
 
 **Partition Key Strategy**: The Asset container uses hierarchical partition key `[/WorldId, /EntityId]` to:
+
 - **Efficient Entity Queries**: All assets for an entity in single partition (2-5 RUs)
 - **Hot Partition Prevention**: Assets distributed by entity, not aggregated per world
 - **Scalability**: No per-world partition limits; scales with entity count
@@ -543,7 +526,7 @@ var blobPath = $"{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}
 ### Example: WorldEntity Documents Referencing Assets
 
 ```json
-// Location entity - references map asset by ID
+// Continent entity - parent of GeographicRegions
 {
   "id": "location-continent-guid",
   "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
@@ -567,6 +550,55 @@ var blobPath = $"{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}
     "Population": 45000000,
     "Climate": "Temperate",
     "Terrain": "Mixed (forests, mountains, plains)"
+  }
+}
+
+// GeographicRegion entity - organizational grouping within continent
+{
+  "id": "region-western-arcanis-guid",
+  "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "ParentId": "location-continent-guid",
+  "EntityType": "GeographicRegion",
+  "SchemaId": "geographic-region",
+  "Name": "Western Arcanis",
+  "OwnerId": "user-abc",
+  "Depth": 2,
+  "CreatedDate": "2024-06-01T10:30:00Z",
+  "ModifiedDate": "2024-06-15T14:30:00Z",
+  "IsDeleted": false,
+  "Description": "The western territories of Arcanis, known for coastal trade cities",
+  "Tags": ["geographic-region", "coastal", "trade-hub"],
+  "Path": ["Eldoria", "Arcanis", "Western Arcanis"],
+  "Properties": {
+    "Area": 850000,
+    "Climate": "Temperate",
+    "Terrain": "Coastal",
+    "Population": 12000000
+  }
+}
+
+// Country entity - child of GeographicRegion, with cross-cutting Tags
+{
+  "id": "country-valoria-guid",
+  "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
+  "ParentId": "region-western-arcanis-guid",
+  "EntityType": "Country",
+  "SchemaId": "fantasy-location",
+  "Name": "Valoria",
+  "OwnerId": "user-abc",
+  "Depth": 3,
+  "CreatedDate": "2024-06-01T11:00:00Z",
+  "ModifiedDate": "2024-06-15T14:30:00Z",
+  "IsDeleted": false,
+  "Description": "A maritime nation famous for its shipbuilding and naval prowess",
+  "Tags": ["country", "naval-power", "trade-alliance", "magic-friendly"],
+  "Path": ["Eldoria", "Arcanis", "Western Arcanis", "Valoria"],
+  
+  "Properties": {
+    "Population": 8000000,
+    "Government": "Constitutional Monarchy",
+    "Climate": "Mediterranean",
+    "Terrain": "Coastal plains and hills"
   }
 }
 
@@ -820,7 +852,12 @@ The `EntityType` property defines the type of each WorldEntity. The following is
 - **World** (root)
   - **Locations**
     - Continent
+    - **GeographicRegion** (organizational grouping by geography: "West Europe", "Balkans", "Scandinavia")
+    - **PoliticalRegion** (organizational grouping by politics: "European Union", "Commonwealth", "Trade Alliance")
+    - **CulturalRegion** (organizational grouping by culture: "Latin Lands", "Slavic Territories", "Nordic Realms")
+    - **MilitaryRegion** (organizational grouping by military zones: "Northern Defense Zone", "Border Territories")
     - Country
+    - Province
     - Region
     - City
     - Settlement
@@ -898,9 +935,65 @@ The `EntityType` property defines the type of each WorldEntity. The following is
 
 This hierarchy is extensible and can be expanded as needed for different TTRPG systems and campaign needs.
 
-**Hierarchy Validation**: A rules engine (or AI-powered validation via Microsoft Agent Framework) validates parent-child relationships. For example:
+### Organizational Entity Types
 
-- ✅ Valid: Monster child of Continent (monsters live in continents)
-- ❌ Invalid: Continent child of Monster (continents cannot be inside monsters)
+**Regional entity types** (GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion) serve as **semantic organizational containers** for grouping related entities. Unlike generic "folders", these types have domain meaning and support properties, validation, and AI agent understanding.
+
+**Example hierarchy with organizational grouping**:
+
+```text
+World: Eldoria
+├── Continent: Europe
+│   ├── GeographicRegion: Western Europe
+│   │   ├── Country: France (path: /europe/western-europe/france)
+│   │   ├── Country: Belgium
+│   │   └── Country: Netherlands
+│   ├── GeographicRegion: Eastern Europe
+│   │   ├── Country: Poland
+│   │   └── Country: Czech Republic
+│   └── PoliticalRegion: European Alliance (cross-cutting grouping)
+│       └── (references via Tags: france, belgium, poland)
+```
+
+**Design Rationale**:
+
+- **Semantic clarity**: "GeographicRegion" conveys meaning; agents understand it's a geographic grouping
+- **Properties support**: Regions can have properties (Climate, Population, Area) unlike folders
+- **Validation-friendly**: Rules enforce valid parent-child relationships (e.g., GeographicRegion can only contain Countries/Regions)
+- **Query power**: "Show all GeographicRegions in Europe" is a meaningful query
+- **Icon differentiation**: Different EntityTypes automatically get appropriate UI icons
+- **AI-compatible**: Microsoft Agent Framework can reason about regional organization
+
+**Cross-cutting organization via Tags**: Use the existing `Tags` property for entities that belong to multiple logical groupings (e.g., a Country tagged with `["eu-member", "nato", "schengen"]`). This avoids deep hierarchy nesting while preserving organizational metadata.
+
+### Hierarchy Validation Rules
+
+A rules engine (or AI-powered validation via Microsoft Agent Framework) validates parent-child relationships. The following rules apply:
+
+**Location Entity Rules**:
+
+- ✅ `Continent` can contain: `GeographicRegion`, `PoliticalRegion`, `CulturalRegion`, `MilitaryRegion`, `Country`, `Region`
+- ✅ `GeographicRegion` can contain: `Country`, `Province`, `Region`, `GeographicRegion` (nested regions)
+- ✅ `PoliticalRegion` can contain: `Country`, `Province`, `Region`, `PoliticalRegion` (nested regions)
+- ✅ `CulturalRegion` can contain: `Country`, `Province`, `Region`, `CulturalRegion` (nested regions)
+- ✅ `MilitaryRegion` can contain: `Country`, `Province`, `Region`, `MilitaryRegion` (nested regions)
+- ✅ `Country` can contain: `Province`, `Region`, `City`, `Landmark`, `Character`, `Organization`
+- ✅ `Region` can contain: `City`, `Settlement`, `Landmark`, `Character`, `Organization`
+- ✅ `City` can contain: `Settlement`, `Building`, `Landmark`, `Character`, `Organization`
+
+**General Rules**:
+
+- ✅ Valid: `Monster` child of `Continent` (monsters live in continents)
+- ✅ Valid: `Character` child of `City` (characters reside in cities)
+- ✅ Valid: `Quest` child of `Campaign` (quests belong to campaigns)
+- ❌ Invalid: `Continent` child of `Monster` (continents cannot be inside monsters)
+- ❌ Invalid: `World` child of any entity (World is always root)
+- ❌ Invalid: Regional types as children of non-location entities
+
+**Validation Implementation**:
+
 - Rules defined in PropertySchema or separate validation configuration
-- Validation performed at application layer (compile-time for common rules, runtime for system-specific rules)
+- Validation performed at application layer:
+  - **Compile-time**: Common rules enforced in strongly-typed API
+  - **Runtime**: System-specific and user-defined rules via validation service
+- Microsoft Agent Framework can suggest valid child types based on parent EntityType
