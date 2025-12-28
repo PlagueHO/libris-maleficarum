@@ -2,16 +2,23 @@
 
 The purpose of this document is to describe the structure and strategy for persisting TTRPG-related data in Azure Cosmos DB. It covers the main entity types, their properties, relationships, and indexing strategies to support efficient querying, scalability, and flexibility for various TTRPG systems.
 
-This document is intended for backend developers, database architects, and system designers. An API specification document will complement this by detailing RESTful endpoints. The API will be implemented using ASP.NET Core Web API with a repository pattern.
+This document is intended for backend developers, database architects, and system designers. An API specification document will complement this by detailing RESTful endpoints.
+
+> [!NOTE]
+> This document does not contain implementation code but provides detailed data models and design rationale to guide development. It focuses on Cosmos DB schema design, partitioning strategies, and common query patterns. It will contain sample SQL statements to illustrate querying approaches and estimate RU costs for common operations.
+
+## Overview of Data Model
+
+The core data model revolves around the concept of a "World" or "Campaign", which serves as a container for all related entities such as locations, characters, items, and sessions. Each World is owned by a user and can contain an arbitrary hierarchy of nested entities. A user can own multiple Worlds, but will only interact with one World at a time in the application.
 
 ## Cosmos DB Containers
 
-Three containers store all TTRPG data, each partitioned by `[/WorldId, /id]` for hot partition prevention and unlimited scaling:
+Three containers store all TTRPG data, each with optimized partition keys for their access patterns:
 
 | Container | Purpose | Partition Key | Key Characteristics |
 | --------- | ------- | ------------- | ------------------- |
 | **WorldEntity** | Active world/campaign data | `[/WorldId, /id]` | All entities (worlds, locations, characters, campaigns, etc.) with hierarchical relationships via `ParentId` |
-| **Asset** | Asset metadata (images, audio, video, documents) | `[/WorldId, /id]` | References to Azure Blob Storage; separate from entities to prevent document bloat |
+| **Asset** | Asset metadata (images, audio, video, documents) | `[/WorldId, /EntityId]` | References to Azure Blob Storage; separate from entities to prevent document bloat; partitioned by entity for efficient entity-scoped queries |
 | **DeletedWorldEntity** | Soft-deleted entities | `[/WorldId, /id]` | Moved from WorldEntity after 30-day grace period; TTL auto-purges after 90 days |
 
 > [!IMPORTANT]
@@ -202,6 +209,12 @@ Asset metadata is stored in a dedicated `Asset` container (separate from WorldEn
 - **Enable Asset Queries**: Query assets across entities without scanning all WorldEntities
 - **Simplify Lifecycle**: Assets can be managed independently (cleanup, migration, archival)
 
+**Partition Key Strategy**: The Asset container uses hierarchical partition key `[/WorldId, /EntityId]` to:
+- **Efficient Entity Queries**: All assets for an entity in single partition (2-5 RUs)
+- **Hot Partition Prevention**: Assets distributed by entity, not aggregated per world
+- **Scalability**: No per-world partition limits; scales with entity count
+- **Point Reads**: 1 RU when querying by WorldId + EntityId + id
+
 ### Asset Containe Schema
 
 ```csharp
@@ -209,8 +222,8 @@ public record Asset
 {
     // === Core Identity (REQUIRED) ===
     public required string id { get; init; }              // Unique asset ID (GUID)
-    public required string WorldId { get; init; }         // Partition key - tenant isolation
-    public required string EntityId { get; init; }        // Parent WorldEntity ID
+    public required string WorldId { get; init; }         // Partition key level 1 - tenant isolation
+    public required string EntityId { get; init; }        // Partition key level 2 - parent WorldEntity ID
     public required string EntityType { get; init; }      // Entity type (for context)
     
     // === Asset Metadata (REQUIRED) ===
@@ -255,7 +268,7 @@ public record Asset
 public record ImageDimensions(int Width, int Height);
 ```
 
-**Partition Key**: `/WorldId` - all assets for a world co-located for efficient queries.
+**Partition Key**: `[/WorldId, /EntityId]` - assets partitioned by entity for efficient entity-scoped queries and hot partition prevention.
 
 **WorldEntity Reference Pattern**:
 
@@ -274,26 +287,33 @@ public string? MapAssetId { get; init; }             // Location maps
 **Query Patterns**:
 
 ```sql
--- Get all assets for an entity
+-- Get all assets for an entity (single partition query)
 SELECT * FROM a
 WHERE a.WorldId = @worldId
   AND a.EntityId = @entityId
   AND a.IsDeleted = false
--- Cost: ~2-5 RUs (single partition query)
+-- Cost: ~2-5 RUs (single partition with WorldId + EntityId)
 
--- Get specific asset type for entity
+-- Get specific asset type for entity (single partition query)
 SELECT * FROM a
 WHERE a.WorldId = @worldId
   AND a.EntityId = @entityId
   AND a.Type = 'image'
   AND a.IsDeleted = false
--- Cost: ~2-5 RUs
+-- Cost: ~2-5 RUs (filtered within partition)
 
 -- Get asset by ID (point read)
 SELECT * FROM a
 WHERE a.WorldId = @worldId
+  AND a.EntityId = @entityId
   AND a.id = @assetId
--- Cost: 1 RU (point read with partition key + id)
+-- Cost: 1 RU (point read with full partition key + id)
+
+-- Get all assets for a world (cross-partition query)
+SELECT * FROM a
+WHERE a.WorldId = @worldId
+  AND a.IsDeleted = false
+-- Cost: ~10-30 RUs (partition prefix query across all entities)
 ```
 
 **Cost Benefits**:
@@ -594,7 +614,7 @@ public record DeletedWorldEntity : BaseWorldEntity
 }
 ```
 
-**Partition Key**: `/WorldId` - maintains same partition structure for efficient world-scoped queries.
+**Partition Key**: `[/WorldId, /id]` - maintains same hierarchical partition structure as WorldEntity for efficient world-scoped queries and hot partition prevention.
 
 **Lifecycle Flow**:
 
