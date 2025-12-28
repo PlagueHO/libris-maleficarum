@@ -13,16 +13,17 @@ The core data model revolves around the concept of a "World" or "Campaign", whic
 
 ## Cosmos DB Containers
 
-Three containers store all TTRPG data, each with optimized partition keys for their access patterns:
+Four containers store all TTRPG data, each with optimized partition keys for their access patterns:
 
 | Container | Purpose | Partition Key | Key Characteristics |
 | --------- | ------- | ------------- | ------------------- |
 | **WorldEntity** | Active world/campaign data | `[/WorldId, /id]` | All entities (worlds, locations, characters, campaigns, etc.) with hierarchical relationships via `ParentId` |
+| **WorldMetadata** | Materialized world hierarchy and metadata | `/WorldId` | Single document per world; lightweight hierarchy tree for efficient UI rendering (1 RU point read); max 5000 entities per world |
 | **Asset** | Asset metadata (images, audio, video, documents) | `[/WorldId, /EntityId]` | References to Azure Blob Storage; separate from entities to prevent document bloat; partitioned by entity for efficient entity-scoped queries |
 | **DeletedWorldEntity** | Soft-deleted entities | `[/WorldId, /id]` | Moved from WorldEntity after 30-day grace period; TTL auto-purges after 90 days |
 
 > [!IMPORTANT]
-> Partition key design for each container is critical to ensure RU usage is kept as low as possible. Hot partitions must also be avoided. Heirarchical partition keys `[/WorldId, /id]` allows efficient world-scoped queries while distributing load across partitions.
+> Partition key design for each container is critical to ensure RU usage is kept as low as possible. Hot partitions must also be avoided. Hierarchical partition keys (e.g., `[/WorldId, /id]`, `[/WorldId, /EntityId]`) enable efficient queries while distributing load across partitions. WorldMetadata uses simple key `/WorldId` since one document per world is optimal.
 
 ## Common Operations
 
@@ -32,7 +33,8 @@ This section outlines common operations and their estimated RU costs for each co
 | --------- | --------- | ---------- | ------- | ----- |
 | **Get entity by ID** | WorldEntity | `worldId`, `entityId` | 1 RU | Point read with both partition keys |
 | **Get world children** | WorldEntity | `worldId`, `parentId` | 2-5 RUs | Single-partition query |
-| **List all world entities** | WorldEntity | `worldId` | 5-15 RUs | Partition prefix query |
+| **Get world hierarchy** | WorldMetadata | `worldId` | 1 RU | Point read; lightweight tree structure for UI navigation |
+| **List all world entities** | WorldEntity | `worldId` | 5-15 RUs | Partition prefix query for full entity data; use WorldMetadata for hierarchy-only queries |
 | **List entities by type** | WorldEntity | `worldId`, `entityType` | 3-8 RUs | Filtered partition prefix query |
 | **Search entities** | WorldEntity | `worldId`, `searchTerm` | 5-12 RUs | Name/tag search within world |
 | **Count children** | WorldEntity | `worldId`, `parentId` | 2-3 RUs | Aggregate query |
@@ -199,6 +201,136 @@ public record PropertyDefinition
     public string? Description { get; init; }          // Help text for UI
 }
 ```
+
+## WorldMetadata Container
+
+The WorldMetadata container stores a materialized view of each world's entity hierarchy for efficient UI rendering. This follows the CQRS pattern, separating read-optimized hierarchy queries from write-optimized entity storage.
+
+**Purpose**: Avoid expensive partition prefix queries when loading world navigation trees.
+
+**Performance**: 
+- **Without WorldMetadata**: Loading hierarchy for 1000-entity world = 50-200 RUs (query all entities)
+- **With WorldMetadata**: Loading hierarchy = 1 RU (point read single document)
+
+**Partition Key**: `/WorldId` (simple key - one document per world)
+
+**Hard Limit**: Maximum 5000 entities per world to keep document size <2MB (Cosmos DB limit)
+
+### WorldMetadata Schema
+
+```csharp
+// WorldMetadata Container - Read model for world hierarchy
+public record WorldMetadata
+{
+    // === Identity ===
+    public required string id { get; init; }              // Same as WorldId (enables point reads)
+    public required string WorldId { get; init; }         // Partition key
+    
+    // === Hierarchy (Materialized View) ===
+    public required WorldHierarchyNode HierarchyRoot { get; init; }
+    
+    // === Metadata ===
+    public required DateTime LastUpdated { get; init; }
+    public required string LastUpdatedBy { get; init; }
+    public required int Version { get; init; }            // Optimistic concurrency control
+    
+    // Future: Could include aggregated statistics (TotalEntities, EntitiesByType, etc.)
+}
+
+// Lightweight hierarchy node - no Properties/SystemProperties to minimize size
+public record WorldHierarchyNode
+{
+    public required string Id { get; init; }              // Entity ID
+    public required string Name { get; init; }            // Display name
+    public required string EntityType { get; init; }      // For UI icons/styling
+    public int Depth { get; init; }                       // Hierarchy depth
+    public string? IconAssetId { get; init; }             // Custom icon reference
+    public bool IsDeleted { get; init; }                  // Show/hide in tree
+    public List<WorldHierarchyNode>? Children { get; init; }  // Nested child entities
+}
+```
+
+### Synchronization Strategy
+
+WorldMetadata documents are kept in sync with WorldEntity changes via **Azure Functions Change Feed Processor**:
+
+1. **Change Detection**: Change Feed on WorldEntity container triggers when entities are created, updated, or deleted
+2. **Hierarchy Update**: Function reads current WorldMetadata document, applies incremental changes to hierarchy tree
+3. **Write Back**: Updated WorldMetadata document written with optimistic concurrency (Version/ETag)
+4. **Consistency**: Eventual consistency (~1 second typical latency) - acceptable for UI navigation
+
+**Update Operations**:
+- Entity created/updated: Upsert node in hierarchy tree (update Name, EntityType, IconAssetId)
+- Entity deleted: Mark node as `IsDeleted = true` or remove from tree
+- Entity moved: Update parent reference in tree structure
+
+**Change Feed Configuration**:
+- Lease container: Tracks processing state across function instances
+- Start from: Beginning (on first run) or continuation token (on restart)
+- Batch size: 100-500 changes per batch for efficiency
+
+### Query Patterns
+
+```sql
+-- Get full world hierarchy (point read - 1 RU)
+SELECT * FROM m
+WHERE m.id = @worldId
+  AND m.WorldId = @worldId
+
+-- Example result structure
+{
+  "id": "world-guid",
+  "WorldId": "world-guid",
+  "HierarchyRoot": {
+    "Id": "world-guid",
+    "Name": "Eldoria",
+    "EntityType": "World",
+    "Depth": 0,
+    "Children": [
+      {
+        "Id": "continent-guid",
+        "Name": "Arcanis",
+        "EntityType": "Continent",
+        "Depth": 1,
+        "Children": [
+          {
+            "Id": "country-guid",
+            "Name": "Valoria",
+            "EntityType": "Country",
+            "Depth": 2,
+            "Children": []
+          }
+        ]
+      }
+    ]
+  },
+  "LastUpdated": "2024-06-25T10:30:00Z",
+  "LastUpdatedBy": "change-feed-processor",
+  "Version": 142
+}
+```
+
+### Size Estimation
+
+- **Average node size**: ~200 bytes (id, name, type, depth, children array references)
+- **1000 entities**: ~200 KB document
+- **5000 entities** (hard limit): ~1 MB document (safe margin below 2 MB Cosmos limit)
+
+**Document Size Management**:
+- Monitor document size via Application Insights
+- Warn users approaching 4500 entities (90% of limit)
+- Block entity creation at 5000 entities per world
+- Recommend splitting into multiple worlds for very large campaigns
+
+### Cost Analysis
+
+| Operation | Without WorldMetadata | With WorldMetadata | Savings |
+|-----------|----------------------|-------------------|--------|
+| Load world tree (1000 entities) | 50-200 RUs | 1 RU | 98-99% |
+| Update single entity | 6-12 RUs | 6-12 RUs (entity) + 6-10 RUs (hierarchy) | -50% overhead |
+| Typical session (10 loads, 5 updates) | 500-2000 RUs | 10 + 30-60 + 30-50 = 70-120 RUs | 85-95% |
+
+**Net Benefit**: Read-heavy workloads (typical for world navigation) see massive RU savings despite write amplification.
 
 ## Asset Container
 
