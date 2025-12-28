@@ -8,7 +8,7 @@ applyTo: '**/*.md'
 The following markdown content rules are enforced in the validators:
 
 1. **Headings**: Use appropriate heading levels (H2, H3, etc.) to structure your content. Do not use an H1 heading, as this will be generated based on the title.
-1. **Lists**: Use bullet points or numbered lists for lists. Ensure proper indentation and spacing. Blank lines before lists. Numbered lists should start with "1." for each item.
+1. **Lists**: Use bullet points or numbered lists for lists. Ensure proper indentation and spacing. Blank lines before lists. Numbered lists should start with "1." for all items.
 1. **Code Blocks**: Use fenced code blocks for code snippets. Specify the language for syntax highlighting.
 1. **Links**: Use proper markdown syntax for links. Ensure that links are valid and accessible.
 1. **Images**: Use proper markdown syntax for images. Include alt text for accessibility.

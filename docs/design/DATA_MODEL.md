@@ -270,9 +270,9 @@ public async Task<IEnumerable<EntityNode>> GetChildren(
 **Tree Loading Flow**:
 
 1. Initial load: Query root-level entities (`ParentId = WorldId`)
-2. User expands node: Query children of that entity (`ParentId = expandedEntityId`)
-3. Cache results client-side with 5-minute TTL
-4. Refresh on demand or via real-time notifications
+1. User expands node: Query children of that entity (`ParentId = expandedEntityId`)
+1. Cache results client-side with 5-minute TTL
+1. Refresh on demand or via real-time notifications
 
 **Benefits**:
 
@@ -330,7 +330,7 @@ Asset metadata is stored in a dedicated `Asset` container (separate from WorldEn
 - **Scalability**: No per-world partition limits; scales with entity count
 - **Point Reads**: 1 RU when querying by WorldId + EntityId + id
 
-### Asset Containe Schema
+### Asset Container Schema
 
 ```csharp
 public record Asset
@@ -385,21 +385,7 @@ public record ImageDimensions(int Width, int Height);
 
 **Partition Key**: `[/WorldId, /EntityId]` - assets partitioned by entity for efficient entity-scoped queries and hot partition prevention.
 
-**WorldEntity Reference Pattern**:
-
-Instead of embedding full asset metadata, WorldEntity documents reference assets by ID:
-
-```csharp
-// In BaseWorldEntity - minimal asset references
-public string? PrimaryAssetId { get; init; }         // Primary/featured asset for this entity
-public string? PortraitAssetId { get; init; }        // Character portraits
-public string? TokenAssetId { get; init; }           // VTT tokens
-public string? BannerAssetId { get; init; }          // Campaign/world banners
-public string? IconAssetId { get; init; }            // List icons
-public string? MapAssetId { get; init; }             // Location maps
-```
-
-**Query Patterns**:
+### Query Patterns
 
 ```sql
 -- Get all assets for an entity (single partition query)
@@ -646,7 +632,7 @@ var blobPath = $"{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}
   "IsDeleted": false,
   "Description": "A skilled elven ranger and diplomat from Valoria",
   "Tags": ["npc", "ranger", "elf", "quest-giver"],
-  "Path": ["Eldoria", "Arcanis", "Valoria", "Silverwood", "Elara Silverwind"],
+  "Path": ["Eldoria", "Arcanis", "Western Arcanis", "Valoria", "Elara Silverwind"],
   
   // Asset references - just the IDs
   "PortraitAssetId": "portrait-aaaabbbb-cccc-dddd-eeee-ffffgggghhh",
@@ -669,7 +655,7 @@ var blobPath = $"{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}
 1. Query WorldEntity by ID (1 RU)
 1. Query Asset container by EntityId to get all assets (2-5 RUs)
 
-Total cost: 3-6 RUs (vs 5-15 RUs if assets were embedded and entity had many assets)
+Total cost: 3-6 RUs
 
 ### Asset Security & Access Patterns
 
@@ -691,8 +677,8 @@ Total cost: 3-6 RUs (vs 5-15 RUs if assets were embedded and entity had many ass
    - Generates thumbnails for images
    - Extracts metadata (dimensions, duration, etc.)
    - Moves to permanent location in world-assets container
-   - Updates WorldEntity document via Cosmos DB SDK
-1. Frontend polls entity document for `status: 'ready'`
+   - Creates Asset document in Cosmos DB
+1. Frontend polls Asset document for `status: 'ready'`
 
 **Change Feed Processor**:
 
@@ -700,44 +686,6 @@ Total cost: 3-6 RUs (vs 5-15 RUs if assets were embedded and entity had many ass
 - Deletes orphaned blobs when entity deleted
 - Updates Azure AI Search index with asset metadata for cross-world asset search
 - Triggers vector embedding for image descriptions
-
-### Query Patterns
-
-```sql
--- Get all assets for a campaign (Cosmos DB SQL API)
-SELECT VALUE c.Assets 
-FROM c 
-WHERE c.WorldId = @worldId 
-  AND c.id = @campaignId
-  AND c.IsDeleted = false
-
--- Find all entities with video assets
-SELECT c.id, c.Name, c.EntityType, c.Assets
-FROM c
-WHERE c.WorldId = @worldId
-  AND ARRAY_CONTAINS(c.Assets, {"Type": "video"}, true)
-  AND c.IsDeleted = false
-
--- Count assets by type across a world
-SELECT 
-  asset.Type,
-  COUNT(1) as count,
-  SUM(asset.Size) as totalSize
-FROM c
-JOIN asset IN c.Assets
-WHERE c.WorldId = @worldId
-  AND c.IsDeleted = false
-GROUP BY asset.Type
-```
-
-```csharp
-// Example: Query using Cosmos SDK (simplified)
-var query = container.GetItemLinqQueryable<BaseWorldEntity>()
-    .Where(e => e.WorldId == worldId && e.id == campaignId && !e.IsDeleted)
-    .Select(e => e.Assets);
-
-var assets = await query.ToListAsync();
-```
 
 ### Storage Optimization
 
