@@ -1,6 +1,6 @@
-# Architecture
+# Infrastructure
 
-This document describes the Azure resources deployed by [infra/main.bicep](../infra/main.bicep), the Azure Verified Modules (AVM) used, and the network topology.
+This document describes the Azure resources deployed by [infra/main.bicep](../infra/main.bicep), the Azure Verified Modules (AVM) used, and the network topology. The parameters for deployment are defined in the [infra/main.bicepparam](../infra/main.bicepparam) file and will be set when deploying via the Azure Developer CLI (azd).
 
 The Libris Maleficarum solution uses a **network-isolated architecture** where all Azure services are deployed with private endpoints and network security groups to ensure secure communication within a Virtual Network.
 
@@ -74,7 +74,7 @@ The following resources are always deployed as part of the Libris Maleficarum ar
 | Cosmos DB | NoSQL database with private endpoint | [avm/res/document-db/database-account](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/document-db/database-account) |
 | Key Vault | Secure secret management with private endpoint | [avm/res/key-vault/vault](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/key-vault/vault) |
 
-### AI and Cognitive Services
+### AI Services
 
 | Resource | Purpose | AVM Reference |
 | -------- | ------- | ------------- |
@@ -117,24 +117,31 @@ The solution supports the following configuration parameters:
 | `resourceGroupName` | string | `''` | Optional custom resource group name |
 | `createBastionHost` | bool | `false` | Whether to deploy Azure Bastion for secure access |
 
-```bash
-azd env set AZURE_AI_FOUNDRY_HUB_DEPLOY true
-azd env set AZURE_AI_FOUNDRY_HUB_PROJECT_DEPLOY true
-azd env set AZURE_NETWORK_ISOLATION true
-```
+## Infrastructure as Code
 
-**Result**: AI Services + Hub + Hub projects, private endpoints, full ML capabilities.
+All Azure resources are provisioned using **Bicep with Azure Verified Modules (AVM)**.
 
-### Hybrid Configuration
+### Azure Verified Modules (AVM) Requirements
 
-```bash
-azd env set AZURE_AI_FOUNDRY_HUB_DEPLOY true
-azd env set AZURE_AI_FOUNDRY_HUB_PROJECT_DEPLOY false
-azd env set AZURE_AI_FOUNDRY_PROJECT_DEPLOY true
-azd env set AZURE_NETWORK_ISOLATION true
-```
+1. **Use Latest AVM Versions** – All module references must use the latest stable versions from the [Azure Bicep Registry](https://aka.ms/avm)
+1. **Registry References** – Modules are referenced using the format: `br/public:avm/res/{service}/{resource}:{version}`
+1. **Version Pinning** – Always pin to specific versions (never use `latest` tag) for reproducible deployments
+1. **Security Defaults** – Follow AVM security recommendations (private endpoints, managed identities, etc.)
+1. **Naming Conventions** – Use the standardized abbreviations from `infra/abbreviations.json` for resource naming
+1. **Tagging Standards** – All resources inherit the `azd-env-name` tag for environment traceability
 
-**Result**: AI Services + Hub + AI Services projects, private endpoints.
+### Deployment Tools
+
+- **Azure Developer CLI (azd)** – Primary deployment orchestration tool
+- **Bicep CLI** – Infrastructure validation and linting
+- **Azure CLI** – Supporting operations and resource management
+
+### Module Update Policy
+
+- Review AVM module updates quarterly
+- Test module updates in non-production environments before promoting
+- Document breaking changes in CHANGELOG.md
+- Use `bicep lint` to validate templates before deployment
 
 ## Security & Best Practices
 
@@ -144,7 +151,6 @@ azd env set AZURE_NETWORK_ISOLATION true
 1. **Azure Verified Modules** – All resources are deployed using [Azure Verified Modules (AVM)](https://aka.ms/avm).
 1. **Network Isolation** – When enabled, all PaaS services use private endpoints and disable public access.
 1. **Zero Trust** – Network isolation deployment follows Microsoft's Zero Trust security model and Secure Future Initiative.
-1. **Flexible Architecture** – Choose between simple AI Services-only deployment or full Hub capabilities based on requirements.
 
 ## Deployment Outputs
 

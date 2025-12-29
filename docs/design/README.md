@@ -12,6 +12,7 @@ This folder contains the design, architecture, and technical documentation for t
 - [TESTING.md](TESTING.md) — Automated test approaches, frameworks, and strategies
 - [CI_CD.md](CI_CD.md) — CI/CD strategy, workflows, and secrets management
 - [FRONTEND.md](FRONTEND.md) — Frontend design, structure, and UI/UX principles
-- [BACKEND.md](BACKEND.md) — Backend design, structure, and API principles
+- [BACKEND.md](BACKEND.md) — Backend design, .NET 10 API, and Aspire.NET orchestration
+- [API.md](API.md) — RESTful API specification and endpoint design
 
 Refer to each file for detailed documentation on each aspect of the system.

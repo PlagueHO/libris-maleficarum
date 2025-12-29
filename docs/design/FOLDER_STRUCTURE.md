@@ -2,6 +2,9 @@
 
 The repository is organized for clarity, scalability, and best practices for both .NET 10 backend services and React/TypeScript frontend development.
 
+> [!NOTE]
+> The backend folder structure (`libris-maleficarum-service/`) is documented below for planning purposes but **is not yet implemented**. Only the frontend application (`libris-maleficarum-app/`) currently exists in the repository.
+
 ```text
 /
 ├── .devcontainer/           # GitHub Codespaces/dev container config
