@@ -119,16 +119,72 @@ pnpm test:coverage     # Generate coverage report
 - **Functions**: 80% minimum
 - **Lines**: 80% minimum
 
-## Backend Testing (.NET 10 + Aspire.NET + EF Core)
+## Backend Testing (.NET 10 + Aspire + EF Core)
 
 ### Test Framework Stack
 
-- **Test Framework**: xUnit 2.9+
-- **Assertions**: FluentAssertions 7.x
-- **Mocking**: NSubstitute 5.x (preferred) or Moq 4.x
-- **Integration Testing**: WebApplicationFactory, Testcontainers.NET
-- **Database Testing**: Testcontainers for Cosmos DB, Respawn for cleanup
+- **Test Framework**: xUnit 2.9+ (latest stable version)
+- **Assertions**: FluentAssertions 7.x (fluent assertion library for expressive tests)
+- **Mocking**: NSubstitute 5.x (preferred for .NET 10) - simpler, more intuitive than Moq
+- **Integration Testing**: WebApplicationFactory (ASP.NET Core in-memory testing), Testcontainers.NET 4.x
+- **Database Testing**: Testcontainers.CosmosDb for isolated test databases, Respawn for cleanup
 - **Snapshot Testing**: Verify.Xunit for API response verification
+- **Code Coverage**: Coverlet for code coverage collection
+
+### Test Project Configuration
+
+All test projects follow .NET 10 best practices with consistent package references:
+
+**Example Test Project (.csproj)**:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+    <PackageReference Include="Testcontainers" Version="4.1.0" />
+    <PackageReference Include="Testcontainers.CosmosDb" Version="4.1.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Domain\LibrisMaleficarum.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="FluentAssertions" />
+    <Using Include="NSubstitute" />
+  </ItemGroup>
+
+</Project>
+```
+
+**Key Configuration Features**:
+
+- **Nullable Reference Types**: Enabled for better null safety
+- **Implicit Usings**: Enabled for cleaner code (global usings for common namespaces)
+- **Global Usings**: xUnit, FluentAssertions, NSubstitute automatically available
+- **IsTestProject**: Marks project as test project for proper tooling support
+- **Coverlet**: Code coverage collector for CI/CD integration
 
 ### Test Organization
 
@@ -197,12 +253,10 @@ public class WorldEntityTests
 ```csharp
 public class WorldEntityControllerTests : IClassFixture<WebApplicationFactory<Program>>
 {
-    private readonly WebApplicationFactory<Program> _factory;
     private readonly HttpClient _client;
     
     public WorldEntityControllerTests(WebApplicationFactory<Program> factory)
     {
-        _factory = factory;
         _client = factory.CreateClient();
     }
     
@@ -213,27 +267,55 @@ public class WorldEntityControllerTests : IClassFixture<WebApplicationFactory<Pr
         var worldId = await CreateTestWorld();
         
         // Act
-        var response = await _client.GetAsync($"/api/worlds/{worldId}");
+        var response = await _client.GetAsync($"/api/v1/worlds/{worldId}");
         
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Should().HaveStatusCode(HttpStatusCode.OK);
         var world = await response.Content.ReadFromJsonAsync<WorldEntity>();
         world.Should().NotBeNull();
         world!.Id.Should().Be(worldId);
+        world.WorldId.Should().Be(worldId);
     }
     
     [Fact]
     public async Task CreateWorld_WithValidData_Returns201Created()
     {
         // Arrange
-        var request = new CreateWorldRequest { Name = "New World", OwnerId = "user-123" };
+        var request = new CreateWorldRequest 
+        { 
+            Name = "New World", 
+            OwnerId = "user-123" 
+        };
         
         // Act
-        var response = await _client.PostAsJsonAsync("/api/worlds", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/worlds", request);
         
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.Should().HaveStatusCode(HttpStatusCode.Created);
         response.Headers.Location.Should().NotBeNull();
+        
+        // Verify created resource
+        var world = await response.Content.ReadFromJsonAsync<WorldEntity>();
+        world.Should().NotBeNull();
+        world!.Name.Should().Be(request.Name);
+        world.OwnerId.Should().Be(request.OwnerId);
+    }
+    
+    [Fact]
+    public async Task CreateWorld_WithInvalidData_Returns400BadRequest()
+    {
+        // Arrange
+        var request = new CreateWorldRequest 
+        { 
+            Name = "", // Invalid: empty name
+            OwnerId = "user-123" 
+        };
+        
+        // Act
+        var response = await _client.PostAsJsonAsync("/api/v1/worlds", request);
+        
+        // Assert
+        response.Should().HaveStatusCode(HttpStatusCode.BadRequest);
     }
 }
 ```

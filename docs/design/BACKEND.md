@@ -1,18 +1,18 @@
 # Backend Architecture
 
-The Libris Maleficarum backend is a .NET 10 ASP.NET Core Web API hosted in Azure Container Apps. The backend uses Aspire.NET for local development orchestration and follows Clean/Hexagonal Architecture principles.
+The Libris Maleficarum backend is a .NET 10 ASP.NET Core Web API hosted in Azure Container Apps. The backend uses Aspire for local development orchestration and follows Clean/Hexagonal Architecture principles.
 
 > [!NOTE]
 > The backend implementation is **not yet implemented**. This document describes the planned architecture and design decisions.
 
 ## Technology Stack
 
-- **.NET 10** – Latest LTS version of .NET with C# 14
-- **ASP.NET Core Web API** – RESTful API with minimal API or controller-based endpoints
-- **Aspire.NET** – Local development orchestration and service discovery
-- **Entity Framework Core 10** – ORM with Cosmos DB provider
-- **Microsoft Agent Framework** – AI agent orchestration, tools, and capabilities
-- **Azure SDK for .NET** – Azure service integrations (Cosmos DB, Blob Storage, Key Vault, AI Services)
+- **[.NET 10](https://learn.microsoft.com/en-us/dotnet/)** – Latest LTS version of .NET with C# 14
+- **[ASP.NET Core Web API](https://learn.microsoft.com/en-us/aspnet/core/)** – RESTful API with minimal API or controller-based endpoints
+- **[Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/)** – Local development orchestration and service discovery
+- **[Entity Framework Core 10](https://learn.microsoft.com/en-us/ef/core/)** – ORM with Cosmos DB provider
+- **[Microsoft Agent Framework](https://github.com/microsoft/agent-framework)** – AI agent orchestration, tools, and capabilities
+- **[Azure SDK for .NET](https://learn.microsoft.com/en-us/dotnet/azure/)** – Azure service integrations (Cosmos DB, Blob Storage, Key Vault, AI Services)
 
 ## Hosting
 
@@ -27,7 +27,7 @@ The Libris Maleficarum backend is a .NET 10 ASP.NET Core Web API hosted in Azure
 
 ### Local Development
 
-- **Aspire.NET AppHost** – Local orchestration
+- **Aspire AppHost** – Local orchestration
   - Single-command startup for entire distributed application
   - Automatic service discovery (services reference each other by name)
   - Connection string injection for Cosmos DB, Redis, etc.
@@ -40,8 +40,10 @@ The backend follows Clean/Hexagonal Architecture with clear separation of concer
 
 ```text
 libris-maleficarum-service/
+├── LibrisMaleficarum.slnx              # Solution file (.NET 9+ XML format)
 ├── src/
 │   ├── Api/                            # HTTP API layer (ASP.NET Core)
+│   │   ├── LibrisMaleficarum.Api.csproj
 │   │   ├── Controllers/                # API controllers (if using controllers)
 │   │   ├── Endpoints/                  # Minimal API endpoints (if using minimal APIs)
 │   │   ├── Middleware/                 # Custom middleware
@@ -50,6 +52,7 @@ libris-maleficarum-service/
 │   │   └── Program.cs                  # Application entry point
 │   │
 │   ├── Domain/                         # Domain layer (business logic)
+│   │   ├── LibrisMaleficarum.Domain.csproj
 │   │   ├── Entities/                   # Domain entities (WorldEntity, Asset, etc.)
 │   │   ├── ValueObjects/               # Value objects (immutable domain concepts)
 │   │   ├── Interfaces/                 # Repository and service interfaces
@@ -57,27 +60,50 @@ libris-maleficarum-service/
 │   │   └── Exceptions/                 # Domain-specific exceptions
 │   │
 │   ├── Infrastructure/                 # Infrastructure layer (external concerns)
+│   │   ├── LibrisMaleficarum.Infrastructure.csproj
 │   │   ├── Persistence/                # EF Core DbContext and configurations
 │   │   ├── Repositories/               # Repository implementations
 │   │   ├── Services/                   # External service integrations
-│   │   │   ├── CosmosDbService.cs
-│   │   │   ├── BlobStorageService.cs
-│   │   │   └── AzureAIService.cs
 │   │   └── Configurations/             # EF Core entity configurations
 │   │
-│   └── Orchestration/                  # Aspire.NET orchestration
+│   └── Orchestration/                  # Aspire orchestration
 │       ├── AppHost/                    # Aspire AppHost project
+│       │   ├── LibrisMaleficarum.AppHost.csproj
 │       │   ├── Program.cs              # AppHost entry point
 │       │   └── appsettings.json
 │       └── ServiceDefaults/            # Shared service configuration
+│           ├── LibrisMaleficarum.ServiceDefaults.csproj
 │           └── Extensions.cs           # AddServiceDefaults() extension
 │
 └── tests/                              # Test projects (see TESTING.md)
     ├── Api.Tests/
+    │   └── LibrisMaleficarum.Api.Tests.csproj
     ├── Domain.Tests/
+    │   └── LibrisMaleficarum.Domain.Tests.csproj
     ├── Infrastructure.Tests/
+    │   └── LibrisMaleficarum.Infrastructure.Tests.csproj
     └── Orchestration.Tests/
+        └── LibrisMaleficarum.Orchestration.Tests.csproj
 ```
+
+### Solution and Project Files
+
+- **Solution**: `LibrisMaleficarum.slnx` (root of service folder)
+  - Uses .slnx format (.NET 9+ XML-based solution file) for better source control
+
+- **Project Files**:
+  - `LibrisMaleficarum.Api.csproj` - Web API project
+  - `LibrisMaleficarum.Domain.csproj` - Domain entities and interfaces (class library)
+  - `LibrisMaleficarum.Infrastructure.csproj` - Infrastructure implementations (class library)
+  - `LibrisMaleficarum.AppHost.csproj` - Aspire orchestration host
+  - `LibrisMaleficarum.ServiceDefaults.csproj` - Shared Aspire service defaults (class library)
+  - `LibrisMaleficarum.*.Tests.csproj` - xUnit test projects
+
+- **Project References**:
+  - Api → Domain, Infrastructure, ServiceDefaults
+  - Infrastructure → Domain
+  - AppHost → Api (project reference for orchestration)
+  - Test projects → Corresponding source projects
 
 ### Layer Responsibilities
 

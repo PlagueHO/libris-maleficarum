@@ -1,6 +1,6 @@
 ---
 description: 'Provide expert .NET software engineering guidance using modern software design patterns.'
-tools: ['edit', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'Microsoft Docs/*', 'context7/*', 'Agent Framework Docs/*', 'React Docs/*', 'TypeScript Docs/*', 'Node.js Docs/*', 'FluentUI Docs/*', 'runSubagent', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'todos']
+tools: ['vscode', 'execute/runNotebookCell', 'execute/testFailure', 'execute/getTerminalOutput', 'execute/runTask', 'execute/createAndRunTask', 'execute/runInTerminal', 'read', 'edit', 'search', 'web', 'azure-mcp/search', 'context7/*', 'microsoft-learn/*', 'agent', 'todo']
 ---
 # Expert .NET software engineer mode instructions
 
