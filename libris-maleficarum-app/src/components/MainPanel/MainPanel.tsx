@@ -6,23 +6,26 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     flexGrow: 1,
-    ...shorthands.padding('16px'),
+    ...shorthands.padding('24px'),
     overflowY: 'auto',
+    backgroundColor: 'var(--colorNeutralBackground1)',
   },
-  centerSection: {
+  contentSection: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexGrow: 1,
+    width: '100%',
+    maxWidth: '1200px',
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
   card: {
     width: '100%',
-    maxWidth: '960px',
+    marginBottom: '16px',
   },
   heading: {
-    textAlign: 'center',
     margin: 0,
+    fontSize: '32px',
+    fontWeight: 600,
   },
 });
 
@@ -31,8 +34,7 @@ const MainPanel: React.FC = () => {
 
   return (
     <main className={styles.root} role="main" aria-label="Main Work Panel" tabIndex={0}>
-      {/* TODO: Contextual workspace for world-building, campaign management, etc. */}
-      <section className={styles.centerSection}>
+      <section className={styles.contentSection}>
         <Card className={styles.card}>
           <CardHeader header={<h1 className={styles.heading}>Welcome to Libris Maleficarum</h1>} />
           <Divider />

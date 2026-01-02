@@ -70,7 +70,7 @@
       }
     },
     {
-      "label": "service: run",
+      "label": "aspire: run",
       "type": "shell",
       "command": "dotnet",
       "args": ["run", "--project", "src/Orchestration/AppHost/LibrisMaleficarum.AppHost.csproj"],
