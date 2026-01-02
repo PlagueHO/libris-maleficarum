@@ -9,6 +9,10 @@
       "args": ["dev"],
       "options": {
         "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      },
+      "icon": {
+        "id": "play",
+        "color": "terminal.ansiGreen"
       }
     },
     {
@@ -18,6 +22,10 @@
       "args": ["install"],
       "options": {
         "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      },
+      "icon": {
+        "id": "cloud-download",
+        "color": "terminal.ansiBlue"
       }
     },
     {
@@ -27,6 +35,10 @@
       "args": ["test"],
       "options": {
         "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      },
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiCyan"
       }
     },
     {
@@ -36,6 +48,10 @@
       "args": ["build"],
       "options": {
         "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      },
+      "icon": {
+        "id": "tools",
+        "color": "terminal.ansiYellow"
       }
     },
     {
@@ -47,7 +63,143 @@
         "cwd": "${workspaceFolder}/libris-maleficarum-app"
       },
       "problemMatcher": ["$eslint-stylish"],
-      "group": "test"
+      "group": "test",
+      "icon": {
+        "id": "checklist",
+        "color": "terminal.ansiMagenta"
+      }
+    },
+    {
+      "label": "service: run",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["run", "--project", "src/Orchestration/AppHost/LibrisMaleficarum.AppHost.csproj"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "icon": {
+        "id": "debug-start",
+        "color": "terminal.ansiGreen"
+      }
+    },
+    {
+      "label": "service: build",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["build", "LibrisMaleficarum.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "icon": {
+        "id": "tools",
+        "color": "terminal.ansiYellow"
+      }
+    },
+    {
+      "label": "service: test",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["test", "LibrisMaleficarum.slnx", "--no-build"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "dependsOn": ["service: build"],
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "service: test (watch)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["watch", "test", "LibrisMaleficarum.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "isBackground": true,
+      "icon": {
+        "id": "eye-watch",
+        "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "service: clean",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["clean", "LibrisMaleficarum.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "icon": {
+        "id": "trash",
+        "color": "terminal.ansiRed"
+      }
+    },
+    {
+      "label": "service: restore",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["restore", "LibrisMaleficarum.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "icon": {
+        "id": "cloud-download",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
+      "label": "service: format",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["format", "LibrisMaleficarum.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": [],
+      "icon": {
+        "id": "code",
+        "color": "terminal.ansiMagenta"
+      }
+    },
+    {
+      "label": "service: format (verify)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["format", "LibrisMaleficarum.slnx", "--verify-no-changes"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": [],
+      "group": "test",
+      "icon": {
+        "id": "verified",
+        "color": "terminal.ansiGreen"
+      }
     }
   ]
 }
