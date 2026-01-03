@@ -1,0 +1,437 @@
+openapi: 3.0.3
+info:
+  title: Libris Maleficarum World Management API
+  description: RESTful API for managing worlds in the Libris Maleficarum world-building application
+  version: 1.0.0
+  contact:
+    name: API Support
+    url: https://github.com/PlagueHO/libris-maleficarum
+
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Local development (Aspire)
+  - url: https://api.librismaleficarum.com/api/v1
+    description: Production
+
+paths:
+  /worlds:
+    get:
+      summary: List all worlds owned by current user
+      operationId: getWorlds
+      tags:
+        - Worlds
+      parameters:
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/CursorParam'
+      responses:
+        '200':
+          description: Successfully retrieved worlds
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/WorldResponse'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create a new world
+      operationId: createWorld
+      tags:
+        - Worlds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorldRequest'
+      responses:
+        '201':
+          description: World created successfully
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URL of the created world
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorldResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /worlds/{worldId}:
+    get:
+      summary: Get a specific world by ID
+      operationId: getWorldById
+      tags:
+        - Worlds
+      parameters:
+        - $ref: '#/components/parameters/WorldIdParam'
+      responses:
+        '200':
+          description: Successfully retrieved world
+          headers:
+            ETag:
+              schema:
+                type: string
+              description: Entity tag for optimistic concurrency
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorldResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      summary: Update an existing world
+      operationId: updateWorld
+      tags:
+        - Worlds
+      parameters:
+        - $ref: '#/components/parameters/WorldIdParam'
+        - $ref: '#/components/parameters/IfMatchHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorldRequest'
+      responses:
+        '200':
+          description: World updated successfully
+          headers:
+            ETag:
+              schema:
+                type: string
+              description: Updated entity tag
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorldResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: Soft delete a world
+      operationId: deleteWorld
+      tags:
+        - Worlds
+      parameters:
+        - $ref: '#/components/parameters/WorldIdParam'
+      responses:
+        '204':
+          description: World deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    # Request Models
+    CreateWorldRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Eldoria"
+        description:
+          type: string
+          maxLength: 2000
+          example: "A high-fantasy world with ancient magic and political intrigue"
+
+    UpdateWorldRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Eldoria (Updated)"
+        description:
+          type: string
+          maxLength: 2000
+          example: "Updated description"
+
+    # Response Models
+    WorldResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        ownerId:
+          type: string
+          format: uuid
+          example: "00000000-0000-0000-0000-000000000001"
+        name:
+          type: string
+          example: "Eldoria"
+        description:
+          type: string
+          nullable: true
+          example: "A high-fantasy world"
+        createdDate:
+          type: string
+          format: date-time
+          example: "2026-01-03T10:30:00Z"
+        modifiedDate:
+          type: string
+          format: date-time
+          example: "2026-01-03T15:45:00Z"
+
+    ApiResponse:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    ResponseMeta:
+      type: object
+      properties:
+        requestId:
+          type: string
+          format: uuid
+          example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-01-03T10:30:00Z"
+
+    PaginationResponse:
+      type: object
+      properties:
+        limit:
+          type: integer
+          example: 50
+        hasMore:
+          type: boolean
+          example: true
+        nextCursor:
+          type: string
+          nullable: true
+          example: "eyJvZmZzZXQiOjUwfQ=="
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    ErrorDetail:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "WORLD_NOT_FOUND"
+        message:
+          type: string
+          example: "World with ID '123' not found"
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          nullable: true
+
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: "name"
+        message:
+          type: string
+          example: "World name is required"
+
+  parameters:
+    WorldIdParam:
+      name: worldId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Unique world identifier
+
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 50
+        minimum: 1
+        maximum: 200
+      description: Number of items per page (default 50, max 200)
+
+    CursorParam:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Pagination cursor from previous response
+
+    IfMatchHeader:
+      name: If-Match
+      in: header
+      required: false
+      schema:
+        type: string
+      description: ETag for optimistic concurrency control
+
+  responses:
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: "VALIDATION_FAILED"
+              message: "Request validation failed"
+              details:
+                - field: "name"
+                  message: "World name is required"
+            meta:
+              requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+              timestamp: "2026-01-03T10:30:00Z"
+
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: "UNAUTHORIZED"
+              message: "Authentication token is missing or invalid"
+            meta:
+              requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+              timestamp: "2026-01-03T10:30:00Z"
+
+    ForbiddenError:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: "FORBIDDEN"
+              message: "You do not have permission to access this world"
+            meta:
+              requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+              timestamp: "2026-01-03T10:30:00Z"
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: "WORLD_NOT_FOUND"
+              message: "World with ID '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found"
+            meta:
+              requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+              timestamp: "2026-01-03T10:30:00Z"
+
+    ConflictError:
+      description: Resource conflict (e.g., optimistic concurrency failure)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: "CONFLICT"
+              message: "The world has been modified by another request. Please refresh and try again."
+            meta:
+              requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+              timestamp: "2026-01-03T10:30:00Z"
+
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: "INTERNAL_SERVER_ERROR"
+              message: "An unexpected error occurred"
+            meta:
+              requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+              timestamp: "2026-01-03T10:30:00Z"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []

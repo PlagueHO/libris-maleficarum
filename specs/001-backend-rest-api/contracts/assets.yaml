@@ -1,0 +1,460 @@
+openapi: 3.0.3
+info:
+  title: Libris Maleficarum - Asset Management API
+  description: |
+    REST API for managing assets (images, audio, video, documents) attached to world entities.
+    
+    **Key Features:**
+    - Upload binary assets (multipart/form-data)
+    - Download assets via direct URLs
+    - Associate assets with world entities
+    - Metadata storage (filename, content type, size)
+    - Runtime-configurable size limits (default 25MB)
+    - Supported types: images, audio, video, documents
+    
+    **Storage:**
+    - Azure Blob Storage (production)
+    - Cosmos DB stores metadata only
+    
+    **Related Endpoints:**
+    - World Management: See worlds.yaml
+    - Entity Management: See entities.yaml
+  version: 1.0.0
+  contact:
+    name: Daniel Scott-Raynsford
+    url: https://github.com/PlagueHO/libris-maleficarum
+
+servers:
+  - url: https://localhost:7041/api/v1
+    description: Local development (Aspire AppHost)
+  - url: https://api.librismaleficarum.azure.net/api/v1
+    description: Production (Azure)
+
+security:
+  - BearerAuth: []
+
+paths:
+  /worlds/{worldId}/entities/{entityId}/assets:
+    get:
+      summary: List assets for an entity
+      description: |
+        Retrieve all assets attached to a specific entity with pagination.
+        
+        **Returns:** Asset metadata (not binary content). Use download endpoint for binary.
+        
+        **Functional Requirements:** FR-018
+      operationId: listAssets
+      tags:
+        - Asset Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - $ref: 'common.yaml#/components/parameters/EntityIdParameter'
+        - $ref: 'common.yaml#/components/parameters/LimitParameter'
+        - $ref: 'common.yaml#/components/parameters/CursorParameter'
+      responses:
+        '200':
+          description: List of assets retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: 'common.yaml#/components/schemas/PaginatedApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AssetResponse'
+              example:
+                data:
+                  - id: "9e8f7g6h-5432-1098-ijkl-mnop12345678"
+                    worldId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                    entityId: "7b8c9d0e-1234-5678-9abc-def012345678"
+                    fileName: "eldric-portrait.png"
+                    contentType: "image/png"
+                    sizeBytes: 2048576
+                    blobUrl: "https://librismaleficarum.blob.core.windows.net/assets/9e8f7g6h-5432-1098-ijkl-mnop12345678"
+                    createdDate: "2026-01-03T10:30:00Z"
+                  - id: "0f9g8h7i-6543-2109-klmn-opqr23456789"
+                    worldId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                    entityId: "7b8c9d0e-1234-5678-9abc-def012345678"
+                    fileName: "character-sheet.pdf"
+                    contentType: "application/pdf"
+                    sizeBytes: 1024000
+                    blobUrl: "https://librismaleficarum.blob.core.windows.net/assets/0f9g8h7i-6543-2109-klmn-opqr23456789"
+                    createdDate: "2026-01-03T11:00:00Z"
+                meta:
+                  requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  timestamp: "2026-01-03T12:00:00Z"
+                pagination:
+                  cursor: null
+                  limit: 50
+                  hasMore: false
+        '400':
+          $ref: 'common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: 'common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+    
+    post:
+      summary: Upload a new asset
+      description: |
+        Upload a binary asset file and attach it to an entity.
+        
+        **Upload Format:** multipart/form-data with single file field
+        
+        **Validation:**
+        - File size: Configurable max (default 25MB)
+        - Content type: Must be image/*, audio/*, video/*, or document types
+        - FileName: Preserved from upload, max 255 characters
+        
+        **Storage Flow:**
+        1. Validate file size and content type
+        2. Upload to Azure Blob Storage
+        3. Store metadata in Cosmos DB
+        4. Return asset metadata with blob URL
+        
+        **Functional Requirements:** FR-015, FR-016, FR-019
+      operationId: uploadAsset
+      tags:
+        - Asset Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - $ref: 'common.yaml#/components/parameters/EntityIdParameter'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Binary file content (images, audio, video, documents)
+            encoding:
+              file:
+                contentType: image/*, audio/*, video/*, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document
+      responses:
+        '201':
+          description: Asset uploaded successfully
+          headers:
+            Location:
+              description: URI of the created asset
+              schema:
+                type: string
+              example: "/api/v1/worlds/3fa85f64-5717-4562-b3fc-2c963f66afa6/assets/9e8f7g6h-5432-1098-ijkl-mnop12345678"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: 'common.yaml#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AssetResponse'
+              example:
+                data:
+                  id: "9e8f7g6h-5432-1098-ijkl-mnop12345678"
+                  worldId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                  entityId: "7b8c9d0e-1234-5678-9abc-def012345678"
+                  fileName: "eldric-portrait.png"
+                  contentType: "image/png"
+                  sizeBytes: 2048576
+                  blobUrl: "https://librismaleficarum.blob.core.windows.net/assets/9e8f7g6h-5432-1098-ijkl-mnop12345678"
+                  createdDate: "2026-01-03T10:30:00Z"
+                meta:
+                  requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  timestamp: "2026-01-03T10:30:00Z"
+        '400':
+          description: Bad Request - Invalid file, unsupported type, or exceeds size limit
+          content:
+            application/json:
+              schema:
+                $ref: 'common.yaml#/components/schemas/ErrorResponse'
+              examples:
+                fileSizeExceeded:
+                  summary: File size exceeds limit
+                  value:
+                    error:
+                      code: "FILE_TOO_LARGE"
+                      message: "File size exceeds maximum allowed size of 25MB"
+                    meta:
+                      requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                      timestamp: "2026-01-03T10:30:00Z"
+                unsupportedType:
+                  summary: Unsupported content type
+                  value:
+                    error:
+                      code: "UNSUPPORTED_FILE_TYPE"
+                      message: "File type 'application/x-executable' is not supported. Allowed types: image/*, audio/*, video/*, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    meta:
+                      requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                      timestamp: "2026-01-03T10:30:00Z"
+                noFile:
+                  summary: No file provided
+                  value:
+                    error:
+                      code: "VALIDATION_ERROR"
+                      message: "File is required"
+                      details:
+                        - field: "file"
+                          message: "File is required in multipart/form-data request"
+                    meta:
+                      requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                      timestamp: "2026-01-03T10:30:00Z"
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          description: Entity or world not found
+          content:
+            application/json:
+              schema:
+                $ref: 'common.yaml#/components/schemas/ErrorResponse'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+  
+  /worlds/{worldId}/assets/{assetId}:
+    get:
+      summary: Get asset metadata
+      description: |
+        Retrieve metadata for a specific asset (not binary content).
+        
+        **Returns:** Asset details including filename, content type, size, and blob URL.
+        
+        **For Binary Download:** Use `/worlds/{worldId}/assets/{assetId}/download` endpoint.
+        
+        **Functional Requirements:** FR-018
+      operationId: getAsset
+      tags:
+        - Asset Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - $ref: 'common.yaml#/components/parameters/AssetIdParameter'
+      responses:
+        '200':
+          description: Asset metadata retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: 'common.yaml#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AssetResponse'
+              example:
+                data:
+                  id: "9e8f7g6h-5432-1098-ijkl-mnop12345678"
+                  worldId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                  entityId: "7b8c9d0e-1234-5678-9abc-def012345678"
+                  fileName: "eldric-portrait.png"
+                  contentType: "image/png"
+                  sizeBytes: 2048576
+                  blobUrl: "https://librismaleficarum.blob.core.windows.net/assets/9e8f7g6h-5432-1098-ijkl-mnop12345678"
+                  createdDate: "2026-01-03T10:30:00Z"
+                meta:
+                  requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  timestamp: "2026-01-03T10:30:00Z"
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: 'common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+    
+    delete:
+      summary: Delete asset
+      description: |
+        Delete an asset (metadata and binary file).
+        
+        **Behavior:**
+        - Removes metadata from Cosmos DB
+        - Deletes blob from Azure Blob Storage
+        - Returns 204 No Content on success
+        - Idempotent (404 if already deleted)
+        
+        **Functional Requirements:** FR-020
+      operationId: deleteAsset
+      tags:
+        - Asset Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - $ref: 'common.yaml#/components/parameters/AssetIdParameter'
+      responses:
+        '204':
+          description: Asset deleted successfully (no content)
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: 'common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+  
+  /worlds/{worldId}/assets/{assetId}/download:
+    get:
+      summary: Download asset binary
+      description: |
+        Download asset binary content via time-limited SAS (Shared Access Signature) URL.
+        
+        **Security:**
+        - Returns SAS URL with 15-minute expiration
+        - Prevents direct blob URL exposure
+        - Validates user permissions before generating SAS
+        
+        **Client Flow:**
+        1. GET /download endpoint (with auth)
+        2. Receive SAS URL in response
+        3. Use SAS URL to download binary (no auth needed)
+        
+        **Functional Requirements:** FR-017
+      operationId: downloadAsset
+      tags:
+        - Asset Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - $ref: 'common.yaml#/components/parameters/AssetIdParameter'
+      responses:
+        '200':
+          description: SAS URL generated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: 'common.yaml#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AssetDownloadResponse'
+              example:
+                data:
+                  downloadUrl: "https://librismaleficarum.blob.core.windows.net/assets/9e8f7g6h-5432-1098-ijkl-mnop12345678?sv=2021-06-08&se=2026-01-03T10%3A45%3A00Z&sr=b&sp=r&sig=aBcD123..."
+                  expiresAt: "2026-01-03T10:45:00Z"
+                  fileName: "eldric-portrait.png"
+                  contentType: "image/png"
+                  sizeBytes: 2048576
+                meta:
+                  requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  timestamp: "2026-01-03T10:30:00Z"
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: 'common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    AssetResponse:
+      type: object
+      description: Asset metadata response (not binary content)
+      required:
+        - id
+        - worldId
+        - entityId
+        - fileName
+        - contentType
+        - sizeBytes
+        - blobUrl
+        - createdDate
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the asset
+          example: "9e8f7g6h-5432-1098-ijkl-mnop12345678"
+        worldId:
+          type: string
+          format: uuid
+          description: ID of the world this asset belongs to
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        entityId:
+          type: string
+          format: uuid
+          description: ID of the entity this asset is attached to
+          example: "7b8c9d0e-1234-5678-9abc-def012345678"
+        fileName:
+          type: string
+          maxLength: 255
+          description: Original filename from upload
+          example: "eldric-portrait.png"
+        contentType:
+          type: string
+          description: MIME type of the file
+          example: "image/png"
+        sizeBytes:
+          type: integer
+          format: int64
+          description: File size in bytes
+          minimum: 0
+          example: 2048576
+        blobUrl:
+          type: string
+          format: uri
+          description: Azure Blob Storage URL (requires SAS for access)
+          example: "https://librismaleficarum.blob.core.windows.net/assets/9e8f7g6h-5432-1098-ijkl-mnop12345678"
+        createdDate:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of upload
+          example: "2026-01-03T10:30:00Z"
+    
+    AssetDownloadResponse:
+      type: object
+      description: Asset download response with time-limited SAS URL
+      required:
+        - downloadUrl
+        - expiresAt
+        - fileName
+        - contentType
+        - sizeBytes
+      properties:
+        downloadUrl:
+          type: string
+          format: uri
+          description: Time-limited SAS URL for downloading binary content (15-minute expiration)
+          example: "https://librismaleficarum.blob.core.windows.net/assets/9e8f7g6h-5432-1098-ijkl-mnop12345678?sv=2021-06-08&se=2026-01-03T10%3A45%3A00Z&sr=b&sp=r&sig=aBcD123..."
+        expiresAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when SAS URL expires
+          example: "2026-01-03T10:45:00Z"
+        fileName:
+          type: string
+          description: Original filename (for Content-Disposition header)
+          example: "eldric-portrait.png"
+        contentType:
+          type: string
+          description: MIME type of the file
+          example: "image/png"
+        sizeBytes:
+          type: integer
+          format: int64
+          description: File size in bytes
+          example: 2048576
+  
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT bearer token authentication
+
+tags:
+  - name: Asset Management
+    description: Upload, download, and manage binary assets (images, audio, video, documents)
