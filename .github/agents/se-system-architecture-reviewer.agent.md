@@ -1,5 +1,5 @@
 ---
-name: 'SE: Architect'
+name: 'system-architecture-reviewer'
 description: 'System architecture review specialist with Well-Architected frameworks, design validation, and scalability analysis for AI and distributed systems'
 tools: ['execute/getTerminalOutput', 'execute/runTask', 'execute/createAndRunTask', 'execute/runInTerminal', 'execute/testFailure', 'execute/runTests', 'read', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search', 'web', 'microsoft-docs/*', 'agent', 'azure-mcp/search', 'todo']
 ---
