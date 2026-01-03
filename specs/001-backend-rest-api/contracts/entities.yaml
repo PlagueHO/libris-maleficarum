@@ -1,0 +1,839 @@
+openapi: 3.0.3
+info:
+  title: Libris Maleficarum - Entity Management API
+  description: |
+    REST API for managing world entities (characters, locations, campaigns, etc.) with hierarchical relationships.
+    
+    **Key Features:**
+    - Full CRUD operations on entities
+    - Hierarchical parent-child relationships
+    - Support for 15+ entity types (Character, Location, Campaign, etc.)
+    - Flexible metadata (tags, custom attributes as JSON)
+    - Filtering by entity type and tags
+    - Move entities between parents
+    - Cascade delete support
+    
+    **Related Endpoints:**
+    - World Management: See worlds.yaml
+    - Asset Management: See assets.yaml
+  version: 1.0.0
+  contact:
+    name: Daniel Scott-Raynsford
+    url: https://github.com/PlagueHO/libris-maleficarum
+
+servers:
+  - url: https://localhost:7041/api/v1
+    description: Local development (Aspire AppHost)
+  - url: https://api.librismaleficarum.azure.net/api/v1
+    description: Production (Azure)
+
+security:
+  - BearerAuth: []
+
+paths:
+  /worlds/{worldId}/entities:
+    get:
+      summary: List entities in a world
+      description: |
+        Retrieve a paginated list of entities in a world with optional filtering by entity type and tags.
+        
+        **Filtering:**
+        - `type`: Filter by entity type (Character, Location, Campaign, etc.)
+        - `tags`: Filter by one or more tags (comma-separated)
+        
+        **Pagination:**
+        - Default: 50 items per page
+        - Maximum: 200 items per page
+        - Use `cursor` from response to fetch next page
+        
+        **Functional Requirements:** FR-008, FR-009
+      operationId: listEntities
+      tags:
+        - Entity Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - name: type
+          in: query
+          description: Filter by entity type
+          required: false
+          schema:
+            $ref: '#/components/schemas/EntityType'
+          example: "Character"
+        - name: tags
+          in: query
+          description: Filter by tags (comma-separated, case-insensitive partial match)
+          required: false
+          schema:
+            type: string
+          example: "npc,villain"
+        - $ref: 'common.yaml#/components/parameters/LimitParameter'
+        - $ref: 'common.yaml#/components/parameters/CursorParameter'
+      responses:
+        '200':
+          description: List of entities retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: 'common.yaml#/components/schemas/PaginatedApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/EntityResponse'
+              example:
+                data:
+                  - id: "7b8c9d0e-1234-5678-9abc-def012345678"
+                    worldId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                    parentId: null
+                    name: "Eldric the Wise"
+                    description: "An ancient wizard who guards the secrets of the realm"
+                    entityType: "Character"
+                    tags: ["npc", "wizard", "questgiver"]
+                    attributes:
+                      level: 20
+                      alignment: "Lawful Good"
+                      race: "Human"
+                    createdDate: "2026-01-03T10:30:00Z"
+                    modifiedDate: "2026-01-03T10:30:00Z"
+                  - id: "8c9d0e1f-2345-6789-abcd-ef0123456789"
+                    worldId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                    parentId: null
+                    name: "The Shadow Realm"
+                    description: "A dark dimension where nightmares come to life"
+                    entityType: "Location"
+                    tags: ["dangerous", "planar"]
+                    attributes:
+                      terrain: "Otherworldly"
+                      climate: "Dark and Cold"
+                    createdDate: "2026-01-03T11:00:00Z"
+                    modifiedDate: "2026-01-03T11:00:00Z"
+                meta:
+                  requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  timestamp: "2026-01-03T12:00:00Z"
+                pagination:
+                  cursor: "eyJpZCI6IjhjOWQwZTFmLTIzNDUtNjc4OS1hYmNkLWVmMDEyMzQ1Njc4OSJ9"
+                  limit: 50
+                  hasMore: true
+        '400':
+          $ref: 'common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: 'common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+    
+    post:
+      summary: Create a new entity
+      description: |
+        Create a new entity in a world with optional parent-child relationship.
+        
+        **Validation Rules:**
+        - Name: Required, 1-200 characters
+        - Description: Optional, max 5000 characters
+        - EntityType: Required, valid enum value
+        - Tags: Optional, max 20 tags, each max 50 characters
+        - Attributes: Optional JSON object, max 100KB serialized
+        - ParentId: Optional, must be existing entity in same world
+        
+        **Functional Requirements:** FR-005, FR-006
+      operationId: createEntity
+      tags:
+        - Entity Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntityRequest'
+            example:
+              name: "Eldric the Wise"
+              description: "An ancient wizard who guards the secrets of the realm"
+              entityType: "Character"
+              parentId: null
+              tags: ["npc", "wizard", "questgiver"]
+              attributes:
+                level: 20
+                alignment: "Lawful Good"
+                race: "Human"
+      responses:
+        '201':
+          description: Entity created successfully
+          headers:
+            Location:
+              description: URI of the created entity
+              schema:
+                type: string
+              example: "/api/v1/worlds/3fa85f64-5717-4562-b3fc-2c963f66afa6/entities/7b8c9d0e-1234-5678-9abc-def012345678"
+            ETag:
+              $ref: 'common.yaml#/components/headers/ETagHeader'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: 'common.yaml#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/EntityResponse'
+              example:
+                data:
+                  id: "7b8c9d0e-1234-5678-9abc-def012345678"
+                  worldId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                  parentId: null
+                  name: "Eldric the Wise"
+                  description: "An ancient wizard who guards the secrets of the realm"
+                  entityType: "Character"
+                  tags: ["npc", "wizard", "questgiver"]
+                  attributes:
+                    level: 20
+                    alignment: "Lawful Good"
+                    race: "Human"
+                  createdDate: "2026-01-03T10:30:00Z"
+                  modifiedDate: "2026-01-03T10:30:00Z"
+                meta:
+                  requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  timestamp: "2026-01-03T10:30:00Z"
+        '400':
+          $ref: 'common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          description: Parent entity or world not found
+          content:
+            application/json:
+              schema:
+                $ref: 'common.yaml#/components/schemas/ErrorResponse'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+  
+  /worlds/{worldId}/entities/{entityId}:
+    get:
+      summary: Get entity by ID
+      description: |
+        Retrieve a specific entity by its unique identifier.
+        
+        **Returns:** Entity details including metadata, tags, and custom attributes.
+        
+        **Headers:** ETag header included for optimistic concurrency control.
+        
+        **Functional Requirements:** FR-007
+      operationId: getEntity
+      tags:
+        - Entity Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - $ref: 'common.yaml#/components/parameters/EntityIdParameter'
+      responses:
+        '200':
+          description: Entity retrieved successfully
+          headers:
+            ETag:
+              $ref: 'common.yaml#/components/headers/ETagHeader'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: 'common.yaml#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/EntityResponse'
+              example:
+                data:
+                  id: "7b8c9d0e-1234-5678-9abc-def012345678"
+                  worldId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                  parentId: null
+                  name: "Eldric the Wise"
+                  description: "An ancient wizard who guards the secrets of the realm"
+                  entityType: "Character"
+                  tags: ["npc", "wizard", "questgiver"]
+                  attributes:
+                    level: 20
+                    alignment: "Lawful Good"
+                    race: "Human"
+                  createdDate: "2026-01-03T10:30:00Z"
+                  modifiedDate: "2026-01-03T10:30:00Z"
+                meta:
+                  requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  timestamp: "2026-01-03T10:30:00Z"
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: 'common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+    
+    put:
+      summary: Update entity (full replace)
+      description: |
+        Replace all entity fields with new values (full update).
+        
+        **Concurrency Control:**
+        - Optional If-Match header for optimistic concurrency
+        - Last-write-wins if If-Match not provided
+        - 409 Conflict if ETag mismatch
+        
+        **Validation:** Same rules as create operation.
+        
+        **Functional Requirements:** FR-007
+      operationId: updateEntity
+      tags:
+        - Entity Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - $ref: 'common.yaml#/components/parameters/EntityIdParameter'
+        - $ref: 'common.yaml#/components/headers/IfMatchHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEntityRequest'
+            example:
+              name: "Eldric the Ancient"
+              description: "An immortal wizard who has guarded the realm for millennia"
+              entityType: "Character"
+              parentId: null
+              tags: ["npc", "wizard", "questgiver", "immortal"]
+              attributes:
+                level: 25
+                alignment: "Lawful Good"
+                race: "Human"
+                ageYears: 3000
+      responses:
+        '200':
+          description: Entity updated successfully
+          headers:
+            ETag:
+              $ref: 'common.yaml#/components/headers/ETagHeader'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: 'common.yaml#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/EntityResponse'
+              example:
+                data:
+                  id: "7b8c9d0e-1234-5678-9abc-def012345678"
+                  worldId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                  parentId: null
+                  name: "Eldric the Ancient"
+                  description: "An immortal wizard who has guarded the realm for millennia"
+                  entityType: "Character"
+                  tags: ["npc", "wizard", "questgiver", "immortal"]
+                  attributes:
+                    level: 25
+                    alignment: "Lawful Good"
+                    race: "Human"
+                    ageYears: 3000
+                  createdDate: "2026-01-03T10:30:00Z"
+                  modifiedDate: "2026-01-03T14:00:00Z"
+                meta:
+                  requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  timestamp: "2026-01-03T14:00:00Z"
+        '400':
+          $ref: 'common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: 'common.yaml#/components/responses/NotFound'
+        '409':
+          $ref: 'common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+    
+    patch:
+      summary: Update entity (partial)
+      description: |
+        Update specific fields of an entity without replacing the entire resource.
+        
+        **Behavior:**
+        - Only provided fields are updated
+        - Null values clear the field (for optional fields)
+        - Arrays (tags) are replaced entirely if provided
+        - Objects (attributes) are merged with existing values
+        
+        **Concurrency Control:** Same as PUT operation.
+        
+        **Functional Requirements:** FR-007
+      operationId: patchEntity
+      tags:
+        - Entity Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - $ref: 'common.yaml#/components/parameters/EntityIdParameter'
+        - $ref: 'common.yaml#/components/headers/IfMatchHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchEntityRequest'
+            example:
+              tags: ["npc", "wizard", "questgiver", "immortal", "archmage"]
+              attributes:
+                ageYears: 3500
+                title: "Archmage"
+      responses:
+        '200':
+          description: Entity updated successfully
+          headers:
+            ETag:
+              $ref: 'common.yaml#/components/headers/ETagHeader'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: 'common.yaml#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/EntityResponse'
+        '400':
+          $ref: 'common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: 'common.yaml#/components/responses/NotFound'
+        '409':
+          $ref: 'common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+    
+    delete:
+      summary: Delete entity
+      description: |
+        Soft-delete an entity (marks as deleted without removing from database).
+        
+        **Cascade Delete:**
+        - Default: Returns 400 if entity has children
+        - With `?cascade=true`: Recursively soft-deletes all descendants
+        
+        **Functional Requirements:** FR-010, FR-021, FR-022
+      operationId: deleteEntity
+      tags:
+        - Entity Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - $ref: 'common.yaml#/components/parameters/EntityIdParameter'
+        - name: cascade
+          in: query
+          description: Whether to recursively delete child entities
+          required: false
+          schema:
+            type: boolean
+            default: false
+          example: true
+      responses:
+        '204':
+          description: Entity deleted successfully (no content)
+        '400':
+          description: Bad Request - Entity has children and cascade not specified
+          content:
+            application/json:
+              schema:
+                $ref: 'common.yaml#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "HAS_CHILDREN"
+                  message: "Cannot delete entity because it has child entities. Use ?cascade=true to delete recursively."
+                meta:
+                  requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  timestamp: "2026-01-03T10:30:00Z"
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: 'common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+  
+  /worlds/{worldId}/entities/{parentId}/children:
+    get:
+      summary: Get child entities
+      description: |
+        Retrieve all direct children of a parent entity (one level deep).
+        
+        **Hierarchy:**
+        - Returns only immediate children (not grandchildren)
+        - Supports filtering by type and tags
+        - Paginated results
+        
+        **Functional Requirements:** FR-011
+      operationId: getChildEntities
+      tags:
+        - Entity Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - name: parentId
+          in: path
+          description: Unique identifier for the parent entity
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "7b8c9d0e-1234-5678-9abc-def012345678"
+        - name: type
+          in: query
+          description: Filter by entity type
+          required: false
+          schema:
+            $ref: '#/components/schemas/EntityType'
+        - name: tags
+          in: query
+          description: Filter by tags (comma-separated)
+          required: false
+          schema:
+            type: string
+        - $ref: 'common.yaml#/components/parameters/LimitParameter'
+        - $ref: 'common.yaml#/components/parameters/CursorParameter'
+      responses:
+        '200':
+          description: List of child entities retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: 'common.yaml#/components/schemas/PaginatedApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/EntityResponse'
+        '400':
+          $ref: 'common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: 'common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+  
+  /worlds/{worldId}/entities/{entityId}/move:
+    post:
+      summary: Move entity to new parent
+      description: |
+        Change an entity's parent (move within hierarchy).
+        
+        **Validation:**
+        - New parent must exist in same world
+        - Cannot create circular references (entity cannot be its own ancestor)
+        - Null parentId moves entity to root level
+        
+        **Functional Requirements:** FR-012
+      operationId: moveEntity
+      tags:
+        - Entity Management
+      parameters:
+        - $ref: 'common.yaml#/components/parameters/WorldIdParameter'
+        - $ref: 'common.yaml#/components/parameters/EntityIdParameter'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveEntityRequest'
+            example:
+              newParentId: "8c9d0e1f-2345-6789-abcd-ef0123456789"
+      responses:
+        '200':
+          description: Entity moved successfully
+          headers:
+            ETag:
+              $ref: 'common.yaml#/components/headers/ETagHeader'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: 'common.yaml#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/EntityResponse'
+        '400':
+          description: Bad Request - Circular reference or invalid parent
+          content:
+            application/json:
+              schema:
+                $ref: 'common.yaml#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "CIRCULAR_REFERENCE"
+                  message: "Cannot move entity to new parent because it would create a circular reference"
+                meta:
+                  requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  timestamp: "2026-01-03T10:30:00Z"
+        '401':
+          $ref: 'common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: 'common.yaml#/components/responses/Forbidden'
+        '404':
+          description: Entity or new parent not found
+          content:
+            application/json:
+              schema:
+                $ref: 'common.yaml#/components/schemas/ErrorResponse'
+        '500':
+          $ref: 'common.yaml#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    EntityType:
+      type: string
+      description: Type of world entity
+      enum:
+        - Character
+        - Location
+        - Campaign
+        - Session
+        - Faction
+        - Item
+        - Quest
+        - Event
+        - Continent
+        - Country
+        - Region
+        - City
+        - Building
+        - Room
+        - Other
+      example: "Character"
+    
+    CreateEntityRequest:
+      type: object
+      description: Request body for creating a new entity
+      required:
+        - name
+        - entityType
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Entity name
+          example: "Eldric the Wise"
+        description:
+          type: string
+          maxLength: 5000
+          nullable: true
+          description: Entity description (supports Markdown)
+          example: "An ancient wizard who guards the secrets of the realm"
+        entityType:
+          $ref: '#/components/schemas/EntityType'
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of parent entity (null for root-level entities)
+          example: null
+        tags:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            maxLength: 50
+          nullable: true
+          description: Tags for categorization and search
+          example: ["npc", "wizard", "questgiver"]
+        attributes:
+          type: object
+          nullable: true
+          description: Custom JSON attributes (max 100KB serialized)
+          additionalProperties: true
+          example:
+            level: 20
+            alignment: "Lawful Good"
+            race: "Human"
+    
+    UpdateEntityRequest:
+      type: object
+      description: Request body for updating an entity (full replace)
+      required:
+        - name
+        - entityType
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Entity name
+          example: "Eldric the Ancient"
+        description:
+          type: string
+          maxLength: 5000
+          nullable: true
+          description: Entity description (supports Markdown)
+          example: "An immortal wizard who has guarded the realm for millennia"
+        entityType:
+          $ref: '#/components/schemas/EntityType'
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of parent entity (null for root-level entities)
+          example: null
+        tags:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            maxLength: 50
+          nullable: true
+          description: Tags for categorization and search
+          example: ["npc", "wizard", "questgiver", "immortal"]
+        attributes:
+          type: object
+          nullable: true
+          description: Custom JSON attributes (max 100KB serialized)
+          additionalProperties: true
+          example:
+            level: 25
+            alignment: "Lawful Good"
+            race: "Human"
+            ageYears: 3000
+    
+    PatchEntityRequest:
+      type: object
+      description: Request body for partial entity update (only provided fields updated)
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Entity name
+        description:
+          type: string
+          maxLength: 5000
+          nullable: true
+          description: Entity description (supports Markdown)
+        entityType:
+          $ref: '#/components/schemas/EntityType'
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of parent entity (null for root-level entities)
+        tags:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            maxLength: 50
+          nullable: true
+          description: Tags for categorization and search (replaces entire array)
+        attributes:
+          type: object
+          nullable: true
+          description: Custom JSON attributes (merged with existing values)
+          additionalProperties: true
+    
+    MoveEntityRequest:
+      type: object
+      description: Request body for moving an entity to a new parent
+      required:
+        - newParentId
+      properties:
+        newParentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of new parent entity (null to move to root level)
+          example: "8c9d0e1f-2345-6789-abcd-ef0123456789"
+    
+    EntityResponse:
+      type: object
+      description: Entity details response
+      required:
+        - id
+        - worldId
+        - name
+        - entityType
+        - createdDate
+        - modifiedDate
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier
+          example: "7b8c9d0e-1234-5678-9abc-def012345678"
+        worldId:
+          type: string
+          format: uuid
+          description: ID of the world this entity belongs to
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of parent entity (null for root-level)
+          example: null
+        name:
+          type: string
+          description: Entity name
+          example: "Eldric the Wise"
+        description:
+          type: string
+          nullable: true
+          description: Entity description
+          example: "An ancient wizard who guards the secrets of the realm"
+        entityType:
+          $ref: '#/components/schemas/EntityType'
+        tags:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: Tags
+          example: ["npc", "wizard", "questgiver"]
+        attributes:
+          type: object
+          nullable: true
+          description: Custom JSON attributes
+          additionalProperties: true
+          example:
+            level: 20
+            alignment: "Lawful Good"
+            race: "Human"
+        createdDate:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of creation
+          example: "2026-01-03T10:30:00Z"
+        modifiedDate:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of last modification
+          example: "2026-01-03T10:30:00Z"
+  
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT bearer token authentication
+
+tags:
+  - name: Entity Management
+    description: CRUD operations for world entities with hierarchical relationships
