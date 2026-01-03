@@ -1,95 +1,86 @@
-import React, { useState } from 'react';
-import {
-  Button,
-  makeStyles,
-  shorthands,
-  tokens,
-} from '@fluentui/react-components';
-import { ChevronLeft24Regular, ChevronRight24Regular } from '@fluentui/react-icons';
-import { WorldBuilderChat } from '../WorldBuilderChat/WorldBuilderChat';
+import { useState } from 'react';
+import { Send, Sparkles } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-const useStyles = makeStyles({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    ...shorthands.borderLeft('1px', 'solid', tokens.colorNeutralStroke1),
-    width: '400px',
-    height: '100%',
-  },
-  hidden: {
-    display: 'none',
-  },
-  toggleRail: {
-    width: '48px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shorthands.borderLeft('1px', 'solid', tokens.colorNeutralStroke1),
-  },
-  chatContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    position: 'relative',
-  },
-  toggleButton: {
-    position: 'absolute',
-    top: '8px',
-    right: '8px',
-    zIndex: 1000,
-  },
-});
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
 
-/**
- * ChatWindow component provides a collapsible chat interface
- * powered by CopilotKit and AG-UI protocol.
- * 
- * This is a proof-of-concept that demonstrates:
- * - CopilotKit integration with Fluent UI v9
- * - AG-UI protocol readiness (via mock endpoint)
- * - Shared state between Redux and agents
- * - Frontend actions callable by agents
- * 
- * Once Microsoft Agent Framework backend is implemented,
- * this will connect to /api/copilotkit endpoint.
- */
-const ChatWindow: React.FC = () => {
-  const styles = useStyles();
-  const [visible, setVisible] = useState<boolean>(false);
+export function ChatWindow() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
 
-  const handleToggle = () => setVisible((prev) => !prev);
+  const handleSend = () => {
+    if (!input.trim()) return;
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input,
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    setInput('');
+
+    setTimeout(() => {
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'AI backend not connected yet. This is a placeholder response.',
+      };
+      setMessages((prev) => [...prev, aiResponse]);
+    }, 500);
+  };
 
   return (
-    <aside aria-label="Chat Window" aria-hidden={visible ? 'false' : 'true'} tabIndex={visible ? 0 : -1}>
-      {/* Collapsed rail */}
-      {!visible && (
-        <div className={styles.toggleRail} role="complementary" aria-label="Collapsed Chat Rail">
-          <Button
-            aria-label="Show Chat Window"
-            appearance="subtle"
-            icon={<ChevronLeft24Regular />}
-            onClick={handleToggle}
-          />
+    <aside className="w-96 border-l border-border bg-card flex flex-col">
+      <div className="p-4 border-b border-border">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold">AI Assistant</h2>
         </div>
-      )}
+      </div>
 
-      {/* Expanded chat with CopilotKit */}
-      {visible && (
-        <div className={styles.root} role="region" aria-label="World Builder AI Assistant">
-          <div className={styles.chatContainer}>
-            <Button
-              aria-label="Hide Chat Window"
-              appearance="subtle"
-              icon={<ChevronRight24Regular />}
-              onClick={handleToggle}
-              className={styles.toggleButton}
-            />
-            <WorldBuilderChat />
-          </div>
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
+          {messages.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              <p>Ask me anything about your world...</p>
+            </div>
+          ) : (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className={`p-3 rounded-lg ${
+                  message.role === 'user'
+                    ? 'bg-primary text-primary-foreground ml-8'
+                    : 'bg-muted mr-8'
+                }`}
+              >
+                <p className="text-sm">{message.content}</p>
+              </div>
+            ))
+          )}
         </div>
-      )}
+      </ScrollArea>
+
+      <div className="p-4 border-t border-border">
+        <div className="flex gap-2">
+          <Input
+            placeholder="Ask about your world..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          />
+          <Button size="icon" onClick={handleSend}>
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </aside>
   );
-};
-
-export default ChatWindow;
+}

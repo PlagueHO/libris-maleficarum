@@ -1,37 +1,13 @@
 {
-  "compilerOptions": {
-    "target": "ES2020", // Modern target for better performance
-    "module": "ESNext", // Use ESNext for module resolution
-    "strict": true, // Enable all strict type-checking options
-    "noImplicitAny": true, // Disallow implicit 'any' types
-    "strictNullChecks": true, // Ensure null and undefined are handled explicitly
-    "strictFunctionTypes": true, // Ensure function type safety
-    "strictBindCallApply": true, // Check bind, call, and apply methods
-    "noImplicitThis": true, // Disallow 'this' of type 'any'
-    "alwaysStrict": true, // Parse in strict mode
-    "esModuleInterop": true, // Enable interoperability between CommonJS and ES modules
-    "forceConsistentCasingInFileNames": true, // Enforce consistent file name casing
-    "skipLibCheck": true, // Skip type checking of declaration files for performance
-    "moduleResolution": "Node", // Use Node.js module resolution
-    "resolveJsonModule": true, // Allow importing JSON files
-    "isolatedModules": true, // Ensure each file can be transpiled independently
-  "outDir": "./dist", // Output directory for compiled files
-    "declaration": true, // Generate declaration files
-    "declarationMap": true, // Generate source maps for declaration files
-    "sourceMap": true, // Generate source maps for debugging
-    "removeComments": true, // Remove comments in output
-    "incremental": true, // Enable incremental compilation
-    "noUnusedLocals": true, // Report unused local variables
-    "noUnusedParameters": true, // Report unused function parameters
-    "noFallthroughCasesInSwitch": true, // Disallow fallthrough cases in switch statements
-    "noUncheckedIndexedAccess": true, // Add undefined to index signatures
-    "useDefineForClassFields": true, // Use `define` for class fields
-    "jsx": "react-jsx" // Enable React JSX transformation
-  },
-  "files": ["vite.config.ts"],
-  "exclude": ["node_modules", "dist"], // Exclude unnecessary directories
+  "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
 }

@@ -39,26 +39,34 @@ The Libris Maleficarum frontend is a modern, accessible, and visually engaging S
   - **Human-in-the-Loop:** User approval workflows for critical agent operations.
   - **AG-UI Client:** Native protocol support for agent-user interaction (SSE/WebSocket).
 
-- **CSS Modules:**  
-  Component-level styling is achieved using CSS modules for encapsulation and maintainability.
+- **TailwindCSS:**  
+  Utility-first CSS framework for rapid, maintainable styling with custom dark fantasy theme.
 
-- **Fluent UI v9:**  
-  - Microsoft's design system for consistent, accessible, and performant UI components.
-  - Seamlessly integrates with CopilotKit components for unified styling.
-  - Theming support for light/dark/fantasy modes.
+- **Shadcn/ui + Radix UI:**  
+  - Copy-paste component library built on Radix UI primitives (headless, accessible)
+  - Fully customizable components for Card, Button, Dialog, etc.
+  - Accessible by default (ARIA, keyboard navigation, screen reader support)
+  - Perfect for creating immersive fantasy-themed interfaces
+  - Owned by the project (components live in `src/components/ui/`)
 
 - **Accessibility:**  
   - All interactive elements are accessible via keyboard.
   - ARIA roles and labels are used throughout.
   - High-contrast and screen reader support.
-  - CopilotKit components are accessible by default and testable with jest-axe.
+  - Radix UI primitives ensure WCAG AA compliance by default.
+  - Testable with jest-axe.
 
 ## Visual Theme
 
-- **Fantasy Theme:**  
-  - Custom color palette inspired by fantasy worlds (deep purples, golds, parchment, etc.).
-  - Themed icons, backgrounds, and UI elements.
-  - Subtle textures and decorative borders to evoke a magical, immersive feel.
+- **Dark Fantasy Theme:**  
+  - Custom TailwindCSS theme with HSL color variables for easy customization
+  - Dark slate backgrounds (220° hue, 18% saturation, 10-12% lightness)
+  - Gold/amber accents for interactive elements (42° hue, 88% saturation)
+  - Purple secondary colors for mystical elements (280° hue, 40% saturation)
+  - Crimson accent colors for important actions (355° hue, 65% saturation)
+  - Optional light "parchment" theme for daytime use
+  - Subtle shadows and borders to evoke a magical, immersive feel.
+  - Typography: Inter font family for clean readability with fantasy aesthetic
 
 ## Summary
 

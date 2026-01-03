@@ -59,9 +59,11 @@
 - **Frontend:**
   - **React 19** with **TypeScript** (Vite)
   - **Redux Toolkit** for state management
-  - **Fluent UI v9** for consistent design and user experience [https://react.fluentui.dev/](https://react.fluentui.dev/).
-  - **CopilotKit** for agentic user experiences and AG-UI client [https://docs.copilotkit.ai/](https://docs.copilotkit.ai/).
-  - **AG-UI Protocol** for standardized agent-user communication [https://docs.ag-ui.com/](https://docs.ag-ui.com/).
+  - **TailwindCSS** for utility-first styling [https://tailwindcss.com/](https://tailwindcss.com/)
+  - **Shadcn/ui** component library built on Radix UI primitives [https://ui.shadcn.com/](https://ui.shadcn.com/). Documentation at [https://ui.shadcn.com/docs](https://ui.shadcn.com/docs)
+  - **Radix UI** for accessible headless components [https://www.radix-ui.com/](https://www.radix-ui.com/)
+  - **CopilotKit** for agentic user experiences and AG-UI client [https://docs.copilotkit.ai/](https://docs.copilotkit.ai/)
+  - **AG-UI Protocol** for standardized agent-user communication [https://docs.ag-ui.com/](https://docs.ag-ui.com/)
 
 - **Data Storage:**
   - **Azure Cosmos DB** using multiple containers for hierarchical, flexible entity storage and a dedicated container for document hierarchy.

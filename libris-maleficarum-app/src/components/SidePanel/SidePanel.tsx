@@ -1,92 +1,56 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, toggle } from '../../store/store';
-import {
-  Drawer,
-  DrawerHeader,
-  DrawerHeaderTitle,
-  DrawerBody,
-  Button,
-  Tooltip,
-  TabList,
-  Tab,
-  tokens,
-} from '@fluentui/react-components';
-import {
-  PanelLeftExpand24Regular,
-  PanelLeftContract24Regular,
-  Globe24Regular,
-  BookContacts24Regular,
-  ShapeIntersect24Regular,
-} from '@fluentui/react-icons';
+import { Globe, MapPin, Users, Scroll, Sword } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
 
-const SidePanel: React.FC = () => {
+export function SidePanel() {
   const isExpanded = useSelector((state: RootState) => state.sidePanel.isExpanded);
-  const dispatch = useDispatch();
 
-  const handleToggle = () => dispatch(toggle());
+  if (!isExpanded) {
+    return null;
+  }
 
-  // Inline placement Drawer behaves like a collapsible left rail
   return (
-    <div aria-label="Side Panel" style={{ display: 'flex' }}>
-      <Drawer
-        type="inline"
-        open={isExpanded}
-        position="start"
-        style={{ borderRight: `1px solid ${tokens.colorNeutralStroke1}` }}
-      >
-        <DrawerHeader>
-          <DrawerHeaderTitle
-            action={
-              <Tooltip content="Collapse" relationship="label">
-                <Button
-                  aria-label="Collapse side panel"
-                  appearance="subtle"
-                  icon={<PanelLeftContract24Regular />}
-                  onClick={handleToggle}
-                />
-              </Tooltip>
-            }
-          >
-            Navigation
-          </DrawerHeaderTitle>
-        </DrawerHeader>
-        <DrawerBody>
-          <nav aria-label="Side Navigation">
-            <TabList vertical defaultSelectedValue="worlds" appearance="subtle">
-              <Tab id="tab-worlds" icon={<Globe24Regular />} value="worlds">Worlds</Tab>
-              <Tab id="tab-campaigns" icon={<BookContacts24Regular />} value="campaigns">Campaigns</Tab>
-              <Tab id="tab-entities" icon={<ShapeIntersect24Regular />} value="entities">Entities</Tab>
-            </TabList>
-          </nav>
-        </DrawerBody>
-      </Drawer>
+    <aside className="w-64 border-r border-border bg-card" aria-label="Side Panel">
+      <ScrollArea className="h-full">
+        <div className="p-4 space-y-4">
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground mb-2">WORLD</h2>
+            <div className="space-y-1">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Globe className="h-4 w-4" />
+                <span>Realms</span>
+              </Button>
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <MapPin className="h-4 w-4" />
+                <span>Locations</span>
+              </Button>
+            </div>
+          </div>
 
-      {/* Collapsed rail with expand button when not expanded */}
-      {!isExpanded && (
-        <div
-          role="complementary"
-          aria-label="Collapsed Side Panel"
-          style={{
-            width: 48,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRight: `1px solid ${tokens.colorNeutralStroke1}`,
-          }}
-        >
-          <Tooltip content="Expand" relationship="label">
-            <Button
-              aria-label="Expand side panel"
-              appearance="subtle"
-              icon={<PanelLeftExpand24Regular />}
-              onClick={handleToggle}
-            />
-          </Tooltip>
+          <Separator />
+
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground mb-2">CAMPAIGN</h2>
+            <div className="space-y-1">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Users className="h-4 w-4" />
+                <span>Characters</span>
+              </Button>
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Scroll className="h-4 w-4" />
+                <span>Quests</span>
+              </Button>
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Sword className="h-4 w-4" />
+                <span>Encounters</span>
+              </Button>
+            </div>
+          </div>
         </div>
-      )}
-    </div>
+      </ScrollArea>
+    </aside>
   );
-};
-
-export default SidePanel;
+}

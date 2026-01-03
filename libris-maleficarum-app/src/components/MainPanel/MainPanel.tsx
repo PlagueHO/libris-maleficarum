@@ -1,48 +1,34 @@
-import React from 'react';
-import { Card, CardHeader, Divider, makeStyles, shorthands } from '@fluentui/react-components';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const useStyles = makeStyles({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    flexGrow: 1,
-    ...shorthands.padding('24px'),
-    overflowY: 'auto',
-    backgroundColor: 'var(--colorNeutralBackground1)',
-  },
-  contentSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    maxWidth: '1200px',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-  },
-  card: {
-    width: '100%',
-    marginBottom: '16px',
-  },
-  heading: {
-    margin: 0,
-    fontSize: '32px',
-    fontWeight: 600,
-  },
-});
-
-const MainPanel: React.FC = () => {
-  const styles = useStyles();
-
+export function MainPanel() {
   return (
-    <main className={styles.root} role="main" aria-label="Main Work Panel" tabIndex={0}>
-      <section className={styles.contentSection}>
-        <Card className={styles.card}>
-          <CardHeader header={<h1 className={styles.heading}>Welcome to Libris Maleficarum</h1>} />
-          <Divider />
-          {/* TODO: Render dynamic content based on user task/context */}
+    <main className="flex-1 p-6 overflow-auto">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Welcome to Libris Maleficarum</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Your personal grimoire for world-building and campaign management.
+              Use the sidebar to navigate between different aspects of your world,
+              or ask the AI assistant for help creating new content.
+            </p>
+          </CardContent>
         </Card>
-      </section>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Getting Started</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-muted-foreground">
+              Create your first world, add locations, characters, and quests.
+              The AI will help you generate rich, detailed content for your campaigns.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </main>
   );
-};
-
-export default MainPanel;
+}

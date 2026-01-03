@@ -1,44 +1,35 @@
-import React from 'react';
-import {
-  Toolbar,
-  ToolbarButton,
-  ToolbarDivider,
-  Menu,
-  MenuTrigger,
-  MenuPopover,
-  MenuList,
-  MenuItem,
-  Text,
-} from '@fluentui/react-components';
-import { Search24Regular, Alert24Regular, Person24Regular } from '@fluentui/react-icons';
+import { Menu, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useDispatch } from 'react-redux';
+import { toggle } from '@/store/store';
 
-const TopToolbar: React.FC = () => (
-  <header role="banner" aria-label="Top Toolbar" style={{ borderBottom: '1px solid var(--colorNeutralStroke1)', padding: '0 8px' }}>
-    <Toolbar aria-label="Global Navigation" style={{ justifyContent: 'space-between', width: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {/* TODO: Add fantasy-themed logo/icon */}
-        <Text size={600} weight="semibold">Libris Maleficarum</Text>
+export function TopToolbar() {
+  const dispatch = useDispatch();
+
+  return (
+    <header className="border-b border-border bg-card">
+      <div className="flex h-14 items-center px-4 gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => dispatch(toggle())}
+          aria-label="Toggle sidebar"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <h1 className="text-lg font-semibold">Libris Maleficarum</h1>
+        </div>
+
+        <div className="ml-auto flex items-center gap-2">
+          {/* Additional toolbar buttons can go here */}
+        </div>
       </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <ToolbarButton aria-label="Search" icon={<Search24Regular />} />
-        <ToolbarButton aria-label="Notifications" icon={<Alert24Regular />} />
-        <ToolbarDivider />
-        <Menu>
-          <MenuTrigger disableButtonEnhancement>
-            <ToolbarButton aria-label="Account" icon={<Person24Regular />} />
-          </MenuTrigger>
-          <MenuPopover>
-            <MenuList>
-              <MenuItem>Profile</MenuItem>
-              <MenuItem>Settings</MenuItem>
-              <MenuItem>Sign out</MenuItem>
-            </MenuList>
-          </MenuPopover>
-        </Menu>
-      </div>
-    </Toolbar>
-  </header>
-);
-
-export default TopToolbar;
+    </header>
+  );
+}

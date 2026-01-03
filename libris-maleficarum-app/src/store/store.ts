@@ -1,6 +1,7 @@
 import { configureStore, createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 
-// SidePanel slice
+// Side panel slice for managing expand/collapse state
 interface SidePanelState {
   isExpanded: boolean;
 }
@@ -16,17 +17,21 @@ const sidePanelSlice = createSlice({
     toggle: (state) => {
       state.isExpanded = !state.isExpanded;
     },
+    setExpanded: (state, action: PayloadAction<boolean>) => {
+      state.isExpanded = action.payload;
+    },
   },
 });
 
-export const { toggle } = sidePanelSlice.actions;
+export const { toggle, setExpanded } = sidePanelSlice.actions;
 
+// Configure the store
 export const store = configureStore({
   reducer: {
     sidePanel: sidePanelSlice.reducer,
   },
 });
 
-// Infer the `RootState` and `AppDispatch` types from the store itself
+// Export types for TypeScript
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
