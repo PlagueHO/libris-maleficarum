@@ -14,11 +14,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v6
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
-          dotnet-quality: 'preview'
 
       - name: Restore dependencies
         run: dotnet restore LibrisMaleficarum.slnx
@@ -30,14 +29,34 @@ jobs:
         run: dotnet format LibrisMaleficarum.slnx --verify-no-changes --no-restore
 
       - name: Run unit tests
-        run: dotnet test LibrisMaleficarum.slnx --no-build --configuration Release --logger "trx;LogFileName=test-results.trx" --logger "GitHubActions" --collect:"XPlat Code Coverage"
+        run: dotnet test LibrisMaleficarum.slnx --no-build --configuration Release --results-directory ./TestResults --logger "trx;LogFileName=test-results.trx" --logger "GitHubActions" --collect:"XPlat Code Coverage"
 
-      - name: Upload test results
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v3
+        if: always()
+        with:
+          check_name: Unit Test Results (Backend Service)
+          files: |
+            libris-maleficarum-service/TestResults/**/*.trx
+          comment_title: Unit Test Results (Backend Service)
+
+      - name: Upload Test Artifacts
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: dotnet-test-results
-          path: libris-maleficarum-service/**/TestResults
+          path: |
+            libris-maleficarum-service/TestResults/**/*.trx
+            libris-maleficarum-service/TestResults/**/coverage.cobertura.xml
+          retention-days: 7
+
+      - name: Upload Code Coverage
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: code-coverage
+          path: libris-maleficarum-service/TestResults/**/coverage.cobertura.xml
+          retention-days: 7
 
       - name: Publish API
         run: dotnet publish src/Api/LibrisMaleficarum.Api.csproj --no-build --configuration Release --output ./publish/api
