@@ -73,6 +73,7 @@ Open Aspire Dashboard: **https://localhost:15888**
 - ✅ **frontend** - Running (green)
 
 **Get API URL** from dashboard:
+
 - Click **api** → **Details** → Copy endpoint URL (typically `https://localhost:7041`)
 
 ### 5. Test API (Choose One Method)
@@ -80,17 +81,19 @@ Open Aspire Dashboard: **https://localhost:15888**
 **Option A: Swagger UI**
 
 1. Navigate to: `https://localhost:7041/swagger`
-2. Expand **POST /api/v1/worlds**
-3. Click **Try it out**
-4. Enter request body:
+1. Expand **POST /api/v1/worlds**
+1. Click **Try it out**
+1. Enter request body:
+
    ```json
    {
      "name": "Test World",
      "description": "My first world"
    }
    ```
-5. Click **Execute**
-6. Verify **201 Created** response
+
+1. Click **Execute**
+1. Verify **201 Created** response
 
 **Option B: PowerShell (curl)**
 
@@ -111,6 +114,7 @@ $response
 ```
 
 **Expected Response:**
+
 ```json
 {
   "data": {
@@ -181,11 +185,13 @@ dotnet build LibrisMaleficarum.slnx --configuration Release
 ### Viewing Cosmos DB Data
 
 **Option 1: Aspire Dashboard**
+
 1. Open https://localhost:15888
-2. Click **cosmosdb** → **View Data**
-3. Browse containers: Worlds, WorldEntities, Assets
+1. Click **cosmosdb** → **View Data**
+1. Browse containers: Worlds, WorldEntities, Assets
 
 **Option 2: Cosmos DB Explorer (Container)**
+
 ```powershell
 # Get Cosmos DB Emulator endpoint from Aspire
 # Typically: https://localhost:8081
@@ -223,17 +229,18 @@ dotnet build LibrisMaleficarum.slnx --configuration Release
 ```
 
 **Set Breakpoints**:
+
 1. Open `src/Api/Controllers/WorldsController.cs`
-2. Set breakpoint on line in `CreateWorld` method
-3. Press **F5** to start debugging
-4. Send POST request to `/api/v1/worlds`
-5. Breakpoint hits → inspect variables
+1. Set breakpoint on line in `CreateWorld` method
+1. Press **F5** to start debugging
+1. Send POST request to `/api/v1/worlds`
+1. Breakpoint hits → inspect variables
 
 ---
 
 ## Project Structure Navigation
 
-```
+```text
 libris-maleficarum-service/
 ├── src/
 │   ├── Api/                          # Start here for API endpoints
@@ -252,12 +259,13 @@ libris-maleficarum-service/
 ```
 
 **Key Files to Understand**:
+
 1. **AppHost.cs** - Aspire orchestration (Cosmos DB + API + Frontend)
-2. **WorldsController.cs** - REST API endpoints for World Management
-3. **IWorldRepository.cs** - Repository interface (Domain layer)
-4. **WorldRepository.cs** - EF Core implementation (Infrastructure layer)
-5. **ApplicationDbContext.cs** - Cosmos DB configuration
-6. **Program.cs** (Api project) - Service registration and middleware pipeline
+1. **WorldsController.cs** - REST API endpoints for World Management
+1. **IWorldRepository.cs** - Repository interface (Domain layer)
+1. **WorldRepository.cs** - EF Core implementation (Infrastructure layer)
+1. **ApplicationDbContext.cs** - Cosmos DB configuration
+1. **Program.cs** (Api project) - Service registration and middleware pipeline
 
 ---
 
@@ -266,7 +274,8 @@ libris-maleficarum-service/
 ### Add New API Endpoint
 
 1. **Define Request/Response DTOs** in `src/Api/Models/`
-2. **Add Controller Method**:
+1. **Add Controller Method**:
+
    ```csharp
    [HttpGet("{worldId}/details")]
    [ProducesResponseType<ApiResponse<WorldDetailsResponse>>(200)]
@@ -275,7 +284,9 @@ libris-maleficarum-service/
        // Implementation
    }
    ```
-3. **Write Test First** (TDD):
+
+1. **Write Test First** (TDD):
+
    ```csharp
    [Fact]
    public async Task GetWorldDetails_WithValidId_ReturnsDetails()
@@ -283,21 +294,25 @@ libris-maleficarum-service/
        // Arrange, Act, Assert
    }
    ```
-4. **Run Test** → Fails (Red)
-5. **Implement Logic** → Test Passes (Green)
-6. **Refactor** if needed
+
+1. **Run Test** → Fails (Red)
+1. **Implement Logic** → Test Passes (Green)
+1. **Refactor** if needed
 
 ### Add New Domain Entity
 
 1. **Create Entity Class** in `src/Domain/Entities/`
-2. **Create Repository Interface** in `src/Domain/Interfaces/Repositories/`
-3. **Create Repository Implementation** in `src/Infrastructure/Repositories/`
-4. **Add EF Core Configuration** in `src/Infrastructure/Persistence/Configurations/`
-5. **Register in DbContext**:
+1. **Create Repository Interface** in `src/Domain/Interfaces/Repositories/`
+1. **Create Repository Implementation** in `src/Infrastructure/Repositories/`
+1. **Add EF Core Configuration** in `src/Infrastructure/Persistence/Configurations/`
+1. **Register in DbContext**:
+
    ```csharp
    public DbSet<NewEntity> NewEntities { get; set; }
    ```
-6. **Update Container Configuration**:
+
+1. **Update Container Configuration**:
+
    ```csharp
    modelBuilder.Entity<NewEntity>()
        .ToContainer("NewEntities")
@@ -307,10 +322,12 @@ libris-maleficarum-service/
 ### Change Cosmos DB Connection
 
 **Local Development** (via Aspire - automatic):
+
 - Connection string managed by Aspire
 - No manual configuration needed
 
 **Production** (future):
+
 - Set environment variable: `ConnectionStrings__CosmosDb`
 - Or use Azure Key Vault reference in `appsettings.Production.json`
 
@@ -323,13 +340,16 @@ libris-maleficarum-service/
 **Symptom**: Aspire shows cosmosdb service as "Failed"
 
 **Solutions**:
+
 1. Ensure Docker Desktop is running
-2. Clear Docker containers:
+1. Clear Docker containers:
+
    ```powershell
    docker ps -a
    docker rm $(docker ps -aq)
    ```
-3. Restart Aspire AppHost
+
+1. Restart Aspire AppHost
 
 ### API Returns 503 Service Unavailable
 
@@ -338,15 +358,17 @@ libris-maleficarum-service/
 **Cause**: Cosmos DB not connected
 
 **Solution**:
+
 1. Check Aspire Dashboard → cosmosdb status
-2. Wait for Cosmos DB Emulator to fully start (~30 seconds first run)
-3. Restart API service from Aspire Dashboard
+1. Wait for Cosmos DB Emulator to fully start (~30 seconds first run)
+1. Restart API service from Aspire Dashboard
 
 ### Tests Fail with "Collection was modified"
 
 **Cause**: Concurrent test execution modifying shared state
 
 **Solution**:
+
 - Use `IAsyncLifetime` for test fixtures
 - Isolate test data (unique GUIDs per test)
 - Avoid static/shared state
@@ -358,6 +380,7 @@ libris-maleficarum-service/
 **Cause**: Swagger only enabled in Development environment
 
 **Solution**:
+
 ```powershell
 $env:ASPNETCORE_ENVIRONMENT = "Development"
 dotnet run --project src/Api
@@ -393,10 +416,10 @@ dotnet clean LibrisMaleficarum.slnx
 ## Next Steps
 
 1. ✅ **Read** [data-model.md](data-model.md) for entity schemas
-2. ✅ **Review** [contracts/worlds.yaml](contracts/worlds.yaml) for API contracts
-3. ✅ **Explore** Aspire Dashboard for observability
-4. ✅ **Write** your first test following AAA pattern
-5. ✅ **Implement** World Management endpoints (Priority 1)
+1. ✅ **Review** [contracts/worlds.yaml](contracts/worlds.yaml) for API contracts
+1. ✅ **Explore** Aspire Dashboard for observability
+1. ✅ **Write** your first test following AAA pattern
+1. ✅ **Implement** World Management endpoints (Priority 1)
 
 ## Additional Resources
 
