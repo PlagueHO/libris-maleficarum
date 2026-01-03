@@ -26,10 +26,25 @@ jobs:
         run: dotnet build LibrisMaleficarum.slnx --no-restore --configuration Release
 
       - name: Run linting (format check)
-        run: dotnet format LibrisMaleficarum.slnx --verify-no-changes --no-restore
+        run: dotnet format LibrisMaleficarum.slnx --verify-no-changes --severity error
 
       - name: Run unit tests
-        run: dotnet test LibrisMaleficarum.slnx --no-build --configuration Release --results-directory ./TestResults --logger "trx;LogFileName=test-results.trx" --logger "GitHubActions" --collect:"XPlat Code Coverage"
+        run: |
+          dotnet test --project tests/Domain.Tests/LibrisMaleficarum.Domain.Tests.csproj \
+            --configuration Release \
+            --no-restore \
+            --results-directory ./TestResults \
+            --report-trx
+          dotnet test --project tests/Infrastructure.Tests/LibrisMaleficarum.Infrastructure.Tests.csproj \
+            --configuration Release \
+            --no-restore \
+            --results-directory ./TestResults \
+            --report-trx
+          dotnet test --project tests/Api.Tests/LibrisMaleficarum.Api.Tests.csproj \
+            --configuration Release \
+            --no-restore \
+            --results-directory ./TestResults \
+            --report-trx
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2

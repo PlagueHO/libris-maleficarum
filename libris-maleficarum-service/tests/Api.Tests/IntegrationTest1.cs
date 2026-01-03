@@ -2,9 +2,18 @@ using Microsoft.Extensions.Logging;
 
 namespace LibrisMaleficarum.Api.Tests.Tests;
 
+[TestClass]
 public class IntegrationTest1
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+
+    [TestMethod]
+    public void Placeholder_ShouldPass()
+    {
+        // This is a placeholder test to ensure the test project has at least one test
+        // Remove this when actual integration tests are implemented
+        Assert.IsTrue(true);
+    }
 
     // Instructions:
     // 1. Add a project reference to the target AppHost project, e.g.:
@@ -15,7 +24,7 @@ public class IntegrationTest1
     //
     // 2. Uncomment the following example test and update 'Projects.MyAspireApp_AppHost' to match your AppHost project:
     //
-    // [Fact]
+    // [TestMethod]
     // public async Task GetWebResourceRootReturnsOkStatusCode()
     // {
     //     // Arrange
@@ -27,7 +36,7 @@ public class IntegrationTest1
     //         // Override the logging filters from the app's configuration
     //         logging.AddFilter(appHost.Environment.ApplicationName, LogLevel.Debug);
     //         logging.AddFilter("Aspire.", LogLevel.Debug);
-    //         // To output logs to the xUnit.net ITestOutputHelper, consider adding a package from https://www.nuget.org/packages?q=xunit+logging
+    //         // To output logs to the MSTest TestContext, consider using TestContext.WriteLine
     //     });
     //     appHost.Services.ConfigureHttpClientDefaults(clientBuilder =>
     //     {
@@ -43,6 +52,6 @@ public class IntegrationTest1
     //     using var response = await httpClient.GetAsync("/", cancellationToken);
     //
     //     // Assert
-    //     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    //     Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     // }
 }

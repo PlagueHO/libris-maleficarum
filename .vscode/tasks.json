@@ -113,7 +113,7 @@
       "label": "service: test",
       "type": "shell",
       "command": "dotnet",
-      "args": ["test", "LibrisMaleficarum.slnx", "--no-build"],
+      "args": ["test", "--solution", "LibrisMaleficarum.slnx", "--no-build"],
       "options": {
         "cwd": "${workspaceFolder}/libris-maleficarum-service"
       },
@@ -132,7 +132,7 @@
       "label": "service: test (watch)",
       "type": "shell",
       "command": "dotnet",
-      "args": ["watch", "test", "LibrisMaleficarum.slnx"],
+      "args": ["watch", "test", "--solution", "LibrisMaleficarum.slnx"],
       "options": {
         "cwd": "${workspaceFolder}/libris-maleficarum-service"
       },

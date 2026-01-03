@@ -123,68 +123,76 @@ pnpm test:coverage     # Generate coverage report
 
 ### Test Framework Stack
 
-- **Test Framework**: xUnit 2.9+ (latest stable version)
-- **Assertions**: FluentAssertions 7.x (fluent assertion library for expressive tests)
-- **Mocking**: NSubstitute 5.x (preferred for .NET 10) - simpler, more intuitive than Moq
-- **Integration Testing**: WebApplicationFactory (ASP.NET Core in-memory testing), Testcontainers.NET 4.x
-- **Database Testing**: Testcontainers.CosmosDb for isolated test databases, Respawn for cleanup
-- **Snapshot Testing**: Verify.Xunit for API response verification
-- **Code Coverage**: Coverlet for code coverage collection
+- **Test Framework**: MSTest.Sdk 3.10.2+ (modern .NET 10 test SDK)
+- **Test Runner**: Microsoft.Testing.Platform (built into MSTest.Sdk)
+- **Assertions**: FluentAssertions 7.x
+- **Mocking**: NSubstitute 5.x
+- **Integration Testing**: Aspire.Hosting.Testing, Testcontainers.NET 4.x
+- **Code Coverage**: Auto-included via MSTest.Sdk
 
 ### Test Project Configuration
 
-All test projects follow .NET 10 best practices with consistent package references:
-
-**Example Test Project (.csproj)**:
+**Domain/Infrastructure Tests (.csproj)**:
 
 ```xml
-<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="MSTest.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.2">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="FluentAssertions" Version="7.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="NSubstitute" Version="5.3.0" />
-    <PackageReference Include="Testcontainers" Version="4.1.0" />
-    <PackageReference Include="Testcontainers.CosmosDb" Version="4.1.0" />
-    <PackageReference Include="xunit" Version="2.9.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Domain\LibrisMaleficarum.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Xunit" />
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
     <Using Include="FluentAssertions" />
     <Using Include="NSubstitute" />
   </ItemGroup>
-
 </Project>
 ```
 
-**Key Configuration Features**:
+**API Integration Tests (.csproj)**:
 
-- **Nullable Reference Types**: Enabled for better null safety
-- **Implicit Usings**: Enabled for cleaner code (global usings for common namespaces)
-- **Global Usings**: xUnit, FluentAssertions, NSubstitute automatically available
-- **IsTestProject**: Marks project as test project for proper tooling support
-- **Coverlet**: Code coverage collector for CI/CD integration
+```xml
+<Project Sdk="MSTest.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Testing" Version="13.1.0" />
+    <PackageReference Include="FluentAssertions" Version="7.0.0" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    <Using Include="FluentAssertions" />
+    <Using Include="NSubstitute" />
+    <Using Include="System.Net" />
+    <Using Include="Aspire.Hosting.Testing" />
+  </ItemGroup>
+</Project>
+```
+
+**SDK Configuration (global.json)**:
+
+```json
+{
+  "msbuild-sdks": {
+    "MSTest.Sdk": "3.10.2"
+  },
+  "test": {
+    "runner": "Microsoft.Testing.Platform"
+  }
+}
+```
 
 ### Test Organization
 
@@ -214,203 +222,70 @@ libris-maleficarum-service/
 **Unit Tests** (Domain Layer):
 
 ```csharp
+[TestClass]
 public class WorldEntityTests
 {
-    [Fact]
+    [TestMethod]
     public void Create_WithValidData_ShouldSucceed()
     {
-        // Arrange
-        var worldId = Guid.NewGuid().ToString();
-        var ownerId = Guid.NewGuid().ToString();
+        var entity = WorldEntity.Create("world-1", "Test", "owner-1");
         
-        // Act
-        var entity = WorldEntity.Create(worldId, "Test World", ownerId);
-        
-        // Assert
         entity.Should().NotBeNull();
-        entity.WorldId.Should().Be(worldId);
-        entity.OwnerId.Should().Be(ownerId);
-        entity.IsDeleted.Should().BeFalse();
+        entity.WorldId.Should().Be("world-1");
     }
     
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
+    [DataTestMethod]
+    [DataRow("")]
+    [DataRow("   ")]
     public void Create_WithInvalidName_ShouldThrow(string invalidName)
     {
-        // Arrange & Act
-        var act = () => WorldEntity.Create(Guid.NewGuid().ToString(), invalidName, Guid.NewGuid().ToString());
-        
-        // Assert
+        var act = () => WorldEntity.Create("world-1", invalidName, "owner-1");
         act.Should().Throw<ArgumentException>();
     }
 }
 ```
 
-**Integration Tests** (API Layer with WebApplicationFactory):
+**Integration Tests** (API Layer with Aspire):
 
 ```csharp
-public class WorldEntityControllerTests : IClassFixture<WebApplicationFactory<Program>>
+[TestClass]
+public class ApiTests
 {
-    private readonly HttpClient _client;
-    
-    public WorldEntityControllerTests(WebApplicationFactory<Program> factory)
+    [TestMethod]
+    public async Task GetEndpoint_ReturnsExpectedResponse()
     {
-        _client = factory.CreateClient();
-    }
-    
-    [Fact]
-    public async Task GetWorld_WithValidId_ReturnsWorld()
-    {
-        // Arrange
-        var worldId = await CreateTestWorld();
+        await using var app = await DistributedApplicationTestingBuilder
+            .CreateAsync<Projects.LibrisMaleficarum_AppHost>();
         
-        // Act
-        var response = await _client.GetAsync($"/api/v1/worlds/{worldId}");
+        await app.StartAsync();
         
-        // Assert
-        response.Should().HaveStatusCode(HttpStatusCode.OK);
-        var world = await response.Content.ReadFromJsonAsync<WorldEntity>();
-        world.Should().NotBeNull();
-        world!.Id.Should().Be(worldId);
-        world.WorldId.Should().Be(worldId);
-    }
-    
-    [Fact]
-    public async Task CreateWorld_WithValidData_Returns201Created()
-    {
-        // Arrange
-        var request = new CreateWorldRequest 
-        { 
-            Name = "New World", 
-            OwnerId = "user-123" 
-        };
+        var httpClient = app.CreateHttpClient("apiservice");
+        var response = await httpClient.GetAsync("/weatherforecast");
         
-        // Act
-        var response = await _client.PostAsJsonAsync("/api/v1/worlds", request);
-        
-        // Assert
-        response.Should().HaveStatusCode(HttpStatusCode.Created);
-        response.Headers.Location.Should().NotBeNull();
-        
-        // Verify created resource
-        var world = await response.Content.ReadFromJsonAsync<WorldEntity>();
-        world.Should().NotBeNull();
-        world!.Name.Should().Be(request.Name);
-        world.OwnerId.Should().Be(request.OwnerId);
-    }
-    
-    [Fact]
-    public async Task CreateWorld_WithInvalidData_Returns400BadRequest()
-    {
-        // Arrange
-        var request = new CreateWorldRequest 
-        { 
-            Name = "", // Invalid: empty name
-            OwnerId = "user-123" 
-        };
-        
-        // Act
-        var response = await _client.PostAsJsonAsync("/api/v1/worlds", request);
-        
-        // Assert
-        response.Should().HaveStatusCode(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }
 ```
 
-**Repository Tests** (with Testcontainers for Cosmos DB):
+**Repository Tests** (Infrastructure Layer):
 
 ```csharp
-public class WorldEntityRepositoryTests : IClassFixture<CosmosDbFixture>
+[TestClass]
+public class WorldEntityRepositoryTests
 {
-    private readonly CosmosDbFixture _fixture;
-    private readonly IWorldEntityRepository _repository;
-    
-    public WorldEntityRepositoryTests(CosmosDbFixture fixture)
-    {
-        _fixture = fixture;
-        _repository = new WorldEntityRepository(fixture.Container);
-    }
-    
-    [Fact]
-    public async Task GetByIdAsync_WithValidId_ReturnsEntity()
-    {
-        // Arrange
-        var entity = await _fixture.SeedWorldEntity();
-        
-        // Act
-        var result = await _repository.GetByIdAsync(entity.WorldId, entity.Id);
-        
-        // Assert
-        result.Should().NotBeNull();
-        result.Id.Should().Be(entity.Id);
-    }
-    
-    [Fact]
+    [TestMethod]
     public async Task CreateAsync_WithValidEntity_Succeeds()
     {
-        // Arrange
-        var entity = WorldEntityBuilder.Default().Build();
+        // Use Testcontainers for isolated Cosmos DB
+        var entity = new WorldEntity { Id = "1", Name = "Test" };
         
-        // Act
         await _repository.CreateAsync(entity);
         
-        // Assert - verify entity exists
-        var saved = await _repository.GetByIdAsync(entity.WorldId, entity.Id);
+        var saved = await _repository.GetByIdAsync("1");
         saved.Should().BeEquivalentTo(entity);
     }
 }
 ```
-
-**Aspire Orchestration Tests**:
-
-```csharp
-// TBC - Aspire testing patterns to be defined once backend is implemented
-// Will include:
-// - Service dependency testing
-// - Container orchestration validation
-// - Configuration testing
-```
-
-### Test Data Builders
-
-```csharp
-public class WorldEntityBuilder
-{
-    private string _id = Guid.NewGuid().ToString();
-    private string _worldId = Guid.NewGuid().ToString();
-    private string _name = "Test World";
-    private string _ownerId = "test-user";
-    
-    public static WorldEntityBuilder Default() => new();
-    
-    public WorldEntityBuilder WithId(string id)
-    {
-        _id = id;
-        return this;
-    }
-    
-    public WorldEntityBuilder WithName(string name)
-    {
-        _name = name;
-        return this;
-    }
-    
-    public WorldEntity Build()
-    {
-        return WorldEntity.Create(_worldId, _name, _ownerId) with { Id = _id };
-    }
-}
-```
-
-### Cosmos DB Testing Strategy
-
-1. **Local Development**: Use Cosmos DB Emulator
-2. **CI Pipeline**: Use Testcontainers.CosmosDb for isolated test databases
-3. **Integration Tests**: Create dedicated containers per test class, cleanup with Respawn
-4. **Partition Key Testing**: Validate hierarchical partition key queries return correct RU costs
 
 ### Test Execution
 
@@ -423,44 +298,38 @@ dotnet test --collect:"XPlat Code Coverage"   # With coverage
 
 ### Coverage Targets
 
-- **Domain Layer**: 90%+ (business logic critical)
-- **API Layer**: 80%+
+- **Domain Layer**: 90%+ (business logic critical)ClassInitialize/ClassCleanup and TestInitialize/TestCleanup
+- **Data-Driven Tests**: Parameterized tests with DataTestMethod and DataRow attributes
 - **Infrastructure Layer**: 70%+ (external dependencies harder to test)
 - **Overall**: 80%+ minimum
 
-## General Testing Strategies
+## Best Practices
 
-### Test Pyramid
+### Test Organization
 
-- **70% Unit Tests**: Fast, isolated, test business logic
-- **20% Integration Tests**: Test component interactions, database access
-- **10% E2E Tests**: Test critical user workflows end-to-end
+- **Test Pyramid**: 70% unit, 20% integration, 10% E2E
+- **Naming**: `MethodName_Scenario_ExpectedResult`
+- **Pattern**: Arrange-Act-Assert
+- **Attributes**: `[TestClass]`, `[TestMethod]`, `[DataTestMethod]`
+- **Categories**: Use `[TestCategory("Unit")]` for filtering
+- **Independence**: No shared state between tests
 
-### Test Patterns
+### MSTest Specifics
 
-- **AAA Pattern**: Arrange-Act-Assert for clarity
-- **Test Data Builders**: Fluent builders for complex test data
-- **Fixture Pattern**: Shared setup/teardown with IClassFixture
-- **Theory Tests**: Parameterized tests with InlineData/MemberData
+- **Class setup**: `[ClassInitialize]` / `[ClassCleanup]`
+- **Test setup**: `[TestInitialize]` / `[TestCleanup]`
+- **Data-driven**: `[DataTestMethod]` with `[DataRow(...)]`
+- **FluentAssertions**: Use `.Should()` for readable assertions
+- **NSubstitute**: Use `Substitute.For<T>()` for mocking
 
-### Continuous Integration
+# Run all tests (coverage auto-collected)
 
-- All tests run on every pull request (GitHub Actions)
-- Code coverage reports published to PR comments
-- Coverage gates enforce minimum thresholds
-- Integration tests run in isolated containers
-- E2E tests run on staging deployments
+```text
+dotnet test --filter TestCategory=Unit   # Unit tests only
+dotnet test --project tests/Api.Tests/   # Specific project
+```
 
-### Performance Testing
+### Coverage Targets
 
-- **RU Cost Validation**: Assert Cosmos DB query costs match documented estimates (DATA_MODEL.md)
-- **Load Testing**: Use NBomber or k6 for API load tests
-- **Benchmarking**: BenchmarkDotNet for performance-critical code paths
-
-## Test Organization Best Practices
-
-- **One test class per production class** (unit tests)
-- **Descriptive test names**: `MethodName_Scenario_ExpectedResult`
-- **Arrange-Act-Assert comments** for complex tests
-- **No test interdependencies**: Each test runs independently
-- **Deterministic tests**: No reliance on system time, random data, or external state
+- **Domain Layer**: 90%+ (business logic critical)
+- **Infrastructure Layer**: 70%+ (external dependencies
