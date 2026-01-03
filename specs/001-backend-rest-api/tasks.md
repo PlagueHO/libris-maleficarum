@@ -5,6 +5,7 @@
 **Generated**: 2026-01-03
 
 **Prerequisites Checked**:
+
 - ✅ plan.md (Technical Context, Constitution Check, Project Structure)
 - ✅ spec.md (5 user stories with priorities, 25 functional requirements)
 - ✅ research.md (9 technology decisions with code examples)
@@ -347,44 +348,51 @@
 ### User Story Completion Order (Recommended for MVP)
 
 1. **Foundational (Phase 2)** - MUST complete first → ~8-10 hours
-2. **US1 (Phase 3)** - World Management → MVP Core → ~12-16 hours
-3. **US5 (Phase 7)** - Aspire Validation → Developer Experience → ~2-4 hours
-4. **Deploy MVP** - Deliver P1 functionality for testing
-5. **US2 (Phase 4)** - Entity Management → ~16-20 hours
-6. **US3 (Phase 5)** - Asset Management → ~12-16 hours
-7. **US4 (Phase 6)** - Search → ~6-8 hours
-8. **Polish (Phase 8)** - Final validation → ~6-8 hours
+1. **US1 (Phase 3)** - World Management → MVP Core → ~12-16 hours
+1. **US5 (Phase 7)** - Aspire Validation → Developer Experience → ~2-4 hours
+1. **Deploy MVP** - Deliver P1 functionality for testing
+1. **US2 (Phase 4)** - Entity Management → ~16-20 hours
+1. **US3 (Phase 5)** - Asset Management → ~12-16 hours
+1. **US4 (Phase 6)** - Search → ~6-8 hours
+1. **Polish (Phase 8)** - Final validation → ~6-8 hours
 
 ### Parallel Opportunities
 
 **Setup Phase (All in parallel)**:
+
 - T002-T008: All NuGet package additions (different projects)
 
 **Foundational Phase (Parallelizable groups)**:
+
 - T009-T013: Domain/Api foundation classes (different files)
 - T014, T022: Service implementations (different files)
 
 **Within Each User Story (Parallelizable groups)**:
 
 **US1 Parallel Tasks**:
+
 - T024-T030: Domain classes (World entity, repository interface, exceptions)
 - T039-T043: API DTOs and validators
 - T050-T052: Test files for different layers
 
 **US2 Parallel Tasks**:
+
 - T056-T062: Domain classes (WorldEntity entity, repository interfaces, exceptions)
 - T075-T080: API DTOs and validators
 - T090-T093: Test files for different layers
 
 **US3 Parallel Tasks**:
+
 - T098-T101: Domain classes (Asset entity, repository/service interfaces)
 - T115-T116: API DTOs
 - T125-T128: Test files
 
 **US4 Parallel Tasks**:
+
 - T138-T139: Test files for service and controller
 
 **Polish Phase (All in parallel)**:
+
 - T147-T149: Documentation updates
 - T150-T151: Code formatting and build verification
 - T153-T154: Test execution and coverage
@@ -392,10 +400,11 @@
 ### Within User Story Task Sequencing
 
 **US1 Example Sequential Flow**:
+
 1. Domain entities first (T024-T027) → Tests can be written (T050)
-2. Repository interface (T028) → Repository implementation (T033-T038) → Tests (T051)
-3. DTOs (T039-T041) → Validators (T042-T043)
-4. Controller (T044) → Endpoints (T045-T049) → Tests (T052-T055)
+1. Repository interface (T028) → Repository implementation (T033-T038) → Tests (T051)
+1. DTOs (T039-T041) → Validators (T042-T043)
+1. Controller (T044) → Endpoints (T045-T049) → Tests (T052-T055)
 
 **Critical Path**: Foundational → US1 Domain → US1 Infrastructure → US1 API → US1 Tests
 
@@ -465,13 +474,14 @@ Task T043: Create UpdateWorldRequestValidator
 **Estimated Time**: 20-30 hours total
 
 1. Complete Phase 1: Setup (2 hours)
-2. Complete Phase 2: Foundational (8-10 hours) - **CRITICAL BLOCKER**
-3. Complete Phase 3: User Story 1 - World Management (12-16 hours)
-4. Complete Phase 7: User Story 5 - Aspire Validation (2-4 hours)
-5. **STOP and VALIDATE**: Test independently, verify quickstart.md works
-6. Deploy/demo MVP
+1. Complete Phase 2: Foundational (8-10 hours) - **CRITICAL BLOCKER**
+1. Complete Phase 3: User Story 1 - World Management (12-16 hours)
+1. Complete Phase 7: User Story 5 - Aspire Validation (2-4 hours)
+1. **STOP and VALIDATE**: Test independently, verify quickstart.md works
+1. Deploy/demo MVP
 
 **MVP Delivers**:
+
 - ✅ World CRUD operations via REST API
 - ✅ Single-command developer startup (`dotnet run --project AppHost`)
 - ✅ Aspire Dashboard for observability
@@ -483,12 +493,12 @@ Task T043: Create UpdateWorldRequestValidator
 **Estimated Time**: 60-80 hours total
 
 1. Setup + Foundational → Foundation ready (10-12 hours)
-2. Add User Story 1 → Test independently → **Deploy MVP** (12-16 hours)
-3. Add User Story 5 → Validate Aspire → **Demo developer experience** (2-4 hours)
-4. Add User Story 2 → Test independently → Deploy (16-20 hours)
-5. Add User Story 3 → Test independently → Deploy (12-16 hours)
-6. Add User Story 4 → Test independently → Deploy (6-8 hours)
-7. Polish → Final validation → **Production release** (6-8 hours)
+1. Add User Story 1 → Test independently → **Deploy MVP** (12-16 hours)
+1. Add User Story 5 → Validate Aspire → **Demo developer experience** (2-4 hours)
+1. Add User Story 2 → Test independently → Deploy (16-20 hours)
+1. Add User Story 3 → Test independently → Deploy (12-16 hours)
+1. Add User Story 4 → Test independently → Deploy (6-8 hours)
+1. Polish → Final validation → **Production release** (6-8 hours)
 
 Each increment adds value without breaking previous functionality.
 
@@ -497,12 +507,14 @@ Each increment adds value without breaking previous functionality.
 With 3 developers working simultaneously:
 
 **Week 1**:
+
 - **All team**: Complete Setup + Foundational together (2-3 days)
 - **Developer A**: User Story 1 - World Management (3-4 days)
 - **Developer B**: User Story 2 - Entity Management (starts after Foundation) (4-5 days)
 - **Developer C**: User Story 5 - Aspire final validation (starts after Foundation) (1 day)
 
 **Week 2**:
+
 - **Developer A**: User Story 3 - Asset Management (3-4 days)
 - **Developer B**: User Story 4 - Search (2 days) + Polish documentation (1 day)
 - **Developer C**: Polish testing, performance validation, end-to-end integration (3-4 days)
