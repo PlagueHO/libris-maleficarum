@@ -1,23 +1,22 @@
-using System.Net;
 using System.Net.Http.Json;
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
-using FluentAssertions;
 
-namespace LibrisMaleficarum.Api.Tests.Aspire;
+namespace LibrisMaleficarum.Orchestration.Tests;
 
 /// <summary>
 /// Integration tests for Aspire AppHost configuration verifying
 /// service definitions, dependencies, and health checks.
-/// These tests verify the Aspire orchestration setup but are marked
-/// with [Ignore] as they require Docker and can be time-consuming.
-/// Run manually when verifying Aspire integration.
+/// These tests are categorized as Integration and RequiresDocker.
+/// They don't run by default (use "service: test (integration)" task
+/// or dotnet test --filter "TestCategory=Integration" to execute).
 /// </summary>
 [TestClass]
 public class AppHostTests
 {
     [TestMethod]
-    [Ignore("Requires Docker and Aspire AppHost - run manually for integration verification")]
+    [TestCategory("Integration")]
+    [TestCategory("RequiresDocker")]
     public async Task AppHost_StartsSuccessfully()
     {
         // Arrange
@@ -31,7 +30,8 @@ public class AppHostTests
     }
 
     [TestMethod]
-    [Ignore("Requires Docker and Aspire AppHost - run manually for integration verification")]
+    [TestCategory("Integration")]
+    [TestCategory("RequiresDocker")]
     public async Task AppHost_ApiEndpointIsAvailable()
     {
         // Arrange
@@ -51,7 +51,8 @@ public class AppHostTests
     }
 
     [TestMethod]
-    [Ignore("Requires Docker and Aspire AppHost - run manually for integration verification")]
+    [TestCategory("Integration")]
+    [TestCategory("RequiresDocker")]
     public async Task AppHost_ApiCanConnectToCosmosDb()
     {
         // Arrange

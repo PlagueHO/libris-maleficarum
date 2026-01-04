@@ -16,7 +16,7 @@
   </Folder>
   <Folder Name="/src/Orchestration/" />
   <Folder Name="/src/Orchestration/AppHost/">
-    <Project Path="src/Orchestration/AppHost/LibrisMaleficarum.AppHost.csproj" />
+    <Project DefaultStartup="true" Path="src/Orchestration/AppHost/LibrisMaleficarum.AppHost.csproj" />
   </Folder>
   <Folder Name="/src/Orchestration/ServiceDefaults/">
     <Project Path="src/Orchestration/ServiceDefaults/LibrisMaleficarum.ServiceDefaults.csproj" />
@@ -30,5 +30,8 @@
   </Folder>
   <Folder Name="/tests/Infrastructure.Tests/">
     <Project Path="tests/Infrastructure.Tests/LibrisMaleficarum.Infrastructure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Orchestration.Tests/">
+    <Project Path="tests/Orchestration.Tests/LibrisMaleficarum.Orchestration.Tests.csproj" />
   </Folder>
 </Solution>

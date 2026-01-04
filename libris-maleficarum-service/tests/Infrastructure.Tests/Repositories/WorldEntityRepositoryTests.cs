@@ -18,6 +18,10 @@ using NSubstitute;
 [TestClass]
 public class WorldEntityRepositoryTests
 {
+    private const string COSMOS_EMULATOR_DOCKER_COMMAND = 
+        "docker run -d -p 57790:8081 -p 57789:1234 --name cosmosdb-emulator " +
+        "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview";
+
     private ApplicationDbContext _context = null!;
     private IUserContextService _userContextService = null!;
     private IWorldRepository _worldRepository = null!;
@@ -25,14 +29,12 @@ public class WorldEntityRepositoryTests
     private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _otherUserId = Guid.NewGuid();
     private readonly Guid _worldId = Guid.NewGuid();
+    private readonly string _testDatabaseName = $"TestDb_{Guid.NewGuid()}";
 
     [TestInitialize]
     public void Setup()
     {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-
+        var options = GetDbContextOptions();
         _context = new ApplicationDbContext(options);
         _userContextService = Substitute.For<IUserContextService>();
         _worldRepository = Substitute.For<IWorldRepository>();
@@ -41,6 +43,87 @@ public class WorldEntityRepositoryTests
         ConfigureAuthorizedWorld();
 
         _repository = new WorldEntityRepository(_context, _userContextService, _worldRepository);
+    }
+
+    private DbContextOptions<ApplicationDbContext> GetDbContextOptions()
+    {
+        // Check if Cosmos DB connection string is available (for integration tests)
+        var cosmosConnectionString = Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING");
+        if (!string.IsNullOrEmpty(cosmosConnectionString))
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            optionsBuilder.UseCosmos(
+                cosmosConnectionString,
+                _testDatabaseName,
+                cosmosOptions =>
+                {
+                    // Configure HttpClientFactory to skip SSL validation for local emulator
+                    cosmosOptions.HttpClientFactory(() =>
+                    {
+                        var handler = new HttpClientHandler
+                        {
+                            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                        };
+                        return new HttpClient(handler);
+                    });
+                });
+            return optionsBuilder.Options;
+        }
+
+        // Default to InMemory for unit tests
+        return new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(databaseName: _testDatabaseName)
+            .Options;
+    }
+
+    /// <summary>
+    /// Checks if Cosmos DB Emulator is available for integration tests.
+    /// If not available, marks the test as inconclusive (skipped).
+    /// </summary>
+    private void RequireCosmosDbEmulator()
+    {
+        var cosmosConnectionString = Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING");
+        
+        if (string.IsNullOrEmpty(cosmosConnectionString))
+        {
+            Assert.Inconclusive(
+                "Cosmos DB Emulator is not configured. Set COSMOS_CONNECTION_STRING environment variable.\n" +
+                "Example: $env:COSMOS_CONNECTION_STRING = \"AccountEndpoint=http://localhost:57790/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==\"");
+        }
+
+        // Quick connectivity check
+        try
+        {
+            // Extract endpoint from connection string
+            var endpointMatch = System.Text.RegularExpressions.Regex.Match(
+                cosmosConnectionString, 
+                @"AccountEndpoint=([^;]+)");
+            
+            if (!endpointMatch.Success)
+            {
+                Assert.Inconclusive("Invalid Cosmos DB connection string format.");
+                return;
+            }
+
+            var endpoint = endpointMatch.Groups[1].Value;
+            using var httpClient = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            })
+            {
+                Timeout = TimeSpan.FromSeconds(2)
+            };
+
+            var response = httpClient.GetAsync(endpoint).GetAwaiter().GetResult();
+            // If we get any response (even 401), the emulator is running
+        }
+        catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+        {
+            Assert.Inconclusive(
+                "Cosmos DB Emulator is not reachable. Start it with:\n" +
+                COSMOS_EMULATOR_DOCKER_COMMAND + "\n" +
+                $"Error: {ex.Message}");
+        }
     }
 
     [TestCleanup]
@@ -252,9 +335,12 @@ public class WorldEntityRepositoryTests
     }
 
     [TestMethod]
-    [Ignore("Requires Cosmos DB - InMemoryDatabase cannot translate ToLower() on collection elements")]
+    [TestCategory("Integration")]
+    [TestCategory("RequiresCosmosDB")]
     public async Task GetAllByWorldAsync_WithTagsFilter_ReturnsMatchingEntities()
     {
+        RequireCosmosDbEmulator();
+
         // Arrange
         var entity1 = WorldEntity.Create(_worldId, EntityType.Character, "Tagged Entity 1", null, null, new List<string> { "hero", "warrior" });
         var entity2 = WorldEntity.Create(_worldId, EntityType.Character, "Tagged Entity 2", null, null, new List<string> { "villain", "mage" });
@@ -289,9 +375,12 @@ public class WorldEntityRepositoryTests
     }
 
     [TestMethod]
-    [Ignore("Requires Cosmos DB - InMemoryDatabase pagination translation issues")]
+    [TestCategory("Integration")]
+    [TestCategory("RequiresCosmosDB")]
     public async Task GetAllByWorldAsync_WithCursor_ReturnsNextPage()
     {
+        RequireCosmosDbEmulator();
+
         // Arrange
         var firstEntity = await CreateEntityInDatabase("Entity 1");
         await Task.Delay(10);
@@ -410,9 +499,12 @@ public class WorldEntityRepositoryTests
     }
 
     [TestMethod]
-    [Ignore("Requires Cosmos DB - InMemory Database does not support _etag property")]
+    [TestCategory("Integration")]
+    [TestCategory("RequiresCosmosDB")]
     public async Task UpdateAsync_WithInvalidETag_ThrowsInvalidOperationException()
     {
+        RequireCosmosDbEmulator();
+
         // Arrange
         var entity = await CreateEntityInDatabase("Test Entity");
         entity.Update("New Name", null, EntityType.Location, null, null, null);

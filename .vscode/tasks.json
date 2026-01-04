@@ -110,7 +110,7 @@
       }
     },
     {
-      "label": "service: test",
+      "label": "service: test (all)",
       "type": "shell",
       "command": "dotnet",
       "args": ["test", "--solution", "LibrisMaleficarum.slnx", "--no-build"],
@@ -126,6 +126,44 @@
       "icon": {
         "id": "beaker",
         "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "service: test (unit)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["test", "--solution", "LibrisMaleficarum.slnx", "--no-build", "--filter", "TestCategory!=Integration"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "dependsOn": ["service: build"],
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiGreen"
+      }
+    },
+    {
+      "label": "service: test (integration)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["test", "--solution", "LibrisMaleficarum.slnx", "--no-build", "--filter", "TestCategory=Integration"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "dependsOn": ["service: build"],
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiYellow"
       }
     },
     {
