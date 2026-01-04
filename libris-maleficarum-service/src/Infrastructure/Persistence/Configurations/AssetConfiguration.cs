@@ -61,8 +61,8 @@ public sealed class AssetConfiguration : IEntityTypeConfiguration<Asset>
         builder.Property(asset => asset.ETag)
             .IsETagConcurrency();
 
-        // Create indexes for common queries
-        builder.HasIndex(asset => asset.EntityId);
-        builder.HasIndex(asset => asset.IsDeleted);
+        // Note: Cosmos DB provider does not support HasIndex()
+        // Cosmos DB automatically indexes all properties by default
+        // Custom indexing policies can be configured via Azure Portal or Azure Bicep
     }
 }
