@@ -290,10 +290,12 @@ public class WorldEntityRepositoryTests
 ### Test Execution
 
 ```bash
-dotnet test                                    # Run all tests
-dotnet test --filter Category=Unit            # Unit tests only
-dotnet test --filter Category=Integration     # Integration tests only
-dotnet test --collect:"XPlat Code Coverage"   # With coverage
+dotnet test                                                      # Run all tests
+dotnet test --filter TestCategory!=Integration                  # Unit tests only
+dotnet test --filter TestCategory=Integration                   # Integration tests only
+dotnet test --coverage --coverage-output-format cobertura       # With coverage (Cobertura XML)
+dotnet test --coverage --coverage-output-format xml             # With coverage (XML)
+dotnet test --coverage --coverage-output-format coverage        # With coverage (binary)
 ```
 
 ### Coverage Targets
@@ -322,11 +324,32 @@ dotnet test --collect:"XPlat Code Coverage"   # With coverage
 - **FluentAssertions**: Use `.Should()` for readable assertions
 - **NSubstitute**: Use `Substitute.For<T>()` for mocking
 
-# Run all tests (coverage auto-collected)
+### Coverage with MSTest.Sdk
 
-```text
-dotnet test --filter TestCategory=Unit   # Unit tests only
-dotnet test --project tests/Api.Tests/   # Specific project
+MSTest.Sdk 3.10.2+ includes built-in coverage via the Microsoft.Testing.Platform:
+
+```bash
+# Generate coverage in Cobertura format (recommended for CI/CD)
+dotnet test --coverage --coverage-output-format cobertura
+
+# Specify output location
+dotnet test --coverage --coverage-output ./TestResults/coverage.cobertura.xml --coverage-output-format cobertura
+
+# Multiple formats
+dotnet test --coverage --coverage-output-format "cobertura,xml"
+
+# Custom coverage settings
+dotnet test --coverage --coverage-settings coverage.settings.xml
+```
+
+Coverage reports are generated in the `TestResults/` directory.
+
+### Test Execution Examples
+
+```bash
+# Run all tests (coverage auto-collected)
+dotnet test --filter TestCategory!=Integration   # Unit tests only
+dotnet test --project tests/Api.Tests/           # Specific project
 ```
 
 ### Coverage Targets
