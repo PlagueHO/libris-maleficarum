@@ -167,6 +167,25 @@
       }
     },
     {
+      "label": "service: test (coverage)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["test", "--solution", "LibrisMaleficarum.slnx", "--no-build", "--filter", "TestCategory!=Integration", "--results-directory", "TestResults", "--coverage", "--coverage-output-format", "cobertura"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "dependsOn": ["service: build"],
+      "icon": {
+        "id": "graph",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
       "label": "service: test (watch)",
       "type": "shell",
       "command": "dotnet",
