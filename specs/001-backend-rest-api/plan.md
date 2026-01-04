@@ -14,7 +14,7 @@ Implement a .NET 10 ASP.NET Core Web API with Clean Architecture that provides R
 **Language/Version**: .NET 10 with C# 14
 **Primary Dependencies**: ASP.NET Core Web API 10.0, Aspire.NET 13.1, Entity Framework Core 10 with Cosmos DB provider, Fluent Validation, Microsoft Agent Framework (future), Azure SDK for .NET  
 **Storage**: Azure Cosmos DB (production), Cosmos DB Emulator (local development via Aspire)  
-**Testing**: xUnit, FluentAssertions, Moq, Microsoft.AspNetCore.Mvc.Testing (integration tests)  
+**Testing**: MSTest.Sdk, FluentAssertions, NSubstitute, Microsoft.AspNetCore.Mvc.Testing (integration tests)  
 **Target Platform**: Azure Container Apps (production), Aspire Dashboard (local development)
 **Project Type**: Multi-project solution - Web API + Domain + Infrastructure + Orchestration  
 **Performance Goals**: <200ms p95 response time for CRUD operations, 100 worlds created/retrieved in <5 seconds  
@@ -36,6 +36,45 @@ Implement a .NET 10 ASP.NET Core Web API with Clean Architecture that provides R
 - **Compliant**: Solution follows Clean/Hexagonal Architecture with Api, Domain, Infrastructure layers
 - **Compliant**: Repository pattern with interfaces in Domain, implementations in Infrastructure
 - **Compliant**: Dependencies flow inward: Api → Domain ← Infrastructure
+
+#### Architecture Diagram
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                        HTTP Requests                            │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+┌──────────────────────────▼──────────────────────────────────────┐
+│                      API Layer (src/Api)                        │
+│  ┌────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │Controllers │  │ DTOs/Models │  │ Validators/Middleware  │  │
+│  └────────────┘  └─────────────┘  └─────────────────────────┘  │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ depends on
+┌──────────────────────────▼──────────────────────────────────────┐
+│                   Domain Layer (src/Domain)                     │
+│  ┌────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │  Entities  │  │  Interfaces │  │  Exceptions/ValueObjects│  │
+│  │ (World, WE)│  │(IRepository)│  │                         │  │
+│  └────────────┘  └─────────────┘  └─────────────────────────┘  │
+└──────────────────────────▲──────────────────────────────────────┘
+                           │ implements
+┌──────────────────────────┴──────────────────────────────────────┐
+│              Infrastructure Layer (src/Infrastructure)          │
+│  ┌────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │Repositories│  │  DbContext  │  │ EF Configurations      │  │
+│  │   (EF)     │  │   (Cosmos)  │  │ Services               │  │
+│  └────────────┘  └─────────────┘  └─────────────────────────┘  │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                  ┌────────▼────────┐
+                  │  Azure Cosmos DB │
+                  │  (via EF Core)   │
+                  └──────────────────┘
+```
+
+**Dependency Flow**: Api → Domain ← Infrastructure (Clean Architecture principle)
+**Key Benefit**: Domain layer has zero external dependencies, enabling unit testing without infrastructure
 
 ### Test-Driven Development ✅ PASS
 
@@ -214,7 +253,7 @@ libris-maleficarum-service/
 1. **Orchestration/AppHost** - Aspire.NET orchestration for local development with Cosmos DB Emulator
 1. **Orchestration/ServiceDefaults** - Shared configuration for telemetry, health checks, resilience
 
-Dependencies flow: Api → Domain ← Infrastructure. Domain has no external dependencies. Three corresponding test projects use xUnit, FluentAssertions, and AAA pattern.
+Dependencies flow: Api → Domain ← Infrastructure. Domain has no external dependencies. Three corresponding test projects use MSTest.Sdk (with Microsoft.Testing.Platform), FluentAssertions, NSubstitute, and AAA pattern.
 
 **Microsoft Agent Framework Note**: While the constitution mandates Microsoft Agent Framework for AI interactions, this backend REST API feature does NOT implement generative AI capabilities. Agent Framework integration is reserved for future AI-powered features (e.g., content generation, semantic search, NPC dialogue). Current implementation focuses on CRUD operations, hierarchical data management, and asset storage per specification.
 

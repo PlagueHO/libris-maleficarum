@@ -421,12 +421,168 @@ dotnet clean LibrisMaleficarum.slnx
 1. ✅ **Write** your first test following AAA pattern
 1. ✅ **Implement** World Management endpoints (Priority 1)
 
+## Manual Test Scenario: Full Stack Verification
+
+This end-to-end test verifies the complete Aspire integration with Cosmos DB persistence.
+
+### Test Objective
+
+Confirm that:
+1. AppHost starts all services successfully
+2. Aspire Dashboard shows all services healthy
+3. API can communicate with Cosmos DB Emulator
+4. Data persists across API requests
+
+### Test Steps
+
+**1. Start Aspire AppHost**
+
+```powershell
+cd libris-maleficarum-service
+dotnet run --project src/Orchestration/AppHost
+```
+
+**Expected**: Terminal shows "Now listening on: https://localhost:15888"
+
+**2. Verify Aspire Dashboard**
+
+- Open browser: **https://localhost:15888**
+- Navigate to **Resources** tab
+- Verify all services show **green status**:
+  - ✅ `cosmosdb` - Running
+  - ✅ `api` - Running  
+  - ✅ `frontend` - Running
+
+**3. Get API Endpoint**
+
+- Click **api** resource → **Details** tab
+- Note the HTTPS endpoint URL (typically `https://localhost:7041`)
+
+**4. Create a World (POST)**
+
+Open PowerShell and run:
+
+```powershell
+$apiUrl = "https://localhost:7041"  # Use your API endpoint from dashboard
+
+$createWorld = @{
+    name = "Aspire Integration Test"
+    description = "Verifying Cosmos DB persistence"
+} | ConvertTo-Json
+
+$world = Invoke-RestMethod -Uri "$apiUrl/api/v1/worlds" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $createWorld `
+    -SkipCertificateCheck
+
+Write-Host "✅ World Created:" -ForegroundColor Green
+$world.data | Format-List
+```
+
+**Expected Output**:
+
+```text
+✅ World Created:
+id           : 3fa85f64-5717-4562-b3fc-2c963f66afa6
+ownerId      : 00000000-0000-0000-0000-000000000001
+name         : Aspire Integration Test
+description  : Verifying Cosmos DB persistence
+createdDate  : 2026-01-04T10:30:00Z
+modifiedDate : 2026-01-04T10:30:00Z
+```
+
+**5. Retrieve the World (GET)**
+
+```powershell
+$worldId = $world.data.id
+
+$retrieved = Invoke-RestMethod -Uri "$apiUrl/api/v1/worlds/$worldId" `
+    -Method GET `
+    -SkipCertificateCheck
+
+Write-Host "✅ World Retrieved:" -ForegroundColor Green
+$retrieved.data | Format-List
+```
+
+**Expected**: Same data as step 4 (confirms persistence)
+
+**6. List All Worlds (GET)**
+
+```powershell
+$allWorlds = Invoke-RestMethod -Uri "$apiUrl/api/v1/worlds?limit=10" `
+    -Method GET `
+    -SkipCertificateCheck
+
+Write-Host "✅ Total Worlds:" $allWorlds.data.Count -ForegroundColor Green
+$allWorlds.data | Format-Table -Property id, name, createdDate
+```
+
+**Expected**: At least 1 world in the list
+
+**7. Verify Cosmos DB Data Explorer (Optional)**
+
+- In Aspire Dashboard, click **cosmosdb** → **View Data**
+- Navigate to **Worlds** container
+- Confirm your test world appears in the data
+
+**8. Clean Up (DELETE)**
+
+```powershell
+Invoke-RestMethod -Uri "$apiUrl/api/v1/worlds/$worldId" `
+    -Method DELETE `
+    -SkipCertificateCheck
+
+Write-Host "✅ World Deleted" -ForegroundColor Green
+```
+
+**Expected**: HTTP 204 No Content
+
+**9. Verify Deletion**
+
+```powershell
+try {
+    Invoke-RestMethod -Uri "$apiUrl/api/v1/worlds/$worldId" `
+        -Method GET `
+        -SkipCertificateCheck
+    Write-Host "❌ World still exists (should have been deleted)" -ForegroundColor Red
+} catch {
+    Write-Host "✅ World not found (correctly deleted)" -ForegroundColor Green
+}
+```
+
+**Expected**: 404 Not Found error (world successfully deleted)
+
+### Success Criteria
+
+All steps complete without errors:
+
+- ✅ Aspire starts all services
+- ✅ Dashboard shows green status
+- ✅ POST creates world in Cosmos DB
+- ✅ GET retrieves persisted data
+- ✅ DELETE removes world
+- ✅ Subsequent GET returns 404
+
+### Troubleshooting This Test
+
+**Issue**: POST returns 503 Service Unavailable  
+**Solution**: Cosmos DB Emulator still starting. Wait 30 seconds and retry.
+
+**Issue**: GET returns empty list  
+**Solution**: Verify POST succeeded. Check Aspire Dashboard logs for errors.
+
+**Issue**: Data Explorer shows no containers  
+**Solution**: Cosmos DB needs first write to create containers. Retry POST.
+
+---
+
 ## Additional Resources
 
 - [Aspire.NET Documentation](https://learn.microsoft.com/en-us/dotnet/aspire/)
 - [EF Core Cosmos DB Provider](https://learn.microsoft.com/en-us/ef/core/providers/cosmos/)
 - [ASP.NET Core Web API](https://learn.microsoft.com/en-us/aspnet/core/web-api/)
-- [xUnit Documentation](https://xunit.net/)
+- [MSTest Documentation](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-mstest-intro)
 - [FluentAssertions](https://fluentassertions.com/)
 - [Cosmos DB Emulator](https://learn.microsoft.com/en-us/azure/cosmos-db/local-emulator)
 
