@@ -578,8 +578,9 @@ public class WorldsControllerIntegrationTests : IClassFixture<WebApplicationFact
 
 **Alternatives Considered**:
 
-- NUnit - Rejected: xUnit more idiomatic for .NET Core, better async support
-- MSTest - Rejected: Less modern than xUnit, fewer community extensions
+- xUnit - Considered: Popular but MSTest.Sdk is Microsoft's modern recommended approach for .NET 10+
+- NUnit - Considered: Mature but MSTest.Sdk provides better integration with Microsoft.Testing.Platform
+- Moq - Rejected: Has known vulnerabilities, NSubstitute has cleaner syntax and is Microsoft-recommended
 
 ---
 
@@ -590,7 +591,7 @@ All items marked "NEEDS CLARIFICATION" in Technical Context have been resolved:
 ✅ **Language/Version**: .NET 10 with C# 14  
 ✅ **Primary Dependencies**: ASP.NET Core Web API 10.0, Aspire.NET 13.1, EF Core 10 Cosmos provider, FluentValidation  
 ✅ **Storage**: Azure Cosmos DB (Emulator for local dev via Aspire)  
-✅ **Testing**: xUnit, FluentAssertions, Moq, WebApplicationFactory  
+✅ **Testing**: MSTest.Sdk, FluentAssertions, NSubstitute, WebApplicationFactory  
 ✅ **Target Platform**: Azure Container Apps (production), Aspire Dashboard (local)  
 ✅ **Performance Goals**: <200ms p95, 100 worlds in <5s  
 ✅ **Constraints**: 2MB Cosmos item limit, 25MB asset limit (configurable), max 200 items/page  

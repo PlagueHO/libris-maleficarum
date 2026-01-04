@@ -1,0 +1,303 @@
+namespace LibrisMaleficarum.Infrastructure.Repositories;
+
+using LibrisMaleficarum.Domain.Entities;
+using LibrisMaleficarum.Domain.Exceptions;
+using LibrisMaleficarum.Domain.Interfaces.Repositories;
+using LibrisMaleficarum.Domain.Interfaces.Services;
+using LibrisMaleficarum.Domain.ValueObjects;
+using LibrisMaleficarum.Infrastructure.Extensions;
+using LibrisMaleficarum.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+/// <summary>
+/// Repository implementation for WorldEntity using EF Core and Cosmos DB.
+/// </summary>
+public class WorldEntityRepository : IWorldEntityRepository
+{
+    private readonly ApplicationDbContext _context;
+    private readonly IUserContextService _userContextService;
+    private readonly IWorldRepository _worldRepository;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WorldEntityRepository"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="userContextService">The user context service for authorization.</param>
+    /// <param name="worldRepository">The world repository for validation.</param>
+    public WorldEntityRepository(
+        ApplicationDbContext context,
+        IUserContextService userContextService,
+        IWorldRepository worldRepository)
+    {
+        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
+        _worldRepository = worldRepository ?? throw new ArgumentNullException(nameof(worldRepository));
+    }
+
+    /// <inheritdoc/>
+    public async Task<WorldEntity?> GetByIdAsync(Guid worldId, Guid entityId, CancellationToken cancellationToken = default)
+    {
+        // Verify world access authorization
+        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
+        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+
+        if (world == null)
+        {
+            throw new WorldNotFoundException(worldId);
+        }
+
+        if (world.OwnerId != currentUserId)
+        {
+            throw new UnauthorizedWorldAccessException(worldId, currentUserId);
+        }
+
+        // Query with partition key for efficiency
+        return await _context.WorldEntities
+            .WithPartitionKeyIfCosmos(_context, worldId.ToString())
+            .Where(e => e.Id == entityId && !e.IsDeleted)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<(IEnumerable<WorldEntity> Entities, string? NextCursor)> GetAllByWorldAsync(
+        Guid worldId,
+        EntityType? entityType = null,
+        List<string>? tags = null,
+        int limit = 50,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Verify world access authorization
+        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
+        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+
+        if (world == null)
+        {
+            throw new WorldNotFoundException(worldId);
+        }
+
+        if (world.OwnerId != currentUserId)
+        {
+            throw new UnauthorizedWorldAccessException(worldId, currentUserId);
+        }
+
+        // Clamp limit to valid range
+        limit = Math.Clamp(limit, 1, 200);
+
+        // Start with partition-scoped query
+        var query = _context.WorldEntities
+            .WithPartitionKeyIfCosmos(_context, worldId.ToString())
+            .Where(e => !e.IsDeleted)
+            .OrderBy(e => e.CreatedDate)
+            .ThenBy(e => e.Id);
+
+        // Apply cursor pagination
+        if (!string.IsNullOrWhiteSpace(cursor) && DateTime.TryParse(cursor, out var cursorDate))
+        {
+            query = (IOrderedQueryable<WorldEntity>)query.Where(e => e.CreatedDate >= cursorDate);
+        }
+
+        // Apply entity type filter
+        if (entityType.HasValue)
+        {
+            query = (IOrderedQueryable<WorldEntity>)query.Where(e => e.EntityType == entityType.Value);
+        }
+
+        // Apply tags filter (case-insensitive partial match)
+        if (tags != null && tags.Any())
+        {
+            foreach (var tag in tags)
+            {
+                var tagLower = tag.ToLowerInvariant();
+                query = (IOrderedQueryable<WorldEntity>)query.Where(e =>
+                    e.Tags.Any(t => t.ToLower().Contains(tagLower)));
+            }
+        }
+
+        // Fetch limit + 1 to determine if there are more pages
+        var entities = await query
+            .Take(limit + 1)
+            .ToListAsync(cancellationToken);
+
+        string? nextCursor = null;
+        if (entities.Count > limit)
+        {
+            var lastEntity = entities[limit - 1];
+            nextCursor = lastEntity.CreatedDate.ToString("O"); // ISO 8601 format
+            entities = entities.Take(limit).ToList();
+        }
+
+        return (entities, nextCursor);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<WorldEntity>> GetChildrenAsync(Guid worldId, Guid parentId, CancellationToken cancellationToken = default)
+    {
+        // Verify world access authorization
+        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
+        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+
+        if (world == null)
+        {
+            throw new WorldNotFoundException(worldId);
+        }
+
+        if (world.OwnerId != currentUserId)
+        {
+            throw new UnauthorizedWorldAccessException(worldId, currentUserId);
+        }
+
+        // Query children within partition
+        return await _context.WorldEntities
+            .WithPartitionKeyIfCosmos(_context, worldId.ToString())
+            .Where(e => e.ParentId == parentId && !e.IsDeleted)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<WorldEntity> CreateAsync(WorldEntity entity, CancellationToken cancellationToken = default)
+    {
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
+        // Verify world exists and user owns it
+        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
+        var world = await _worldRepository.GetByIdAsync(entity.WorldId, cancellationToken);
+
+        if (world == null)
+        {
+            throw new WorldNotFoundException(entity.WorldId);
+        }
+
+        if (world.OwnerId != currentUserId)
+        {
+            throw new UnauthorizedWorldAccessException(entity.WorldId, currentUserId);
+        }
+
+        // Verify parent entity exists if ParentId is specified
+        if (entity.ParentId.HasValue)
+        {
+            var parent = await GetByIdAsync(entity.WorldId, entity.ParentId.Value, cancellationToken);
+            if (parent == null)
+            {
+                throw new EntityNotFoundException(entity.WorldId, entity.ParentId.Value,
+                    $"Parent entity with ID '{entity.ParentId.Value}' not found.");
+            }
+        }
+
+        await _context.WorldEntities.AddAsync(entity, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return entity;
+    }
+
+    /// <inheritdoc/>
+    public async Task<WorldEntity> UpdateAsync(WorldEntity entity, string? etag = null, CancellationToken cancellationToken = default)
+    {
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
+        // Retrieve existing entity for authorization and ETag validation
+        var existingEntity = await GetByIdAsync(entity.WorldId, entity.Id, cancellationToken);
+        if (existingEntity == null)
+        {
+            throw new EntityNotFoundException(entity.WorldId, entity.Id);
+        }
+
+        // Validate ETag if provided
+        if (!string.IsNullOrWhiteSpace(etag))
+        {
+            var entry = _context.Entry(existingEntity);
+            var currentETag = entry.Property("_etag").CurrentValue?.ToString();
+
+            if (currentETag != etag)
+            {
+                throw new InvalidOperationException(
+                    $"ETag mismatch: Expected '{etag}' but current is '{currentETag}'. The entity may have been modified by another request.");
+            }
+        }
+
+        // Check for circular reference if ParentId is being changed
+        if (entity.ParentId.HasValue)
+        {
+            await ValidateNoCircularReferenceAsync(entity.WorldId, entity.Id, entity.ParentId.Value, cancellationToken);
+        }
+
+        // Update entity
+        _context.Entry(existingEntity).CurrentValues.SetValues(entity);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return existingEntity;
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteAsync(Guid worldId, Guid entityId, bool cascade = false, CancellationToken cancellationToken = default)
+    {
+        var entity = await GetByIdAsync(worldId, entityId, cancellationToken);
+        if (entity == null)
+        {
+            throw new EntityNotFoundException(worldId, entityId);
+        }
+
+        // Check if entity has children
+        var children = await GetChildrenAsync(worldId, entityId, cancellationToken);
+        var childrenList = children.ToList();
+
+        if (childrenList.Any() && !cascade)
+        {
+            throw new InvalidOperationException(
+                $"Cannot delete entity '{entityId}' because it has {childrenList.Count} child entities. " +
+                "Use cascade=true to delete all descendants.");
+        }
+
+        // Recursively delete children if cascade is enabled
+        if (cascade && childrenList.Any())
+        {
+            foreach (var child in childrenList)
+            {
+                await DeleteAsync(worldId, child.Id, cascade: true, cancellationToken);
+            }
+        }
+
+        // Soft delete the entity
+        entity.SoftDelete();
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Validates that setting a parent ID will not create a circular reference.
+    /// </summary>
+    private async Task ValidateNoCircularReferenceAsync(Guid worldId, Guid entityId, Guid newParentId, CancellationToken cancellationToken)
+    {
+        // Traverse up the parent chain to ensure we don't encounter the entity itself
+        var currentParentId = newParentId;
+        var visited = new HashSet<Guid> { entityId };
+
+        while (currentParentId != Guid.Empty)
+        {
+            if (visited.Contains(currentParentId))
+            {
+                throw new InvalidOperationException(
+                    $"Circular reference detected: Entity '{entityId}' cannot have ancestor '{currentParentId}' as its parent.");
+            }
+
+            visited.Add(currentParentId);
+
+            var parent = await _context.WorldEntities
+                .WithPartitionKeyIfCosmos(_context, worldId.ToString())
+                .Where(e => e.Id == currentParentId && !e.IsDeleted)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (parent == null)
+            {
+                break;
+            }
+
+            currentParentId = parent.ParentId ?? Guid.Empty;
+        }
+    }
+}
