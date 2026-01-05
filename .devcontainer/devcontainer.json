@@ -12,7 +12,7 @@
       "extensions": "azure-devops"
     },
     "ghcr.io/azure/azure-dev/azd:latest": {},
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
       "moby": true,
       "dockerDashComposeVersion": "v2"
@@ -100,7 +100,7 @@
       ]
     }
   },
-  "forwardPorts": [4000, 5173, 3000, 7071, 8080, 5000, 5001, 18081, 18888],
+  "forwardPorts": [4000, 5173, 3000, 7071, 8080, 5000, 5001, 18081, 18888, 57790, 57789],
   "portsAttributes": {
     "4000": {
       "label": "Vite HTTPS Dev Server",
@@ -139,6 +139,14 @@
     },
     "18888": {
       "label": "Aspire Dashboard (alt)",
+      "onAutoForward": "ignore"
+    },
+    "57790": {
+      "label": "Cosmos DB Emulator (HTTP)",
+      "onAutoForward": "notify"
+    },
+    "57789": {
+      "label": "Cosmos DB Emulator (Management)",
       "onAutoForward": "ignore"
     }
   },

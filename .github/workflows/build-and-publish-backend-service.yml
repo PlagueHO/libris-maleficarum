@@ -30,21 +30,33 @@ jobs:
 
       - name: Run unit tests
         run: |
-          dotnet test --project tests/Domain.Tests/LibrisMaleficarum.Domain.Tests.csproj \
+          dotnet test --solution LibrisMaleficarum.slnx \
+            --filter "TestCategory!=Integration" \
             --configuration Release \
             --no-restore \
             --results-directory ./TestResults \
+            --coverage \
+            --coverage-output-format cobertura \
             --report-trx
-          dotnet test --project tests/Infrastructure.Tests/LibrisMaleficarum.Infrastructure.Tests.csproj \
-            --configuration Release \
-            --no-restore \
-            --results-directory ./TestResults \
-            --report-trx
-          dotnet test --project tests/Api.Tests/LibrisMaleficarum.Api.Tests.csproj \
-            --configuration Release \
-            --no-restore \
-            --results-directory ./TestResults \
-            --report-trx
+
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Generate Coverage Report
+        if: always()
+        run: |
+          reportgenerator \
+            -reports:TestResults/**/*.cobertura.xml \
+            -targetdir:TestResults/CoverageReport \
+            -reporttypes:"Html;MarkdownSummaryGithub" \
+            -assemblyfilters:"+LibrisMaleficarum.*"
+
+      - name: Add Coverage PR Comment
+        if: github.event_name == 'pull_request' && always()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: libris-maleficarum-service/TestResults/CoverageReport/SummaryGithub.md
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -62,15 +74,22 @@ jobs:
           name: dotnet-test-results
           path: |
             libris-maleficarum-service/TestResults/**/*.trx
-            libris-maleficarum-service/TestResults/**/coverage.cobertura.xml
           retention-days: 7
 
-      - name: Upload Code Coverage
+      - name: Upload Coverage Report (HTML)
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: code-coverage
-          path: libris-maleficarum-service/TestResults/**/coverage.cobertura.xml
+          name: coverage-report-html
+          path: libris-maleficarum-service/TestResults/CoverageReport/
+          retention-days: 30
+
+      - name: Upload Code Coverage (Cobertura)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: code-coverage-cobertura
+          path: libris-maleficarum-service/TestResults/**/*.cobertura.xml
           retention-days: 7
 
       - name: Publish API
