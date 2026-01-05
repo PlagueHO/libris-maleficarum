@@ -16,7 +16,7 @@ using NSubstitute;
 [TestClass]
 public class WorldRepositoryTests
 {
-    private const string COSMOS_EMULATOR_DOCKER_COMMAND = 
+    private const string COSMOS_EMULATOR_DOCKER_COMMAND =
         "docker run -d -p 57790:8081 -p 57789:1234 --name cosmosdb-emulator " +
         "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview";
 
@@ -76,7 +76,7 @@ public class WorldRepositoryTests
     private void RequireCosmosDbEmulator()
     {
         var cosmosConnectionString = Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING");
-        
+
         if (string.IsNullOrEmpty(cosmosConnectionString))
         {
             Assert.Inconclusive(
@@ -89,9 +89,9 @@ public class WorldRepositoryTests
         {
             // Extract endpoint from connection string
             var endpointMatch = System.Text.RegularExpressions.Regex.Match(
-                cosmosConnectionString, 
+                cosmosConnectionString,
                 @"AccountEndpoint=([^;]+)");
-            
+
             if (!endpointMatch.Success)
             {
                 Assert.Inconclusive("Invalid Cosmos DB connection string format.");
