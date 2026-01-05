@@ -186,6 +186,20 @@
       }
     },
     {
+      "label": "service: coverage report",
+      "type": "shell",
+      "command": "reportgenerator",
+      "args": ["-reports:TestResults/**/*.cobertura.xml", "-targetdir:TestResults/CoverageReport", "-reporttypes:'Html;MarkdownSummaryGithub'"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": [],
+      "icon": {
+        "id": "file-code",
+        "color": "terminal.ansiMagenta"
+      }
+    },
+    {
       "label": "service: test (watch)",
       "type": "shell",
       "command": "dotnet",

@@ -21,6 +21,15 @@ else
     echo "✅ Aspire CLI already installed"
 fi
 
+# Install ReportGenerator (global dotnet tool)
+echo "📦 Installing ReportGenerator CLI..."
+if ! dotnet tool list -g | grep -q "dotnet-reportgenerator-globaltool"; then
+    dotnet tool install -g dotnet-reportgenerator-globaltool
+    echo "✅ ReportGenerator CLI installed successfully"
+else
+    echo "✅ ReportGenerator CLI already installed"
+fi
+
 # Install frontend dependencies
 echo "📦 Installing frontend dependencies (pnpm)..."
 if [ -d "libris-maleficarum-app" ]; then
