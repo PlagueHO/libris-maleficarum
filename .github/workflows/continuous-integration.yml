@@ -1,6 +1,11 @@
 name: Continuous Integration
 
 on:
+  push:
+    paths:
+      - infra/**
+      - libris-maleficarum-app/**
+      - libris-maleficarum-service/**
   pull_request:
     branches:
       - main

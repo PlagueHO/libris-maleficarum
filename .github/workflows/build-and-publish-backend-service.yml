@@ -40,6 +40,7 @@ jobs:
             --report-trx
 
       - name: Install ReportGenerator
+        if: always()
         run: dotnet tool install -g dotnet-reportgenerator-globaltool
 
       - name: Generate Coverage Report

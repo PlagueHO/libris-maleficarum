@@ -173,7 +173,7 @@ public sealed class Asset
             throw new ArgumentException("BlobUrl cannot be null or whitespace.", nameof(BlobUrl));
         }
 
-        if (!Uri.TryCreate(BlobUrl, UriKind.Absolute, out _))
+        if (!Uri.TryCreate(BlobUrl, UriKind.Absolute, out var uri) || !uri.IsAbsoluteUri || string.IsNullOrEmpty(uri.Scheme) || (!uri.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase) && !uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException("BlobUrl must be a valid absolute URI.", nameof(BlobUrl));
         }
