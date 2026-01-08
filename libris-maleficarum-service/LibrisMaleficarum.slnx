@@ -34,6 +34,9 @@
   <Folder Name="/tests/Infrastructure.Tests/">
     <Project Path="tests/Infrastructure.Tests/LibrisMaleficarum.Infrastructure.Tests.csproj" />
   </Folder>
+  <Folder Name="/tests/IntegrationTests.Shared/">
+    <Project Path="tests/IntegrationTests.Shared/LibrisMaleficarum.IntegrationTests.Shared.csproj" />
+  </Folder>
   <Folder Name="/tests/Orchestration.IntegrationTests/">
     <Project Path="tests/Orchestration.IntegrationTests/LibrisMaleficarum.Orchestration.IntegrationTests.csproj" />
   </Folder>

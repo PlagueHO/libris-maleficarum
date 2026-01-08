@@ -36,7 +36,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
             // Gateway mode is required for the emulator (Direct mode is not supported)
             cosmosOptions.ConnectionMode(Microsoft.Azure.Cosmos.ConnectionMode.Gateway);
-            
+
             // Increase timeout for emulator initialization
             cosmosOptions.RequestTimeout(TimeSpan.FromSeconds(60));
         }));

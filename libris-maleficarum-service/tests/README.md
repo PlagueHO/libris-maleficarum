@@ -1,4 +1,4 @@
-# Libris Maleficarum Service Test Projects
+# Libris Maleficarum - Backend Service - Tests
 
 This directory contains all test projects for the Libris Maleficarum backend service.
 
@@ -13,6 +13,7 @@ tests/
   ├── Domain.Tests/                     # Unit tests (pure logic, no dependencies)
   ├── Infrastructure.Tests/             # Unit tests (mocked repositories)
   ├── Infrastructure.IntegrationTests/  # Integration tests (real Cosmos DB via Docker)
+  ├── IntegrationTests.Shared/          # Shared test fixtures (AppHostFixture)
   └── Orchestration.IntegrationTests/   # Integration tests (AppHost orchestration)
 ```
 
@@ -101,27 +102,34 @@ public class MyServiceTests
 
 ## Integration Test Pattern
 
+Integration tests use the shared `AppHostFixture` from `IntegrationTests.Shared` project to manage the Aspire AppHost lifecycle.
+
 ```csharp
+using LibrisMaleficarum.IntegrationTests.Shared;
+
 [TestClass]
 [TestCategory("Integration")]
 [TestCategory("RequiresDocker")]
 [DoNotParallelize] // REQUIRED - prevents port conflicts
 public class MyIntegrationTests
 {
-    public required TestContext TestContext { get; init; }
+    public TestContext? TestContext { get; set; }
+
+    [ClassInitialize]
+    public static async Task ClassInitialize(TestContext context)
+    {
+        // Initialize shared AppHost (runs once per test class)
+        await AppHostFixture.InitializeAsync(context);
+    }
 
     [TestMethod]
     public async Task MyIntegrationTest()
     {
-        // Arrange - Create AppHost per test (isolated, repeatable)
-        var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.LibrisMaleficarum_AppHost>();
+        // Arrange - Use shared AppHost instance
+        AppHostFixture.App.Should().NotBeNull();
         
-        await using var app = await appHost.BuildAsync();
-        await app.StartAsync();
-        
-        // Get real connection string
-        var connectionString = await app.GetConnectionStringAsync("cosmosdb");
+        // Get real connection string from shared AppHost
+        var connectionString = await AppHostFixture.App!.GetConnectionStringAsync("cosmosdb");
         
         // Create real DbContext
         var options = new DbContextOptionsBuilder<MyDbContext>()
@@ -176,36 +184,50 @@ This enables:
 - Clear documentation of requirements
 - IDE test runner organization
 
-### 3. No Shared Fixtures
+### 3. Shared AppHost Fixture
 
-**Do NOT use shared fixtures** (ClassInitialize, AssemblyInitialize) with AppHost.
+**All integration tests MUST use the shared `AppHostFixture`** from the `IntegrationTests.Shared` project.
 
-❌ **Bad:**
+✅ **Correct Pattern:**
 
 ```csharp
-[ClassInitialize]
-public static async Task Initialize(TestContext context)
+using LibrisMaleficarum.IntegrationTests.Shared;
+
+[TestClass]
+public class MyIntegrationTests
 {
-    // Shared AppHost - causes issues with async initialization
-    _sharedApp = await DistributedApplicationTestingBuilder.CreateAsync<...>();
+    public TestContext? TestContext { get; set; }
+
+    [ClassInitialize]
+    public static async Task ClassInitialize(TestContext context)
+    {
+        await AppHostFixture.InitializeAsync(context);
+    }
+
+    [TestMethod]
+    public async Task MyTest()
+    {
+        // Access shared AppHost instance
+        var connectionString = await AppHostFixture.App!.GetConnectionStringAsync("cosmosdb");
+    }
 }
 ```
 
-✅ **Good:**
+**Benefits:**
 
-```csharp
-[TestMethod]
-public async Task MyTest()
-{
-    // Per-test AppHost - fully isolated, reliable
-    var appHost = await DistributedApplicationTestingBuilder.CreateAsync<...>();
-    await using var app = await appHost.BuildAsync();
-    await app.StartAsync();
-}
+- **Single AppHost instance** shared across all integration test classes
+- **Eliminates Docker resource conflicts** from parallel AppHost creation
+- **Improves performance** by avoiding repeated 30-second Cosmos DB initialization
+- **Thread-safe initialization** ensures only one AppHost is created
+- **Consistent test environment** across all integration tests
+
+**Project Reference Required:**
+
+```xml
+<ItemGroup>
+  <ProjectReference Include="..\IntegrationTests.Shared\LibrisMaleficarum.IntegrationTests.Shared.csproj" />
+</ItemGroup>
 ```
-
-**Rationale**: MSTest.Sdk has issues with async static initialization. Per-test AppHost creation
-ensures complete isolation and matches Aspire best practices.
 
 ## Test Dependencies
 
@@ -222,10 +244,23 @@ ensures complete isolation and matches Aspire best practices.
 
 ```xml
 <PackageReference Include="MSTest.Sdk" Version="3.7.0" />
-<PackageReference Include="Aspire.Hosting.Testing" Version="13.1.0" />
 <PackageReference Include="FluentAssertions" Version="7.0.0" />
 <!-- Add real providers only when needed -->
 <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="10.0.0" />
+
+<!-- Reference shared fixtures project for AppHostFixture -->
+<ProjectReference Include="..\IntegrationTests.Shared\LibrisMaleficarum.IntegrationTests.Shared.csproj" />
+```
+
+### IntegrationTests.Shared Project
+
+The shared fixtures library contains common test infrastructure:
+
+```xml
+<PackageReference Include="MSTest.TestFramework" Version="3.7.0" />
+<PackageReference Include="Aspire.Hosting.Testing" Version="13.1.0" />
+
+<ProjectReference Include="..\..\src\Orchestration\AppHost\LibrisMaleficarum.AppHost.csproj" />
 ```
 
 ## Standard Across Solution
@@ -236,6 +271,7 @@ This testing structure is **mandatory** for all layers:
 - ✅ `Domain.Tests` (unit only - pure logic, no integration needs)
 - ✅ `Infrastructure.Tests` + `Infrastructure.IntegrationTests`
 - ✅ `Orchestration.IntegrationTests` (integration only - tests AppHost itself)
+- ✅ `IntegrationTests.Shared` (shared fixtures - AppHostFixture for all integration tests)
 
 ## Best Practices
 
@@ -249,9 +285,10 @@ This testing structure is **mandatory** for all layers:
 
 ### Integration Tests
 
-1. **Per-Test AppHost**: Create new AppHost in each test method
+1. **Shared AppHost Fixture**: Use `AppHostFixture` from `IntegrationTests.Shared` project
+1. **ClassInitialize**: Call `await AppHostFixture.InitializeAsync(context)` in `[ClassInitialize]`
 1. **Sequential Execution**: Always use `[DoNotParallelize]`
-1. **Docker Cleanup**: AppHost handles cleanup via `await using`
+1. **Access via Property**: Use `AppHostFixture.App` to access the shared instance
 1. **Diagnostic Output**: Use `TestContext.WriteLine()` for debugging
 1. **Realistic**: Test against real infrastructure, not mocks
 
