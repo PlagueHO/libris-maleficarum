@@ -43,6 +43,8 @@
     },
     "chat.tools.terminal.autoApprove": {
         ".specify/scripts/bash/": true,
-        ".specify/scripts/powershell/": true
+        ".specify/scripts/powershell/": true,
+        "Get-Job": true,
+        "Receive-Job": true
     }
 }
