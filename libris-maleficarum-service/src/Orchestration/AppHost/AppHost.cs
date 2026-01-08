@@ -8,7 +8,6 @@ var cosmosdb = builder.AddAzureCosmosDB("cosmosdb")
     .RunAsPreviewEmulator(emulator =>
     {
         emulator.WithDataExplorer();
-        emulator.WithGatewayPort(7777);
     });
 
 // Add the API service with Cosmos DB reference
