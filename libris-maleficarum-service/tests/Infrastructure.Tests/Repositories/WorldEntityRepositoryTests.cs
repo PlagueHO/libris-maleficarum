@@ -18,10 +18,6 @@ using NSubstitute;
 [TestClass]
 public class WorldEntityRepositoryTests
 {
-    private const string COSMOS_EMULATOR_DOCKER_COMMAND =
-        "docker run -d -p 57790:8081 -p 57789:1234 --name cosmosdb-emulator " +
-        "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview";
-
     private ApplicationDbContext _context = null!;
     private IUserContextService _userContextService = null!;
     private IWorldRepository _worldRepository = null!;
@@ -74,56 +70,6 @@ public class WorldEntityRepositoryTests
         return new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: _testDatabaseName)
             .Options;
-    }
-
-    /// <summary>
-    /// Checks if Cosmos DB Emulator is available for integration tests.
-    /// If not available, marks the test as inconclusive (skipped).
-    /// </summary>
-    private void RequireCosmosDbEmulator()
-    {
-        var cosmosConnectionString = Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING");
-
-        if (string.IsNullOrEmpty(cosmosConnectionString))
-        {
-            Assert.Inconclusive(
-                "Cosmos DB Emulator is not configured. Set COSMOS_CONNECTION_STRING environment variable.\n" +
-                "Example: $env:COSMOS_CONNECTION_STRING = \"AccountEndpoint=http://localhost:57790/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==\"");
-        }
-
-        // Quick connectivity check
-        try
-        {
-            // Extract endpoint from connection string
-            var endpointMatch = System.Text.RegularExpressions.Regex.Match(
-                cosmosConnectionString,
-                @"AccountEndpoint=([^;]+)");
-
-            if (!endpointMatch.Success)
-            {
-                Assert.Inconclusive("Invalid Cosmos DB connection string format.");
-                return;
-            }
-
-            var endpoint = endpointMatch.Groups[1].Value;
-            using var httpClient = new HttpClient(new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            })
-            {
-                Timeout = TimeSpan.FromSeconds(2)
-            };
-
-            var response = httpClient.GetAsync(endpoint).GetAwaiter().GetResult();
-            // If we get any response (even 401), the emulator is running
-        }
-        catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
-        {
-            Assert.Inconclusive(
-                "Cosmos DB Emulator is not reachable. Start it with:\n" +
-                COSMOS_EMULATOR_DOCKER_COMMAND + "\n" +
-                $"Error: {ex.Message}");
-        }
     }
 
     [TestCleanup]
@@ -335,28 +281,6 @@ public class WorldEntityRepositoryTests
     }
 
     [TestMethod]
-    [TestCategory("Integration")]
-    [TestCategory("RequiresCosmosDB")]
-    public async Task GetAllByWorldAsync_WithTagsFilter_ReturnsMatchingEntities()
-    {
-        RequireCosmosDbEmulator();
-
-        // Arrange
-        var entity1 = WorldEntity.Create(_worldId, EntityType.Character, "Tagged Entity 1", null, null, new List<string> { "hero", "warrior" });
-        var entity2 = WorldEntity.Create(_worldId, EntityType.Character, "Tagged Entity 2", null, null, new List<string> { "villain", "mage" });
-        var entity3 = WorldEntity.Create(_worldId, EntityType.Character, "Tagged Entity 3", null, null, new List<string> { "hero", "mage" });
-        await _context.WorldEntities.AddRangeAsync(entity1, entity2, entity3);
-        await _context.SaveChangesAsync();
-
-        // Act
-        var (entities, _) = await _repository.GetAllByWorldAsync(_worldId, tags: new List<string> { "hero" });
-
-        // Assert
-        entities.Should().HaveCount(2);
-        entities.All(e => e.Tags.Any(t => t.ToLower().Contains("hero"))).Should().BeTrue();
-    }
-
-    [TestMethod]
     public async Task GetAllByWorldAsync_WithPagination_ReturnsLimitedResults()
     {
         // Arrange
@@ -372,28 +296,6 @@ public class WorldEntityRepositoryTests
         // Assert
         entities.Should().HaveCount(5);
         nextCursor.Should().NotBeNullOrEmpty();
-    }
-
-    [TestMethod]
-    [TestCategory("Integration")]
-    [TestCategory("RequiresCosmosDB")]
-    public async Task GetAllByWorldAsync_WithCursor_ReturnsNextPage()
-    {
-        RequireCosmosDbEmulator();
-
-        // Arrange
-        var firstEntity = await CreateEntityInDatabase("Entity 1");
-        await Task.Delay(10);
-        var secondEntity = await CreateEntityInDatabase("Entity 2");
-
-        var cursor = firstEntity.CreatedDate.ToString("O");
-
-        // Act
-        var (entities, _) = await _repository.GetAllByWorldAsync(_worldId, cursor: cursor);
-
-        // Assert
-        entities.Should().HaveCount(1);
-        entities.First().Name.Should().Be("Entity 2");
     }
 
     [TestMethod]
@@ -496,24 +398,6 @@ public class WorldEntityRepositoryTests
         // Act & Assert
         await Assert.ThrowsExactlyAsync<EntityNotFoundException>(
             async () => await _repository.UpdateAsync(entity));
-    }
-
-    [TestMethod]
-    [TestCategory("Integration")]
-    [TestCategory("RequiresCosmosDB")]
-    public async Task UpdateAsync_WithInvalidETag_ThrowsInvalidOperationException()
-    {
-        RequireCosmosDbEmulator();
-
-        // Arrange
-        var entity = await CreateEntityInDatabase("Test Entity");
-        entity.Update("New Name", null, EntityType.Location, null, null, null);
-
-        // Act & Assert
-        var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
-            async () => await _repository.UpdateAsync(entity, etag: "invalid-etag"));
-
-        exception.Message.Should().Contain("ETag mismatch");
     }
 
     [TestMethod]

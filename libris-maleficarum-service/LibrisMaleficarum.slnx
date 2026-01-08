@@ -28,10 +28,13 @@
   <Folder Name="/tests/Domain.Tests/">
     <Project Path="tests/Domain.Tests/LibrisMaleficarum.Domain.Tests.csproj" />
   </Folder>
+  <Folder Name="/tests/Infrastructure.IntegrationTests/">
+    <Project Path="tests/Infrastructure.IntegrationTests/LibrisMaleficarum.Infrastructure.IntegrationTests.csproj" />
+  </Folder>
   <Folder Name="/tests/Infrastructure.Tests/">
     <Project Path="tests/Infrastructure.Tests/LibrisMaleficarum.Infrastructure.Tests.csproj" />
   </Folder>
-  <Folder Name="/tests/Orchestration.Tests/">
-    <Project Path="tests/Orchestration.Tests/LibrisMaleficarum.Orchestration.Tests.csproj" />
+  <Folder Name="/tests/Orchestration.IntegrationTests/">
+    <Project Path="tests/Orchestration.IntegrationTests/LibrisMaleficarum.Orchestration.IntegrationTests.csproj" />
   </Folder>
 </Solution>
