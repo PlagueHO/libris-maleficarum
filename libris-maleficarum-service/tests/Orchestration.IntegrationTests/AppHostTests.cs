@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
+using LibrisMaleficarum.IntegrationTests.Shared;
 
 namespace LibrisMaleficarum.Orchestration.IntegrationTests;
 
@@ -18,46 +19,19 @@ namespace LibrisMaleficarum.Orchestration.IntegrationTests;
 [DoNotParallelize] // REQUIRED - prevents port conflicts from parallel AppHost instances
 public class AppHostTests
 {
-    private static IDistributedApplicationTestingBuilder? s_appHostBuilder;
-    private static DistributedApplication? s_app;
-
     public TestContext? TestContext { get; set; }
 
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        context.WriteLine("[FIXTURE] Creating AppHost builder...");
-        s_appHostBuilder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.LibrisMaleficarum_AppHost>();
-        context.WriteLine("[FIXTURE] AppHost builder created");
-
-        context.WriteLine("[FIXTURE] Building AppHost...");
-        s_app = await s_appHostBuilder.BuildAsync();
-        context.WriteLine("[FIXTURE] AppHost built");
-
-        context.WriteLine("[FIXTURE] Starting AppHost...");
-        await s_app.StartAsync();
-        context.WriteLine("[FIXTURE] AppHost started");
-
-        context.WriteLine("[FIXTURE] Waiting 30 seconds for Cosmos DB emulator to be ready...");
-        await Task.Delay(TimeSpan.FromSeconds(30));
-        context.WriteLine("[FIXTURE] ✓ Fixture initialization complete!");
-    }
-
-    [ClassCleanup]
-    public static async Task ClassCleanup()
-    {
-        if (s_app is not null)
-        {
-            await s_app.DisposeAsync();
-        }
+        await AppHostFixture.InitializeAsync(context);
     }
 
     [TestMethod]
     public void AppHost_IsCreatedAndStarted()
     {
         // Assert
-        s_app.Should().NotBeNull("Aspire AppHost should build and start successfully");
+        AppHostFixture.App.Should().NotBeNull("Aspire AppHost should build and start successfully");
         TestContext?.WriteLine("[TEST] ✓ AppHost is available and running");
     }
 
@@ -65,16 +39,16 @@ public class AppHostTests
     public void AppHost_ApiEndpointIsAvailable()
     {
         // Arrange
-        s_app.Should().NotBeNull("AppHost should be initialized by ClassInitialize");
+        AppHostFixture.App.Should().NotBeNull("AppHost should be initialized by ClassInitialize");
 
         // Act
         TestContext?.WriteLine("[TEST] Creating HTTP client for API service...");
-        using var httpClient = s_app!.CreateHttpClient("api");
-        
+        using var httpClient = AppHostFixture.App!.CreateHttpClient("api");
+
         // Assert
         httpClient.Should().NotBeNull("Should be able to create HTTP client for API service");
         httpClient.BaseAddress.Should().NotBeNull("API should have a base address");
-        
+
         TestContext?.WriteLine($"[TEST] ✓ API endpoint available at: {httpClient.BaseAddress}");
     }
 
@@ -82,12 +56,12 @@ public class AppHostTests
     public async Task AppHost_ApiHealthEndpointWorks()
     {
         // Arrange
-        s_app.Should().NotBeNull("AppHost should be initialized by ClassInitialize");
+        AppHostFixture.App.Should().NotBeNull("AppHost should be initialized by ClassInitialize");
 
         // Use HTTP endpoint for testing (HTTPS has cert validation issues in test environment)
         TestContext?.WriteLine("[TEST] Getting HTTP endpoint for API...");
-        var httpEndpoint = s_app!.GetEndpoint("api", "http");
-        
+        var httpEndpoint = AppHostFixture.App!.GetEndpoint("api", "http");
+
         using var httpClient = new HttpClient
         {
             BaseAddress = httpEndpoint
@@ -104,7 +78,7 @@ public class AppHostTests
 
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("Healthy", "Health endpoint should indicate healthy status");
-        
+
         TestContext?.WriteLine($"[TEST] ✓ Health endpoint returned: {response.StatusCode} - {content}");
     }
 

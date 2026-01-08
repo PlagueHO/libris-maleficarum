@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\Orchestration\AppHost\LibrisMaleficarum.AppHost.csproj" />
     <ProjectReference Include="..\..\src\Domain\LibrisMaleficarum.Domain.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\LibrisMaleficarum.Infrastructure.csproj" />
+    <ProjectReference Include="..\IntegrationTests.Shared\LibrisMaleficarum.IntegrationTests.Shared.csproj" />
   </ItemGroup>
 
 </Project>
