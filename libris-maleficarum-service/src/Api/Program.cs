@@ -17,19 +17,28 @@ builder.AddServiceDefaults();
 var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb")
     ?? throw new InvalidOperationException("Cosmos DB connection string 'cosmosdb' not found");
 
-// Configure HttpClient to bypass SSL validation for Cosmos DB Emulator
-var httpClientHandler = new HttpClientHandler
+// Log connection string endpoint for debugging (sanitized)
+var endpointMatch = System.Text.RegularExpressions.Regex.Match(cosmosConnectionString, @"AccountEndpoint=([^;]+)");
+if (endpointMatch.Success)
 {
-    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-};
+    builder.Logging.AddConsole();
+    var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("Cosmos DB Endpoint: {Endpoint}", endpointMatch.Groups[1].Value);
+}
 
+// For Cosmos DB Emulator (HTTP or HTTPS), use Gateway mode and disable SSL validation
+// Aspire automatically adds DisableServerCertificateValidation=True for the preview emulator
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseCosmos(
         connectionString: cosmosConnectionString,
         databaseName: "LibrisMaleficarum",
         cosmosOptionsAction: cosmosOptions =>
         {
-            cosmosOptions.HttpClientFactory(() => new HttpClient(httpClientHandler));
+            // Gateway mode is required for the emulator (Direct mode is not supported)
+            cosmosOptions.ConnectionMode(Microsoft.Azure.Cosmos.ConnectionMode.Gateway);
+            
+            // Increase timeout for emulator initialization
+            cosmosOptions.RequestTimeout(TimeSpan.FromSeconds(60));
         }));
 
 // Register domain services
@@ -85,7 +94,12 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// Only use HTTPS redirection in non-Development environments
+// In Development, allow HTTP for local testing with Cosmos DB emulator
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthorization();
 

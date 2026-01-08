@@ -6,13 +6,23 @@
 
 .DESCRIPTION
     End-to-end integration tests that verify the World and Entity Management APIs
-    work correctly against a running instance with Cosmos DB Emulator.
+    work correctly against a running Aspire AppHost instance.
+    
+    These tests use HTTP requests to validate API endpoints. The Aspire AppHost
+    automatically manages all dependencies (Cosmos DB Emulator, API service, etc.).
 
 .NOTES
     Prerequisites:
-    - Aspire AppHost must be running with all services (API, Cosmos DB Emulator) healthy
-    - Cosmos DB Emulator SSL certificate must be stable (wait 30-60s after startup)
-    - Run from solution root: Invoke-Pester tests/Api.Tests/Integration/WorldAndEntityApiIntegrationTests.ps1
+    1. Start the Aspire AppHost:
+       dotnet run --project src/Orchestration/AppHost/LibrisMaleficarum.AppHost.csproj
+    
+    2. Wait for services to be ready (30-60 seconds for Cosmos DB SSL stabilization)
+       - Verify in Aspire Dashboard that all services show "Running" status
+    
+    3. Run tests:
+       Invoke-Pester tests/Api.Tests/Integration/WorldAndEntityApiIntegration.Tests.ps1 -Output Detailed
+    
+    See tests/Api.Tests/Integration/README.md for detailed instructions.
 #>
 
 BeforeAll {
@@ -442,5 +452,6 @@ Describe 'Search and Filter API Integration Tests' -Tag 'Integration', 'API', 'S
 
 AfterAll {
     Write-Host "`nIntegration tests completed. Test data remains in Cosmos DB Emulator for inspection." -ForegroundColor Cyan
-    Write-Host "To clean up, restart the Cosmos DB Emulator container." -ForegroundColor Gray
+    Write-Host "To clean up test data, restart the Aspire AppHost (Ctrl+C and restart)." -ForegroundColor Gray
+    Write-Host "View test data in Aspire Dashboard → cosmosdb resource → Data Explorer" -ForegroundColor Gray
 }

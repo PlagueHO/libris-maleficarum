@@ -8,11 +8,13 @@ var cosmosdb = builder.AddAzureCosmosDB("cosmosdb")
     .RunAsPreviewEmulator(emulator =>
     {
         emulator.WithDataExplorer();
+        emulator.WithGatewayPort(7777);
     });
 
 // Add the API service with Cosmos DB reference
 var apiService = builder.AddProject<Projects.LibrisMaleficarum_Api>("api")
-    .WithReference(cosmosdb);
+    .WithReference(cosmosdb)
+    .WaitFor(cosmosdb);
 
 // Add the React Vite frontend
 var frontend = builder.AddViteApp("frontend", "../../../../libris-maleficarum-app", "dev")
