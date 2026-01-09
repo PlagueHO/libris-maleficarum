@@ -17,6 +17,7 @@ public static partial class AppHostFixture
     private static string? s_cosmosDbAccountEndpoint;
     private static string? s_cosmosDbAccountKey;
     private static string? s_cosmosDbConnectionString;
+    private static string? s_apiBaseUrl;
 
     /// <summary>
     /// Gets the shared DistributedApplication instance.
@@ -39,6 +40,12 @@ public static partial class AppHostFixture
     /// Gets the Cosmos DB connection string.
     /// </summary>
     public static string CosmosDbConnectionString => s_cosmosDbConnectionString 
+        ?? throw new InvalidOperationException("AppHost has not been initialized. Call InitializeAsync first.");
+
+    /// <summary>
+    /// Gets the API base URL.
+    /// </summary>
+    public static string ApiBaseUrl => s_apiBaseUrl 
         ?? throw new InvalidOperationException("AppHost has not been initialized. Call InitializeAsync first.");
 
     /// <summary>
@@ -72,35 +79,71 @@ public static partial class AppHostFixture
                     [
                         "DcpPublisher:RandomizePorts=false"
                     ]);
-            testContext.WriteLine("[FIXTURE] AppHost builder created (port randomization disabled)");
+            testContext.WriteLine("[FIXTURE.AppHost] ✓ AppHost builder created (port randomization disabled)");
 
-            testContext.WriteLine("[FIXTURE] Building AppHost...");
+            testContext.WriteLine("[FIXTURE.AppHost] Building AppHost...");
             s_app = await s_appHostBuilder.BuildAsync();
-            testContext.WriteLine("[FIXTURE] AppHost built");
+            testContext.WriteLine("[FIXTURE.AppHost] ✓ AppHost built");
 
-            testContext.WriteLine("[FIXTURE] Starting AppHost...");
+            testContext.WriteLine("[FIXTURE.AppHost] Starting AppHost...");
             await s_app.StartAsync();
-            testContext.WriteLine("[FIXTURE] ✓ AppHost started");
+            testContext.WriteLine("[FIXTURE.AppHost] ✓ AppHost started");
 
-            testContext.WriteLine("[FIXTURE] Waiting for Cosmos DB emulator to be healthy...");
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
+
+            // Initialize Cosmos DB resource
+            testContext.WriteLine("[FIXTURE:cosmosdb] Waiting for Cosmos DB emulator to be healthy...");
             await s_app.ResourceNotifications.WaitForResourceHealthyAsync("cosmosdb", cts.Token);
-            testContext.WriteLine("[FIXTURE] ✓ Cosmos DB emulator is healthy!");
+            testContext.WriteLine("[FIXTURE:cosmosdb] ✓ Cosmos DB emulator is healthy!");
 
-            // Display connection information for diagnostics and store for reuse
+            // Get and display Cosmos DB connection information
             s_cosmosDbConnectionString = await s_app.GetConnectionStringAsync("cosmosdb", cts.Token);
-            testContext.WriteLine($"[FIXTURE] Connection string: {s_cosmosDbConnectionString}");
+            testContext.WriteLine($"[FIXTURE:cosmosdb] Connection string: {s_cosmosDbConnectionString}");
             
-            // Parse and store connection details
+            // Parse and store Cosmos DB connection details
             s_cosmosDbAccountEndpoint = AccountEndpointRegex().Match(s_cosmosDbConnectionString ?? "")?.Groups[1].Value
                 ?? throw new InvalidOperationException("AccountEndpoint not found in Cosmos DB connection string");
             s_cosmosDbAccountKey = AccountKeyRegex().Match(s_cosmosDbConnectionString ?? "")?.Groups[1].Value
                 ?? throw new InvalidOperationException("AccountKey not found in Cosmos DB connection string");
 
-            testContext.WriteLine($"[FIXTURE] Account endpoint: {s_cosmosDbAccountEndpoint}");
-            testContext.WriteLine($"[FIXTURE] Account key: {s_cosmosDbAccountKey[..Math.Min(10, s_cosmosDbAccountKey.Length)]}...");
+            testContext.WriteLine($"[FIXTURE:cosmosdb] Account endpoint: {s_cosmosDbAccountEndpoint}");
+            testContext.WriteLine($"[FIXTURE:cosmosdb] Account key: {s_cosmosDbAccountKey[..Math.Min(10, s_cosmosDbAccountKey.Length)]}...");
 
-            testContext.WriteLine("[FIXTURE] ✓ Fixture initialization complete!");
+            // Initialize API resource
+            testContext.WriteLine("[FIXTURE:api] Waiting for API service to be healthy...");
+            await s_app.ResourceNotifications.WaitForResourceHealthyAsync("api", cts.Token);
+            testContext.WriteLine("[FIXTURE:api] ✓ API service is healthy!");
+
+            // Get API base URL and verify health endpoint
+            using var apiClient = s_app.CreateHttpClient("api");
+            s_apiBaseUrl = apiClient.BaseAddress?.ToString().TrimEnd('/') 
+                ?? throw new InvalidOperationException("API base URL not available");
+            testContext.WriteLine($"[FIXTURE:api] Base URL: {s_apiBaseUrl}");
+
+            // Call health check endpoint to verify API is running
+            testContext.WriteLine("[FIXTURE:api] Calling health check endpoint...");
+            try
+            {
+                using var healthResponse = await apiClient.GetAsync("/health", cts.Token);
+                testContext.WriteLine($"[FIXTURE:api] Health check status: {healthResponse.StatusCode}");
+                
+                if (healthResponse.IsSuccessStatusCode)
+                {
+                    var healthContent = await healthResponse.Content.ReadAsStringAsync(cts.Token);
+                    testContext.WriteLine($"[FIXTURE:api] Health check response: {healthContent}");
+                    testContext.WriteLine("[FIXTURE:api] ✓ Health check passed!");
+                }
+                else
+                {
+                    testContext.WriteLine($"[FIXTURE:api] ⚠ Health check returned non-success status: {healthResponse.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                testContext.WriteLine($"[FIXTURE:api] ⚠ Health check failed with exception: {ex.Message}");
+            }
+
+            testContext.WriteLine("[FIXTURE.AppHost] ✓ Fixture initialization complete!");
 
             s_isInitialized = true;
         }
@@ -123,6 +166,7 @@ public static partial class AppHostFixture
             s_cosmosDbConnectionString = null;
             s_cosmosDbAccountEndpoint = null;
             s_cosmosDbAccountKey = null;
+            s_apiBaseUrl = null;
             s_isInitialized = false;
         }
     }
