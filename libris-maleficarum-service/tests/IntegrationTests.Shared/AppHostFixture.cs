@@ -65,9 +65,14 @@ public static partial class AppHostFixture
             }
 
             testContext.WriteLine("[FIXTURE] Creating AppHost builder...");
+            // Disable port randomization to ensure consistent port assignment (8081 for Cosmos DB)
+            // See: https://aspire.dev/testing/overview/#disable-port-randomization
             s_appHostBuilder = await DistributedApplicationTestingBuilder
-                .CreateAsync<Projects.LibrisMaleficarum_AppHost>();
-            testContext.WriteLine("[FIXTURE] AppHost builder created");
+                .CreateAsync<Projects.LibrisMaleficarum_AppHost>(
+                    [
+                        "DcpPublisher:RandomizePorts=false"
+                    ]);
+            testContext.WriteLine("[FIXTURE] AppHost builder created (port randomization disabled)");
 
             testContext.WriteLine("[FIXTURE] Building AppHost...");
             s_app = await s_appHostBuilder.BuildAsync();
@@ -87,9 +92,9 @@ public static partial class AppHostFixture
             testContext.WriteLine($"[FIXTURE] Connection string: {s_cosmosDbConnectionString}");
             
             // Parse and store connection details
-            s_cosmosDbAccountEndpoint = MyRegex1().Match(s_cosmosDbConnectionString ?? "")?.Groups[1].Value
+            s_cosmosDbAccountEndpoint = AccountEndpointRegex().Match(s_cosmosDbConnectionString ?? "")?.Groups[1].Value
                 ?? throw new InvalidOperationException("AccountEndpoint not found in Cosmos DB connection string");
-            s_cosmosDbAccountKey = MyRegex().Match(s_cosmosDbConnectionString)?.Groups[1].Value
+            s_cosmosDbAccountKey = AccountKeyRegex().Match(s_cosmosDbConnectionString ?? "")?.Groups[1].Value
                 ?? throw new InvalidOperationException("AccountKey not found in Cosmos DB connection string");
 
             testContext.WriteLine($"[FIXTURE] Account endpoint: {s_cosmosDbAccountEndpoint}");
@@ -123,7 +128,7 @@ public static partial class AppHostFixture
     }
 
     [System.Text.RegularExpressions.GeneratedRegex(@"AccountKey=([^;]+)")]
-    private static partial System.Text.RegularExpressions.Regex MyRegex();
+    private static partial System.Text.RegularExpressions.Regex AccountKeyRegex();
     [System.Text.RegularExpressions.GeneratedRegex(@"AccountEndpoint=([^;]+)")]
-    private static partial System.Text.RegularExpressions.Regex MyRegex1();
+    private static partial System.Text.RegularExpressions.Regex AccountEndpointRegex();
 }

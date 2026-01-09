@@ -33,7 +33,7 @@ public class WorldRepository : IWorldRepository
         var currentUserId = await _userContextService.GetCurrentUserIdAsync();
 
         var world = await _context.Worlds
-            .WithPartitionKeyIfCosmos(_context, worldId.ToString())
+            .WithPartitionKeyIfCosmos(_context, worldId)
             .FirstOrDefaultAsync(w => w.Id == worldId && !w.IsDeleted, cancellationToken);
 
         if (world is not null && world.OwnerId != currentUserId)
@@ -54,18 +54,21 @@ public class WorldRepository : IWorldRepository
         // Validate and cap limit
         limit = Math.Clamp(limit, 1, 200);
 
-        var query = _context.Worlds
-            .Where(w => w.OwnerId == ownerId && !w.IsDeleted)
-            .OrderBy(w => w.CreatedDate);
+        // Build query with all filters first
+        IQueryable<World> query = _context.Worlds
+            .Where(w => w.OwnerId == ownerId && !w.IsDeleted);
 
         // Apply cursor-based pagination if provided
-        if (!string.IsNullOrEmpty(cursor) && DateTime.TryParse(cursor, out var cursorDate))
+        if (!string.IsNullOrEmpty(cursor) && DateTime.TryParse(cursor, null, System.Globalization.DateTimeStyles.RoundtripKind, out var cursorDate))
         {
-            query = (IOrderedQueryable<World>)query.Where(w => w.CreatedDate > cursorDate);
+            query = query.Where(w => w.CreatedDate > cursorDate);
         }
 
+        // Apply ordering AFTER all filters
+        var orderedQuery = query.OrderBy(w => w.CreatedDate);
+
         // Fetch one extra item to determine if there are more results
-        var worlds = await query
+        var worlds = await orderedQuery
             .Take(limit + 1)
             .ToListAsync(cancellationToken);
 
@@ -102,7 +105,7 @@ public class WorldRepository : IWorldRepository
 
         // Retrieve existing world
         var existingWorld = await _context.Worlds
-            .WithPartitionKeyIfCosmos(_context, world.Id.ToString())
+            .WithPartitionKeyIfCosmos(_context, world.Id)
             .FirstOrDefaultAsync(w => w.Id == world.Id && !w.IsDeleted, cancellationToken);
 
         if (existingWorld is null)
@@ -142,7 +145,7 @@ public class WorldRepository : IWorldRepository
         var currentUserId = await _userContextService.GetCurrentUserIdAsync();
 
         var world = await _context.Worlds
-            .WithPartitionKeyIfCosmos(_context, worldId.ToString())
+            .WithPartitionKeyIfCosmos(_context, worldId)
             .FirstOrDefaultAsync(w => w.Id == worldId && !w.IsDeleted, cancellationToken);
 
         if (world is null)
