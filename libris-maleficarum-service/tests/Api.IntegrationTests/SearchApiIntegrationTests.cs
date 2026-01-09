@@ -44,7 +44,7 @@ public class SearchApiIntegrationTests
         var worldId = worldResponse.Headers.Location!.Segments.Last();
 
         // Act - Search entities by name
-        using var response = await httpClient.GetAsync($"/api/v1/worlds/{worldId}/search?query=test", cancellationToken);
+        using var response = await httpClient.GetAsync($"/api/v1/worlds/{worldId}/search?q=test", cancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK, "API should return 200 OK for GET /api/v1/worlds/{worldId}/search");
@@ -186,7 +186,7 @@ public class SearchApiIntegrationTests
     {
         // Get Cosmos DB connection string from AppHostFixture
         var connectionString = AppHostFixture.CosmosDbConnectionString;
-        
+
         // Create a DbContext to initialize the database
         var cosmosClientOptions = new Microsoft.Azure.Cosmos.CosmosClientOptions
         {

@@ -100,6 +100,8 @@ public sealed class AssetsController : ControllerBase
     /// <param name="worldId">World identifier.</param>
     /// <param name="entityId">Entity identifier.</param>
     /// <param name="file">File to upload (multipart/form-data).</param>
+    /// <param name="tags">Optional comma-separated tags for categorization.</param>
+    /// <param name="description">Optional description of the asset.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Created asset metadata.</returns>
     [HttpPost("worlds/{worldId:guid}/entities/{entityId:guid}/assets")]
@@ -111,6 +113,8 @@ public sealed class AssetsController : ControllerBase
         Guid worldId,
         Guid entityId,
         IFormFile file,
+        [FromForm] string? tags,
+        [FromForm] string? description,
         CancellationToken cancellationToken = default)
     {
         if (file is null || file.Length == 0)
@@ -153,30 +157,16 @@ public sealed class AssetsController : ControllerBase
 
         var currentUserId = await _userContextService.GetCurrentUserIdAsync();
 
-        // Validate file size and content type before creating entity
-        if (file.Length > DefaultMaxSizeBytes)
-        {
-            return BadRequest(new ErrorResponse
-            {
-                Error = new ErrorDetail
-                {
-                    Code = "FILE_TOO_LARGE",
-                    Message = $"File size {file.Length} bytes exceeds maximum allowed size of {DefaultMaxSizeBytes} bytes"
-                }
-            });
-        }
+        // Determine asset type from content type
+        var assetType = DetermineAssetType(file.ContentType);
 
-        if (!AllowedContentTypes.Contains(file.ContentType))
-        {
-            return BadRequest(new ErrorResponse
-            {
-                Error = new ErrorDetail
-                {
-                    Code = "UNSUPPORTED_FILE_TYPE",
-                    Message = $"Content type '{file.ContentType}' is not supported. Allowed types: {string.Join(", ", AllowedContentTypes)}"
-                }
-            });
-        }
+        // Parse tags if provided
+        var tagsList = string.IsNullOrWhiteSpace(tags)
+            ? null
+            : tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+
+        // TODO: Extract image dimensions for image uploads (future enhancement)
+        ImageDimensions? imageDimensions = null;
 
         // Upload file and create asset entity (repository will set BlobUrl after upload)
         using var fileStream = file.OpenReadStream();
@@ -187,6 +177,10 @@ public sealed class AssetsController : ControllerBase
             file.ContentType,
             file.Length,
             fileStream,
+            assetType,
+            tagsList,
+            description,
+            imageDimensions,
             currentUserId,
             cancellationToken);
 
@@ -257,6 +251,44 @@ public sealed class AssetsController : ControllerBase
     }
 
     /// <summary>
+    /// Updates asset metadata (tags and description).
+    /// </summary>
+    /// <param name="worldId">World identifier.</param>
+    /// <param name="assetId">Asset identifier.</param>
+    /// <param name="tags">Optional comma-separated tags.</param>
+    /// <param name="description">Optional description.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Updated asset metadata.</returns>
+    [HttpPut("worlds/{worldId:guid}/assets/{assetId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<AssetResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateAsset(
+        Guid worldId,
+        Guid assetId,
+        [FromQuery] string? tags,
+        [FromQuery] string? description,
+        CancellationToken cancellationToken = default)
+    {
+        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
+
+        // Parse tags if provided
+        var tagsList = string.IsNullOrWhiteSpace(tags)
+            ? null
+            : tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+
+        var asset = await _assetRepository.UpdateAsync(
+            assetId,
+            tagsList,
+            description,
+            currentUserId,
+            cancellationToken);
+
+        var response = MapToResponse(asset);
+
+        return Ok(new ApiResponse<AssetResponse> { Data = response });
+    }
+
+    /// <summary>
     /// Deletes an asset (soft delete metadata, hard delete blob).
     /// </summary>
     /// <param name="worldId">World identifier.</param>
@@ -289,7 +321,26 @@ public sealed class AssetsController : ControllerBase
             ContentType = asset.ContentType,
             SizeBytes = asset.SizeBytes,
             BlobUrl = asset.BlobUrl,
-            CreatedDate = asset.CreatedDate
+            AssetType = asset.AssetType,
+            Tags = asset.Tags,
+            Description = asset.Description,
+            ImageDimensions = asset.ImageDimensions,
+            CreatedDate = asset.CreatedDate,
+            ModifiedDate = asset.ModifiedDate
+        };
+    }
+
+    /// <summary>
+    /// Determines AssetType from MIME content type.
+    /// </summary>
+    private static AssetType DetermineAssetType(string contentType)
+    {
+        return contentType.ToLowerInvariant() switch
+        {
+            var ct when ct.StartsWith("image/") => AssetType.Image,
+            var ct when ct.StartsWith("audio/") => AssetType.Audio,
+            var ct when ct.StartsWith("video/") => AssetType.Video,
+            _ => AssetType.Document
         };
     }
 }

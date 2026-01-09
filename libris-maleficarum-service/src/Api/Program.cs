@@ -1,4 +1,5 @@
 using FluentValidation;
+using LibrisMaleficarum.Api.Filters;
 using LibrisMaleficarum.Api.Middleware;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
@@ -21,9 +22,7 @@ var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb
 var endpointMatch = System.Text.RegularExpressions.Regex.Match(cosmosConnectionString, @"AccountEndpoint=([^;]+)");
 if (endpointMatch.Success)
 {
-    builder.Logging.AddConsole();
-    var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
-    logger.LogInformation("Cosmos DB Endpoint: {Endpoint}", endpointMatch.Groups[1].Value);
+    Console.WriteLine($"Cosmos DB Endpoint: {endpointMatch.Groups[1].Value}");
 }
 
 // For Cosmos DB Emulator (HTTP or HTTPS), use Gateway mode and disable SSL validation
@@ -48,17 +47,18 @@ builder.Services.AddScoped<IWorldEntityRepository, WorldEntityRepository>();
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 
-// Register Azure Blob Storage service
-// For development, use Azurite (Azure Storage Emulator)
-// Connection string format: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=...;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;
-var blobStorageConnectionString = builder.Configuration.GetConnectionString("blobstorage")
-    ?? "UseDevelopmentStorage=true"; // Default to Azurite for local development
+// Add Azure Blob Storage client (uses connection named "blobs" from AppHost)
+// This will use Azurite emulator locally and Azure Blob Storage in production
+builder.AddAzureBlobServiceClient("blobs");
 
-builder.Services.AddSingleton(new Azure.Storage.Blobs.BlobServiceClient(blobStorageConnectionString));
+// Register Azure Blob Storage service
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
-// Add controllers with JSON options
-builder.Services.AddControllers()
+// Add controllers with JSON options and exception filters
+builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<DomainExceptionFilter>();
+    })
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;

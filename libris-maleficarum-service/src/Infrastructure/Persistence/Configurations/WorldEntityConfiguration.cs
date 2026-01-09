@@ -19,8 +19,10 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
         // Map to Cosmos DB container
         builder.ToContainer("WorldEntities");
 
-        // Partition key configuration (WorldId)
-        builder.HasPartitionKey(e => e.WorldId);
+        // Configure hierarchical partition key [/WorldId, /id]
+        // This enables efficient queries and prevents hot partitions by distributing
+        // each entity into its own logical partition
+        builder.HasPartitionKey(e => new { e.WorldId, e.Id });
 
         // Disable discriminator for single-type container
         builder.HasNoDiscriminator();

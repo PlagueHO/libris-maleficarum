@@ -81,8 +81,6 @@ public class AssetsApiIntegrationTests
         var fileContent = new ByteArrayContent(new byte[] { 0x89, 0x50, 0x4E, 0x47 }); // PNG header
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
         content.Add(fileContent, "file", "test-image.png");
-        content.Add(new StringContent("Test Image"), "name");
-        content.Add(new StringContent("A test image asset"), "description");
 
         // Act - Upload asset
         using var response = await httpClient.PostAsync(
@@ -118,8 +116,7 @@ public class AssetsApiIntegrationTests
         using var uploadContent = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF }); // JPEG header
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-        uploadContent.Add(fileContent, "file", "test-image.jpg");
-        uploadContent.Add(new StringContent("Test Asset for GetById"), "name");
+        uploadContent.Add(fileContent, "file", "test-asset-for-getbyid.jpg");
 
         using var uploadResponse = await httpClient.PostAsync($"/api/v1/worlds/{worldId}/entities/{entityId}/assets", uploadContent, cancellationToken);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -134,7 +131,7 @@ public class AssetsApiIntegrationTests
 
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
         content.Should().NotBeNullOrWhiteSpace("Response should have content");
-        content.Should().Contain("Test Asset for GetById", "Response should contain the asset name");
+        content.Should().Contain("test-asset-for-getbyid.jpg", "Response should contain the asset fileName");
     }
 
     [TestMethod]
@@ -159,16 +156,15 @@ public class AssetsApiIntegrationTests
         using var uploadContent = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(new byte[] { 0x25, 0x50, 0x44, 0x46 }); // PDF header
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
-        uploadContent.Add(fileContent, "file", "test-document.pdf");
-        uploadContent.Add(new StringContent("Original Asset Name"), "name");
+        uploadContent.Add(fileContent, "file", "original-document.pdf");
 
         using var uploadResponse = await httpClient.PostAsync($"/api/v1/worlds/{worldId}/entities/{entityId}/assets", uploadContent, cancellationToken);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         uploadResponse.Headers.Location.Should().NotBeNull("Location header should be present");
         var assetId = uploadResponse.Headers.Location!.Segments.Last();
 
-        // Act - Update the asset metadata
-        var updateRequest = new { Name = "Updated Asset Name", Description = "Updated description" };
+        // Act - Update the asset metadata (note: Asset is immutable, endpoint returns existing asset)
+        var updateRequest = new { }; // Empty update request since Asset has no updateable metadata
         using var response = await httpClient.PutAsJsonAsync($"/api/v1/worlds/{worldId}/assets/{assetId}", updateRequest, cancellationToken);
 
         // Assert
@@ -176,7 +172,7 @@ public class AssetsApiIntegrationTests
 
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
         content.Should().NotBeNullOrWhiteSpace("Response should have content");
-        content.Should().Contain("Updated Asset Name", "Response should contain the updated asset name");
+        content.Should().Contain("original-document.pdf", "Response should contain the original fileName since Asset is immutable");
     }
 
     [TestMethod]
@@ -199,10 +195,9 @@ public class AssetsApiIntegrationTests
 
         // Upload an asset
         using var uploadContent = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 0x00, 0x01, 0x02 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
-        uploadContent.Add(fileContent, "file", "test-file.bin");
-        uploadContent.Add(new StringContent("Asset to Delete"), "name");
+        var fileContent = new ByteArrayContent(new byte[] { 0x89, 0x50, 0x4E });
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+        uploadContent.Add(fileContent, "file", "asset-to-delete.png");
 
         using var uploadResponse = await httpClient.PostAsync($"/api/v1/worlds/{worldId}/entities/{entityId}/assets", uploadContent, cancellationToken);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -246,7 +241,7 @@ public class AssetsApiIntegrationTests
     {
         // Get Cosmos DB connection string from AppHostFixture
         var connectionString = AppHostFixture.CosmosDbConnectionString;
-        
+
         // Create a DbContext to initialize the database
         var cosmosClientOptions = new Microsoft.Azure.Cosmos.CosmosClientOptions
         {

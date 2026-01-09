@@ -17,6 +17,7 @@ public static partial class AppHostFixture
     private static string? s_cosmosDbAccountEndpoint;
     private static string? s_cosmosDbAccountKey;
     private static string? s_cosmosDbConnectionString;
+    private static string? s_storageConnectionString;
     private static string? s_apiBaseUrl;
 
     /// <summary>
@@ -27,25 +28,31 @@ public static partial class AppHostFixture
     /// <summary>
     /// Gets the Cosmos DB account endpoint URL.
     /// </summary>
-    public static string CosmosDbAccountEndpoint => s_cosmosDbAccountEndpoint 
+    public static string CosmosDbAccountEndpoint => s_cosmosDbAccountEndpoint
         ?? throw new InvalidOperationException("AppHost has not been initialized. Call InitializeAsync first.");
 
     /// <summary>
     /// Gets the Cosmos DB account key.
     /// </summary>
-    public static string CosmosDbAccountKey => s_cosmosDbAccountKey 
+    public static string CosmosDbAccountKey => s_cosmosDbAccountKey
         ?? throw new InvalidOperationException("AppHost has not been initialized. Call InitializeAsync first.");
 
     /// <summary>
     /// Gets the Cosmos DB connection string.
     /// </summary>
-    public static string CosmosDbConnectionString => s_cosmosDbConnectionString 
+    public static string CosmosDbConnectionString => s_cosmosDbConnectionString
+        ?? throw new InvalidOperationException("AppHost has not been initialized. Call InitializeAsync first.");
+
+    /// <summary>
+    /// Gets the Azure Storage (Azurite) connection string.
+    /// </summary>
+    public static string StorageConnectionString => s_storageConnectionString
         ?? throw new InvalidOperationException("AppHost has not been initialized. Call InitializeAsync first.");
 
     /// <summary>
     /// Gets the API base URL.
     /// </summary>
-    public static string ApiBaseUrl => s_apiBaseUrl 
+    public static string ApiBaseUrl => s_apiBaseUrl
         ?? throw new InvalidOperationException("AppHost has not been initialized. Call InitializeAsync first.");
 
     /// <summary>
@@ -99,7 +106,7 @@ public static partial class AppHostFixture
             // Get and display Cosmos DB connection information
             s_cosmosDbConnectionString = await s_app.GetConnectionStringAsync("cosmosdb", cts.Token);
             testContext.WriteLine($"[FIXTURE:cosmosdb] Connection string: {s_cosmosDbConnectionString}");
-            
+
             // Parse and store Cosmos DB connection details
             s_cosmosDbAccountEndpoint = AccountEndpointRegex().Match(s_cosmosDbConnectionString ?? "")?.Groups[1].Value
                 ?? throw new InvalidOperationException("AccountEndpoint not found in Cosmos DB connection string");
@@ -109,6 +116,15 @@ public static partial class AppHostFixture
             testContext.WriteLine($"[FIXTURE:cosmosdb] Account endpoint: {s_cosmosDbAccountEndpoint}");
             testContext.WriteLine($"[FIXTURE:cosmosdb] Account key: {s_cosmosDbAccountKey[..Math.Min(10, s_cosmosDbAccountKey.Length)]}...");
 
+            // Initialize Azure Storage (Azurite) resource
+            testContext.WriteLine("[FIXTURE:storage] Waiting for Azurite storage emulator to be healthy...");
+            await s_app.ResourceNotifications.WaitForResourceHealthyAsync("storage", cts.Token);
+            testContext.WriteLine("[FIXTURE:storage] ✓ Azurite storage emulator is healthy!");
+
+            // Get and display Storage connection information
+            s_storageConnectionString = await s_app.GetConnectionStringAsync("blobs", cts.Token);
+            testContext.WriteLine($"[FIXTURE:storage] Connection string: {s_storageConnectionString}");
+
             // Initialize API resource
             testContext.WriteLine("[FIXTURE:api] Waiting for API service to be healthy...");
             await s_app.ResourceNotifications.WaitForResourceHealthyAsync("api", cts.Token);
@@ -116,7 +132,7 @@ public static partial class AppHostFixture
 
             // Get API base URL and verify health endpoint
             using var apiClient = s_app.CreateHttpClient("api");
-            s_apiBaseUrl = apiClient.BaseAddress?.ToString().TrimEnd('/') 
+            s_apiBaseUrl = apiClient.BaseAddress?.ToString().TrimEnd('/')
                 ?? throw new InvalidOperationException("API base URL not available");
             testContext.WriteLine($"[FIXTURE:api] Base URL: {s_apiBaseUrl}");
 
@@ -126,7 +142,7 @@ public static partial class AppHostFixture
             {
                 using var healthResponse = await apiClient.GetAsync("/health", cts.Token);
                 testContext.WriteLine($"[FIXTURE:api] Health check status: {healthResponse.StatusCode}");
-                
+
                 if (healthResponse.IsSuccessStatusCode)
                 {
                     var healthContent = await healthResponse.Content.ReadAsStringAsync(cts.Token);
@@ -166,6 +182,7 @@ public static partial class AppHostFixture
             s_cosmosDbConnectionString = null;
             s_cosmosDbAccountEndpoint = null;
             s_cosmosDbAccountKey = null;
+            s_storageConnectionString = null;
             s_apiBaseUrl = null;
             s_isInitialized = false;
         }

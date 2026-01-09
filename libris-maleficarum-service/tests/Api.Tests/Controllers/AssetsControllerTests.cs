@@ -59,8 +59,8 @@ public class AssetsControllerTests
         // Arrange
         var assets = new List<Asset>
         {
-            Asset.Create(_worldId, _entityId, "file1.jpg", "image/jpeg", 1024, ValidBlobUrl + "1"),
-            Asset.Create(_worldId, _entityId, "file2.png", "image/png", 2048, ValidBlobUrl + "2")
+            Asset.Create(_worldId, _entityId, "file1.jpg", "image/jpeg", 1024, ValidBlobUrl + "1", AssetType.Image),
+            Asset.Create(_worldId, _entityId, "file2.png", "image/png", 2048, ValidBlobUrl + "2", AssetType.Image)
         };
 
         _assetRepository.GetAllByEntityAsync(_entityId, _worldId, _userId, 50, null, Arg.Any<CancellationToken>())
@@ -133,7 +133,7 @@ public class AssetsControllerTests
     {
         // Arrange
         var file = CreateMockFile("test.jpg", "image/jpeg", 1024);
-        var createdAsset = Asset.Create(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, ValidBlobUrl);
+        var createdAsset = Asset.Create(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, ValidBlobUrl, AssetType.Image);
 
         // Mock repository to return asset with BlobUrl populated after "upload"
         _assetRepository.CreateAsync(
@@ -143,12 +143,16 @@ public class AssetsControllerTests
             "image/jpeg",
             1024L,
             Arg.Any<Stream>(),
+            Arg.Any<AssetType>(),
+            Arg.Any<List<string>?>(),
+            Arg.Any<string?>(),
+            Arg.Any<ImageDimensions?>(),
             _userId,
             Arg.Any<CancellationToken>())
             .Returns(createdAsset);
 
         // Act
-        var result = await _controller.UploadAsset(_worldId, _entityId, file);
+        var result = await _controller.UploadAsset(_worldId, _entityId, file, null, null);
 
         // Assert
         var createdResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
@@ -163,7 +167,7 @@ public class AssetsControllerTests
     public async Task UploadAsset_WithNullFile_ReturnsBadRequest()
     {
         // Act
-        var result = await _controller.UploadAsset(_worldId, _entityId, null!);
+        var result = await _controller.UploadAsset(_worldId, _entityId, null!, null, null);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -178,7 +182,7 @@ public class AssetsControllerTests
         var file = CreateMockFile("empty.jpg", "image/jpeg", 0);
 
         // Act
-        var result = await _controller.UploadAsset(_worldId, _entityId, file);
+        var result = await _controller.UploadAsset(_worldId, _entityId, file, null, null);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -193,7 +197,7 @@ public class AssetsControllerTests
         var file = CreateMockFile("huge.jpg", "image/jpeg", 26214401); // 25MB + 1 byte
 
         // Act
-        var result = await _controller.UploadAsset(_worldId, _entityId, file);
+        var result = await _controller.UploadAsset(_worldId, _entityId, file, null, null);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -209,7 +213,7 @@ public class AssetsControllerTests
         var file = CreateMockFile("script.exe", "application/x-executable", 1024);
 
         // Act
-        var result = await _controller.UploadAsset(_worldId, _entityId, file);
+        var result = await _controller.UploadAsset(_worldId, _entityId, file, null, null);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -229,7 +233,7 @@ public class AssetsControllerTests
     {
         // Arrange
         var file = CreateMockFile("file.ext", contentType, 1024);
-        var createdAsset = Asset.Create(_worldId, _entityId, "file.ext", contentType, 1024, ValidBlobUrl);
+        var createdAsset = Asset.Create(_worldId, _entityId, "file.ext", contentType, 1024, ValidBlobUrl, AssetType.Document);
 
         // Mock repository to return asset with BlobUrl populated after "upload"
         _assetRepository.CreateAsync(
@@ -239,12 +243,16 @@ public class AssetsControllerTests
             contentType,
             1024L,
             Arg.Any<Stream>(),
+            Arg.Any<AssetType>(),
+            Arg.Any<List<string>?>(),
+            Arg.Any<string?>(),
+            Arg.Any<ImageDimensions?>(),
             _userId,
             Arg.Any<CancellationToken>())
             .Returns(createdAsset);
 
         // Act
-        var result = await _controller.UploadAsset(_worldId, _entityId, file);
+        var result = await _controller.UploadAsset(_worldId, _entityId, file, null, null);
 
         // Assert
         result.Should().BeOfType<CreatedAtActionResult>();
@@ -258,7 +266,7 @@ public class AssetsControllerTests
     public async Task GetAsset_WithExistingAsset_ReturnsOkWithAsset()
     {
         // Arrange
-        var asset = Asset.Create(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, ValidBlobUrl);
+        var asset = Asset.Create(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, ValidBlobUrl, AssetType.Image);
         _assetRepository.GetByIdAsync(_assetId, _userId, Arg.Any<CancellationToken>())
             .Returns(asset);
 
@@ -292,7 +300,7 @@ public class AssetsControllerTests
     public async Task GetAssetDownloadUrl_WithValidAsset_ReturnsSasUrl()
     {
         // Arrange
-        var asset = Asset.Create(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, ValidBlobUrl);
+        var asset = Asset.Create(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, ValidBlobUrl, AssetType.Image);
         var sasUrl = "https://storage.azure.com/container/blob?sas=token";
 
         _assetRepository.GetByIdAsync(_assetId, _userId, Arg.Any<CancellationToken>())
@@ -317,7 +325,7 @@ public class AssetsControllerTests
     public async Task GetAssetDownloadUrl_Calls_BlobStorageService_WithCorrectParameters()
     {
         // Arrange
-        var asset = Asset.Create(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, ValidBlobUrl);
+        var asset = Asset.Create(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, ValidBlobUrl, AssetType.Image);
 
         _assetRepository.GetByIdAsync(_assetId, _userId, Arg.Any<CancellationToken>())
             .Returns(asset);

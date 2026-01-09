@@ -47,7 +47,7 @@ public class MinimalAppHostTests
         // Validate account endpoint is accessible
         AppHostFixture.CosmosDbAccountEndpoint.Should().NotBeNullOrWhiteSpace();
         AppHostFixture.CosmosDbAccountEndpoint.Should().StartWith("http://");
-        
+
         // Validate account key is accessible
         AppHostFixture.CosmosDbAccountKey.Should().NotBeNullOrWhiteSpace();
         AppHostFixture.CosmosDbAccountKey.Length.Should().BeGreaterThan(10);

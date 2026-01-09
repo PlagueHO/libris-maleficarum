@@ -84,7 +84,7 @@ This service follows **Clean Architecture** principles with clear separation of 
 ### Project Structure
 
 - **`src/Api/`** - ASP.NET Core Web API
-  - Controllers (WorldsController, EntitiesController, AssetsController)
+  - Controllers (WorldsController, WorldEntitiesController, AssetsController)
   - DTOs (Request/Response models)
   - Validators (FluentValidation)
   - Middleware (Exception handling)

@@ -1,6 +1,31 @@
 namespace LibrisMaleficarum.Domain.Entities;
 
 /// <summary>
+/// Asset type classification for filtering and organization.
+/// </summary>
+public enum AssetType
+{
+    /// <summary>Image asset (JPEG, PNG, GIF, WebP).</summary>
+    Image,
+
+    /// <summary>Audio asset (MP3, WAV, OGG).</summary>
+    Audio,
+
+    /// <summary>Video asset (MP4, WebM).</summary>
+    Video,
+
+    /// <summary>Document asset (PDF, text files).</summary>
+    Document
+}
+
+/// <summary>
+/// Image dimensions for image assets.
+/// </summary>
+/// <param name="Width">Width in pixels.</param>
+/// <param name="Height">Height in pixels.</param>
+public record ImageDimensions(int Width, int Height);
+
+/// <summary>
 /// Represents an asset (image, audio, document) attached to a world entity.
 /// Assets are stored as metadata in Cosmos DB with binary data in Azure Blob Storage.
 /// </summary>
@@ -42,14 +67,49 @@ public sealed class Asset
     public required string BlobUrl { get; init; }
 
     /// <summary>
+    /// Asset type classification (Image, Audio, Video, Document).
+    /// </summary>
+    public required AssetType AssetType { get; init; }
+
+    /// <summary>
+    /// Optional tags for categorizing and filtering assets.
+    /// </summary>
+    public List<string>? Tags { get; private set; }
+
+    /// <summary>
+    /// Optional description of the asset's purpose or content.
+    /// </summary>
+    public string? Description { get; private set; }
+
+    /// <summary>
+    /// Image dimensions (Width, Height) for image assets only.
+    /// </summary>
+    public ImageDimensions? ImageDimensions { get; init; }
+
+    /// <summary>
     /// Timestamp when the asset was created.
     /// </summary>
     public required DateTime CreatedDate { get; init; }
 
     /// <summary>
+    /// Timestamp when the asset metadata was last modified.
+    /// </summary>
+    public DateTime? ModifiedDate { get; private set; }
+
+    /// <summary>
     /// Soft delete flag. When true, asset should not be returned in queries.
     /// </summary>
     public bool IsDeleted { get; private set; }
+
+    /// <summary>
+    /// Timestamp when the asset was soft deleted.
+    /// </summary>
+    public DateTime? DeletedDate { get; private set; }
+
+    /// <summary>
+    /// User ID who deleted the asset.
+    /// </summary>
+    public string? DeletedBy { get; private set; }
 
     /// <summary>
     /// ETag for optimistic concurrency control.
@@ -72,6 +132,10 @@ public sealed class Asset
     /// <param name="contentType">MIME content type.</param>
     /// <param name="sizeBytes">Size in bytes (must not exceed configured limit).</param>
     /// <param name="blobUrl">Azure Blob Storage URL.</param>
+    /// <param name="assetType">Asset type classification.</param>
+    /// <param name="tags">Optional tags for categorization.</param>
+    /// <param name="description">Optional description.</param>
+    /// <param name="imageDimensions">Optional image dimensions for image assets.</param>
     /// <param name="maxSizeBytes">Maximum allowed file size in bytes (default 25MB).</param>
     /// <param name="allowedContentTypes">List of allowed MIME types (default: common image/audio/video/document types).</param>
     /// <returns>New Asset instance.</returns>
@@ -83,6 +147,10 @@ public sealed class Asset
         string contentType,
         long sizeBytes,
         string blobUrl,
+        AssetType assetType,
+        List<string>? tags = null,
+        string? description = null,
+        ImageDimensions? imageDimensions = null,
         long maxSizeBytes = 26214400, // 25MB default
         IReadOnlySet<string>? allowedContentTypes = null)
     {
@@ -95,6 +163,10 @@ public sealed class Asset
             ContentType = contentType,
             SizeBytes = sizeBytes,
             BlobUrl = blobUrl,
+            AssetType = assetType,
+            Tags = tags,
+            Description = description,
+            ImageDimensions = imageDimensions,
             CreatedDate = DateTime.UtcNow,
             IsDeleted = false
         };
@@ -182,8 +254,31 @@ public sealed class Asset
     /// <summary>
     /// Marks the asset as deleted (soft delete).
     /// </summary>
-    public void SoftDelete()
+    /// <param name="deletedBy">User ID who deleted the asset.</param>
+    public void SoftDelete(string deletedBy)
     {
         IsDeleted = true;
+        DeletedDate = DateTime.UtcNow;
+        DeletedBy = deletedBy;
+    }
+
+    /// <summary>
+    /// Updates asset metadata (tags and description).
+    /// </summary>
+    /// <param name="tags">New tags (null to keep existing).</param>
+    /// <param name="description">New description (null to keep existing).</param>
+    public void UpdateMetadata(List<string>? tags = null, string? description = null)
+    {
+        if (tags is not null)
+        {
+            Tags = tags;
+        }
+
+        if (description is not null)
+        {
+            Description = description;
+        }
+
+        ModifiedDate = DateTime.UtcNow;
     }
 }

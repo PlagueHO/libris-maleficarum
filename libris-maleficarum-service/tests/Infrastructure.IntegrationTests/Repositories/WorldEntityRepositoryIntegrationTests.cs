@@ -362,7 +362,7 @@ public class WorldEntityRepositoryIntegrationTests
         var firstEntity = WorldEntity.Create(world.Id, EntityType.Location, "Entity 1", null, null, null);
         await context.WorldEntities.AddAsync(firstEntity);
         await context.SaveChangesAsync();
-        
+
         // Ensure different timestamps - use longer delay for Cosmos DB
         await Task.Delay(1000);
 

@@ -18,8 +18,9 @@ public sealed class AssetConfiguration : IEntityTypeConfiguration<Asset>
         // Configure Cosmos DB container
         builder.ToContainer("Assets");
 
-        // Configure partition key
-        builder.HasPartitionKey(asset => asset.WorldId);
+        // Configure hierarchical partition key [/WorldId, /EntityId]
+        // This enables efficient entity-scoped queries (2-5 RUs) and prevents hot partitions
+        builder.HasPartitionKey(asset => new { asset.WorldId, asset.EntityId });
 
         // Disable discriminator (not using inheritance)
         builder.HasNoDiscriminator();
@@ -60,6 +61,13 @@ public sealed class AssetConfiguration : IEntityTypeConfiguration<Asset>
 
         builder.Property(asset => asset.ETag)
             .IsETagConcurrency();
+
+        // Configure ImageDimensions as an owned complex type (value object)
+        builder.OwnsOne(asset => asset.ImageDimensions, imageDimensions =>
+        {
+            imageDimensions.Property(id => id.Width).IsRequired();
+            imageDimensions.Property(id => id.Height).IsRequired();
+        });
 
         // Note: Cosmos DB provider does not support HasIndex()
         // Cosmos DB automatically indexes all properties by default

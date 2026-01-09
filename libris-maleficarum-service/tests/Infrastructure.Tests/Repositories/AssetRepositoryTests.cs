@@ -71,7 +71,7 @@ public class AssetRepositoryTests
             .Returns(ValidBlobUrl);
 
         // Act
-        var result = await _repository.CreateAsync(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, fileStream, _userId);
+        var result = await _repository.CreateAsync(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, fileStream, AssetType.Image, null, null, null, _userId);
 
         // Assert
         result.Should().NotBeNull();
@@ -92,7 +92,7 @@ public class AssetRepositoryTests
 
         // Act & Assert
         await Assert.ThrowsExactlyAsync<UnauthorizedWorldAccessException>(
-            async () => await _repository.CreateAsync(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, fileStream, _userId));
+            async () => await _repository.CreateAsync(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, fileStream, AssetType.Image, null, null, null, _userId));
     }
 
     [TestMethod]
@@ -105,7 +105,7 @@ public class AssetRepositoryTests
 
         // Act & Assert
         await Assert.ThrowsExactlyAsync<EntityNotFoundException>(
-            async () => await _repository.CreateAsync(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, fileStream, _userId));
+            async () => await _repository.CreateAsync(_worldId, _entityId, "test.jpg", "image/jpeg", 1024, fileStream, AssetType.Image, null, null, null, _userId));
     }
 
     #endregion
@@ -145,7 +145,7 @@ public class AssetRepositoryTests
     {
         // Arrange
         var asset = await CreateAndSaveAsset("test.jpg");
-        asset.SoftDelete();
+        asset.SoftDelete(_userId.ToString());
         await _context.SaveChangesAsync();
         ConfigureAuthorizedWorld();
 
@@ -197,7 +197,7 @@ public class AssetRepositoryTests
         var asset1 = await CreateAndSaveAsset("active.jpg");
         var asset2 = await CreateAndSaveAsset("deleted.jpg");
 
-        asset2.SoftDelete();
+        asset2.SoftDelete(_userId.ToString());
         await _context.SaveChangesAsync();
 
         ConfigureAuthorizedWorld();
@@ -283,7 +283,7 @@ public class AssetRepositoryTests
     {
         // Arrange
         var asset = await CreateAndSaveAsset("test.jpg");
-        asset.SoftDelete();
+        asset.SoftDelete(_userId.ToString());
         await _context.SaveChangesAsync();
         ConfigureAuthorizedWorld();
 
@@ -337,7 +337,7 @@ public class AssetRepositoryTests
 
     private async Task<Asset> CreateAndSaveAsset(string fileName, Guid? entityId = null)
     {
-        var asset = Asset.Create(_worldId, entityId ?? _entityId, fileName, "image/jpeg", 1024, ValidBlobUrl);
+        var asset = Asset.Create(_worldId, entityId ?? _entityId, fileName, "image/jpeg", 1024, ValidBlobUrl, AssetType.Image);
         _context.Assets.Add(asset);
         await _context.SaveChangesAsync();
         return asset;
