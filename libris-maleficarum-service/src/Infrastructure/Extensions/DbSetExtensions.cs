@@ -36,7 +36,7 @@ public static class QueryableExtensions
     public static IQueryable<TEntity> WithPartitionKeyIfCosmos<TEntity>(
         this IQueryable<TEntity> source,
         ApplicationDbContext context,
-        string partitionKey) where TEntity : class
+        object partitionKey) where TEntity : class
     {
         // Only apply WithPartitionKey for Cosmos DB provider
         if (context.IsCosmos())
