@@ -13,11 +13,12 @@ The core data model revolves around the concept of a "World" or "Campaign", whic
 
 ## Cosmos DB Containers
 
-Three core containers store all TTRPG data, each with optimized partition keys for their access patterns:
+Four core containers store all TTRPG data, each with optimized partition keys for their access patterns:
 
 | Container | Purpose | Partition Key | Key Characteristics |
 | --------- | ------- | ------------- | ------------------- |
-| **WorldEntity** | Active world/campaign data | `[/WorldId, /id]` | All entities (worlds, locations, characters, campaigns, etc.) with hierarchical relationships via `ParentId` |
+| **World** | World/campaign metadata | `/Id` | Top-level world documents; efficient user-owned world queries; isolated from entity hierarchy |
+| **WorldEntity** | World entity hierarchy | `[/WorldId, /id]` | All entities within worlds (locations, characters, campaigns, etc.) with hierarchical relationships via `ParentId` |
 | **Asset** | Asset metadata (images, audio, video, documents) | `[/WorldId, /EntityId]` | References to Azure Blob Storage; separate from entities to prevent document bloat; partitioned by entity for efficient entity-scoped queries |
 | **DeletedWorldEntity** | Soft-deleted entities | `[/WorldId, /id]` | Moved from WorldEntity after 30-day grace period; TTL auto-purges after 90 days |
 
@@ -30,6 +31,11 @@ This section outlines common operations and their estimated RU costs for each co
 
 | Operation | Container | Parameters | RU Cost | Notes |
 | --------- | --------- | ---------- | ------- | ----- |
+| **List user's worlds** | World | `ownerId` | 5-15 RUs | Cross-partition query (use sparingly); cache results |
+| **Get world by ID** | World | `worldId` | 1 RU | Point read with partition key |
+| **Create world** | World | `world` | 5-8 RUs | Includes indexing overhead |
+| **Update world** | World | `worldId`, `updates` | 6-12 RUs | Read (1 RU) + write (5-8 RUs) |
+| **Soft delete world** | World | `worldId` | 6-10 RUs | Mark `IsDeleted = true` |
 | **Get entity by ID** | WorldEntity | `worldId`, `entityId` | 1 RU | Point read with both partition keys |
 | **Get entity children** | WorldEntity | `worldId`, `parentId` | 2-5 RUs | Filtered partition prefix query; used for lazy-loading tree nodes |
 | **List all world entities** | WorldEntity | `worldId` | 5-15 RUs | Partition prefix query for full entity data |
@@ -50,11 +56,84 @@ This section outlines common operations and their estimated RU costs for each co
 
 ## Container Details
 
+## World Container
+
+World documents store top-level world/campaign metadata with partition key `/Id` for efficient owner-based queries.
+
+- **World**: Root-level world/campaign documents containing core metadata, settings, and ownership information
+- **Ownership**: Every World includes an `OwnerId` property to indicate the owner (user ID)
+- **Document IDs**: All Worlds use a GUID for the `id` property to ensure uniqueness
+- **Partition Key**: The container uses a **simple partition key** (`/Id`) to:
+  - **Efficient Point Reads**: 1 RU when querying by world ID
+  - **Owner Queries**: Cross-partition query for user's worlds (5-15 RUs, cache results)
+  - **Isolation**: World metadata separated from entity hierarchy for cleaner operations
+- **Query Optimization**: This partition strategy enables:
+  - Point reads: 1 RU (Id specified)
+  - Owner queries: 5-15 RUs (filter by OwnerId across all partitions)
+  - Simple CRUD operations without hierarchical complexity
+- **Design Rationale**: Separating World from WorldEntity provides:
+  - **Clear Separation**: World metadata vs. world content (entities)
+  - **Simpler Queries**: "List user's worlds" doesn't require filtering WorldEntity by `ParentId == null`
+  - **Isolated Operations**: World-level operations don't impact entity queries
+  - **Better Consistency**: Domain rules enforce World existence before creating entities
+
+### World Schema
+
+```csharp
+public record World
+{
+    // === Core Identity (REQUIRED) ===
+    public required string Id { get; init; }              // GUID - unique world identifier
+    public required string OwnerId { get; init; }         // User ID who owns this world
+    
+    // === Metadata (REQUIRED) ===
+    public required string Name { get; init; }            // Display name (max 100 chars)
+    public string? Description { get; init; }             // Rich text description (max 2000 chars)
+    
+    // === Temporal (REQUIRED) ===
+    public required DateTime CreatedDate { get; init; }   // ISO 8601 timestamp
+    public required DateTime ModifiedDate { get; init; }  // ISO 8601 timestamp
+    
+    // === Soft Delete (REQUIRED) ===
+    public required bool IsDeleted { get; init; }         // Soft delete flag (default: false)
+    public DateTime? DeletedDate { get; init; }           // ISO 8601 timestamp when deleted
+    public string? DeletedBy { get; init; }               // User ID who deleted
+}
+```
+
+### World Query Patterns
+
+```sql
+-- Get user's worlds (cross-partition query, cache results)
+SELECT * FROM w
+WHERE w.OwnerId = @ownerId
+  AND w.IsDeleted = false
+ORDER BY w.ModifiedDate DESC
+-- Cost: ~5-15 RUs (cross-partition)
+
+-- Get world by ID (point read)
+SELECT * FROM w
+WHERE w.id = @worldId
+-- Cost: 1 RU (point read with partition key)
+
+-- Create world
+INSERT INTO w VALUE {
+  "id": @worldId,
+  "OwnerId": @ownerId,
+  "Name": @name,
+  "Description": @description,
+  "CreatedDate": @now,
+  "ModifiedDate": @now,
+  "IsDeleted": false
+}
+-- Cost: ~5-8 RUs
+```
+
 ## WorldEntity Container
 
-World Entity documents store all active world/campaign data with hierarchical partition key `[/WorldId, /id]` for hot partition prevention.
+WorldEntity documents store all entities within worlds with hierarchical partition key `[/WorldId, /id]` for hot partition prevention.
 
-- **WorldEntity**: The core document type for all campaign/world data. Each "WorldEntity" can represent a "World" (root), or any nested entity such as "Continent", "Country", "Region", "City", "Character", etc. Entities can be arbitrarily nested to support complex world-building.
+- **WorldEntity**: Entities within a world such as "Continent", "Country", "Region", "City", "Character", "Campaign", "Session", etc. Entities can be arbitrarily nested to support complex world-building.
 - **Ownership**: Every WorldEntity includes an `OwnerId` property (e.g., a user ID) to indicate the owner.
 - **Document IDs**: All WorldEntities use a GUID for the `id` property to ensure uniqueness.
 - **Partition Key**: The container uses a **hierarchical partition key** (`[/WorldId, /id]`) to:

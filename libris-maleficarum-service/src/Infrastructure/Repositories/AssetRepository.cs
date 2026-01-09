@@ -110,6 +110,10 @@ public sealed class AssetRepository : IAssetRepository
         string contentType,
         long sizeBytes,
         Stream fileStream,
+        AssetType assetType,
+        List<string>? tags,
+        string? description,
+        ImageDimensions? imageDimensions,
         Guid userId,
         CancellationToken cancellationToken = default)
     {
@@ -162,10 +166,35 @@ public sealed class AssetRepository : IAssetRepository
             fileName,
             contentType,
             sizeBytes,
-            blobUrl);
+            blobUrl,
+            assetType,
+            tags,
+            description,
+            imageDimensions);
 
         // Save to Cosmos DB
         _context.Assets.Add(asset);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return asset;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Asset> UpdateAsync(
+        Guid assetId,
+        List<string>? tags,
+        string? description,
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        // Retrieve asset with authorization check
+        var asset = await GetByIdAsync(assetId, userId, cancellationToken);
+
+        // Update metadata
+        asset.UpdateMetadata(tags, description);
+
+        // Save changes to Cosmos DB
+        _context.Assets.Update(asset);
         await _context.SaveChangesAsync(cancellationToken);
 
         return asset;
@@ -178,7 +207,7 @@ public sealed class AssetRepository : IAssetRepository
         var asset = await GetByIdAsync(assetId, userId, cancellationToken);
 
         // Soft delete in Cosmos DB
-        asset.SoftDelete();
+        asset.SoftDelete(userId.ToString());
         _context.Assets.Update(asset);
         await _context.SaveChangesAsync(cancellationToken);
 

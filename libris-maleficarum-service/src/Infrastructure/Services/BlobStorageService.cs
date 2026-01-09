@@ -76,7 +76,20 @@ public sealed class BlobStorageService : IBlobStorageService
 
         // Parse blob URL to extract container and blob name
         var blobUri = new Uri(blobUrl);
-        var blobClient = new BlobClient(blobUri);
+
+        // Extract container and blob name from URL
+        var segments = blobUri.AbsolutePath.TrimStart('/').Split('/', 2);
+        if (segments.Length < 2)
+        {
+            throw new ArgumentException($"Invalid blob URL format: {blobUrl}", nameof(blobUrl));
+        }
+
+        var containerName = segments[0];
+        var blobName = segments[1];
+
+        // Get blob client using the service client's account
+        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+        var blobClient = containerClient.GetBlobClient(blobName);
 
         // Check if we can generate SAS (requires shared key credentials)
         if (!blobClient.CanGenerateSasUri)
@@ -87,8 +100,8 @@ public sealed class BlobStorageService : IBlobStorageService
         // Create SAS builder
         var sasBuilder = new BlobSasBuilder
         {
-            BlobContainerName = blobClient.BlobContainerName,
-            BlobName = blobClient.Name,
+            BlobContainerName = containerName,
+            BlobName = blobName,
             Resource = "b", // Blob
             StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5), // Allow 5 minutes clock skew
             ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(expirationMinutes)
@@ -108,9 +121,22 @@ public sealed class BlobStorageService : IBlobStorageService
     {
         ArgumentNullException.ThrowIfNull(blobUrl);
 
-        // Parse blob URL
+        // Parse blob URL to extract container and blob name
         var blobUri = new Uri(blobUrl);
-        var blobClient = new BlobClient(blobUri);
+
+        // Extract container and blob name from URL
+        var segments = blobUri.AbsolutePath.TrimStart('/').Split('/', 2);
+        if (segments.Length < 2)
+        {
+            throw new ArgumentException($"Invalid blob URL format: {blobUrl}", nameof(blobUrl));
+        }
+
+        var containerName = segments[0];
+        var blobName = segments[1];
+
+        // Get blob client using the service client's account
+        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+        var blobClient = containerClient.GetBlobClient(blobName);
 
         // Delete blob if exists
         await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);

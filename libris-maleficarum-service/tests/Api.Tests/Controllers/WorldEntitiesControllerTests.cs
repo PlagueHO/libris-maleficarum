@@ -27,7 +27,7 @@ public class EntitiesControllerTests
     private IUserContextService _userContextService = null!;
     private IValidator<CreateEntityRequest> _createValidator = null!;
     private IValidator<UpdateEntityRequest> _updateValidator = null!;
-    private EntitiesController _controller = null!;
+    private WorldEntitiesController _controller = null!;
 
     private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _worldId = Guid.NewGuid();
@@ -46,7 +46,7 @@ public class EntitiesControllerTests
 
         _userContextService.GetCurrentUserIdAsync().Returns(_userId);
 
-        _controller = new EntitiesController(
+        _controller = new WorldEntitiesController(
             _entityRepository,
             _searchService,
             _worldRepository,
@@ -86,7 +86,7 @@ public class EntitiesControllerTests
 
         // Assert
         var createdResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
-        createdResult.ActionName.Should().Be(nameof(EntitiesController.GetEntity));
+        createdResult.ActionName.Should().Be(nameof(WorldEntitiesController.GetEntity));
         var response = createdResult.Value.Should().BeOfType<ApiResponse<EntityResponse>>().Subject;
         response.Data.Name.Should().Be("Test Character");
         response.Data.EntityType.Should().Be(EntityType.Character);

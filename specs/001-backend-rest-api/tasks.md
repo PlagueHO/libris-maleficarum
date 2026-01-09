@@ -163,9 +163,9 @@
 - [X] T078 [P] [US2] Create MoveEntityRequest DTO in src/Api/Models/Requests/MoveEntityRequest.cs with NewParentId property
 - [X] T079 [P] [US2] Create EntityResponse DTO in src/Api/Models/Responses/EntityResponse.cs with all WorldEntity properties
 - [X] T080 [P] [US2] Create CreateEntityRequestValidator in src/Api/Validators/CreateEntityRequestValidator.cs validating Name length, EntityType enum, Tags count/length, Attributes JSON size
-- [X] T081 [US2] Create EntitiesController in src/Api/Controllers/EntitiesController.cs with constructor injection of IWorldEntityRepository, ISearchService, IWorldRepository
-- [X] T082 [US2] Implement POST /api/v1/worlds/{worldId}/entities endpoint in EntitiesController returning 201 Created with Location and ETag headers
-- [X] T083 [US2] Implement GET /api/v1/worlds/{worldId}/entities endpoint in EntitiesController with type and tags query parameters for filtering, pagination
+- [X] T081 [US2] Create WorldEntitiesController in src/Api/Controllers/WorldEntitiesController.cs with constructor injection of IWorldEntityRepository, ISearchService, IWorldRepository
+- [X] T082 [US2] Implement POST /api/v1/worlds/{worldId}/entities endpoint in WorldEntitiesController returning 201 Created with Location and ETag headers
+- [X] T083 [US2] Implement GET /api/v1/worlds/{worldId}/entities endpoint in WorldEntitiesController with type and tags query parameters for filtering, pagination
 - [X] T084 [US2] Implement GET /api/v1/worlds/{worldId}/entities/{entityId} endpoint returning 200 OK with ETag
 - [X] T085 [US2] Implement PUT /api/v1/worlds/{worldId}/entities/{entityId} endpoint with If-Match header validation
 - [X] T086 [US2] Implement PATCH /api/v1/worlds/{worldId}/entities/{entityId} endpoint for partial updates (merge Attributes, replace Tags if provided)
@@ -178,7 +178,7 @@
 - [X] T090 [P] [US2] Create WorldEntityTests.cs in tests/Domain.Tests/Entities/WorldEntityTests.cs testing Validate(), Update(), SoftDelete(), Tags/Attributes limits
 - [X] T091 [P] [US2] Create WorldEntityRepositoryIntegrationTests.cs in tests/Infrastructure.IntegrationTests/Repositories/WorldEntityRepositoryIntegrationTests.cs with integration tests using Cosmos DB Emulator
 - [X] T092 [P] [US2] Create SearchServiceTests.cs - Deferred (requires integration test infrastructure)
-- [X] T093 [P] [US2] Create EntitiesControllerTests.cs - Deferred (requires integration test infrastructure)
+- [X] T093 [P] [US2] Create WorldEntitiesControllerTests.cs - Deferred (requires integration test infrastructure)
 - [X] T094 [US2] Add integration test - Deferred (requires integration test infrastructure setup)
 - [X] T095 [US2] Add integration test - Deferred (requires integration test infrastructure setup)
 - [X] T096 [US2] Add integration test - Deferred (requires integration test infrastructure setup)
@@ -259,13 +259,13 @@
 
 ### API Layer (US4)
 
-- [X] T136 [US4] Add GET /api/v1/worlds/{worldId}/search endpoint in EntitiesController with query parameters: q (search term), sortBy (name/createdDate/modifiedDate), sortOrder (asc/desc)
+- [X] T136 [US4] Add GET /api/v1/worlds/{worldId}/search endpoint in WorldEntitiesController with query parameters: q (search term), sortBy (name/createdDate/modifiedDate), sortOrder (asc/desc)
 - [X] T137 [US4] Implement search endpoint calling ISearchService.SearchEntitiesAsync and returning PaginatedApiResponse
 
 ### Tests (US4)
 
 - [X] T138 [P] [US4] Add search tests to SearchServiceTests.cs: verify case-insensitive matching, verify sorting, verify pagination
-- [X] T139 [P] [US4] Add search tests to EntitiesControllerTests.cs: verify query parameter handling, verify results match search term
+- [X] T139 [P] [US4] Add search tests to WorldEntitiesControllerTests.cs: verify query parameter handling, verify results match search term
 - [X] T140 [US4] Add integration test: Create 3 entities with different names, search for partial name match, verify only matching entities returned
 - [X] T141 [US4] Add integration test: Create entities with tags, search for tag, verify results
 - [X] T142 [US4] Add integration test: Search with sortBy=createdDate&sortOrder=desc, verify newest entities first
@@ -302,7 +302,7 @@
 
 ### Documentation
 
-- [ ] T147 [P] Update OpenAPI XML comments in all controllers (WorldsController, EntitiesController, AssetsController) for Swagger documentation
+- [ ] T147 [P] Update OpenAPI XML comments in all controllers (WorldsController, WorldEntitiesController, AssetsController) for Swagger documentation
 - [ ] T148 [P] Verify all OpenAPI specs in contracts/ match implemented controller endpoints
 - [ ] T149 [P] Add architecture diagram to plan.md showing Api → Domain ← Infrastructure dependencies
 

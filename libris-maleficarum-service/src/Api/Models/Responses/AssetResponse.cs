@@ -1,5 +1,7 @@
 namespace LibrisMaleficarum.Api.Models.Responses;
 
+using LibrisMaleficarum.Domain.Entities;
+
 /// <summary>
 /// Response DTO for asset metadata.
 /// </summary>
@@ -41,7 +43,32 @@ public sealed class AssetResponse
     public required string BlobUrl { get; init; }
 
     /// <summary>
+    /// Asset type classification (Image, Audio, Video, Document).
+    /// </summary>
+    public required AssetType AssetType { get; init; }
+
+    /// <summary>
+    /// Optional tags for categorizing and filtering assets.
+    /// </summary>
+    public List<string>? Tags { get; init; }
+
+    /// <summary>
+    /// Optional description of the asset's purpose or content.
+    /// </summary>
+    public string? Description { get; init; }
+
+    /// <summary>
+    /// Image dimensions (Width, Height) for image assets only.
+    /// </summary>
+    public ImageDimensions? ImageDimensions { get; init; }
+
+    /// <summary>
     /// Timestamp when the asset was created.
     /// </summary>
     public required DateTime CreatedDate { get; init; }
+
+    /// <summary>
+    /// Timestamp when the asset metadata was last modified.
+    /// </summary>
+    public DateTime? ModifiedDate { get; init; }
 }

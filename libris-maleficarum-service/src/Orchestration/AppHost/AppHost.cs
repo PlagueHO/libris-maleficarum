@@ -2,7 +2,6 @@ using Microsoft.Extensions.Configuration;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-
 #pragma warning disable ASPIRECOSMOSDB001 // Suppress experimental diagnostic for preview emulator
 // Configure Azure Cosmos DB Emulator for local development
 //
@@ -33,10 +32,25 @@ cosmosdb = builder.AddAzureCosmosDB("cosmosdb")
     });
 #pragma warning restore ASPIRECOSMOSDB001
 
-// Add the API service with Cosmos DB reference
+// Add Azure Storage (Azurite emulator) for local development
+// Azurite provides blob, queue, and table storage emulation
+var storage = builder.AddAzureStorage("storage")
+    .RunAsEmulator(emulator =>
+    {
+        // Azurite uses fixed ports: 10000 (blob), 10001 (queue), 10002 (table)
+        // These are standard Azurite defaults and should not be changed
+        emulator.WithDataVolume();
+    });
+
+// Add blob service endpoint from storage
+var blobs = storage.AddBlobs("blobs");
+
+// Add the API service with Cosmos DB and Blob Storage references
 var apiService = builder.AddProject<Projects.LibrisMaleficarum_Api>("api")
     .WithReference(cosmosdb)
-    .WaitFor(cosmosdb);
+    .WithReference(blobs)
+    .WaitFor(cosmosdb)
+    .WaitFor(storage);
 
 // Add the React Vite frontend
 var frontend = builder.AddViteApp("frontend", "../../../../libris-maleficarum-app", "dev")

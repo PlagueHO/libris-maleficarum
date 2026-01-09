@@ -140,7 +140,7 @@ libris-maleficarum-service/
 │   │   ├── appsettings.Development.json
 │   │   ├── Controllers/                      # API Controllers
 │   │   │   ├── WorldsController.cs           # World Management endpoints
-│   │   │   ├── EntitiesController.cs         # Entity Management endpoints
+│   │   │   ├── WorldEntitiesController.cs         # Entity Management endpoints
 │   │   │   └── AssetsController.cs           # Asset Management endpoints (P3)
 │   │   ├── Endpoints/                        # Minimal API endpoints (alternative approach)
 │   │   ├── Models/                           # Request/Response DTOs
@@ -222,7 +222,7 @@ libris-maleficarum-service/
     │   ├── LibrisMaleficarum.Api.Tests.csproj
     │   ├── Controllers/
     │   │   ├── WorldsControllerTests.cs      # World CRUD endpoint tests
-    │   │   └── EntitiesControllerTests.cs    # Entity CRUD endpoint tests
+    │   │   └── WorldEntitiesControllerTests.cs    # Entity CRUD endpoint tests
     │   ├── Middleware/
     │   │   └── ExceptionHandlingMiddlewareTests.cs
     │   └── Fixtures/

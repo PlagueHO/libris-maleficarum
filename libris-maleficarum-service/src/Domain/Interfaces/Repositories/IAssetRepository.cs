@@ -44,6 +44,10 @@ public interface IAssetRepository
     /// <param name="contentType">MIME content type.</param>
     /// <param name="sizeBytes">File size in bytes.</param>
     /// <param name="fileStream">Binary file content stream.</param>
+    /// <param name="assetType">Asset type classification.</param>
+    /// <param name="tags">Optional tags for categorization.</param>
+    /// <param name="description">Optional description.</param>
+    /// <param name="imageDimensions">Optional image dimensions for image assets.</param>
     /// <param name="userId">Current user identifier for authorization.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Created asset with BlobUrl populated.</returns>
@@ -56,6 +60,28 @@ public interface IAssetRepository
         string contentType,
         long sizeBytes,
         Stream fileStream,
+        Entities.AssetType assetType,
+        List<string>? tags,
+        string? description,
+        Entities.ImageDimensions? imageDimensions,
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates asset metadata (tags and description).
+    /// </summary>
+    /// <param name="assetId">Asset identifier.</param>
+    /// <param name="tags">New tags (null to keep existing).</param>
+    /// <param name="description">New description (null to keep existing).</param>
+    /// <param name="userId">Current user identifier for authorization.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Updated asset.</returns>
+    /// <exception cref="Exceptions.AssetNotFoundException">Thrown when asset not found.</exception>
+    /// <exception cref="Exceptions.UnauthorizedWorldAccessException">Thrown when user does not own the world.</exception>
+    Task<Entities.Asset> UpdateAsync(
+        Guid assetId,
+        List<string>? tags,
+        string? description,
         Guid userId,
         CancellationToken cancellationToken = default);
 

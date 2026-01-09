@@ -210,7 +210,7 @@ public class WorldsApiIntegrationTests
     {
         // Get Cosmos DB connection string from AppHostFixture
         var connectionString = AppHostFixture.CosmosDbConnectionString;
-        
+
         // Create a DbContext to initialize the database
         var cosmosClientOptions = new Microsoft.Azure.Cosmos.CosmosClientOptions
         {

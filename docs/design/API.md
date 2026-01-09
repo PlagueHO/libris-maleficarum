@@ -24,6 +24,23 @@ This document describes the RESTful API design for the Libris Maleficarum backen
 https://api.librismaleficarum.com/api/v1
 ```
 
+### Container Mapping
+
+The API structure maps to the 4-container Cosmos DB architecture:
+
+| API Resource | Cosmos DB Container | Description |
+| ------------ | ------------------- | ----------- |
+| `/worlds` | World | Top-level world metadata and ownership |
+| `/worlds/{worldId}/entities` | WorldEntity | Entities within worlds (hierarchical) |
+| `/worlds/{worldId}/entities/{entityId}/assets` | Asset | Asset metadata attached to entities |
+| `/worlds/{worldId}/deleted` (future) | DeletedWorldEntity | Soft-deleted entities (recovery) |
+
+**Key Architectural Points:**
+- **World** container stores only world metadata (name, description, owner)
+- **WorldEntity** container stores all entities within worlds with hierarchical relationships
+- **Asset** container stores asset metadata separate from entities to prevent document bloat
+- World must exist before creating entities (domain rule enforced by API)
+
 ### Resource Hierarchy
 
 The API follows the hierarchical structure of the data model:
@@ -111,10 +128,15 @@ POST   /api/v1/copilotkit                  # AG-UI protocol endpoint (SSE/WebSoc
 
 ### Authorization Rules
 
-- **World Access**: Users can only access worlds they own (`OwnerId` match)
-- **Entity Access**: Users can only access entities within worlds they own
-- **Asset Access**: Users can only access assets within worlds they own
+- **World Access**: Users can only access worlds they own (`OwnerId` match in World container)
+- **Entity Access**: Users can only access entities within worlds they own (validated via World ownership)
+- **Asset Access**: Users can only access assets within worlds they own (validated via World ownership)
 - **Public Sharing**: Not supported in initial release
+- **Domain Rules**:
+  - World must exist before creating entities (enforced by repository layer)
+  - Entities must have valid WorldId referencing existing World
+  - Deleting a World cascades to all entities and assets (soft delete)
+  - Restoring a World restores all soft-deleted entities and assets
 
 ## Request/Response Formats
 

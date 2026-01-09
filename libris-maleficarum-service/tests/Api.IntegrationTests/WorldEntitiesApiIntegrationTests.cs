@@ -6,7 +6,7 @@ using LibrisMaleficarum.IntegrationTests.Shared;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
-/// Basic API integration tests for Entity Management endpoints.
+/// Basic API integration tests for WorldEntity Management endpoints.
 /// These tests verify the API can manage entities within worlds via HTTP requests.
 /// Uses shared AppHostFixture from IntegrationTests.Shared project to avoid Docker container conflicts.
 /// </summary>
@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 [TestCategory("Integration")]
 [TestCategory("RequiresDocker")]
 [DoNotParallelize] // AppHost tests must run sequentially to avoid port conflicts
-public class EntitiesApiIntegrationTests
+public class WorldEntitiesApiIntegrationTests
 {
     public TestContext? TestContext { get; set; }
 
@@ -31,7 +31,7 @@ public class EntitiesApiIntegrationTests
     }
 
     [TestMethod]
-    public async Task GetEntities_ReturnsSuccessStatusCode()
+    public async Task GetWorldEntities_ReturnsSuccessStatusCode()
     {
         // Arrange
         var cancellationToken = TestContext!.CancellationTokenSource.Token;
@@ -54,7 +54,7 @@ public class EntitiesApiIntegrationTests
     }
 
     [TestMethod]
-    public async Task CreateEntity_WithValidData_ReturnsCreated()
+    public async Task CreateWorldEntity_WithValidData_ReturnsCreated()
     {
         // Arrange
         var cancellationToken = TestContext!.CancellationTokenSource.Token;
@@ -90,7 +90,7 @@ public class EntitiesApiIntegrationTests
     }
 
     [TestMethod]
-    public async Task GetEntityById_WithValidId_ReturnsEntity()
+    public async Task GetWorldEntityById_WithValidId_ReturnsEntity()
     {
         // Arrange
         var cancellationToken = TestContext!.CancellationTokenSource.Token;
@@ -121,7 +121,7 @@ public class EntitiesApiIntegrationTests
     }
 
     [TestMethod]
-    public async Task UpdateEntity_WithValidData_ReturnsSuccess()
+    public async Task UpdateWorldEntity_WithValidData_ReturnsSuccess()
     {
         // Arrange
         var cancellationToken = TestContext!.CancellationTokenSource.Token;
@@ -153,7 +153,7 @@ public class EntitiesApiIntegrationTests
     }
 
     [TestMethod]
-    public async Task DeleteEntity_WithValidId_ReturnsNoContent()
+    public async Task DeleteWorldEntity_WithValidId_ReturnsNoContent()
     {
         // Arrange
         var cancellationToken = TestContext!.CancellationTokenSource.Token;
@@ -180,7 +180,7 @@ public class EntitiesApiIntegrationTests
     }
 
     [TestMethod]
-    public async Task GetEntityChildren_ReturnsSuccessStatusCode()
+    public async Task GetWorldEntityChildren_ReturnsSuccessStatusCode()
     {
         // Arrange
         var cancellationToken = TestContext!.CancellationTokenSource.Token;
@@ -209,7 +209,7 @@ public class EntitiesApiIntegrationTests
     }
 
     [TestMethod]
-    public async Task GetEntityById_WithNonExistentId_ReturnsNotFound()
+    public async Task GetWorldEntityById_WithNonExistentId_ReturnsNotFound()
     {
         // Arrange
         var cancellationToken = TestContext!.CancellationTokenSource.Token;
@@ -238,7 +238,7 @@ public class EntitiesApiIntegrationTests
     {
         // Get Cosmos DB connection string from AppHostFixture
         var connectionString = AppHostFixture.CosmosDbConnectionString;
-        
+
         // Create a DbContext to initialize the database
         var cosmosClientOptions = new Microsoft.Azure.Cosmos.CosmosClientOptions
         {

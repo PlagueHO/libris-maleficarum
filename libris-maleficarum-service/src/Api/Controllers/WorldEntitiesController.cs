@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 /// </summary>
 [ApiController]
 [Route("api/v1/worlds/{worldId:guid}/entities")]
-public class EntitiesController : ControllerBase
+public class WorldEntitiesController : ControllerBase
 {
     private readonly IWorldEntityRepository _entityRepository;
     private readonly ISearchService _searchService;
@@ -24,9 +24,9 @@ public class EntitiesController : ControllerBase
     private readonly IValidator<UpdateEntityRequest> _updateValidator;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="EntitiesController"/> class.
+    /// Initializes a new instance of the <see cref="WorldEntitiesController"/> class.
     /// </summary>
-    public EntitiesController(
+    public WorldEntitiesController(
         IWorldEntityRepository entityRepository,
         ISearchService searchService,
         IWorldRepository worldRepository,

@@ -102,6 +102,10 @@ public class AssetRepositoryIntegrationTests
             contentType,
             sizeBytes,
             fileStream,
+            AssetType.Image,
+            null,
+            null,
+            null,
             userId);
 
         // Assert
@@ -162,6 +166,10 @@ public class AssetRepositoryIntegrationTests
             "image/jpeg",
             1024L,
             fileStream,
+            AssetType.Image,
+            null,
+            null,
+            null,
             unauthorizedUserId);
 
         await act.Should().ThrowAsync<UnauthorizedWorldAccessException>()
@@ -202,8 +210,10 @@ public class AssetRepositoryIntegrationTests
             "test.jpg",
             "image/jpeg",
             1024L,
-            fileStream,
-            userId);
+            fileStream, AssetType.Image,
+            null,
+            null,
+            null, userId);
 
         await act.Should().ThrowAsync<EntityNotFoundException>()
             .WithMessage($"*{nonExistentEntityId}*{world.Id}*");
@@ -235,7 +245,8 @@ public class AssetRepositoryIntegrationTests
             "test.jpg",
             "image/jpeg",
             1024L,
-            "https://storage.blob.core.windows.net/assets/test.jpg");
+            "https://storage.blob.core.windows.net/assets/test.jpg",
+            AssetType.Image);
         await context.Assets.AddAsync(asset);
         await context.SaveChangesAsync();
 
@@ -284,7 +295,8 @@ public class AssetRepositoryIntegrationTests
             "test.jpg",
             "image/jpeg",
             1024L,
-            "https://storage.blob.core.windows.net/assets/test.jpg");
+            "https://storage.blob.core.windows.net/assets/test.jpg",
+            AssetType.Image);
         await context.Assets.AddAsync(asset);
         await context.SaveChangesAsync();
 
@@ -353,12 +365,13 @@ public class AssetRepositoryIntegrationTests
             "test.jpg",
             "image/jpeg",
             1024L,
-            "https://storage.blob.core.windows.net/assets/test.jpg");
+            "https://storage.blob.core.windows.net/assets/test.jpg",
+            AssetType.Image);
         await context.Assets.AddAsync(asset);
         await context.SaveChangesAsync();
 
         // Soft delete the asset
-        asset.SoftDelete();
+        asset.SoftDelete(userId.ToString());
         await context.SaveChangesAsync();
 
         var worldRepository = Substitute.For<IWorldRepository>();
@@ -393,9 +406,9 @@ public class AssetRepositoryIntegrationTests
         await context.WorldEntities.AddAsync(entity);
 
         // Create multiple assets
-        var asset1 = Asset.Create(world.Id, entity.Id, "image1.jpg", "image/jpeg", 1024L, "https://blob.url/1.jpg");
-        var asset2 = Asset.Create(world.Id, entity.Id, "image2.png", "image/png", 2048L, "https://blob.url/2.png");
-        var asset3 = Asset.Create(world.Id, entity.Id, "document.pdf", "application/pdf", 4096L, "https://blob.url/doc.pdf");
+        var asset1 = Asset.Create(world.Id, entity.Id, "image1.jpg", "image/jpeg", 1024L, "https://blob.url/1.jpg", AssetType.Image);
+        var asset2 = Asset.Create(world.Id, entity.Id, "image2.png", "image/png", 2048L, "https://blob.url/2.png", AssetType.Image);
+        var asset3 = Asset.Create(world.Id, entity.Id, "document.pdf", "application/pdf", 4096L, "https://blob.url/doc.pdf", AssetType.Document);
 
         await context.Assets.AddRangeAsync(asset1, asset2, asset3);
         await context.SaveChangesAsync();
@@ -446,7 +459,8 @@ public class AssetRepositoryIntegrationTests
                 $"image{i}.jpg",
                 "image/jpeg",
                 1024L * i,
-                $"https://blob.url/{i}.jpg");
+                $"https://blob.url/{i}.jpg",
+                AssetType.Image);
             await context.Assets.AddAsync(asset);
         }
         await context.SaveChangesAsync();
@@ -499,7 +513,8 @@ public class AssetRepositoryIntegrationTests
                 $"image{i}.jpg",
                 "image/jpeg",
                 1024L * i,
-                $"https://blob.url/{i}.jpg");
+                $"https://blob.url/{i}.jpg",
+                AssetType.Image);
             await context.Assets.AddAsync(asset);
             await context.SaveChangesAsync();
             assets.Add(asset);
@@ -555,14 +570,14 @@ public class AssetRepositoryIntegrationTests
         await context.WorldEntities.AddAsync(entity);
 
         // Create assets
-        var asset1 = Asset.Create(world.Id, entity.Id, "active.jpg", "image/jpeg", 1024L, "https://blob.url/active.jpg");
-        var asset2 = Asset.Create(world.Id, entity.Id, "deleted.jpg", "image/jpeg", 1024L, "https://blob.url/deleted.jpg");
+        var asset1 = Asset.Create(world.Id, entity.Id, "active.jpg", "image/jpeg", 1024L, "https://blob.url/active.jpg", AssetType.Image);
+        var asset2 = Asset.Create(world.Id, entity.Id, "deleted.jpg", "image/jpeg", 1024L, "https://blob.url/deleted.jpg", AssetType.Image);
 
         await context.Assets.AddRangeAsync(asset1, asset2);
         await context.SaveChangesAsync();
 
         // Soft delete asset2
-        asset2.SoftDelete();
+        asset2.SoftDelete(userId.ToString());
         await context.SaveChangesAsync();
 
         var worldRepository = Substitute.For<IWorldRepository>();
@@ -645,7 +660,8 @@ public class AssetRepositoryIntegrationTests
             "test.jpg",
             "image/jpeg",
             1024L,
-            blobUrl);
+            blobUrl,
+            AssetType.Image);
         await context.Assets.AddAsync(asset);
         await context.SaveChangesAsync();
 
@@ -694,7 +710,8 @@ public class AssetRepositoryIntegrationTests
             "test.jpg",
             "image/jpeg",
             1024L,
-            "https://storage.blob.core.windows.net/assets/test.jpg");
+            "https://storage.blob.core.windows.net/assets/test.jpg",
+            AssetType.Image);
         await context.Assets.AddAsync(asset);
         await context.SaveChangesAsync();
 
