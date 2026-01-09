@@ -22,6 +22,9 @@
     <Project Path="src/Orchestration/ServiceDefaults/LibrisMaleficarum.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/tests/" />
+  <Folder Name="/tests/Api.IntegrationTests/">
+    <Project Path="tests/Api.IntegrationTests/LibrisMaleficarum.Api.IntegrationTests.csproj" />
+  </Folder>
   <Folder Name="/tests/Api.Tests/">
     <Project Path="tests/Api.Tests/LibrisMaleficarum.Api.Tests.csproj" />
   </Folder>
