@@ -78,14 +78,20 @@ public sealed class BlobStorageService : IBlobStorageService
         var blobUri = new Uri(blobUrl);
 
         // Extract container and blob name from URL
-        var segments = blobUri.AbsolutePath.TrimStart('/').Split('/', 2);
-        if (segments.Length < 2)
+        // Azurite URLs include account name: /devstoreaccount1/container/blob
+        // Production URLs: /container/blob
+        var segments = blobUri.AbsolutePath.TrimStart('/').Split('/');
+        
+        // Skip account name if present (Azurite emulator)
+        var startIndex = segments.Length >= 3 && segments[0] == "devstoreaccount1" ? 1 : 0;
+        
+        if (segments.Length < startIndex + 2)
         {
             throw new ArgumentException($"Invalid blob URL format: {blobUrl}", nameof(blobUrl));
         }
 
-        var containerName = segments[0];
-        var blobName = segments[1];
+        var containerName = segments[startIndex];
+        var blobName = string.Join("/", segments.Skip(startIndex + 1));
 
         // Get blob client using the service client's account
         var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
@@ -125,14 +131,20 @@ public sealed class BlobStorageService : IBlobStorageService
         var blobUri = new Uri(blobUrl);
 
         // Extract container and blob name from URL
-        var segments = blobUri.AbsolutePath.TrimStart('/').Split('/', 2);
-        if (segments.Length < 2)
+        // Azurite URLs include account name: /devstoreaccount1/container/blob
+        // Production URLs: /container/blob
+        var segments = blobUri.AbsolutePath.TrimStart('/').Split('/');
+        
+        // Skip account name if present (Azurite emulator)
+        var startIndex = segments.Length >= 3 && segments[0] == "devstoreaccount1" ? 1 : 0;
+        
+        if (segments.Length < startIndex + 2)
         {
             throw new ArgumentException($"Invalid blob URL format: {blobUrl}", nameof(blobUrl));
         }
 
-        var containerName = segments[0];
-        var blobName = segments[1];
+        var containerName = segments[startIndex];
+        var blobName = string.Join("/", segments.Skip(startIndex + 1));
 
         // Get blob client using the service client's account
         var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);

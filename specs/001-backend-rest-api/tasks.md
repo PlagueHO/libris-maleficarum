@@ -234,11 +234,11 @@
 
 - [X] T125 [P] [US3] Create AssetTests.cs in tests/Domain.Tests/Entities/AssetTests.cs testing Validate() method
 - [X] T126 [P] [US3] Create AssetRepositoryIntegrationTests.cs in tests/Infrastructure.IntegrationTests/Repositories/AssetRepositoryIntegrationTests.cs with comprehensive integration tests using Cosmos DB Emulator and mocked IBlobStorageService (15 tests covering CRUD, pagination, authorization, soft delete)
-- [ ] T127 [P] [US3] Create BlobStorageServiceTests.cs in tests/Infrastructure.Tests/Services/BlobStorageServiceTests.cs (integration test with Azure Storage Emulator)
+- [X] T127 [P] [US3] Create BlobStorageServiceIntegrationTests.cs in tests/Infrastructure.IntegrationTests/Services/BlobStorageServiceIntegrationTests.cs (integration test with Azure Storage Emulator)
 - [X] T128 [P] [US3] Create AssetsControllerTests.cs in tests/Api.Tests/Controllers/AssetsControllerTests.cs testing upload/download/delete endpoints
 - [X] T129 [US3] Add integration test: Upload PNG file, verify metadata stored (covered in AssetRepositoryIntegrationTests.CreateAsync_CreatesAssetWithBlobStorage)
-- [ ] T130 [US3] Add integration test: Upload file exceeding size limit returns 400 with FILE_TOO_LARGE error (requires API integration tests)
-- [ ] T131 [US3] Add integration test: Upload unsupported file type returns 400 with UNSUPPORTED_FILE_TYPE error (requires API integration tests)
+- [X] T130 [US3] Add integration test in tests/Api.IntegrationTests/AssetsApiIntegrationTests.cs: Upload file exceeding size limit returns 400 with FILE_TOO_LARGE error
+- [X] T131 [US3] Add integration test in tests/Api.IntegrationTests/AssetsApiIntegrationTests.cs: Upload unsupported file type returns 400 with UNSUPPORTED_FILE_TYPE error
 - [X] T132 [US3] Add integration test: Delete asset removes metadata from Cosmos DB and blob from storage (covered in AssetRepositoryIntegrationTests.DeleteAsync_SoftDeletesAssetAndDeletesBlob)
 
 **Checkpoint**: User Stories 1, 2, AND 3 complete - Full CRUD for Worlds, Entities, and Assets
@@ -266,9 +266,9 @@
 
 - [X] T138 [P] [US4] Add search tests to SearchServiceTests.cs: verify case-insensitive matching, verify sorting, verify pagination
 - [X] T139 [P] [US4] Add search tests to WorldEntitiesControllerTests.cs: verify query parameter handling, verify results match search term
-- [X] T140 [US4] Add integration test: Create 3 entities with different names, search for partial name match, verify only matching entities returned
-- [X] T141 [US4] Add integration test: Create entities with tags, search for tag, verify results
-- [X] T142 [US4] Add integration test: Search with sortBy=createdDate&sortOrder=desc, verify newest entities first
+- [X] T140 [US4] Add integration test in tests/Infrastructure.IntegrationTests/Services/SearchServiceIntegrationTests.cs: Create 3 entities with different names, search for partial name match, verify only matching entities returned
+- [X] T141 [US4] Add integration test in tests/Infrastructure.IntegrationTests/Services/SearchServiceIntegrationTests.cs: Create entities with tags, search for tag, verify results
+- [X] T142 [US4] Add integration test in tests/Infrastructure.IntegrationTests/Services/SearchServiceIntegrationTests.cs: Search with sortBy=createdDate&sortOrder=desc, verify newest entities first
 
 **Checkpoint**: User Stories 1-4 complete - Full search and filter functionality operational
 
@@ -316,7 +316,7 @@
 
 - [X] T153 [P] Run all tests with `dotnet test LibrisMaleficarum.slnx` and verify 100% pass rate
 - [X] T154 [P] Generate code coverage report and verify >80% coverage for Domain and Infrastructure layers (Domain: 78%, Infrastructure: 45% - Infrastructure below target due to repository integration tests requiring Cosmos DB Emulator)
-- [ ] T155 Add end-to-end integration test: Create world → Create entity → Upload asset → Search entities → Verify all data correct
+- [X] T155 Add end-to-end integration test in tests/Api.IntegrationTests/EndToEndIntegrationTests.cs: Create world → Create entity → Upload asset → Search entities → Verify all data correct
 
 ### Performance
 

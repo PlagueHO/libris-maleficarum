@@ -1,6 +1,29 @@
 using Microsoft.Extensions.Configuration;
+using System.Net;
+using System.Net.Sockets;
 
 var builder = DistributedApplication.CreateBuilder(args);
+
+// Helper method to find an available port starting from a base port
+static int FindAvailablePort(int startPort)
+{
+    var port = startPort;
+    while (port < 65535)
+    {
+        try
+        {
+            using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            socket.Bind(new IPEndPoint(IPAddress.Loopback, port));
+            return port;
+        }
+        catch (SocketException)
+        {
+            // Port is in use, try next one
+            port++;
+        }
+    }
+    throw new InvalidOperationException($"No available ports found starting from {startPort}");
+}
 
 #pragma warning disable ASPIRECOSMOSDB001 // Suppress experimental diagnostic for preview emulator
 // Configure Azure Cosmos DB Emulator for local development
@@ -19,6 +42,18 @@ var builder = DistributedApplication.CreateBuilder(args);
 var cosmosDbGatewayPort = 8081;
 var cosmosDbDataExplorerPort = 1234;
 
+// Add Azure Storage (Azurite emulator) for local development
+// Azurite provides blob, queue, and table storage emulation
+// 
+// Dynamic port assignment to prevent conflicts when multiple AppHost instances run in parallel
+// (e.g., during integration tests). Each instance gets unique available ports starting from
+// the standard Azurite defaults (10000, 10001, 10002).
+var blobPort = FindAvailablePort(10000);
+var queuePort = FindAvailablePort(blobPort + 1);
+var tablePort = FindAvailablePort(queuePort + 1);
+
+Console.WriteLine($"[AppHost] Azurite ports: Blob={blobPort}, Queue={queuePort}, Table={tablePort}");
+
 IResourceBuilder<AzureCosmosDBResource> cosmosdb;
 
 // Add Azure Cosmos DB Linux-based Emulator (preview) for local development
@@ -32,14 +67,13 @@ cosmosdb = builder.AddAzureCosmosDB("cosmosdb")
     });
 #pragma warning restore ASPIRECOSMOSDB001
 
-// Add Azure Storage (Azurite emulator) for local development
-// Azurite provides blob, queue, and table storage emulation
 var storage = builder.AddAzureStorage("storage")
     .RunAsEmulator(emulator =>
     {
-        // Azurite uses fixed ports: 10000 (blob), 10001 (queue), 10002 (table)
-        // These are standard Azurite defaults and should not be changed
         emulator.WithDataVolume();
+        emulator.WithBlobPort(blobPort);
+        emulator.WithQueuePort(queuePort);
+        emulator.WithTablePort(tablePort);
     });
 
 // Add blob service endpoint from storage
