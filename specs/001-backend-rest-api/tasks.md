@@ -114,7 +114,7 @@
 ### Tests (US1)
 
 - [X] T050 [P] [US1] Create WorldTests.cs in tests/Domain.Tests/Entities/WorldTests.cs with AAA pattern tests for Validate(), Update(), SoftDelete() methods
-- [X] T051 [P] [US1] Create WorldRepositoryTests.cs - Skipped (requires Cosmos DB Emulator runtime)
+- [X] T051 [P] [US1] Create WorldRepositoryIntegrationTests.cs in tests/Infrastructure.IntegrationTests/Repositories/WorldRepositoryIntegrationTests.cs with integration tests using Cosmos DB Emulator
 - [X] T052 [P] [US1] Create WorldsControllerTests.cs - Skipped (requires integration test infrastructure setup)
 - [X] T053 [US1] Add integration test - Skipped (requires integration test infrastructure setup)
 - [X] T054 [US1] Add authorization test - Skipped (requires integration test infrastructure setup)
@@ -176,7 +176,7 @@
 ### Tests (US2)
 
 - [X] T090 [P] [US2] Create WorldEntityTests.cs in tests/Domain.Tests/Entities/WorldEntityTests.cs testing Validate(), Update(), SoftDelete(), Tags/Attributes limits
-- [X] T091 [P] [US2] Create WorldEntityRepositoryTests.cs - Deferred (requires Cosmos DB Emulator runtime and integration test infrastructure)
+- [X] T091 [P] [US2] Create WorldEntityRepositoryIntegrationTests.cs in tests/Infrastructure.IntegrationTests/Repositories/WorldEntityRepositoryIntegrationTests.cs with integration tests using Cosmos DB Emulator
 - [X] T092 [P] [US2] Create SearchServiceTests.cs - Deferred (requires integration test infrastructure)
 - [X] T093 [P] [US2] Create EntitiesControllerTests.cs - Deferred (requires integration test infrastructure)
 - [X] T094 [US2] Add integration test - Deferred (requires integration test infrastructure setup)
@@ -289,7 +289,7 @@
 
 ### Tests (US5)
 
-- [X] T145 [US5] Create AppHostTests.cs in tests/Api.Tests/Aspire/AppHostTests.cs verifying Aspire application model defines cosmosdb and api resources
+- [X] T145 [US5] Create AppHostTests.cs in tests/Orchestration.IntegrationTests/AppHostTests.cs verifying Aspire application model defines cosmosdb and api resources using DistributedApplicationTestingBuilder
 - [X] T146 [US5] Add manual test scenario in quickstart.md: Run AppHost, navigate to Dashboard, verify services green, make API request, verify data persists
 
 **Checkpoint**: All P1 user stories (US1, US5) complete - MVP functional with single-command developer experience
