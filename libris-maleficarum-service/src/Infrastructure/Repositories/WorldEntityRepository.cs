@@ -53,7 +53,7 @@ public class WorldEntityRepository : IWorldEntityRepository
 
         // Query with partition key for efficiency
         return await _context.WorldEntities
-            .WithPartitionKeyIfCosmos(_context, worldId.ToString())
+            .WithPartitionKeyIfCosmos(_context, worldId)
             .Where(e => e.Id == entityId && !e.IsDeleted)
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -84,23 +84,21 @@ public class WorldEntityRepository : IWorldEntityRepository
         // Clamp limit to valid range
         limit = Math.Clamp(limit, 1, 200);
 
-        // Start with partition-scoped query
+        // Start with partition-scoped query and filters
         var query = _context.WorldEntities
-            .WithPartitionKeyIfCosmos(_context, worldId.ToString())
-            .Where(e => !e.IsDeleted)
-            .OrderBy(e => e.CreatedDate)
-            .ThenBy(e => e.Id);
+            .WithPartitionKeyIfCosmos(_context, worldId)
+            .Where(e => !e.IsDeleted);
 
-        // Apply cursor pagination
-        if (!string.IsNullOrWhiteSpace(cursor) && DateTime.TryParse(cursor, out var cursorDate))
+        // Apply cursor pagination if provided
+        if (!string.IsNullOrWhiteSpace(cursor) && DateTime.TryParse(cursor, null, System.Globalization.DateTimeStyles.RoundtripKind, out var cursorDate))
         {
-            query = (IOrderedQueryable<WorldEntity>)query.Where(e => e.CreatedDate >= cursorDate);
+            query = query.Where(e => e.CreatedDate > cursorDate);
         }
 
         // Apply entity type filter
         if (entityType.HasValue)
         {
-            query = (IOrderedQueryable<WorldEntity>)query.Where(e => e.EntityType == entityType.Value);
+            query = query.Where(e => e.EntityType == entityType.Value);
         }
 
         // Apply tags filter (case-insensitive partial match)
@@ -109,13 +107,15 @@ public class WorldEntityRepository : IWorldEntityRepository
             foreach (var tag in tags)
             {
                 var tagLower = tag.ToLowerInvariant();
-                query = (IOrderedQueryable<WorldEntity>)query.Where(e =>
-                    e.Tags.Any(t => t.ToLower().Contains(tagLower)));
+                query = query.Where(e => e.Tags.Any(t => t.ToLower().Contains(tagLower)));
             }
         }
 
+        // Apply ordering AFTER all filters
+        var orderedQuery = query.OrderBy(e => e.CreatedDate).ThenBy(e => e.Id);
+
         // Fetch limit + 1 to determine if there are more pages
-        var entities = await query
+        var entities = await orderedQuery
             .Take(limit + 1)
             .ToListAsync(cancellationToken);
 
@@ -123,8 +123,8 @@ public class WorldEntityRepository : IWorldEntityRepository
         if (entities.Count > limit)
         {
             var lastEntity = entities[limit - 1];
+            entities.RemoveAt(limit);
             nextCursor = lastEntity.CreatedDate.ToString("O"); // ISO 8601 format
-            entities = entities.Take(limit).ToList();
         }
 
         return (entities, nextCursor);
@@ -149,7 +149,7 @@ public class WorldEntityRepository : IWorldEntityRepository
 
         // Query children within partition
         return await _context.WorldEntities
-            .WithPartitionKeyIfCosmos(_context, worldId.ToString())
+            .WithPartitionKeyIfCosmos(_context, worldId)
             .Where(e => e.ParentId == parentId && !e.IsDeleted)
             .ToListAsync(cancellationToken);
     }
