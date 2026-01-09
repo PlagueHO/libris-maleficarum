@@ -17,7 +17,7 @@ namespace LibrisMaleficarum.Orchestration.IntegrationTests;
 [TestCategory("Integration")]
 [TestCategory("RequiresDocker")]
 [DoNotParallelize] // REQUIRED - prevents port conflicts from parallel AppHost instances
-public class AppHostTests
+public partial class AppHostTests
 {
     public TestContext? TestContext { get; set; }
 
@@ -83,6 +83,73 @@ public class AppHostTests
     }
 
     [TestMethod]
+    public async Task AppHost_CosmosDbIsHealthy()
+    {
+        // Arrange
+        AppHostFixture.App.Should().NotBeNull("AppHost should be initialized by ClassInitialize");
+
+        // Act - Verify resource is healthy
+        TestContext?.WriteLine("[TEST] Checking Cosmos DB resource health...");
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await AppHostFixture.App!.ResourceNotifications.WaitForResourceHealthyAsync("cosmosdb", cts.Token);
+
+        // Get connection string
+        TestContext?.WriteLine("[TEST] Retrieving Cosmos DB connection string...");
+        var connectionString = await AppHostFixture.App!.GetConnectionStringAsync("cosmosdb", cts.Token);
+
+        // Assert
+        connectionString.Should().NotBeNullOrWhiteSpace("Cosmos DB should provide a connection string");
+        connectionString.Should().Contain("AccountEndpoint=", "Connection string should contain AccountEndpoint");
+        connectionString.Should().Contain("AccountKey=", "Connection string should contain AccountKey");
+
+        var accountEndpoint = MyRegex().Match(connectionString!)?.Groups[1].Value;
+        accountEndpoint.Should().NotBeNullOrWhiteSpace("AccountEndpoint should be extractable from connection string");
+        accountEndpoint.Should().StartWith("http", "AccountEndpoint should be a valid HTTP/HTTPS URL");
+
+        TestContext?.WriteLine($"[TEST] ✓ Cosmos DB is healthy with endpoint: {accountEndpoint}");
+    }
+
+    [TestMethod]
+    public async Task AppHost_CosmosDbEndpointResponds()
+    {
+        // Arrange
+        AppHostFixture.App.Should().NotBeNull("AppHost should be initialized by ClassInitialize");
+
+        // Get connection string and extract endpoint
+        TestContext?.WriteLine("[TEST] Retrieving Cosmos DB connection string...");
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var connectionString = await AppHostFixture.App!.GetConnectionStringAsync("cosmosdb", cts.Token);
+        connectionString.Should().NotBeNullOrWhiteSpace();
+
+        var accountEndpoint = MyRegex().Match(connectionString!)?.Groups[1].Value;
+        accountEndpoint.Should().NotBeNullOrWhiteSpace();
+        TestContext?.WriteLine($"[TEST] Account endpoint: {accountEndpoint}");
+
+        // Act - Make HTTP request to the Cosmos DB account endpoint
+        using var httpClient = new HttpClient(new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+        });
+
+        TestContext?.WriteLine("[TEST] Sending GET request to Cosmos DB account endpoint...");
+        var response = await httpClient.GetAsync(accountEndpoint, cts.Token);
+
+        // Assert - Validate Cosmos DB is responding
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "Cosmos DB emulator should respond to account endpoint requests");
+
+        var content = await response.Content.ReadAsStringAsync(cts.Token);
+        content.Should().NotBeNullOrWhiteSpace("Response should have content");
+
+        // Validate response contains expected Cosmos DB metadata
+        content.Should().Contain("databaseAccountEndpoint", "Response should contain Cosmos DB account metadata");
+        content.Should().Contain("writableLocations", "Response should contain writable locations");
+        content.Should().Contain("readableLocations", "Response should contain readable locations");
+
+        TestContext?.WriteLine("[TEST] ✓ Cosmos DB endpoint is responding correctly");
+        TestContext?.WriteLine($"[TEST] Response preview: {content[..Math.Min(200, content.Length)]}...");
+    }
+
+    [TestMethod]
     public void AppHost_ProgramClassExists()
     {
         // Arrange & Act
@@ -106,4 +173,7 @@ public class AppHostTests
             "Assembly should have correct name");
         TestContext?.WriteLine("[TEST] ✓ AppHost assembly loaded successfully");
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"AccountEndpoint=([^;]+)")]
+    private static partial System.Text.RegularExpressions.Regex MyRegex();
 }
