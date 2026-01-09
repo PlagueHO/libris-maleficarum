@@ -302,9 +302,9 @@
 
 ### Documentation
 
-- [ ] T147 [P] Update OpenAPI XML comments in all controllers (WorldsController, WorldEntitiesController, AssetsController) for Swagger documentation
-- [ ] T148 [P] Verify all OpenAPI specs in contracts/ match implemented controller endpoints
-- [ ] T149 [P] Add architecture diagram to plan.md showing Api → Domain ← Infrastructure dependencies
+- [X] T147 [P] Update OpenAPI XML comments in all controllers (WorldsController, WorldEntitiesController, AssetsController) for Swagger documentation
+- [X] T148 [P] Verify all OpenAPI specs in contracts/ match implemented controller endpoints
+- [X] T149 [P] Add architecture diagram to plan.md showing Api → Domain ← Infrastructure dependencies
 
 ### Code Quality
 
