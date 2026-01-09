@@ -54,10 +54,23 @@ public static class AppHostFixture
 
             testContext.WriteLine("[FIXTURE] Starting AppHost...");
             await s_app.StartAsync();
-            testContext.WriteLine("[FIXTURE] AppHost started");
+            testContext.WriteLine("[FIXTURE] ✓ AppHost started");
 
-            testContext.WriteLine("[FIXTURE] Waiting 30 seconds for Cosmos DB emulator to be ready...");
-            await Task.Delay(TimeSpan.FromSeconds(30));
+            testContext.WriteLine("[FIXTURE] Waiting for Cosmos DB emulator to be healthy...");
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            await s_app.ResourceNotifications.WaitForResourceHealthyAsync("cosmosdb", cts.Token);
+            testContext.WriteLine("[FIXTURE] ✓ Cosmos DB emulator is healthy!");
+
+            // Display connection information for diagnostics
+            var connectionString = await s_app.GetConnectionStringAsync("cosmosdb");
+            testContext.WriteLine($"[FIXTURE] Connection string: {connectionString}");
+            
+            var accountEndpoint = System.Text.RegularExpressions.Regex.Match(connectionString ?? "", @"AccountEndpoint=([^;]+)")?.Groups[1].Value;
+            if (!string.IsNullOrEmpty(accountEndpoint))
+            {
+                testContext.WriteLine($"[FIXTURE] Account endpoint: {accountEndpoint}");
+            }
+
             testContext.WriteLine("[FIXTURE] ✓ Fixture initialization complete!");
 
             s_isInitialized = true;

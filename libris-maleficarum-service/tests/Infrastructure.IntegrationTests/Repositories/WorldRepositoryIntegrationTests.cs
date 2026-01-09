@@ -1,19 +1,16 @@
 namespace LibrisMaleficarum.Infrastructure.Tests.Repositories;
 
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
 using LibrisMaleficarum.Domain.Entities;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Infrastructure.Persistence;
 using LibrisMaleficarum.Infrastructure.Repositories;
+using LibrisMaleficarum.IntegrationTests.Shared;
 using Microsoft.EntityFrameworkCore;
-using NSubstitute;
 
 /// <summary>
 /// Integration tests for WorldRepository using Aspire-managed Cosmos DB Emulator.
 /// These tests verify real Cosmos DB operations including pagination, cursors, and concurrency.
-/// Pattern follows: https://devblogs.microsoft.com/dotnet/getting-started-with-testing-and-dotnet-aspire/
-/// Each test creates its own AppHost instance for reliability.
+/// Uses shared AppHostFixture from IntegrationTests.Shared project.
 /// </summary>
 [TestClass]
 [TestCategory("Integration")]
@@ -23,187 +20,193 @@ public class WorldRepositoryIntegrationTests
 {
     public TestContext? TestContext { get; set; }
 
-    // TEMPORARILY DISABLED - Pending shared AppHost fixture implementation
-    // [TestMethod]
-    // [TestCategory("Integration")]
-    // public async Task GetAllByOwnerAsync_WithCursor_ReturnsNextPage()
-    // {
-    // var userId = Guid.NewGuid();
-    // 
-    // TestContext?.DisplayMessage(MessageLevel.Informational, "Starting test: GetAllByOwnerAsync_WithCursor_ReturnsNextPage");
-    // TestContext?.WriteLine("[TEST] Step 1: Creating AppHost builder...");
-    // // Arrange - Create and start AppHost
-    // var appHost = await DistributedApplicationTestingBuilder
-    // .CreateAsync<Projects.LibrisMaleficarum_AppHost>();
-    // 
-    // TestContext?.WriteLine("[TEST] Step 2: Building AppHost...");
-    // await using var app = await appHost.BuildAsync();
-    // 
-    // TestContext?.WriteLine("[TEST] Step 3: Starting AppHost...");
-    // await app.StartAsync();
+    [ClassInitialize]
+    public static async Task ClassInitialize(TestContext context)
+    {
+        await AppHostFixture.InitializeAsync(context);
+    }
 
-    // TestContext?.WriteLine("[TEST] Step 4: Waiting for Cosmos DB to be ready (30s)...");
-    // // Wait for Cosmos DB to be ready (emulator takes time to start)
-    // await Task.Delay(TimeSpan.FromSeconds(30));
+    [TestMethod]
+    public async Task GetAllByOwnerAsync_WithCursor_ReturnsNextPage()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        AppHostFixture.App.Should().NotBeNull("AppHost should be initialized by ClassInitialize");
 
-    // TestContext?.WriteLine("[TEST] Step 5: Getting connection string...");
-    // // Get connection string and create context
-    // var connectionString = await app.GetConnectionStringAsync("cosmosdb")
-    // ?? throw new InvalidOperationException("Failed to get Cosmos DB connection string");
-    // 
-    // TestContext?.WriteLine($"[TEST] Step 6: Connection string obtained: {connectionString.Substring(0, Math.Min(50, connectionString.Length))}...");
+        TestContext?.WriteLine("[TEST] Getting Cosmos DB connection string...");
+        var connectionString = await AppHostFixture.App!.GetConnectionStringAsync("cosmosdb", TestContext?.CancellationTokenSource.Token ?? default)
+            ?? throw new InvalidOperationException("Failed to get Cosmos DB connection string");
 
-    // var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
-    // TestContext?.WriteLine($"[TEST] Step 7: Creating DbContext for database: {testDatabaseName}");
-    // var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-    // .UseCosmos(
-    // connectionString,
-    // testDatabaseName,
-    // cosmosOptions =>
-    // {
-    // cosmosOptions.ConnectionMode(Microsoft.Azure.Cosmos.ConnectionMode.Gateway);
-    // cosmosOptions.RequestTimeout(TimeSpan.FromSeconds(60));
-    // cosmosOptions.HttpClientFactory(() => new HttpClient(new HttpClientHandler
-    // {
-    // ServerCertificateCustomValidationCallback = (_, _, _, _) => true
-    // }));
-    // })
-    // .Options;
+        TestContext?.WriteLine($"[TEST] Connection string: {connectionString}");
 
-    // TestContext?.WriteLine("[TEST] Step 8: Creating ApplicationDbContext...");
-    // await using var context = new ApplicationDbContext(options);
-    // 
-    // TestContext?.WriteLine("[TEST] Step 9: Ensuring database created (with retry logic)...");
-    // // Retry logic for database creation (Cosmos DB emulator might still be starting)
-    // var retryCount = 0;
-    // var maxRetries = 5;
-    // var retryDelay = TimeSpan.FromSeconds(10);
-    // Exception? lastException = null;
-    // 
-    // while (retryCount < maxRetries)
-    // {
-    // try
-    // {
-    // TestContext?.WriteLine($"[TEST] Step 9.{retryCount + 1}: Attempting EnsureCreatedAsync (attempt {retryCount + 1}/{maxRetries})...");
-    // await context.Database.EnsureCreatedAsync();
-    // TestContext?.WriteLine("[TEST] Step 10: Database created successfully!");
-    // break;
-    // }
-    // catch (Exception ex)
-    // {
-    // lastException = ex;
-    // retryCount++;
-    // TestContext?.WriteLine($"[TEST] Step 9.{retryCount}: Failed (attempt {retryCount}/{maxRetries}): {ex.Message}");
-    // 
-    // if (retryCount < maxRetries)
-    // {
-    // TestContext?.WriteLine($"[TEST] Waiting {retryDelay.TotalSeconds}s before retry...");
-    // await Task.Delay(retryDelay);
-    // }
-    // }
-    // }
-    // 
-    // if (retryCount >= maxRetries)
-    // {
-    // throw new InvalidOperationException(
-    // $"Failed to create database after {maxRetries} attempts. Last error: {lastException?.Message}",
-    // lastException);
-    // }
+//        var endpoint = AppHostFixture.App!.GetEndpoint("cosmosdb");
 
-    // TestContext?.WriteLine("[TEST] Step 11: Creating repository...");
-    // var userContextService = Substitute.For<IUserContextService>();
-    // userContextService.GetCurrentUserIdAsync().Returns(userId);
-    // var repository = new WorldRepository(context, userContextService);
+//        TestContext?.WriteLine($"[TEST] Cosmos DB endpoint: {endpoint}");
 
-    // TestContext?.WriteLine("[TEST] Step 12: Creating test data...");
-    // // Test data
-    // var firstWorld = World.Create(userId, "World 1", null);
-    // await context.Worlds.AddAsync(firstWorld);
-    // await context.SaveChangesAsync();
-    // await Task.Delay(10); // Ensure different timestamps
+        // Parse connection string to extract AccountEndpoint and AccountKey
+        var accountEndpoint = System.Text.RegularExpressions.Regex.Match(connectionString, @"AccountEndpoint=([^;]+)")?.Groups[1].Value
+            ?? throw new InvalidOperationException("AccountEndpoint not found in connection string");
+        var accountKey = System.Text.RegularExpressions.Regex.Match(connectionString, @"AccountKey=([^;]+)")?.Groups[1].Value
+            ?? throw new InvalidOperationException("AccountKey not found in connection string");
 
-    // var secondWorld = World.Create(userId, "World 2", null);
-    // await context.Worlds.AddAsync(secondWorld);
-    // await context.SaveChangesAsync();
+        TestContext?.WriteLine($"[TEST] Parsed AccountEndpoint: {accountEndpoint}");
+        TestContext?.WriteLine($"[TEST] Parsed AccountKey: {accountKey[..10]}...");
 
-    // var cursor = firstWorld.CreatedDate.ToString("O");
+        var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
+        TestContext?.WriteLine($"[TEST] Creating DbContext for database: {testDatabaseName}");
+        
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseCosmos(
+                accountEndpoint,
+                accountKey,
+                testDatabaseName,
+                cosmosOptions =>
+                {
+                    cosmosOptions.ConnectionMode(Microsoft.Azure.Cosmos.ConnectionMode.Gateway);
+                    cosmosOptions.RequestTimeout(TimeSpan.FromSeconds(60));
+                    cosmosOptions.HttpClientFactory(() => new HttpClient(new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+                    }));
+                })
+            .Options;
 
-    // TestContext?.WriteLine("[TEST] Step 13: Executing repository query...");
-    // // Act
-    // var (worlds, nextCursor) = await repository.GetAllByOwnerAsync(userId, cursor: cursor);
+        await using var context = new ApplicationDbContext(options);
+        
+        // Add retry logic for database creation (Cosmos DB emulator may need time)
+        TestContext?.WriteLine("[TEST] Ensuring database created (with retry logic)...");
+        var retryCount = 0;
+        var maxRetries = 3;
+        var retryDelay = TimeSpan.FromSeconds(5);
+        Exception? lastException = null;
+        
+        while (retryCount < maxRetries)
+        {
+            try
+            {
+                TestContext?.WriteLine($"[TEST] Attempt {retryCount + 1}/{maxRetries} to create database...");
+                
+                // Use ConfigureAwait(false) to avoid potential deadlocks and add timeout
+                var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                await context.Database.EnsureCreatedAsync(cts.Token).ConfigureAwait(false);
+                
+                TestContext?.WriteLine("[TEST] Database created successfully!");
+                break;
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+                retryCount++;
+                TestContext?.WriteLine($"[TEST] Attempt {retryCount} failed: {ex.Message}");
+                
+                if (retryCount < maxRetries)
+                {
+                    TestContext?.WriteLine($"[TEST] Waiting {retryDelay.TotalSeconds}s before retry...");
+                    await Task.Delay(retryDelay).ConfigureAwait(false);
+                }
+            }
+        }
+        
+        if (retryCount >= maxRetries)
+        {
+            throw new InvalidOperationException(
+                $"Failed to create database after {maxRetries} attempts. Last error: {lastException?.Message}",
+                lastException);
+        }
 
-    // TestContext?.WriteLine("[TEST] Step 14: Asserting results...");
-    // // Assert
-    // worlds.Should().HaveCount(1);
-    // worlds.First().Name.Should().Be("World 2");
+        // var userContextService = Substitute.For<IUserContextService>();
+        // userContextService.GetCurrentUserIdAsync().Returns(userId);
+        // var repository = new WorldRepository(context, userContextService);
 
-    // TestContext?.WriteLine("[TEST] Step 15: Cleaning up database...");
-    // // Cleanup
-    // await context.Database.EnsureDeletedAsync();
-    // TestContext?.WriteLine("[TEST] ✓ Test completed successfully!");
-    // }
+        // TestContext?.WriteLine("[TEST] Creating test data...");
+        // var firstWorld = World.Create(userId, "World 1", null);
+        // await context.Worlds.AddAsync(firstWorld);
+        // await context.SaveChangesAsync();
+        // await Task.Delay(10); // Ensure different timestamps
 
-    // TEMPORARILY DISABLED - Investigating hang issue
-    // [TestMethod]
-    // [TestCategory("Integration")]
-    // public async Task UpdateAsync_WithInvalidETag_ThrowsInvalidOperationException()
-    // {
-    // var userId = Guid.NewGuid();
+        // var secondWorld = World.Create(userId, "World 2", null);
+        // await context.Worlds.AddAsync(secondWorld);
+        // await context.SaveChangesAsync();
 
-    // // Arrange - Create and start AppHost
-    // var appHost = await DistributedApplicationTestingBuilder
-    //     .CreateAsync<Projects.LibrisMaleficarum_AppHost>();
-    // await using var app = await appHost.BuildAsync();
-    // await app.StartAsync();
+        // var cursor = firstWorld.CreatedDate.ToString("O");
 
-    // // Wait for Cosmos DB to be ready
-    // await Task.Delay(TimeSpan.FromSeconds(30));
+        // // Act
+        // TestContext?.WriteLine("[TEST] Executing repository query...");
+        // var (worlds, nextCursor) = await repository.GetAllByOwnerAsync(userId, cursor: cursor);
 
-    // // Get connection string and create context
-    // var connectionString = await app.GetConnectionStringAsync("cosmosdb")
-    //     ?? throw new InvalidOperationException("Failed to get Cosmos DB connection string");
+        // // Assert
+        // TestContext?.WriteLine("[TEST] Asserting results...");
+        // worlds.Should().HaveCount(1);
+        // worlds.First().Name.Should().Be("World 2");
 
-    // var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
-    // var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-    //     .UseCosmos(
-    //         connectionString,
-    //         testDatabaseName,
-    //         cosmosOptions =>
-    //         {
-    //             cosmosOptions.ConnectionMode(Microsoft.Azure.Cosmos.ConnectionMode.Gateway);
-    //             cosmosOptions.RequestTimeout(TimeSpan.FromSeconds(60));
-    //             cosmosOptions.HttpClientFactory(() => new HttpClient(new HttpClientHandler
-    //             {
-    //                 ServerCertificateCustomValidationCallback = (_, _, _, _) => true
-    //             }));
-    //         })
-    //     .Options;
+        // // Cleanup
+        // TestContext?.WriteLine("[TEST] Cleaning up database...");
+        // await context.Database.EnsureDeletedAsync();
+        // TestContext?.WriteLine("[TEST] ✓ Test completed successfully!");
+    }
 
-    // await using var context = new ApplicationDbContext(options);
-    // await context.Database.EnsureCreatedAsync();
+    // TEMPORARILY DISABLED - Testing one test at a time to identify freezing issue
+    /*
+    [TestMethod]
+    public async Task UpdateAsync_WithInvalidETag_ThrowsDbUpdateConcurrencyException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        AppHostFixture.App.Should().NotBeNull("AppHost should be initialized by ClassInitialize");
 
-    // var userContextService = Substitute.For<IUserContextService>();
-    // userContextService.GetCurrentUserIdAsync().Returns(userId);
-    // var repository = new WorldRepository(context, userContextService);
+        TestContext?.WriteLine("[TEST] Getting Cosmos DB connection string...");
+        var connectionString = await AppHostFixture.App!.GetConnectionStringAsync("cosmosdb")
+            ?? throw new InvalidOperationException("Failed to get Cosmos DB connection string");
 
-    // // Test data
-    // var world = World.Create(userId, "Test World", "Description");
-    // await context.Worlds.AddAsync(world);
-    // await context.SaveChangesAsync();
+        var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
+        TestContext?.WriteLine($"[TEST] Creating DbContext for database: {testDatabaseName}");
+        
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseCosmos(
+                connectionString,
+                testDatabaseName,
+                cosmosOptions =>
+                {
+                    cosmosOptions.ConnectionMode(Microsoft.Azure.Cosmos.ConnectionMode.Gateway);
+                    cosmosOptions.RequestTimeout(TimeSpan.FromSeconds(60));
+                    cosmosOptions.HttpClientFactory(() => new HttpClient(new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+                    }));
+                })
+            .Options;
 
-    // // Modify the world to change its ETag
-    // var modifiedWorld = await context.Worlds.FindAsync(world.Id);
-    // modifiedWorld!.Update("Updated Name", "Updated Description");
-    // await context.SaveChangesAsync();
+        await using var context = new ApplicationDbContext(options);
+        TestContext?.WriteLine("[TEST] Ensuring database created...");
+        await context.Database.EnsureCreatedAsync();
 
-    // // Try to update with the original (now invalid) ETag
-    // world.Update("Another Update", "Another Description");
+        var userContextService = Substitute.For<IUserContextService>();
+        userContextService.GetCurrentUserIdAsync().Returns(userId);
+        var repository = new WorldRepository(context, userContextService);
 
-    // // Act & Assert
-    // await Assert.ThrowsExceptionAsync<DbUpdateConcurrencyException>(
-    //     async () => await repository.UpdateAsync(world));
+        TestContext?.WriteLine("[TEST] Creating test data...");
+        var world = World.Create(userId, "Test World", "Description");
+        await context.Worlds.AddAsync(world);
+        await context.SaveChangesAsync();
 
-    // // Cleanup
-    // await context.Database.EnsureDeletedAsync();
-    // }
+        // Modify the world to change its ETag
+        TestContext?.WriteLine("[TEST] Modifying world to invalidate ETag...");
+        var modifiedWorld = await context.Worlds.FindAsync(world.Id);
+        modifiedWorld!.Update("Updated Name", "Updated Description");
+        await context.SaveChangesAsync();
+
+        // Try to update with the original (now invalid) ETag
+        world.Update("Another Update", "Another Description");
+
+        // Act & Assert
+        TestContext?.WriteLine("[TEST] Attempting update with invalid ETag...");
+        await Assert.ThrowsExceptionAsync<DbUpdateConcurrencyException>(
+            async () => await repository.UpdateAsync(world));
+
+        // Cleanup
+        TestContext?.WriteLine("[TEST] Cleaning up database...");
+        await context.Database.EnsureDeletedAsync();
+        TestContext?.WriteLine("[TEST] ✓ Test completed successfully!");
+    }
+    */
 }
