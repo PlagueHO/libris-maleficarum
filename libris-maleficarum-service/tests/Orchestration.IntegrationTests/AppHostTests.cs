@@ -17,7 +17,7 @@ namespace LibrisMaleficarum.Orchestration.IntegrationTests;
 [TestCategory("Integration")]
 [TestCategory("RequiresDocker")]
 [DoNotParallelize] // REQUIRED - prevents port conflicts from parallel AppHost instances
-public partial class AppHostTests
+public class AppHostTests
 {
     public TestContext? TestContext { get; set; }
 
@@ -93,20 +93,18 @@ public partial class AppHostTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         await AppHostFixture.App!.ResourceNotifications.WaitForResourceHealthyAsync("cosmosdb", cts.Token);
 
-        // Get connection string
-        TestContext?.WriteLine("[TEST] Retrieving Cosmos DB connection string...");
-        var connectionString = await AppHostFixture.App!.GetConnectionStringAsync("cosmosdb", cts.Token);
+        // Assert - Connection details are available from fixture
+        TestContext?.WriteLine("[TEST] Validating Cosmos DB connection details...");
+        AppHostFixture.CosmosDbConnectionString.Should().NotBeNullOrWhiteSpace("Cosmos DB should provide a connection string");
+        AppHostFixture.CosmosDbConnectionString.Should().Contain("AccountEndpoint=", "Connection string should contain AccountEndpoint");
+        AppHostFixture.CosmosDbConnectionString.Should().Contain("AccountKey=", "Connection string should contain AccountKey");
 
-        // Assert
-        connectionString.Should().NotBeNullOrWhiteSpace("Cosmos DB should provide a connection string");
-        connectionString.Should().Contain("AccountEndpoint=", "Connection string should contain AccountEndpoint");
-        connectionString.Should().Contain("AccountKey=", "Connection string should contain AccountKey");
+        AppHostFixture.CosmosDbAccountEndpoint.Should().NotBeNullOrWhiteSpace("AccountEndpoint should be available");
+        AppHostFixture.CosmosDbAccountEndpoint.Should().StartWith("http", "AccountEndpoint should be a valid HTTP/HTTPS URL");
 
-        var accountEndpoint = MyRegex().Match(connectionString!)?.Groups[1].Value;
-        accountEndpoint.Should().NotBeNullOrWhiteSpace("AccountEndpoint should be extractable from connection string");
-        accountEndpoint.Should().StartWith("http", "AccountEndpoint should be a valid HTTP/HTTPS URL");
+        AppHostFixture.CosmosDbAccountKey.Should().NotBeNullOrWhiteSpace("AccountKey should be available");
 
-        TestContext?.WriteLine($"[TEST] ✓ Cosmos DB is healthy with endpoint: {accountEndpoint}");
+        TestContext?.WriteLine($"[TEST] ✓ Cosmos DB is healthy with endpoint: {AppHostFixture.CosmosDbAccountEndpoint}");
     }
 
     [TestMethod]
@@ -115,15 +113,9 @@ public partial class AppHostTests
         // Arrange
         AppHostFixture.App.Should().NotBeNull("AppHost should be initialized by ClassInitialize");
 
-        // Get connection string and extract endpoint
-        TestContext?.WriteLine("[TEST] Retrieving Cosmos DB connection string...");
+        // Get account endpoint from fixture
+        TestContext?.WriteLine($"[TEST] Using Cosmos DB endpoint: {AppHostFixture.CosmosDbAccountEndpoint}");
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var connectionString = await AppHostFixture.App!.GetConnectionStringAsync("cosmosdb", cts.Token);
-        connectionString.Should().NotBeNullOrWhiteSpace();
-
-        var accountEndpoint = MyRegex().Match(connectionString!)?.Groups[1].Value;
-        accountEndpoint.Should().NotBeNullOrWhiteSpace();
-        TestContext?.WriteLine($"[TEST] Account endpoint: {accountEndpoint}");
 
         // Act - Make HTTP request to the Cosmos DB account endpoint
         using var httpClient = new HttpClient(new HttpClientHandler
@@ -132,7 +124,7 @@ public partial class AppHostTests
         });
 
         TestContext?.WriteLine("[TEST] Sending GET request to Cosmos DB account endpoint...");
-        var response = await httpClient.GetAsync(accountEndpoint, cts.Token);
+        var response = await httpClient.GetAsync(AppHostFixture.CosmosDbAccountEndpoint, cts.Token);
 
         // Assert - Validate Cosmos DB is responding
         response.StatusCode.Should().Be(HttpStatusCode.OK, "Cosmos DB emulator should respond to account endpoint requests");
@@ -173,7 +165,4 @@ public partial class AppHostTests
             "Assembly should have correct name");
         TestContext?.WriteLine("[TEST] ✓ AppHost assembly loaded successfully");
     }
-
-    [System.Text.RegularExpressions.GeneratedRegex(@"AccountEndpoint=([^;]+)")]
-    private static partial System.Text.RegularExpressions.Regex MyRegex();
 }

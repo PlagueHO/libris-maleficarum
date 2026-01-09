@@ -8,17 +8,38 @@ using Aspire.Hosting.Testing;
 /// This class creates a single AppHost instance that is shared across all integration test classes
 /// to avoid Docker resource conflicts and improve test performance.
 /// </summary>
-public static class AppHostFixture
+public static partial class AppHostFixture
 {
     private static IDistributedApplicationTestingBuilder? s_appHostBuilder;
     private static DistributedApplication? s_app;
     private static readonly SemaphoreSlim s_initializationLock = new(1, 1);
     private static bool s_isInitialized;
+    private static string? s_cosmosDbAccountEndpoint;
+    private static string? s_cosmosDbAccountKey;
+    private static string? s_cosmosDbConnectionString;
 
     /// <summary>
     /// Gets the shared DistributedApplication instance.
     /// </summary>
     public static DistributedApplication? App => s_app;
+
+    /// <summary>
+    /// Gets the Cosmos DB account endpoint URL.
+    /// </summary>
+    public static string CosmosDbAccountEndpoint => s_cosmosDbAccountEndpoint 
+        ?? throw new InvalidOperationException("AppHost has not been initialized. Call InitializeAsync first.");
+
+    /// <summary>
+    /// Gets the Cosmos DB account key.
+    /// </summary>
+    public static string CosmosDbAccountKey => s_cosmosDbAccountKey 
+        ?? throw new InvalidOperationException("AppHost has not been initialized. Call InitializeAsync first.");
+
+    /// <summary>
+    /// Gets the Cosmos DB connection string.
+    /// </summary>
+    public static string CosmosDbConnectionString => s_cosmosDbConnectionString 
+        ?? throw new InvalidOperationException("AppHost has not been initialized. Call InitializeAsync first.");
 
     /// <summary>
     /// Initializes the AppHost if not already initialized.
@@ -61,15 +82,18 @@ public static class AppHostFixture
             await s_app.ResourceNotifications.WaitForResourceHealthyAsync("cosmosdb", cts.Token);
             testContext.WriteLine("[FIXTURE] ✓ Cosmos DB emulator is healthy!");
 
-            // Display connection information for diagnostics
-            var connectionString = await s_app.GetConnectionStringAsync("cosmosdb");
-            testContext.WriteLine($"[FIXTURE] Connection string: {connectionString}");
+            // Display connection information for diagnostics and store for reuse
+            s_cosmosDbConnectionString = await s_app.GetConnectionStringAsync("cosmosdb", cts.Token);
+            testContext.WriteLine($"[FIXTURE] Connection string: {s_cosmosDbConnectionString}");
             
-            var accountEndpoint = System.Text.RegularExpressions.Regex.Match(connectionString ?? "", @"AccountEndpoint=([^;]+)")?.Groups[1].Value;
-            if (!string.IsNullOrEmpty(accountEndpoint))
-            {
-                testContext.WriteLine($"[FIXTURE] Account endpoint: {accountEndpoint}");
-            }
+            // Parse and store connection details
+            s_cosmosDbAccountEndpoint = MyRegex1().Match(s_cosmosDbConnectionString ?? "")?.Groups[1].Value
+                ?? throw new InvalidOperationException("AccountEndpoint not found in Cosmos DB connection string");
+            s_cosmosDbAccountKey = MyRegex().Match(s_cosmosDbConnectionString)?.Groups[1].Value
+                ?? throw new InvalidOperationException("AccountKey not found in Cosmos DB connection string");
+
+            testContext.WriteLine($"[FIXTURE] Account endpoint: {s_cosmosDbAccountEndpoint}");
+            testContext.WriteLine($"[FIXTURE] Account key: {s_cosmosDbAccountKey[..Math.Min(10, s_cosmosDbAccountKey.Length)]}...");
 
             testContext.WriteLine("[FIXTURE] ✓ Fixture initialization complete!");
 
@@ -91,7 +115,15 @@ public static class AppHostFixture
         {
             await s_app.DisposeAsync();
             s_app = null;
+            s_cosmosDbConnectionString = null;
+            s_cosmosDbAccountEndpoint = null;
+            s_cosmosDbAccountKey = null;
             s_isInitialized = false;
         }
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"AccountKey=([^;]+)")]
+    private static partial System.Text.RegularExpressions.Regex MyRegex();
+    [System.Text.RegularExpressions.GeneratedRegex(@"AccountEndpoint=([^;]+)")]
+    private static partial System.Text.RegularExpressions.Regex MyRegex1();
 }
