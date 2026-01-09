@@ -76,33 +76,27 @@ public sealed class AssetRepository : IAssetRepository
 
         // Build base query with partition key
         var query = _context.Assets
-            .Where(a => a.WorldId == worldId && a.EntityId == entityId && !a.IsDeleted)
-            .OrderBy(a => a.CreatedDate);
+            .Where(a => a.WorldId == worldId && a.EntityId == entityId && !a.IsDeleted);
 
         // Apply cursor pagination if provided
-        if (!string.IsNullOrEmpty(cursor))
+        if (!string.IsNullOrEmpty(cursor) && DateTime.TryParse(cursor, null, System.Globalization.DateTimeStyles.RoundtripKind, out var cursorDate))
         {
-            // Decode cursor (base64 encoded timestamp)
-            var cursorBytes = Convert.FromBase64String(cursor);
-            var cursorTimestamp = DateTime.Parse(System.Text.Encoding.UTF8.GetString(cursorBytes));
-
-            query = (IOrderedQueryable<Asset>)query.Where(a => a.CreatedDate > cursorTimestamp);
+            query = query.Where(a => a.CreatedDate > cursorDate);
         }
 
+        // Apply ordering AFTER all filters
+        var orderedQuery = query.OrderBy(a => a.CreatedDate).ThenBy(a => a.Id);
+
         // Fetch limit + 1 to determine if there are more results
-        var assets = await query.Take(limit + 1).ToListAsync(cancellationToken);
+        var assets = await orderedQuery.Take(limit + 1).ToListAsync(cancellationToken);
 
         // Determine next cursor
         string? nextCursor = null;
         if (assets.Count > limit)
         {
-            // Remove extra item
+            var lastAsset = assets[limit - 1];
             assets.RemoveAt(limit);
-
-            // Encode last CreatedDate as cursor
-            var lastCreatedDate = assets[^1].CreatedDate;
-            var cursorBytes = System.Text.Encoding.UTF8.GetBytes(lastCreatedDate.ToString("O"));
-            nextCursor = Convert.ToBase64String(cursorBytes);
+            nextCursor = lastAsset.CreatedDate.ToString("O");
         }
 
         return (assets, nextCursor);
