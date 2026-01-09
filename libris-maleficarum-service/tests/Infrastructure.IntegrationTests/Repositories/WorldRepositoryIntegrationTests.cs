@@ -33,24 +33,9 @@ public class WorldRepositoryIntegrationTests
         var userId = Guid.NewGuid();
         AppHostFixture.App.Should().NotBeNull("AppHost should be initialized by ClassInitialize");
 
-        TestContext?.WriteLine("[TEST] Getting Cosmos DB connection string...");
-        var connectionString = await AppHostFixture.App!.GetConnectionStringAsync("cosmosdb", TestContext?.CancellationTokenSource.Token ?? default)
-            ?? throw new InvalidOperationException("Failed to get Cosmos DB connection string");
-
-        TestContext?.WriteLine($"[TEST] Connection string: {connectionString}");
-
-//        var endpoint = AppHostFixture.App!.GetEndpoint("cosmosdb");
-
-//        TestContext?.WriteLine($"[TEST] Cosmos DB endpoint: {endpoint}");
-
-        // Parse connection string to extract AccountEndpoint and AccountKey
-        var accountEndpoint = System.Text.RegularExpressions.Regex.Match(connectionString, @"AccountEndpoint=([^;]+)")?.Groups[1].Value
-            ?? throw new InvalidOperationException("AccountEndpoint not found in connection string");
-        var accountKey = System.Text.RegularExpressions.Regex.Match(connectionString, @"AccountKey=([^;]+)")?.Groups[1].Value
-            ?? throw new InvalidOperationException("AccountKey not found in connection string");
-
-        TestContext?.WriteLine($"[TEST] Parsed AccountEndpoint: {accountEndpoint}");
-        TestContext?.WriteLine($"[TEST] Parsed AccountKey: {accountKey[..10]}...");
+        // Get Cosmos DB connection details from fixture
+        var accountEndpoint = AppHostFixture.CosmosDbAccountEndpoint;
+        var accountKey = AppHostFixture.CosmosDbAccountKey;
 
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
         TestContext?.WriteLine($"[TEST] Creating DbContext for database: {testDatabaseName}");
