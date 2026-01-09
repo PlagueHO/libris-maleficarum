@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Orchestration\AppHost\LibrisMaleficarum.AppHost.csproj" />
+    <ProjectReference Include="..\..\..\src\Orchestration\AppHost\LibrisMaleficarum.AppHost.csproj" />
   </ItemGroup>
 
 </Project>

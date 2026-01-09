@@ -8,13 +8,15 @@ All test projects follow a **strict separation** between unit tests and integrat
 
 ```text
 tests/
-  ├── Api.Tests/                        # Unit tests (mocked dependencies)
-  ├── Api.IntegrationTests/             # Integration tests (real HTTP, real DB)
-  ├── Domain.Tests/                     # Unit tests (pure logic, no dependencies)
-  ├── Infrastructure.Tests/             # Unit tests (mocked repositories)
-  ├── Infrastructure.IntegrationTests/  # Integration tests (real Cosmos DB via Docker)
-  ├── IntegrationTests.Shared/          # Shared test fixtures (AppHostFixture)
-  └── Orchestration.IntegrationTests/   # Integration tests (AppHost orchestration)
+  ├── unit/
+  │   ├── Api.Tests/                    # Unit tests (mocked dependencies)
+  │   ├── Domain.Tests/                 # Unit tests (pure logic, no dependencies)
+  │   └── Infrastructure.Tests/         # Unit tests (mocked repositories)
+  └── integration/
+      ├── Api.IntegrationTests/         # Integration tests (real HTTP, real DB)
+      ├── Infrastructure.IntegrationTests/  # Integration tests (real Cosmos DB via Docker)
+      ├── IntegrationTests.Shared/      # Shared test fixtures (AppHostFixture)
+      └── Orchestration.IntegrationTests/   # Integration tests (AppHost orchestration)
 ```
 
 ## Naming Convention
@@ -72,8 +74,8 @@ dotnet test
 ### Specific Project
 
 ```powershell
-dotnet test --project tests/Infrastructure.Tests/
-dotnet test --project tests/Infrastructure.IntegrationTests/
+dotnet test --project tests/unit/Infrastructure.Tests/
+dotnet test --project tests/integration/Infrastructure.IntegrationTests/
 ```
 
 ## Unit Test Pattern
@@ -228,6 +230,119 @@ public class MyIntegrationTests
   <ProjectReference Include="..\IntegrationTests.Shared\LibrisMaleficarum.IntegrationTests.Shared.csproj" />
 </ItemGroup>
 ```
+
+### 4. AppHost Resources
+
+The shared `AppHostFixture` provides access to multiple infrastructure resources managed by Aspire:
+
+#### Available Resources
+
+| Resource | Access Method | Description | Port |
+| -------- | ------------- | ----------- | ---- |
+| **Cosmos DB Emulator** | `AppHostFixture.CosmosDbConnectionString` | Azure Cosmos DB Emulator for database operations | 8081 |
+| **Cosmos DB Endpoint** | `AppHostFixture.CosmosDbAccountEndpoint` | Cosmos DB account endpoint URL | - |
+| **Cosmos DB Key** | `AppHostFixture.CosmosDbAccountKey` | Cosmos DB account key for authentication | - |
+| **Azurite Storage** | `AppHostFixture.StorageConnectionString` | Azure Storage Emulator for blob/queue/table operations | 10000-10002 |
+| **API Service** | `AppHostFixture.App.CreateHttpClient("api")` | Backend API service instance | Dynamic |
+| **API Base URL** | `AppHostFixture.ApiBaseUrl` | Base URL for API service | - |
+
+#### Usage Examples
+
+**Cosmos DB Access:**
+
+```csharp
+[TestMethod]
+public async Task MyCosmosDbTest()
+{
+    // Get connection string from shared AppHost
+    var connectionString = AppHostFixture.CosmosDbConnectionString;
+    
+    // Create DbContext with real Cosmos DB Emulator
+    var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+        .UseCosmos(connectionString, "LibrisMaleficarum")
+        .Options;
+    
+    await using var context = new ApplicationDbContext(options);
+    
+    // Test against real Cosmos DB
+    var world = World.Create(ownerId, "Test World", "Description");
+    context.Worlds.Add(world);
+    await context.SaveChangesAsync();
+}
+```
+
+**Azure Storage Access:**
+
+```csharp
+[TestMethod]
+public async Task MyBlobStorageTest()
+{
+    // Get storage connection string from shared AppHost
+    var connectionString = AppHostFixture.StorageConnectionString;
+    
+    // Create BlobServiceClient with real Azurite Emulator
+    var blobServiceClient = new BlobServiceClient(connectionString);
+    var blobStorageService = new BlobStorageService(blobServiceClient);
+    
+    // Test against real blob storage
+    using var stream = new MemoryStream(fileContent);
+    var blobUrl = await blobStorageService.UploadAsync(
+        "test-container", 
+        "test-blob.txt", 
+        stream, 
+        "text/plain");
+}
+```
+
+**API HTTP Client Access:**
+
+```csharp
+[TestMethod]
+public async Task MyApiTest()
+{
+    // Create HTTP client for API service
+    using var httpClient = AppHostFixture.App!.CreateHttpClient("api");
+    
+    // Make requests to real API
+    var request = new { Name = "Test World", Description = "Test" };
+    using var response = await httpClient.PostAsJsonAsync("/api/v1/worlds", request);
+    
+    response.StatusCode.Should().Be(HttpStatusCode.Created);
+}
+```
+
+#### Resource Lifecycle
+
+- **Initialization**: Resources are started once during `AppHostFixture.InitializeAsync()`
+- **Health Checks**: All resources wait for health status before tests run
+- **Shared State**: All test classes share the same resource instances
+- **Cleanup**: Resources are cleaned up during test assembly cleanup
+- **Port Binding**: Fixed ports (Cosmos DB → 8081) prevent randomization conflicts
+
+#### Prerequisites
+
+**Docker Desktop Required:**
+
+All integration tests require Docker Desktop to be running with the following containers:
+
+- `mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest` (Cosmos DB)
+- `mcr.microsoft.com/azure-storage/azurite:latest` (Azurite Storage)
+
+**Verification:**
+
+```powershell
+# Verify Docker is running
+docker ps
+
+# Check if containers are started during test run
+docker ps | Select-String -Pattern "cosmosdb|azurite"
+```
+
+**Troubleshooting:**
+
+- **"Port already in use"**: Stop orphaned containers with `docker ps -a` and `docker rm -f <container-id>`
+- **Health check timeout**: Increase timeout in AppHostFixture initialization (default: 120 seconds)
+- **Cosmos DB initialization slow**: First run downloads emulator image (~1.5GB); subsequent runs are faster
 
 ## Test Dependencies
 

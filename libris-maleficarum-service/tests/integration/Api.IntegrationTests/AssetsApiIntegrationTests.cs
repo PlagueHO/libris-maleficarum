@@ -233,6 +233,81 @@ public class AssetsApiIntegrationTests
         response.StatusCode.Should().Be(HttpStatusCode.NotFound, "API should return 404 Not Found for non-existent asset");
     }
 
+    [TestMethod]
+    public async Task UploadAsset_ExceedingSizeLimit_ReturnsBadRequest()
+    {
+        // Arrange
+        var cancellationToken = TestContext!.CancellationTokenSource.Token;
+        using var httpClient = AppHostFixture.App!.CreateHttpClient("api");
+
+        // Create a world and entity first
+        var worldRequest = new { Name = "Test World for Size Limit", Description = "World to test size limit" };
+        using var worldResponse = await httpClient.PostAsJsonAsync("/api/v1/worlds", worldRequest, cancellationToken);
+        worldResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var worldId = worldResponse.Headers.Location!.Segments.Last();
+
+        var entityRequest = new { Name = "Test Entity for Size Limit", Description = "Entity to test size limit", EntityType = EntityType.Character };
+        using var entityResponse = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", entityRequest, cancellationToken);
+        entityResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var entityId = entityResponse.Headers.Location!.Segments.Last();
+
+        // Create multipart form data with file exceeding size limit (>25MB)
+        using var content = new MultipartFormDataContent();
+        var largeFileSize = 26 * 1024 * 1024; // 26MB (exceeds 25MB limit)
+        var largeFileContent = new ByteArrayContent(new byte[largeFileSize]);
+        largeFileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+        content.Add(largeFileContent, "file", "large-file.png");
+
+        // Act - Upload asset exceeding size limit
+        using var response = await httpClient.PostAsync(
+            $"/api/v1/worlds/{worldId}/entities/{entityId}/assets",
+            content,
+            cancellationToken);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest, "API should return 400 Bad Request for file exceeding size limit");
+
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+        responseContent.Should().Contain("FILE_TOO_LARGE", "Response should contain FILE_TOO_LARGE error code");
+    }
+
+    [TestMethod]
+    public async Task UploadAsset_UnsupportedFileType_ReturnsBadRequest()
+    {
+        // Arrange
+        var cancellationToken = TestContext!.CancellationTokenSource.Token;
+        using var httpClient = AppHostFixture.App!.CreateHttpClient("api");
+
+        // Create a world and entity first
+        var worldRequest = new { Name = "Test World for Unsupported Type", Description = "World to test unsupported type" };
+        using var worldResponse = await httpClient.PostAsJsonAsync("/api/v1/worlds", worldRequest, cancellationToken);
+        worldResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var worldId = worldResponse.Headers.Location!.Segments.Last();
+
+        var entityRequest = new { Name = "Test Entity for Unsupported Type", Description = "Entity to test unsupported type", EntityType = EntityType.Character };
+        using var entityResponse = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", entityRequest, cancellationToken);
+        entityResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var entityId = entityResponse.Headers.Location!.Segments.Last();
+
+        // Create multipart form data with unsupported file type
+        using var content = new MultipartFormDataContent();
+        var unsupportedFileContent = new ByteArrayContent(new byte[] { 0x50, 0x4B, 0x03, 0x04 }); // ZIP header
+        unsupportedFileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/zip");
+        content.Add(unsupportedFileContent, "file", "unsupported.zip");
+
+        // Act - Upload asset with unsupported file type
+        using var response = await httpClient.PostAsync(
+            $"/api/v1/worlds/{worldId}/entities/{entityId}/assets",
+            content,
+            cancellationToken);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest, "API should return 400 Bad Request for unsupported file type");
+
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+        responseContent.Should().Contain("UNSUPPORTED_FILE_TYPE", "Response should contain UNSUPPORTED_FILE_TYPE error code");
+    }
+
     /// <summary>
     /// Ensures the Cosmos DB database is created before running API tests.
     /// This is necessary because EF Core with Cosmos DB requires the database to exist.

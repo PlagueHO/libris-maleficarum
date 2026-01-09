@@ -23,13 +23,13 @@ Get up and running in under 5 minutes with Aspire's single-command developer exp
    cd libris-maleficarum/libris-maleficarum-service
    ```
 
-2. **Restore dependencies**:
+1. **Restore dependencies**:
 
    ```powershell
    dotnet restore LibrisMaleficarum.slnx
    ```
 
-3. **Start all services with Aspire**:
+1. **Start all services with Aspire**:
 
    ```powershell
    dotnet run --project src/Orchestration/AppHost
@@ -41,7 +41,7 @@ Get up and running in under 5 minutes with Aspire's single-command developer exp
    - ✅ Opens Aspire Dashboard at https://localhost:15888
    - ✅ Configures service discovery and connections automatically
 
-4. **Verify services are running**:
+1. **Verify services are running**:
 
    Open the Aspire Dashboard: **https://localhost:15888**
 
@@ -49,7 +49,7 @@ Get up and running in under 5 minutes with Aspire's single-command developer exp
    - `cosmosdb` - Cosmos DB Emulator
    - `api` - REST API service
 
-5. **Test the API**:
+1. **Test the API**:
 
    Navigate to Swagger UI: **https://localhost:7041/swagger**
 
@@ -69,7 +69,7 @@ Get up and running in under 5 minutes with Aspire's single-command developer exp
 
 This service follows **Clean Architecture** principles with clear separation of concerns:
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │         API Layer (Controllers)         │  ← HTTP Requests/Responses
 ├─────────────────────────────────────────┤
@@ -271,4 +271,4 @@ See main repository [LICENSE](../LICENSE) for license information.
 
 **Status**: Phase 6 Complete ✅ | Phase 7 In Progress 🎯
 
-Built with ❤️ for tabletop RPG enthusiasts
+Built with ❤️ for tabletop RPG enthusiasts who have limited time, but big imaginations!
