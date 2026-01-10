@@ -320,8 +320,8 @@
 
 ### Performance
 
-- [ ] T156 Add performance test: Create 100 worlds and measure p95 response time (<200ms per SC-002)
-- [ ] T157 Add performance test: Create 1000 entities in single world and verify pagination performance
+- [X] T156 Add performance test: Create 100 worlds and measure p95 response time (<200ms per SC-002)
+- [X] T157 Add performance test: Create 1000 entities in single world and verify pagination performance
 
 ### Validation
 
