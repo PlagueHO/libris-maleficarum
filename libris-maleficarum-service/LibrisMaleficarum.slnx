@@ -45,4 +45,7 @@
   <Folder Name="/tests/integration/IntegrationTests.Shared/">
     <Project Path="tests/integration/IntegrationTests.Shared/LibrisMaleficarum.IntegrationTests.Shared.csproj" />
   </Folder>
+  <Folder Name="/tests/performance/">
+    <Project Path="tests/performance/LibrisMaleficarum.Performance.Tests.csproj" />
+  </Folder>
 </Solution>

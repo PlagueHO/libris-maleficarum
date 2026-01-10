@@ -12,11 +12,13 @@ tests/
   │   ├── Api.Tests/                    # Unit tests (mocked dependencies)
   │   ├── Domain.Tests/                 # Unit tests (pure logic, no dependencies)
   │   └── Infrastructure.Tests/         # Unit tests (mocked repositories)
-  └── integration/
-      ├── Api.IntegrationTests/         # Integration tests (real HTTP, real DB)
-      ├── Infrastructure.IntegrationTests/  # Integration tests (real Cosmos DB via Docker)
-      ├── IntegrationTests.Shared/      # Shared test fixtures (AppHostFixture)
-      └── Orchestration.IntegrationTests/   # Integration tests (AppHost orchestration)
+  ├── integration/
+  │   ├── Api.IntegrationTests/         # Integration tests (real HTTP, real DB)
+  │   ├── Infrastructure.IntegrationTests/  # Integration tests (real Cosmos DB via Docker)
+  │   ├── IntegrationTests.Shared/      # Shared test fixtures (AppHostFixture)
+  │   └── Orchestration.IntegrationTests/   # Integration tests (AppHost orchestration)
+  └── performance/
+      └── Performance.Tests/            # Performance tests (load testing, p95 metrics)
 ```
 
 ## Naming Convention
@@ -29,19 +31,23 @@ tests/
   - Slower, real dependencies, requires Docker
   - Run on PR/merge
 
+- **Performance Tests**: `Performance.Tests`
+  - Performance metrics, load testing, p95 response times
+  - Run manually or on-demand only (not in regular CI/CD)
+
 ## Key Principles
 
 ### Separation of Concerns
 
-| Aspect | Unit Tests | Integration Tests |
-| ------ | ---------- | ----------------- |
-| **Project Name** | `*.Tests` | `*.IntegrationTests` |
-| **Dependencies** | Mocked (NSubstitute, EF InMemory) | Real (Cosmos DB, HTTP, Docker) |
-| **Execution Time** | Milliseconds | 20-40 seconds per test |
-| **Test Category** | None or `[TestCategory("Unit")]` | `[TestCategory("Integration")]` |
-| **Docker Required** | No | Yes |
-| **CI/CD Frequency** | Every commit | PR/Merge only |
-| **Isolation** | Per-method via mocks | Per-method via AppHost |
+| Aspect | Unit Tests | Integration Tests | Performance Tests |
+| ------ | ---------- | ----------------- | ----------------- |
+| **Project Name** | `*.Tests` | `*.IntegrationTests` | `Performance.Tests` |
+| **Dependencies** | Mocked (NSubstitute, EF InMemory) | Real (Cosmos DB, HTTP, Docker) | Real (Cosmos DB, HTTP, Docker) |
+| **Execution Time** | Milliseconds | 20-40 seconds per test | Minutes (1000+ entities) |
+| **Test Category** | None or `[TestCategory("Unit")]` | `[TestCategory("Integration")]` | `[TestCategory("Performance")]` |
+| **Docker Required** | No | Yes | Yes |
+| **CI/CD Frequency** | Every commit | PR/Merge only | On-demand/Manual only |
+| **Isolation** | Per-method via mocks | Per-method via AppHost | Per-method via AppHost |
 
 ### Why Separate Projects?
 
@@ -63,6 +69,14 @@ dotnet test --filter TestCategory!=Integration
 
 ```powershell
 dotnet test --filter TestCategory=Integration
+```
+
+### Performance Tests Only (Manual/On-Demand)
+
+```powershell
+dotnet test --filter TestCategory=Performance
+# or target specific project
+dotnet test --project tests/performance/LibrisMaleficarum.Performance.Tests.csproj --filter TestCategory=Performance
 ```
 
 ### All Tests
@@ -387,6 +401,7 @@ This testing structure is **mandatory** for all layers:
 - ✅ `Infrastructure.Tests` + `Infrastructure.IntegrationTests`
 - ✅ `Orchestration.IntegrationTests` (integration only - tests AppHost itself)
 - ✅ `IntegrationTests.Shared` (shared fixtures - AppHostFixture for all integration tests)
+- ✅ `Performance.Tests` (performance/load tests - run on-demand only)
 
 ## Best Practices
 
@@ -406,6 +421,15 @@ This testing structure is **mandatory** for all layers:
 1. **Access via Property**: Use `AppHostFixture.App` to access the shared instance
 1. **Diagnostic Output**: Use `TestContext.WriteLine()` for debugging
 1. **Realistic**: Test against real infrastructure, not mocks
+
+### Performance Tests
+
+1. **Test Category**: Always mark with `[TestCategory("Performance")]`
+1. **Explicit Execution**: Never run by default - require explicit filter
+1. **Metrics Logging**: Log detailed performance metrics (min, avg, p95, max)
+1. **Realistic Load**: Test with production-like data volumes (100s-1000s of entities)
+1. **Thresholds**: Assert against performance requirements (e.g., p95 <200ms)
+1. **Documentation**: See `tests/performance/README.md` for detailed usage
 
 ## Troubleshooting
 

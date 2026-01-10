@@ -1,0 +1,24 @@
+<Project Sdk="MSTest.Sdk/3.10.2">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Testing" Version="13.1.0" />
+    <PackageReference Include="FluentAssertions" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Api\LibrisMaleficarum.Api.csproj" />
+    <ProjectReference Include="..\..\src\Domain\LibrisMaleficarum.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\LibrisMaleficarum.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Orchestration\AppHost\LibrisMaleficarum.AppHost.csproj" />
+    <ProjectReference Include="..\integration\IntegrationTests.Shared\LibrisMaleficarum.IntegrationTests.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
