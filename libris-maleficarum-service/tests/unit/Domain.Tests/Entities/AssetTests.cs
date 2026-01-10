@@ -8,6 +8,7 @@ using LibrisMaleficarum.Domain.Entities;
 /// Tests validation logic for file uploads and asset management.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class AssetTests
 {
     private readonly Guid _worldId = Guid.NewGuid();

@@ -19,6 +19,7 @@ using NSubstitute;
 /// Tests CRUD operations, hierarchy management, validation, and error handling.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class EntitiesControllerTests
 {
     private IWorldEntityRepository _entityRepository = null!;

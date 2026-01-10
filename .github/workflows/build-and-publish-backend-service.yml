@@ -31,7 +31,7 @@ jobs:
       - name: Run unit tests
         run: |
           dotnet test --solution LibrisMaleficarum.slnx \
-            --filter "TestCategory!=Integration" \
+            --filter "TestCategory=Unit" \
             --configuration Release \
             --no-restore \
             --results-directory ./TestResults \

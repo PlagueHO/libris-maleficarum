@@ -18,6 +18,7 @@ using NSubstitute;
 /// Tests CRUD operations, validation, and error handling.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class WorldsControllerTests
 {
     private IWorldRepository _worldRepository = null!;

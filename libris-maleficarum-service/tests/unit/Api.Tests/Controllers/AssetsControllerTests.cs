@@ -17,6 +17,7 @@ using NSubstitute;
 /// Tests request validation, response formatting, and error handling.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class AssetsControllerTests
 {
     private IAssetRepository _assetRepository = null!;

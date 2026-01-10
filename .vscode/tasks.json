@@ -200,6 +200,81 @@
         "id": "verified",
         "color": "terminal.ansiGreen"
       }
+    },
+    {
+      "label": "service: test (unit)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "--solution",
+        "LibrisMaleficarum.slnx",
+        "--filter",
+        "TestCategory=Unit",
+        "--configuration",
+        "Release",
+        "--no-restore",
+        "--results-directory",
+        "./TestResults",
+        "--coverage",
+        "--coverage-output-format",
+        "cobertura",
+        "--report-trx"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "service: test (integration)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "--solution",
+        "LibrisMaleficarum.slnx",
+        "--filter",
+        "TestCategory=Integration",
+        "--configuration",
+        "Release",
+        "--no-restore",
+        "--results-directory",
+        "./TestResults"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
+      "label": "service: code coverage (report)",
+      "type": "shell",
+      "command": "reportgenerator",
+      "args": [
+        "-reports:TestResults/**/*.cobertura.xml",
+        "-targetdir:TestResults/CoverageReport",
+        "-reporttypes:'Html;MarkdownSummaryGithub;'",
+        "-assemblyfilters:+LibrisMaleficarum.*"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": [],
+      "icon": {
+        "id": "graph",
+        "color": "terminal.ansiMagenta"
+      }
     }
   ]
 }

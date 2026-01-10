@@ -16,6 +16,7 @@ using NSubstitute;
 /// Tests CRUD operations, authorization, and blob storage coordination.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class AssetRepositoryTests
 {
     private ApplicationDbContext _context = null!;
