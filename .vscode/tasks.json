@@ -275,6 +275,21 @@
         "id": "graph",
         "color": "terminal.ansiMagenta"
       }
+    },
+    {
+      "label": "bicep: build",
+      "type": "shell",
+      "command": "az",
+      "args": ["bicep", "build", "--file", "infra/main.bicep"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": "build",
+      "icon": {
+        "id": "file-code",
+        "color": "terminal.ansiBlue"
+      }
     }
   ]
 }
