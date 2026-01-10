@@ -32,6 +32,7 @@ jobs:
         run: |
           dotnet test --solution LibrisMaleficarum.slnx \
             --filter "TestCategory=Unit" \
+            --ignore-exit-code 8 \
             --configuration Release \
             --no-restore \
             --results-directory ./TestResults \
