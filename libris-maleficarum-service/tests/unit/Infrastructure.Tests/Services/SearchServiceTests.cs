@@ -16,6 +16,7 @@ using NSubstitute;
 /// Tests case-insensitive matching, sorting, and pagination.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class SearchServiceTests
 {
     private ApplicationDbContext _context = null!;

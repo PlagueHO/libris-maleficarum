@@ -8,6 +8,7 @@ using LibrisMaleficarum.Infrastructure.Services;
 /// Tests stubbed user context behavior for local development.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class UserContextServiceTests
 {
     [TestMethod]

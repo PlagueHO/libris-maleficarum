@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 /// Tests for <see cref="UpdateWorldRequestValidator"/>.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class UpdateWorldRequestValidatorTests
 {
     private UpdateWorldRequestValidator _validator = null!;

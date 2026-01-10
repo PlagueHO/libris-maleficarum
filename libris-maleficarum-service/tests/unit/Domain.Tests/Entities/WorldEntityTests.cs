@@ -8,6 +8,7 @@ using LibrisMaleficarum.Domain.ValueObjects;
 /// Unit tests for the WorldEntity entity.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class WorldEntityTests
 {
     [TestMethod]

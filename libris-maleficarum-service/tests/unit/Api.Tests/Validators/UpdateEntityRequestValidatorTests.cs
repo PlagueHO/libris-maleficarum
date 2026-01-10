@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 /// Tests for <see cref="UpdateEntityRequestValidator"/>.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class UpdateEntityRequestValidatorTests
 {
     private UpdateEntityRequestValidator _validator = null!;

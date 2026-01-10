@@ -8,6 +8,7 @@ namespace LibrisMaleficarum.Domain.Tests.Entities;
 /// Unit tests for the <see cref="World"/> entity.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class WorldTests
 {
     [TestMethod]

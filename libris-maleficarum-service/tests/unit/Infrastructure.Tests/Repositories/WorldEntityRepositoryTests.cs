@@ -16,6 +16,7 @@ using NSubstitute;
 /// Tests CRUD operations, hierarchy management, authorization, and pagination.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class WorldEntityRepositoryTests
 {
     private ApplicationDbContext _context = null!;

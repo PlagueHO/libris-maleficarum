@@ -15,6 +15,7 @@ using System.Text.Json;
 /// Tests exception-to-HTTP-status mapping and error response formatting.
 /// </summary>
 [TestClass]
+[TestCategory("Unit")]
 public class ExceptionHandlingMiddlewareTests
 {
     private ILogger<ExceptionHandlingMiddleware> _logger = null!;
