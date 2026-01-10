@@ -325,9 +325,9 @@
 
 ### Validation
 
-- [ ] T158 Run through quickstart.md validation checklist: Clone repo, start Aspire, test API endpoints, verify all steps work
-- [ ] T159 Verify all 25 functional requirements (FR-001 to FR-025) are implemented and tested
-- [ ] T160 Verify all 10 success criteria (SC-001 to SC-010) are met and measurable
+- [X] T158 Run through quickstart.md validation checklist: Clone repo, start Aspire, test API endpoints, verify all steps work
+- [X] T159 Verify all 25 functional requirements (FR-001 to FR-025) are implemented and tested
+- [X] T160 Verify all 10 success criteria (SC-001 to SC-010) are met and measurable
 
 ---
 
