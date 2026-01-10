@@ -81,10 +81,10 @@ public sealed class BlobStorageService : IBlobStorageService
         // Azurite URLs include account name: /devstoreaccount1/container/blob
         // Production URLs: /container/blob
         var segments = blobUri.AbsolutePath.TrimStart('/').Split('/');
-        
+
         // Skip account name if present (Azurite emulator)
         var startIndex = segments.Length >= 3 && segments[0] == "devstoreaccount1" ? 1 : 0;
-        
+
         if (segments.Length < startIndex + 2)
         {
             throw new ArgumentException($"Invalid blob URL format: {blobUrl}", nameof(blobUrl));
@@ -134,10 +134,10 @@ public sealed class BlobStorageService : IBlobStorageService
         // Azurite URLs include account name: /devstoreaccount1/container/blob
         // Production URLs: /container/blob
         var segments = blobUri.AbsolutePath.TrimStart('/').Split('/');
-        
+
         // Skip account name if present (Azurite emulator)
         var startIndex = segments.Length >= 3 && segments[0] == "devstoreaccount1" ? 1 : 0;
-        
+
         if (segments.Length < startIndex + 2)
         {
             throw new ArgumentException($"Invalid blob URL format: {blobUrl}", nameof(blobUrl));
