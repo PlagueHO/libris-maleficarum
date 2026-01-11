@@ -10,10 +10,10 @@ The solution uses a hub-and-spoke network architecture with the following subnet
 
 | Subnet | Address Space | Purpose | Resources |
 | ------ | ------------- | ------- | --------- |
-| container-apps | 10.0.1.0/23 | Container Apps Environment for backend API services (requires /23 minimum) | Container Apps Environment |
-| backend | 10.0.3.0/24 | Private endpoints for data services | Storage Account, Cosmos DB (Private Endpoints) |
-| gateway | 10.0.4.0/24 | Application gateways and load balancers | Application Gateway, Load Balancers |
-| shared | 10.0.5.0/24 | Private endpoints for shared services | Key Vault, AI Search, AI Services (Private Endpoints) |
+| container-apps | 10.0.0.0/23 | Container Apps Environment for backend API services (requires /23 minimum) | Container Apps Environment |
+| backend | 10.0.2.0/24 | Private endpoints for data services | Storage Account, Cosmos DB (Private Endpoints) |
+| gateway | 10.0.3.0/24 | Application gateways and load balancers | Application Gateway, Load Balancers |
+| shared | 10.0.4.0/24 | Private endpoints for shared services | Key Vault, AI Search, AI Services (Private Endpoints) |
 | AzureBastionSubnet | 10.0.255.0/27 | Azure Bastion (optional) | Azure Bastion Host |
 
 **Note:** The Static Web App is a fully managed CDN-backed service and does not require a subnet. It hosts the React frontend globally and communicates with backend APIs in the Container Apps Environment.
