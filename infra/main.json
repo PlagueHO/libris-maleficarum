@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.36.268.17113",
-      "templateHash": "5173687409921662182"
+      "version": "0.39.26.7824",
+      "templateHash": "9047472204761483882"
     }
   },
   "parameters": {
@@ -180,6 +180,7 @@
       "azd-env-name": "[parameters('environmentName')]"
     },
     "resourceToken": "[toLower(uniqueString(subscription().id, parameters('environmentName'), parameters('location')))]",
+    "effectiveResourceGroupName": "[if(not(empty(parameters('resourceGroupName'))), parameters('resourceGroupName'), format('{0}{1}', variables('abbrs').resourcesResourceGroups, parameters('environmentName')))]",
     "logAnalyticsName": "[format('{0}{1}', variables('abbrs').operationalInsightsWorkspaces, parameters('environmentName'))]",
     "sendTologAnalyticsCustomSettingName": "[format('send-to-{0}', variables('logAnalyticsName'))]",
     "applicationInsightsName": "[format('{0}{1}', variables('abbrs').insightsComponents, parameters('environmentName'))]",
@@ -197,7 +198,7 @@
   "resources": {
     "rg": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "resource-group-deployment",
       "location": "[deployment().location]",
       "properties": {
@@ -206,7 +207,9 @@
         },
         "mode": "Incremental",
         "parameters": {
-          "name": "[if(not(empty(parameters('resourceGroupName'))), createObject('value', parameters('resourceGroupName')), createObject('value', format('{0}{1}', variables('abbrs').resourcesResourceGroups, parameters('environmentName'))))]",
+          "name": {
+            "value": "[variables('effectiveResourceGroupName')]"
+          },
           "location": {
             "value": "[parameters('location')]"
           },
@@ -695,9 +698,9 @@
     },
     "logAnalyticsWorkspace": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "logAnalytics-workspace-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -3791,16 +3794,13 @@
             }
           }
         }
-      },
-      "dependsOn": [
-        "rg"
-      ]
+      }
     },
     "applicationInsights": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "application-insights-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -4541,15 +4541,14 @@
         }
       },
       "dependsOn": [
-        "logAnalyticsWorkspace",
-        "rg"
+        "logAnalyticsWorkspace"
       ]
     },
     "virtualNetwork": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "virtual-network-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -4573,25 +4572,25 @@
           "subnets": {
             "value": [
               {
-                "name": "frontend",
-                "addressPrefix": "10.0.1.0/24",
-                "networkSecurityGroupResourceId": "[reference('frontendNsg').outputs.resourceId.value]"
+                "name": "container-apps",
+                "addressPrefix": "10.0.1.0/23",
+                "networkSecurityGroupResourceId": "[reference('containerAppsNsg').outputs.resourceId.value]"
               },
               {
                 "name": "backend",
-                "addressPrefix": "10.0.2.0/24",
+                "addressPrefix": "10.0.3.0/24",
                 "networkSecurityGroupResourceId": "[reference('backendNsg').outputs.resourceId.value]",
                 "privateEndpointNetworkPolicies": "Enabled",
                 "privateLinkServiceNetworkPolicies": "Enabled"
               },
               {
                 "name": "gateway",
-                "addressPrefix": "10.0.3.0/24",
+                "addressPrefix": "10.0.4.0/24",
                 "networkSecurityGroupResourceId": "[reference('gatewayNsg').outputs.resourceId.value]"
               },
               {
                 "name": "shared",
-                "addressPrefix": "10.0.4.0/24",
+                "addressPrefix": "10.0.5.0/24",
                 "networkSecurityGroupResourceId": "[reference('sharedNsg').outputs.resourceId.value]",
                 "privateEndpointNetworkPolicies": "Enabled",
                 "privateLinkServiceNetworkPolicies": "Enabled"
@@ -6237,17 +6236,16 @@
       },
       "dependsOn": [
         "backendNsg",
-        "frontendNsg",
+        "containerAppsNsg",
         "gatewayNsg",
-        "rg",
         "sharedNsg"
       ]
     },
     "keyVaultPrivateDnsZone": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "keyvault-private-dns-zone-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -9612,15 +9610,14 @@
         }
       },
       "dependsOn": [
-        "rg",
         "virtualNetwork"
       ]
     },
     "keyVault": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "keyvault-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -13066,15 +13063,14 @@
       "dependsOn": [
         "keyVaultPrivateDnsZone",
         "logAnalyticsWorkspace",
-        "rg",
         "virtualNetwork"
       ]
     },
     "staticSite": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "static-site-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -18265,16 +18261,13 @@
             }
           }
         }
-      },
-      "dependsOn": [
-        "rg"
-      ]
+      }
     },
     "containerAppsEnvironment": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "container-apps-environment-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -18295,7 +18288,7 @@
               "destination": "log-analytics",
               "logAnalyticsConfiguration": {
                 "customerId": "[reference('logAnalyticsWorkspace').outputs.logAnalyticsWorkspaceId.value]",
-                "sharedKey": "[listOutputsWithSecureValues('logAnalyticsWorkspace', '2022-09-01').primarySharedKey]"
+                "sharedKey": "[listOutputsWithSecureValues('logAnalyticsWorkspace', '2025-04-01').primarySharedKey]"
               }
             }
           },
@@ -19191,15 +19184,14 @@
       },
       "dependsOn": [
         "logAnalyticsWorkspace",
-        "rg",
         "virtualNetwork"
       ]
     },
     "storageBlobPrivateDnsZone": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "storage-blobservice-private-dns-zone-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -22564,15 +22556,14 @@
         }
       },
       "dependsOn": [
-        "rg",
         "virtualNetwork"
       ]
     },
     "storageAccount": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "storage-account-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -30546,16 +30537,15 @@
       },
       "dependsOn": [
         "logAnalyticsWorkspace",
-        "rg",
         "storageBlobPrivateDnsZone",
         "virtualNetwork"
       ]
     },
     "cosmosDbPrivateDnsZone": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "cosmosdb-private-dns-zone-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -33920,15 +33910,14 @@
         }
       },
       "dependsOn": [
-        "rg",
         "virtualNetwork"
       ]
     },
     "cosmosDbAccount": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "cosmos-db-account-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -39872,15 +39861,14 @@
       "dependsOn": [
         "cosmosDbPrivateDnsZone",
         "logAnalyticsWorkspace",
-        "rg",
         "virtualNetwork"
       ]
     },
     "aiSearchPrivateDnsZone": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "ai-search-private-dns-zone",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -43245,15 +43233,14 @@
         }
       },
       "dependsOn": [
-        "rg",
         "virtualNetwork"
       ]
     },
     "aiSearchService": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "ai-search-service-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -45342,15 +45329,14 @@
       "dependsOn": [
         "aiSearchPrivateDnsZone",
         "logAnalyticsWorkspace",
-        "rg",
         "virtualNetwork"
       ]
     },
     "aiServicesPrivateDnsZone": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "ai-services-private-dns-zone",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -48715,15 +48701,14 @@
         }
       },
       "dependsOn": [
-        "rg",
         "virtualNetwork"
       ]
     },
     "aiFoundryAccount": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "ai-foundry-account-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -51225,16 +51210,15 @@
       "dependsOn": [
         "aiServicesPrivateDnsZone",
         "logAnalyticsWorkspace",
-        "rg",
         "virtualNetwork"
       ]
     },
     "bastionHost": {
       "condition": "[parameters('createBastionHost')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "bastion-host-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -52945,15 +52929,14 @@
         }
       },
       "dependsOn": [
-        "rg",
         "virtualNetwork"
       ]
     },
-    "frontendNsg": {
+    "containerAppsNsg": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
-      "name": "frontend-nsg-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "apiVersion": "2025-04-01",
+      "name": "container-apps-nsg-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -52961,7 +52944,7 @@
         "mode": "Incremental",
         "parameters": {
           "name": {
-            "value": "[format('{0}frontend-{1}', variables('abbrs').networkNetworkSecurityGroups, parameters('environmentName'))]"
+            "value": "[format('{0}container-apps-{1}', variables('abbrs').networkNetworkSecurityGroups, parameters('environmentName'))]"
           },
           "location": {
             "value": "[parameters('location')]"
@@ -53660,16 +53643,13 @@
             }
           }
         }
-      },
-      "dependsOn": [
-        "rg"
-      ]
+      }
     },
     "backendNsg": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "backend-nsg-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -54350,16 +54330,13 @@
             }
           }
         }
-      },
-      "dependsOn": [
-        "rg"
-      ]
+      }
     },
     "gatewayNsg": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "gateway-nsg-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -55040,16 +55017,13 @@
             }
           }
         }
-      },
-      "dependsOn": [
-        "rg"
-      ]
+      }
     },
     "sharedNsg": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "shared-nsg-deployment",
-      "resourceGroup": "resource-group-deployment",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -55730,10 +55704,7 @@
             }
           }
         }
-      },
-      "dependsOn": [
-        "rg"
-      ]
+      }
     }
   },
   "outputs": {

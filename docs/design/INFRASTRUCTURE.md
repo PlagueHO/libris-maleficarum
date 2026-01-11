@@ -10,28 +10,30 @@ The solution uses a hub-and-spoke network architecture with the following subnet
 
 | Subnet | Address Space | Purpose | Resources |
 | ------ | ------------- | ------- | --------- |
-| frontend | 10.0.1.0/24 | Frontend applications and static web apps | Static Web Apps, Container Apps Environment, Application Gateways |
-| backend | 10.0.2.0/24 | Backend services and databases | Storage Accounts, Cosmos DB, Private Endpoints |
-| gateway | 10.0.3.0/24 | Application gateways and load balancers | Application Gateway, Load Balancers |
-| shared | 10.0.4.0/24 | Shared services and AI services | Key Vault, AI Search, AI Services, Private Endpoints |
+| container-apps | 10.0.1.0/23 | Container Apps Environment for backend API services (requires /23 minimum) | Container Apps Environment |
+| backend | 10.0.3.0/24 | Private endpoints for data services | Storage Account, Cosmos DB (Private Endpoints) |
+| gateway | 10.0.4.0/24 | Application gateways and load balancers | Application Gateway, Load Balancers |
+| shared | 10.0.5.0/24 | Private endpoints for shared services | Key Vault, AI Search, AI Services (Private Endpoints) |
 | AzureBastionSubnet | 10.0.255.0/27 | Azure Bastion (optional) | Azure Bastion Host |
+
+**Note:** The Static Web App is a fully managed CDN-backed service and does not require a subnet. It hosts the React frontend globally and communicates with backend APIs in the Container Apps Environment.
 
 ### Network Security
 
 Each subnet is protected by dedicated Network Security Groups (NSGs) with specific security rules:
 
-- **Frontend NSG**:
-  - Allows HTTP (port 80) and HTTPS (port 443) traffic from the internet
+- **Container Apps NSG**:
+  - Allows HTTP (port 80) and HTTPS (port 443) traffic from the internet for API access
   - Allows Container Apps management traffic (port 5671) from AzureContainerApps service tag
   - Allows health check traffic (port 9000) from Azure Load Balancer
 - **Backend NSG**:
-  - Allows VNet-to-VNet traffic for internal communication
+  - Allows VNet-to-VNet traffic for internal communication with private endpoints
   - Denies all traffic from the internet (priority 4000)
 - **Gateway NSG**:
   - Allows Gateway Manager traffic (ports 65200-65535) for application gateway management
   - Allows HTTPS traffic (port 443) from the internet
 - **Shared NSG**:
-  - Allows VNet-to-VNet traffic for internal service communication
+  - Allows VNet-to-VNet traffic for internal service communication with private endpoints
   - Denies all traffic from the internet (priority 4000)
 
 ### Private Endpoints and DNS

@@ -37,6 +37,7 @@ var tags = {
 #disable-next-line no-unused-vars
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 
+var effectiveResourceGroupName = !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
 var logAnalyticsName = '${abbrs.operationalInsightsWorkspaces}${environmentName}'
 var sendTologAnalyticsCustomSettingName = 'send-to-${logAnalyticsName}'
 var applicationInsightsName = '${abbrs.insightsComponents}${environmentName}'
@@ -52,15 +53,15 @@ var bastionHostName = '${abbrs.networkBastionHosts}${environmentName}'
 var containerAppsEnvironmentName = '${abbrs.appManagedEnvironments}${environmentName}'
 
 var subnets = [  {
-    // Frontend subnet for frontend applications and static web apps
-    name: 'frontend'
-    addressPrefix: '10.0.1.0/24'
-    networkSecurityGroupResourceId: frontendNsg.outputs.resourceId
+    // Container Apps subnet for backend API services (requires /23 minimum)
+    name: 'container-apps'
+    addressPrefix: '10.0.1.0/23'
+    networkSecurityGroupResourceId: containerAppsNsg.outputs.resourceId
   }
   {
-    // Backend subnet for backend services and databases
+    // Backend subnet for private endpoints to data services
     name: 'backend'
-    addressPrefix: '10.0.2.0/24'
+    addressPrefix: '10.0.3.0/24'
     networkSecurityGroupResourceId: backendNsg.outputs.resourceId
     privateEndpointNetworkPolicies: 'Enabled'
     privateLinkServiceNetworkPolicies: 'Enabled'
@@ -68,13 +69,13 @@ var subnets = [  {
   {
     // Gateway subnet for application gateways and load balancers
     name: 'gateway'
-    addressPrefix: '10.0.3.0/24'
+    addressPrefix: '10.0.4.0/24'
     networkSecurityGroupResourceId: gatewayNsg.outputs.resourceId
   }
   {
-    // Shared subnet for shared services like Key Vault, monitoring
+    // Shared subnet for private endpoints to shared services
     name: 'shared'
-    addressPrefix: '10.0.4.0/24'
+    addressPrefix: '10.0.5.0/24'
     networkSecurityGroupResourceId: sharedNsg.outputs.resourceId
     privateEndpointNetworkPolicies: 'Enabled'
     privateLinkServiceNetworkPolicies: 'Enabled'
@@ -91,7 +92,7 @@ module rg 'br/public:avm/res/resources/resource-group:0.4.3' = {
   name: 'resource-group-deployment'
   scope: subscription()
   params: {
-    name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
+    name: effectiveResourceGroupName
     location: location
     tags: tags
   }
@@ -100,7 +101,7 @@ module rg 'br/public:avm/res/resources/resource-group:0.4.3' = {
 // Create the Log Analytics workspace using Azure Verified Module (AVM)
 module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.15.0' = {
   name: 'logAnalytics-workspace-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: logAnalyticsName
     location: location
@@ -111,7 +112,7 @@ module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
 // Create the Application Insights resource using Azure Verified Module (AVM)
 module applicationInsights 'br/public:avm/res/insights/component:0.7.1' = {
   name: 'application-insights-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: applicationInsightsName
     location: location
@@ -123,7 +124,7 @@ module applicationInsights 'br/public:avm/res/insights/component:0.7.1' = {
 // Create the Virtual Network and subnets using Azure Verified Modules (AVM)
 module virtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = {
   name: 'virtual-network-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: virtualNetworkName
     location: location
@@ -138,7 +139,7 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = {
 // Create the Private DNS Zone for the Key Vault to be used by Private Link using Azure Verified Module (AVM)
 module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0' = {
   name: 'keyvault-private-dns-zone-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: 'privatelink.vaultcore.azure.net'
     location: 'global'
@@ -154,7 +155,7 @@ module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0'
 // Create a Key Vault with private endpoint in the shared subnet using Azure Verified Module (AVM)
 module keyVault 'br/public:avm/res/key-vault/vault:0.13.3' = {
   name: 'keyvault-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: keyVaultName
     location: location
@@ -189,7 +190,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.13.3' = {
 // Create a Static Web App for the application using Azure Verified Module (AVM)
 module staticSite 'br/public:avm/res/web/static-site:0.9.3' = {
   name: 'static-site-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: staticSiteName
     location: location
@@ -204,7 +205,7 @@ module staticSite 'br/public:avm/res/web/static-site:0.9.3' = {
 // Create Azure Container Apps Environment in the frontend subnet using Azure Verified Module (AVM)
 module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.11.3' = {
   name: 'container-apps-environment-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: containerAppsEnvironmentName
     location: location
@@ -216,7 +217,7 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.11.
         sharedKey: logAnalyticsWorkspace.outputs.primarySharedKey
       }
     }
-    infrastructureSubnetResourceId: virtualNetwork.outputs.subnetResourceIds[0] // frontend subnet
+    infrastructureSubnetResourceId: virtualNetwork.outputs.subnetResourceIds[0] // container-apps subnet
     internal: true
     zoneRedundant: false
   }
@@ -225,7 +226,7 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.11.
 // Create Private DNS Zone for the Storage Account blob service to be used by Private Link using Azure Verified Module (AVM)
 module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0' = {
   name: 'storage-blobservice-private-dns-zone-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: 'privatelink.blob.${environment().suffixes.storage}'
     location: 'global'
@@ -241,7 +242,7 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8
 // Create a Storage Account with private endpoint in the backend subnet using Azure Verified Module (AVM)
 module storageAccount 'br/public:avm/res/storage/storage-account:0.31.0' = {
   name: 'storage-account-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: storageAccounName
     allowBlobPublicAccess: false
@@ -293,7 +294,7 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.31.0' = {
 // Create Private DNS Zone for the Cosmos DB account to be used by Private Link using Azure Verified Module (AVM)
 module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0' = {
   name: 'cosmosdb-private-dns-zone-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: 'privatelink.documents.azure.com'
     location: 'global'
@@ -309,7 +310,7 @@ module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0'
 // Create a Cosmos DB account with private endpoint in the backend subnet using Azure Verified Module (AVM)
 module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.18.0' = {
   name: 'cosmos-db-account-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: cosmosDbAccountName
     location: location
@@ -363,7 +364,7 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.18.0' =
 // Create Private DNS Zone for Azure AI Search to be used by Private Link using Azure Verified Module (AVM)
 module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0' = {
   name: 'ai-search-private-dns-zone'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: 'privatelink.search.windows.net'
     location: 'global'
@@ -379,7 +380,7 @@ module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0'
 // Create Azure AI Search service with private endpoint in the shared subnet using Azure Verified Module (AVM)
 module aiSearchService 'br/public:avm/res/search/search-service:0.12.0' = {
   name: 'ai-search-service-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: aiSearchName
     location: location
@@ -416,7 +417,7 @@ module aiSearchService 'br/public:avm/res/search/search-service:0.12.0' = {
 // Create Private DNS Zone for Azure AI Services to be used by Private Link using Azure Verified Module (AVM)
 module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0' = {
   name: 'ai-services-private-dns-zone'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: 'privatelink.cognitiveservices.azure.com'
     location: 'global'
@@ -432,7 +433,7 @@ module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.
 // Create Azure AI Foundry instance with private endpoint in the shared subnet using Azure Verified Module (AVM)
 module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.14.1' = {
   name: 'ai-foundry-account-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     kind: 'AIServices'
     name: aiFoundryName
@@ -463,7 +464,7 @@ module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.14.1' = 
 // Optional: Create an Azure Bastion host in the virtual network using Azure Verified Module (AVM)
 module bastionHost 'br/public:avm/res/network/bastion-host:0.8.2' = if (createBastionHost) {
   name: 'bastion-host-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: bastionHostName
     location: location
@@ -475,12 +476,12 @@ module bastionHost 'br/public:avm/res/network/bastion-host:0.8.2' = if (createBa
 
 // Create Network Security Groups for each subnet using Azure Verified Modules (AVM)
 
-// Frontend NSG for frontend applications
-module frontendNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
-  name: 'frontend-nsg-deployment'
-  scope: resourceGroup(rg.name)
+// Container Apps NSG for backend API services
+module containerAppsNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
+  name: 'container-apps-nsg-deployment'
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
-    name: '${abbrs.networkNetworkSecurityGroups}frontend-${environmentName}'
+    name: '${abbrs.networkNetworkSecurityGroups}container-apps-${environmentName}'
     location: location
     tags: tags
     securityRules: [
@@ -543,7 +544,7 @@ module frontendNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
 // Backend NSG for backend services and databases
 module backendNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
   name: 'backend-nsg-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: '${abbrs.networkNetworkSecurityGroups}backend-${environmentName}'
     location: location
@@ -582,7 +583,7 @@ module backendNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
 // Gateway NSG for application gateways and load balancers
 module gatewayNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
   name: 'gateway-nsg-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: '${abbrs.networkNetworkSecurityGroups}gateway-${environmentName}'
     location: location
@@ -621,7 +622,7 @@ module gatewayNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
 // Shared NSG for shared services
 module sharedNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
   name: 'shared-nsg-deployment'
-  scope: resourceGroup(rg.name)
+  scope: az.resourceGroup(effectiveResourceGroupName)
   params: {
     name: '${abbrs.networkNetworkSecurityGroups}shared-${environmentName}'
     location: location
