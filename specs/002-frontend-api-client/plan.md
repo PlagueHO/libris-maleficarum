@@ -460,7 +460,7 @@ After implementation, verify against spec success criteria:
 | Criterion | Validation Method |
 |-----------|------------------|
 | SC-001: Add endpoint in <10 min | Time developer adding new endpoint following quickstart |
-| SC-002: 80% cache hit rate | Instrument RTK Query cache hits in dev tools |
+| SC-002: 80% reduction in redundant API calls | Instrument RTK Query cache in Redux DevTools; compare request count with/without caching enabled |
 | SC-003: Zero crashes from API errors | Test all error scenarios with MSW |
 | SC-004: 90% retry success rate | Test transient failure recovery |
 | SC-005: 70% boilerplate reduction | Compare LOC with manual fetch implementation |
