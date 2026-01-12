@@ -35,8 +35,7 @@ describe('Base API Configuration', () => {
     it('should have tag types defined', () => {
       // RTK Query uses tag types for cache invalidation
       // Access via reducerPath to get the configured tag types
-      const apiConfig = api as any;
-      expect(apiConfig.reducerPath).toBe('api');
+      expect(api.reducerPath).toBe('api');
       // Tag types are configured in createApi - verify via endpoints check
       expect(typeof api.injectEndpoints).toBe('function');
     });
@@ -44,8 +43,7 @@ describe('Base API Configuration', () => {
     it('should include "World" in tag types for cache invalidation', () => {
       // Tag types are configured in createApi call
       // Verify by checking that injected endpoints can use World tags
-      const apiInternal = api as any;
-      expect(apiInternal.reducerPath).toBe('api');
+      expect(api.reducerPath).toBe('api');
       // World tag is used by worldApi endpoints - verified via integration tests
       expect(api.endpoints).toBeDefined();
     });
@@ -55,8 +53,7 @@ describe('Base API Configuration', () => {
     it('should use axios for making requests instead of fetchBaseQuery', () => {
       // The baseQuery should be a custom function (not RTK Query's fetchBaseQuery)
       // RTK Query wraps our baseQuery internally, so check via API functionality
-      const apiInternal = api as any;
-      expect(apiInternal.reducerPath).toBe('api');
+      expect(api.reducerPath).toBe('api');
       // Axios usage verified via worldApi integration tests
       expect(typeof api.injectEndpoints).toBe('function');
     });
