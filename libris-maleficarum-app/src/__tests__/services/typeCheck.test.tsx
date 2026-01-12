@@ -257,7 +257,7 @@ describe('TypeScript Type Safety', () => {
         wrapper: createTestWrapper(),
       });
 
-      const [_mutate, state] = result.current;
+      const [, state] = result.current;
 
       // Mutation state properties
       expect(typeof state.isLoading).toBe('boolean');
