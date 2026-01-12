@@ -490,9 +490,12 @@ describe('World API - Mutation Endpoints', () => {
       await waitFor(() => expect(promise).resolves.toBeDefined());
 
       const response = await promise;
-      // Axios returns empty string for 204 No Content
-      expect(response.data === undefined || response.data === '').toBe(true);
-      expect(response.error).toBeUndefined();
+      // For void mutations, RTK Query returns an object with no data property
+      expect(response).toBeDefined();
+      // Error should not be present in a successful response
+      if ('error' in response) {
+        expect(response.error).toBeUndefined();
+      }
     });
 
     it('should invalidate world cache after deletion', async () => {

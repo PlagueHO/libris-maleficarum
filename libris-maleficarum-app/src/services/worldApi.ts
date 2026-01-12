@@ -33,10 +33,10 @@ export const worldApi = api.injectEndpoints({
         method: 'GET',
       }),
       transformResponse: (response: WorldListResponse) => response.data,
-      providesTags: (result) =>
-        result
+      providesTags: (_result) =>
+        _result
           ? [
-              ...result.map(({ id }) => ({ type: 'World' as const, id })),
+              ..._result.map(({ id }) => ({ type: 'World' as const, id })),
               { type: 'World', id: 'LIST' },
             ]
           : [{ type: 'World', id: 'LIST' }],
@@ -89,7 +89,7 @@ export const worldApi = api.injectEndpoints({
         data,
       }),
       transformResponse: (response: WorldResponse) => response.data,
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (_result, _error, { id }) => [
         { type: 'World', id },
         { type: 'World', id: 'LIST' },
       ],
@@ -106,7 +106,7 @@ export const worldApi = api.injectEndpoints({
         url: `/api/worlds/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, id) => [
+      invalidatesTags: (_result, _error, id) => [
         { type: 'World', id },
         { type: 'World', id: 'LIST' },
       ],

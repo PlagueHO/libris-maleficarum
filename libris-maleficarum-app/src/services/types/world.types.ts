@@ -162,18 +162,20 @@ export interface WorldListResponse {
  * Hierarchical entity types that can exist within a world.
  * Used for filtering and type-specific operations.
  */
-export enum WorldEntityType {
-  Continent = 'Continent',
-  Country = 'Country',
-  Region = 'Region',
-  City = 'City',
-  Location = 'Location',
-  Character = 'Character',
-  Organization = 'Organization',
-  Event = 'Event',
-  Item = 'Item',
-  Campaign = 'Campaign',
-}
+export const WorldEntityType = {
+  Continent: 'Continent',
+  Country: 'Country',
+  Region: 'Region',
+  City: 'City',
+  Location: 'Location',
+  Character: 'Character',
+  Organization: 'Organization',
+  Event: 'Event',
+  Item: 'Item',
+  Campaign: 'Campaign',
+} as const;
+
+export type WorldEntityType = typeof WorldEntityType[keyof typeof WorldEntityType];
 
 /**
  * Base World Entity (for future hierarchical entities)
