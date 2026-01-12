@@ -4,7 +4,15 @@
         "style": "one"
     },
     "MD013": false,
-    "MD024": true,
+    "MD024": {
+        "siblings_only": true
+    },
+    "MD033": {
+        "allowed_elements": ["ValidationError", "T", "World", "WorldEntity", "WorldResponse", "Asset", "Api", "string"]
+    },
     "MD034": true,
+    "MD036": false,
+    "MD041": false,
+    "MD060": false,
     "no-hard-tabs": true
 }

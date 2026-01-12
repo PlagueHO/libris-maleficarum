@@ -20,6 +20,10 @@ permissions:
   pull-requests: write
 
 jobs:
+  lint-markdown:
+    name: Lint Markdown
+    uses: ./.github/workflows/lint-markdown.yml
+
   lint-and-publish-bicep:
     name: Lint and Publish Bicep
     uses: ./.github/workflows/lint-and-publish-bicep.yml

@@ -1,0 +1,21 @@
+{
+  "name": "libris-maleficarum",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#libris-maleficarum-app\" \"#libris-maleficarum-service\"",
+    "lint:md:fix": "markdownlint-cli2 --fix \"**/*.md\" \"#node_modules\" \"#libris-maleficarum-app\" \"#libris-maleficarum-service\"",
+    "lint:md:ci": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#libris-maleficarum-app\" \"#libris-maleficarum-service\""
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.20.0"
+  },
+  "description": "Libris Maleficarum - AI-powered world-building application",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PlagueHO/libris-maleficarum.git"
+  },
+  "author": "Daniel Scott-Raynsford",
+  "license": "MIT"
+}

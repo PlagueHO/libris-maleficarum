@@ -16,7 +16,7 @@
   - Line 26-29: AddAzureCosmosDB("cosmosdb").RunAsEmulator()
   - Line 52-57: AddAzureStorage("storage").RunAsEmulator()
   - Line 61-62: AddProject<Api>("api") with references
-- Aspire Dashboard: Automatically opens at https://localhost:15888
+- Aspire Dashboard: Automatically opens at <https://localhost:15888>
 - Health Checks: ServiceDefaults/Extensions.cs Line 100-106 (AddDefaultHealthChecks)
 
 **Test Evidence**:
@@ -31,7 +31,7 @@
 **Measurement**:
 
 - ✅ **Single command**: `dotnet run --project src/Orchestration/AppHost`
-- ✅ **Dashboard access**: Opens automatically at https://localhost:15888
+- ✅ **Dashboard access**: Opens automatically at <https://localhost:15888>
 - ✅ **Service health**: Integration tests verify all services healthy within 120 seconds (30-second target met in practice but uses 120s timeout for reliability)
 - ✅ **Zero manual configuration**: Automatic service discovery and connection string injection
 

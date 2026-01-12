@@ -48,8 +48,8 @@ Developers can fetch world entities from the backend REST API through a standard
 **Acceptance Scenarios**:
 
 1. **Given** the frontend application is initialized, **When** a component requests the list of worlds, **Then** the client automatically manages loading state, fetches data from the backend API, caches the response, and provides the worlds data to the component
-2. **Given** the API is unavailable, **When** a component requests world data, **Then** the client detects the failure, provides a structured error object to the component, and does not crash the application
-3. **Given** multiple components request the same world data simultaneously, **When** the requests are made within the cache window, **Then** only one HTTP request is sent to the backend and all components receive the cached response
+1. **Given** the API is unavailable, **When** a component requests world data, **Then** the client detects the failure, provides a structured error object to the component, and does not crash the application
+1. **Given** multiple components request the same world data simultaneously, **When** the requests are made within the cache window, **Then** only one HTTP request is sent to the backend and all components receive the cached response
 
 ---
 
@@ -64,8 +64,8 @@ Developers can create, update, and delete world entities through mutation servic
 **Acceptance Scenarios**:
 
 1. **Given** a user has loaded the worlds list, **When** they create a new world through the mutation service, **Then** the service sends a POST request, automatically invalidates the worlds list cache, triggers a refetch, and the new world appears in the list
-2. **Given** a user is viewing a world entity, **When** they update its properties through the mutation service, **Then** the service sends a PUT/PATCH request, invalidates the specific entity cache, and the updated data reflects immediately
-3. **Given** a user deletes a world entity, **When** the deletion completes, **Then** the mutation service removes the entity from all relevant caches and the UI updates to reflect the deletion
+1. **Given** a user is viewing a world entity, **When** they update its properties through the mutation service, **Then** the service sends a PUT/PATCH request, invalidates the specific entity cache, and the updated data reflects immediately
+1. **Given** a user deletes a world entity, **When** the deletion completes, **Then** the mutation service removes the entity from all relevant caches and the UI updates to reflect the deletion
 
 ---
 
@@ -80,8 +80,8 @@ The API client automatically retries failed requests with exponential backoff fo
 **Acceptance Scenarios**:
 
 1. **Given** the API returns a 503 Service Unavailable error, **When** the client processes the response, **Then** it automatically retries the request up to 3 times with exponential backoff (1 second, 2 seconds, 4 seconds)
-2. **Given** a request times out due to slow network, **When** the timeout is detected, **Then** the client retries the request and provides feedback on retry attempts
-3. **Given** the API returns a 401 Unauthorized error, **When** the client processes the response, **Then** it does NOT retry (non-transient error) and immediately returns the error to the caller
+1. **Given** a request times out due to slow network, **When** the timeout is detected, **Then** the client retries the request and provides feedback on retry attempts
+1. **Given** the API returns a 401 Unauthorized error, **When** the client processes the response, **Then** it does NOT retry (non-transient error) and immediately returns the error to the caller
 
 ---
 
@@ -96,8 +96,8 @@ Developers define TypeScript interfaces for API requests and responses, and the 
 **Acceptance Scenarios**:
 
 1. **Given** an API endpoint is defined with TypeScript types, **When** a developer uses the auto-generated hook, **Then** they receive typed data, loading, and error objects with full IntelliSense support
-2. **Given** the API response schema changes, **When** the developer updates the TypeScript interface, **Then** all call sites using outdated properties show TypeScript errors at compile time
-3. **Given** a mutation requires specific request parameters, **When** a developer calls the mutation, **Then** TypeScript enforces the correct parameter types and prevents invalid requests
+1. **Given** the API response schema changes, **When** the developer updates the TypeScript interface, **Then** all call sites using outdated properties show TypeScript errors at compile time
+1. **Given** a mutation requires specific request parameters, **When** a developer calls the mutation, **Then** TypeScript enforces the correct parameter types and prevents invalid requests
 
 ---
 
