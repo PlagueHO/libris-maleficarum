@@ -10,7 +10,6 @@
 - **Azure AI Search** *(Optional, but recommended)*
   Enterprise-grade search service for AI-powered indexing and retrieval. Can be excluded from deployment if not required.
 
-
 - **Azure Storage Account**
   Secure storage for application user data and assets.
 

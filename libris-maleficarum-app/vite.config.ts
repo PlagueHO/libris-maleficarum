@@ -11,4 +11,22 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    // Proxy API requests to backend service
+    // In local development with Aspire, APISERVICE_HTTPS/HTTP are auto-injected
+    // In deployed environments, use VITE_API_BASE_URL
+    proxy: {
+      '/api': {
+        target:
+          process.env.APISERVICE_HTTPS ||
+          process.env.APISERVICE_HTTP ||
+          process.env.VITE_API_BASE_URL ||
+          'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+        // Keep /api prefix - backend expects it
+        rewrite: (path) => path,
+      },
+    },
+  },
 })

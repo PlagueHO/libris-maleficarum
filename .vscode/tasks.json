@@ -290,6 +290,43 @@
         "id": "file-code",
         "color": "terminal.ansiBlue"
       }
+    },
+    {
+      "label": "markdown: lint",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["lint:md"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": "test",
+      "icon": {
+        "id": "checklist",
+        "color": "terminal.ansiMagenta"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "markdown: fix",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["lint:md:fix"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "icon": {
+        "id": "wrench",
+        "color": "terminal.ansiGreen"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     }
   ]
 }

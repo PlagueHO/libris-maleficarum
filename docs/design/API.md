@@ -36,6 +36,7 @@ The API structure maps to the 4-container Cosmos DB architecture:
 | `/worlds/{worldId}/deleted` (future) | DeletedWorldEntity | Soft-deleted entities (recovery) |
 
 **Key Architectural Points:**
+
 - **World** container stores only world metadata (name, description, owner)
 - **WorldEntity** container stores all entities within worlds with hierarchical relationships
 - **Asset** container stores asset metadata separate from entities to prevent document bloat
@@ -212,6 +213,7 @@ GET /api/v1/worlds/{worldId}/entities?type=Character&sort=name&order=asc
 ```
 
 Supported parameters:
+
 - `type`: Filter by entity type
 - `tags`: Filter by tags (comma-separated)
 - `sort`: Sort field (name, createdDate, modifiedDate)

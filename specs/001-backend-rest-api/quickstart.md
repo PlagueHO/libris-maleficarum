@@ -44,8 +44,8 @@ dotnet run --project src/Orchestration/AppHost
 
 1. Aspire downloads and starts Cosmos DB Emulator container (first run only, ~2 minutes)
 1. API service starts and connects to Cosmos DB
-1. React frontend starts on https://localhost:4000
-1. Aspire Dashboard opens in browser at https://localhost:15888
+1. React frontend starts on <https://localhost:4000>
+1. Aspire Dashboard opens in browser at <https://localhost:15888>
 
 **Expected Output:**
 
@@ -64,7 +64,7 @@ info: Aspire.Hosting.DistributedApplication[0]
 
 ### 4. Verify Services
 
-Open Aspire Dashboard: **https://localhost:15888**
+Open Aspire Dashboard: **<https://localhost:15888>**
 
 **Check service status:**
 
@@ -186,7 +186,7 @@ dotnet build LibrisMaleficarum.slnx --configuration Release
 
 **Option 1: Aspire Dashboard**
 
-1. Open https://localhost:15888
+1. Open <https://localhost:15888>
 1. Click **cosmosdb** → **View Data**
 1. Browse containers: Worlds, WorldEntities, Assets
 
@@ -428,10 +428,11 @@ This end-to-end test verifies the complete Aspire integration with Cosmos DB per
 ### Test Objective
 
 Confirm that:
+
 1. AppHost starts all services successfully
-2. Aspire Dashboard shows all services healthy
-3. API can communicate with Cosmos DB Emulator
-4. Data persists across API requests
+1. Aspire Dashboard shows all services healthy
+1. API can communicate with Cosmos DB Emulator
+1. Data persists across API requests
 
 ### Test Steps
 
@@ -442,11 +443,11 @@ cd libris-maleficarum-service
 dotnet run --project src/Orchestration/AppHost
 ```
 
-**Expected**: Terminal shows "Now listening on: https://localhost:15888"
+**Expected**: Terminal shows "Now listening on: <https://localhost:15888>"
 
 **2. Verify Aspire Dashboard**
 
-- Open browser: **https://localhost:15888**
+- Open browser: **<https://localhost:15888>**
 - Navigate to **Resources** tab
 - Verify all services show **green status**:
   - ✅ `cosmosdb` - Running

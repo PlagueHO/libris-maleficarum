@@ -9,8 +9,10 @@ Implement a type-safe, RTK Query-based API client for the React frontend to cons
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.9.3, React 19.2.0  
-**Primary Dependencies**: 
+**Language/Version**: TypeScript 5.9.3, React 19.2.0
+
+**Primary Dependencies**:
+
 - RTK Query (@reduxjs/toolkit 2.11.2) - API client with caching
 - Redux Toolkit - Already integrated for state management
 - Vite 7.2.4 - Build tool with dev server proxy
@@ -26,18 +28,21 @@ Implement a type-safe, RTK Query-based API client for the React frontend to cons
 
 **Project Type**: Web application frontend (React SPA)
 
-**Performance Goals**: 
+**Performance Goals**:
+
 - < 100ms API client overhead
 - 80% reduction in redundant API calls via caching
 - < 10 seconds to add new typed endpoint
 
-**Constraints**: 
+**Constraints**:
+
 - Must integrate with existing Redux store without conflicts
 - Aspire AppHost environment variables for service discovery in local dev
 - No authentication (deferred to MSAL integration)
 - RFC 7807 Problem Details error format from backend
 
-**Scale/Scope**: 
+**Scale/Scope**:
+
 - Initial: 5-10 world entity CRUD endpoints
 - Extensible: Designed for 50+ endpoints as features grow
 - Cache: Default 60s TTL, ~100 cached responses in memory
@@ -47,26 +52,32 @@ Implement a type-safe, RTK Query-based API client for the React frontend to cons
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 ### ✅ III. Test-Driven Development (NON-NEGOTIABLE)
+
 - **Status**: COMPLIANT
 - **Evidence**: Vitest + React Testing Library already configured. Plan includes comprehensive unit tests for API client, retry logic, cache invalidation, and error handling before implementation.
 
 ### ✅ IV. Framework & Technology Standards
+
 - **Status**: COMPLIANT
 - **Evidence**: React 19.2.0 + TypeScript 5.9.3 + Redux Toolkit 2.11.2 already in use. RTK Query is the Redux team's official solution for API state management.
 
 ### ✅ V. Developer Experience & Inner Loop
+
 - **Status**: COMPLIANT
 - **Evidence**: Vite already provides hot reload. Aspire AppHost auto-injects service discovery environment variables (e.g., `APISERVICE_HTTPS`) that Vite proxy configuration consumes—no manual URL updates needed.
 
 ### ✅ VI. Security & Privacy by Default
+
 - **Status**: COMPLIANT (with scope exclusion)
 - **Evidence**: Auth/secrets explicitly excluded from this feature scope per spec (FR-018). MSAL integration planned for future work. API client prepared for auth header injection point.
 
 ### ✅ II. Clean Architecture & Separation of Concerns
+
 - **Status**: COMPLIANT
 - **Evidence**: Clear layering: RTK Query API slices (data layer) → Auto-generated hooks (service layer) → Components (UI layer). Type-safe interfaces between layers.
 
 ### ⚠️ Re-validation Required After Phase 1
+
 - Verify RTK Query slice structure maintains clean boundaries
 - Confirm TypeScript types provide compile-time contract enforcement
 - Validate test coverage meets TDD requirements (tests written first)
@@ -135,26 +146,30 @@ libris-maleficarum-app/
 ### RTK Query Integration Patterns
 
 **Decision**: Use RTK Query as the primary API client solution
+
 - **Rationale**: Redux Toolkit already integrated; RTK Query is the official Redux team solution for server state management
-- **References**: 
+- **References**:
   - [RTK Query Overview](https://redux-toolkit.js.org/rtk-query/overview)
   - [RTK Query TypeScript Guide](https://redux-toolkit.js.org/rtk-query/usage/typescript)
 
 **Key Patterns Researched**:
+
 1. **Base API Setup**: Use `createApi` with `fetchBaseQuery` for automatic Redux integration
-2. **Code Splitting**: Use `api.injectEndpoints()` to split API slices by feature domain (worldApi, characterApi, etc.)
-3. **Tag-Based Cache Invalidation**: Define entity tags (`['World']`) for automatic refetching on mutations
-4. **Auto-Generated Hooks**: Export `useGetWorldsQuery`, `useCreateWorldMutation` for zero-boilerplate component usage
+1. **Code Splitting**: Use `api.injectEndpoints()` to split API slices by feature domain (worldApi, characterApi, etc.)
+1. **Tag-Based Cache Invalidation**: Define entity tags (`['World']`) for automatic refetching on mutations
+1. **Auto-Generated Hooks**: Export `useGetWorldsQuery`, `useCreateWorldMutation` for zero-boilerplate component usage
 
 ### Aspire AppHost Environment Variable Integration
 
 **Decision**: Use Vite's `proxy` configuration to consume Aspire-injected environment variables
+
 - **Rationale**: Aspire `.WithReference(api)` automatically injects `APISERVICE_HTTPS` and `APISERVICE_HTTP` env vars during local dev
 - **References**:
   - [Aspire Vite playground example](https://github.com/dotnet/aspire/blob/main/playground/AspireWithJavaScript/AspireJavaScript.Vite/vite.config.ts)
   - [Aspire WithReference docs](https://learn.microsoft.com/en-us/dotnet/api/aspire.hosting.resourcebuilderextensions.withreference)
 
 **Implementation Pattern**:
+
 ```typescript
 // vite.config.ts
 export default defineConfig({
@@ -171,18 +186,21 @@ export default defineConfig({
 ```
 
 **Environment Handling**:
+
 - **Local Dev**: Aspire auto-injects `APISERVICE_HTTPS` → Vite proxy uses it
 - **Deployed (Azure)**: Use `VITE_API_BASE_URL` in `.env` files or Azure Static Web App config
 
 ### Retry Strategy with Exponential Backoff
 
 **Decision**: Use Axios with `axios-retry` library for retry logic
+
 - **Rationale**: RTK Query's `fetchBaseQuery` doesn't support retries; Axios provides proven retry middleware with exponential backoff
 - **References**:
   - [axios-retry library](https://github.com/softonic/axios-retry)
   - [RTK Query custom baseQuery](https://redux-toolkit.js.org/rtk-query/usage/customizing-queries#implementing-a-custom-basequery)
 
 **Retry Configuration**:
+
 ```typescript
 axiosRetry(axiosInstance, {
   retries: 3,
@@ -206,12 +224,14 @@ axiosRetry(axiosInstance, {
 ### RFC 7807 Problem Details Error Handling
 
 **Decision**: Define TypeScript interfaces matching ASP.NET Core's Problem Details format
+
 - **Rationale**: ASP.NET Core 7+ uses RFC 7807 by default; type-safe error handling improves developer experience
 - **References**:
   - [RFC 7807 Specification](https://datatracker.ietf.org/doc/html/rfc7807)
   - [ASP.NET Core Problem Details](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.problemdetails)
 
 **TypeScript Interface**:
+
 ```typescript
 interface ProblemDetails {
   type?: string;        // URI reference
@@ -226,6 +246,7 @@ interface ProblemDetails {
 ### Cache Strategy
 
 **Decision**: 60-second default stale time with tag-based invalidation
+
 - **Rationale**: Balances freshness with performance; world entities are relatively static creative content
 - **Pattern**: Configure in base API, override per endpoint if needed
 
@@ -240,13 +261,15 @@ createApi({
 ### Testing Strategy
 
 **Decision**: Test-first approach with Vitest + MSW (Mock Service Worker) for API mocking
+
 - **Rationale**: TDD is non-negotiable per constitution; MSW provides realistic HTTP mocking
 - **References**: [MSW with RTK Query](https://mswjs.io/docs/recipes/testing-react)
 
 **Test Categories**:
+
 1. **Unit Tests**: API slice logic, retry interceptors, error transformers
-2. **Integration Tests**: Full request/response cycle with MSW mocking backend
-3. **Accessibility Tests**: N/A for API client (headless), but error UI components must use jest-axe
+1. **Integration Tests**: Full request/response cycle with MSW mocking backend
+1. **Accessibility Tests**: N/A for API client (headless), but error UI components must use jest-axe
 
 ---
 
@@ -257,11 +280,13 @@ createApi({
 See [data-model.md](./data-model.md) for detailed entity schemas and relationships.
 
 **Core Entities**:
+
 - `World`: Root entity with id, name, description, createdAt, updatedAt
 - `WorldEntity`: Hierarchical entity base (Continent, Country, Region, City, Character)
 - `ProblemDetails`: RFC 7807 error response structure
 
 **Type Organization**:
+
 - Request DTOs: Create/Update payloads (e.g., `CreateWorldRequest`, `UpdateWorldRequest`)
 - Response DTOs: API response shapes (e.g., `WorldResponse`, `WorldListResponse`)
 - Error DTOs: `ProblemDetails`, `ValidationProblemDetails`
@@ -271,6 +296,7 @@ See [data-model.md](./data-model.md) for detailed entity schemas and relationshi
 See [contracts/](./contracts/) directory for OpenAPI-style TypeScript definitions.
 
 **World API Endpoints**:
+
 ```typescript
 // GET /api/worlds
 useGetWorldsQuery(): { data: World[], isLoading, error }
@@ -289,6 +315,7 @@ useDeleteWorldMutation(): [trigger, { isSuccess, isLoading, error }]
 ```
 
 **Cache Tags**:
+
 - `World` tag: Invalidated on create/update/delete mutations
 - Provides automatic refetching of world lists when data changes
 
@@ -297,13 +324,15 @@ useDeleteWorldMutation(): [trigger, { isSuccess, isLoading, error }]
 See [quickstart.md](./quickstart.md) for developer onboarding.
 
 **Adding a New Endpoint (5-minute workflow)**:
+
 1. Define TypeScript types in `services/types/`
-2. Add endpoint to appropriate API slice with `api.injectEndpoints()`
-3. Export auto-generated hook
-4. Write test with MSW handler
-5. Use hook in component
+1. Add endpoint to appropriate API slice with `api.injectEndpoints()`
+1. Export auto-generated hook
+1. Write test with MSW handler
+1. Use hook in component
 
 **Example**:
+
 ```typescript
 // 1. Define types
 export interface Character { id: string; name: string; worldId: string; }
@@ -332,11 +361,13 @@ const { data: characters, isLoading } = useGetCharactersQuery(worldId);
 ### File Creation Order (TDD Approach)
 
 #### 1. Type Definitions (No tests required - pure types)
+
 - `src/services/types/problemDetails.types.ts` - RFC 7807 error types
 - `src/services/types/world.types.ts` - World entity types
 - `src/services/types/index.ts` - Barrel export
 
 #### 2. Axios Client + Tests (Test-first)
+
 - **Test**: `src/__tests__/services/apiClient.test.ts`
   - Test retry on 503 with exponential backoff
   - Test no retry on 400/401/403/404
@@ -348,6 +379,7 @@ const { data: characters, isLoading } = useGetCharactersQuery(worldId);
   - Request/response interceptors
 
 #### 3. Base RTK Query API + Tests (Test-first)
+
 - **Test**: `src/__tests__/services/api.test.ts`
   - Test base query configuration
   - Test error transformation to ProblemDetails
@@ -358,6 +390,7 @@ const { data: characters, isLoading } = useGetCharactersQuery(worldId);
   - Base configuration (60s cache)
 
 #### 4. World API Slice + Tests (Test-first)
+
 - **Test**: `src/__tests__/services/worldApi.test.ts`
   - Test GET /worlds with MSW mock
   - Test GET /worlds/{id} with MSW mock
@@ -371,6 +404,7 @@ const { data: characters, isLoading } = useGetCharactersQuery(worldId);
   - Configure tags for cache invalidation
 
 #### 5. Store Integration + Tests
+
 - **Test**: `src/__tests__/store/store.test.ts`
   - Test RTK Query reducer integration
   - Test middleware configuration
@@ -380,6 +414,7 @@ const { data: characters, isLoading } = useGetCharactersQuery(worldId);
   - Preserve existing `sidePanel` slice
 
 #### 6. Vite Configuration
+
 - **No test** (infrastructure file)
 - **Implementation**: `vite.config.ts`
   - Add proxy for `/api` routes
@@ -387,6 +422,7 @@ const { data: characters, isLoading } = useGetCharactersQuery(worldId);
   - Document in comments
 
 #### 7. Documentation
+
 - `specs/002-frontend-api-client/research.md` - Consolidate research findings
 - `specs/002-frontend-api-client/data-model.md` - Entity schemas
 - `specs/002-frontend-api-client/quickstart.md` - Developer guide
@@ -410,6 +446,7 @@ const { data: characters, isLoading } = useGetCharactersQuery(worldId);
 ### Configuration Updates
 
 #### vite.config.ts
+
 ```typescript
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -432,6 +469,7 @@ export default defineConfig({
 ```
 
 #### .env.example (New file)
+
 ```env
 # Local Development (auto-injected by Aspire AppHost)
 # APISERVICE_HTTPS=https://localhost:7234
@@ -444,6 +482,7 @@ VITE_API_BASE_URL=https://api.example.com
 ### Test Coverage Requirements
 
 Per constitution (TDD non-negotiable), minimum **90% coverage** for:
+
 - ✅ API client retry logic (all retry conditions)
 - ✅ Error transformation (RFC 7807 parsing)
 - ✅ Cache invalidation (tag system)
@@ -485,8 +524,8 @@ After implementation, verify against spec success criteria:
 ## Next Steps
 
 1. **Run Planning Command**: This plan is complete. Next, execute `/speckit.tasks` to generate the detailed task breakdown in `tasks.md`.
-2. **Begin TDD Cycle**: Start with Phase 2, step 1 (type definitions), then write tests before implementation for each subsequent component.
-3. **Incremental Validation**: After each major component (apiClient, api, worldApi), verify tests pass and coverage meets requirements.
-4. **Documentation as You Go**: Update research.md and quickstart.md with learnings during implementation.
+1. **Begin TDD Cycle**: Start with Phase 2, step 1 (type definitions), then write tests before implementation for each subsequent component.
+1. **Incremental Validation**: After each major component (apiClient, api, worldApi), verify tests pass and coverage meets requirements.
+1. **Documentation as You Go**: Update research.md and quickstart.md with learnings during implementation.
 
 **Estimated Effort**: 12-16 hours for a single developer following TDD approach with unfamiliar RTK Query patterns. Faster with prior RTK Query experience.
