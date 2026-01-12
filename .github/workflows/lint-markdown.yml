@@ -1,23 +1,7 @@
 name: Lint Markdown
 
 on:
-  push:
-    paths:
-      - '**/*.md'
-      - '.markdownlint.json'
-      - '.markdownlint-cli2.jsonc'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - '**/*.md'
-      - '.markdownlint.json'
-      - '.markdownlint-cli2.jsonc'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
