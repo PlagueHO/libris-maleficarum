@@ -54,7 +54,7 @@ export const worldApi = api.injectEndpoints({
         method: 'GET',
       }),
       transformResponse: (response: WorldResponse) => response.data,
-      providesTags: (result, error, id) => [{ type: 'World', id }],
+      providesTags: (_result, _error, id) => [{ type: 'World', id }],
     }),
 
     /**
