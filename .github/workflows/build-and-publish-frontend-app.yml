@@ -33,21 +33,55 @@ jobs:
       - name: Run linting
         run: pnpm lint
 
-      - name: Run unit tests
-        run: pnpm exec vitest run --reporter=junit --reporter=verbose --reporter=github-actions --outputFile=test-results/junit.xml
+      - name: Run unit tests with coverage
+        run: pnpm exec vitest run --coverage --coverage-provider=v8 --coverage-reporter=json --coverage-reporter=json-summary --coverage-reporter=html --coverage-reporter=cobertura --reporter=junit --reporter=verbose --reporter=github-actions --outputFile=test-results/junit.xml
 
-      - name: Upload test results
+      - name: Generate Coverage Markdown Summary
         if: always()
-        uses: actions/upload-artifact@v6
+        run: |
+          mkdir -p TestResults/CoverageReport
+          node -e "const fs=require('fs');const c=JSON.parse(fs.readFileSync('./coverage/coverage-summary.json'));const t=c.total;const h='# Code Coverage Summary\n\n| Metric | Coverage |\n|--------|----------|\n| Statements | '+t.statements.pct.toFixed(2)+'% |\n| Branches | '+t.branches.pct.toFixed(2)+'% |\n| Functions | '+t.functions.pct.toFixed(2)+'% |\n| Lines | '+t.lines.pct.toFixed(2)+'% |\n';fs.writeFileSync('./TestResults/CoverageReport/SummaryGithub.md',h);"
+
+      - name: Add Coverage to Job Summary
+        if: always()
+        run: cat TestResults/CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Add Coverage PR Comment
+        if: github.event_name == 'pull_request' && always()
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
-          name: vitest-results
-          path: libris-maleficarum-app/test-results
+          recreate: true
+          path: libris-maleficarum-app/TestResults/CoverageReport/SummaryGithub.md
 
       - name: Build app
         run: pnpm run build
 
-      - name: Upload build artifact
+      - name: Upload Test Results
+        if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: libris-maleficanum-app
+          name: vitest-test-results
+          path: libris-maleficarum-app/test-results/**/*.xml
+          retention-days: 7
+
+      - name: Upload Coverage Report (HTML)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-report-html
+          path: libris-maleficarum-app/coverage/
+          retention-days: 30
+
+      - name: Upload Code Coverage (Cobertura)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: code-coverage-cobertura
+          path: libris-maleficarum-app/coverage/coverage-final.json
+          retention-days: 7
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: libris-maleficarum-app
           path: libris-maleficarum-app/dist
