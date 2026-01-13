@@ -34,7 +34,7 @@ jobs:
         run: pnpm lint
 
       - name: Run unit tests with coverage
-        run: pnpm exec vitest run --coverage --coverage-provider=v8 --coverage-reporter=json --coverage-reporter=json-summary --coverage-reporter=html --coverage-reporter=cobertura --reporter=junit --reporter=verbose --reporter=github-actions --outputFile=test-results/junit.xml
+        run: pnpm exec vitest run --coverage --coverage.reporter=json --coverage.reporter=json-summary --coverage.reporter=html --coverage.reporter=cobertura --reporter=junit --reporter=verbose --reporter=github-actions --outputFile.junit=test-results/junit.xml
 
       - name: Generate Coverage Markdown Summary
         if: always()
