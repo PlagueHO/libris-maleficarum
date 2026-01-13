@@ -60,7 +60,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: vitest-test-results
+          name: frontend-vitest-test-results
           path: libris-maleficarum-app/test-results/**/*.xml
           retention-days: 7
 
@@ -68,7 +68,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: coverage-report-html
+          name: frontend-coverage-report-html
           path: libris-maleficarum-app/coverage/
           retention-days: 30
 
@@ -76,7 +76,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: code-coverage-cobertura
+          name: frontend-code-coverage-cobertura
           path: libris-maleficarum-app/coverage/coverage-final.json
           retention-days: 7
 
