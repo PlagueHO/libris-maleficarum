@@ -4,6 +4,7 @@ using LibrisMaleficarum.Domain.Entities;
 using LibrisMaleficarum.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Text.Json;
 
 /// <summary>
 /// EF Core configuration for WorldEntity in Cosmos DB.
@@ -58,6 +59,25 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
 
         builder.Property(e => e.Tags)
             .ToJsonProperty("Tags")
+            .IsRequired();
+
+        builder.Property(e => e.Path)
+            .ToJsonProperty("Path")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions?)null) ?? new List<Guid>())
+            .IsRequired();
+
+        builder.Property(e => e.Depth)
+            .ToJsonProperty("Depth")
+            .IsRequired();
+
+        builder.Property(e => e.HasChildren)
+            .ToJsonProperty("HasChildren")
+            .IsRequired();
+
+        builder.Property(e => e.OwnerId)
+            .ToJsonProperty("OwnerId")
             .IsRequired();
 
         builder.Property(e => e.Attributes)

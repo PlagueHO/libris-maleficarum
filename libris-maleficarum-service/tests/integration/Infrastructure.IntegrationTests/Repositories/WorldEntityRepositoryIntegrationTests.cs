@@ -21,6 +21,8 @@ using Microsoft.EntityFrameworkCore;
 [DoNotParallelize] // AppHost tests must run sequentially to avoid port conflicts
 public class WorldEntityRepositoryIntegrationTests
 {
+    private const string TestOwnerId = "test-owner-id";
+
     public TestContext? TestContext { get; set; }
 
     [ClassInitialize]
@@ -78,7 +80,7 @@ public class WorldEntityRepositoryIntegrationTests
 
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
-        var entityToCreate = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", "Description", null, new List<string> { "hero" });
+        var entityToCreate = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, "Description", null, new List<string> { "hero" });
 
         // Act
         var createdEntity = await repository.CreateAsync(entityToCreate);
@@ -119,7 +121,7 @@ public class WorldEntityRepositoryIntegrationTests
 
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Location, "Test Location", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Location, "Test Location", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
         await context.SaveChangesAsync();
 
@@ -152,7 +154,7 @@ public class WorldEntityRepositoryIntegrationTests
         await context.Worlds.AddAsync(world);
         await context.SaveChangesAsync();
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
         await context.SaveChangesAsync();
 
@@ -196,7 +198,7 @@ public class WorldEntityRepositoryIntegrationTests
 
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
         await context.SaveChangesAsync();
 
@@ -236,9 +238,9 @@ public class WorldEntityRepositoryIntegrationTests
 
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
-        var entity1 = WorldEntity.Create(world.Id, EntityType.Character, "Character 1", null, null, null);
-        var entity2 = WorldEntity.Create(world.Id, EntityType.Location, "Location 1", null, null, null);
-        var entity3 = WorldEntity.Create(world.Id, EntityType.Item, "Item 1", null, null, null);
+        var entity1 = WorldEntity.Create(world.Id, EntityType.Character, "Character 1", TestOwnerId, null, null, null);
+        var entity2 = WorldEntity.Create(world.Id, EntityType.Location, "Location 1", TestOwnerId, null, null, null);
+        var entity3 = WorldEntity.Create(world.Id, EntityType.Item, "Item 1", TestOwnerId, null, null, null);
         await context.WorldEntities.AddRangeAsync(entity1, entity2, entity3);
         await context.SaveChangesAsync();
 
@@ -279,9 +281,9 @@ public class WorldEntityRepositoryIntegrationTests
 
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
-        var entity1 = WorldEntity.Create(world.Id, EntityType.Character, "Character 1", null, null, null);
-        var entity2 = WorldEntity.Create(world.Id, EntityType.Character, "Character 2", null, null, null);
-        var entity3 = WorldEntity.Create(world.Id, EntityType.Location, "Location 1", null, null, null);
+        var entity1 = WorldEntity.Create(world.Id, EntityType.Character, "Character 1", TestOwnerId, null, null, null);
+        var entity2 = WorldEntity.Create(world.Id, EntityType.Character, "Character 2", TestOwnerId, null, null, null);
+        var entity3 = WorldEntity.Create(world.Id, EntityType.Location, "Location 1", TestOwnerId, null, null, null);
         await context.WorldEntities.AddRangeAsync(entity1, entity2, entity3);
         await context.SaveChangesAsync();
 
@@ -319,9 +321,9 @@ public class WorldEntityRepositoryIntegrationTests
 
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
-        var entity1 = WorldEntity.Create(world.Id, EntityType.Character, "Hero 1", null, null, new List<string> { "hero", "warrior" });
-        var entity2 = WorldEntity.Create(world.Id, EntityType.Character, "Villain 1", null, null, new List<string> { "villain", "mage" });
-        var entity3 = WorldEntity.Create(world.Id, EntityType.Character, "Hero 2", null, null, new List<string> { "hero", "mage" });
+        var entity1 = WorldEntity.Create(world.Id, EntityType.Character, "Hero 1", TestOwnerId, null, null, new List<string> { "hero", "warrior" });
+        var entity2 = WorldEntity.Create(world.Id, EntityType.Character, "Villain 1", TestOwnerId, null, null, new List<string> { "villain", "mage" });
+        var entity3 = WorldEntity.Create(world.Id, EntityType.Character, "Hero 2", TestOwnerId, null, null, new List<string> { "hero", "mage" });
         await context.WorldEntities.AddRangeAsync(entity1, entity2, entity3);
         await context.SaveChangesAsync();
 
@@ -359,14 +361,14 @@ public class WorldEntityRepositoryIntegrationTests
 
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
-        var firstEntity = WorldEntity.Create(world.Id, EntityType.Location, "Entity 1", null, null, null);
+        var firstEntity = WorldEntity.Create(world.Id, EntityType.Location, "Entity 1", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(firstEntity);
         await context.SaveChangesAsync();
 
         // Ensure different timestamps - use longer delay for Cosmos DB
         await Task.Delay(1000);
 
-        var secondEntity = WorldEntity.Create(world.Id, EntityType.Location, "Entity 2", null, null, null);
+        var secondEntity = WorldEntity.Create(world.Id, EntityType.Location, "Entity 2", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(secondEntity);
         await context.SaveChangesAsync();
 
@@ -409,7 +411,7 @@ public class WorldEntityRepositoryIntegrationTests
         // Create 5 entities
         for (int i = 1; i <= 5; i++)
         {
-            var entity = WorldEntity.Create(world.Id, EntityType.Character, $"Character {i}", null, null, null);
+            var entity = WorldEntity.Create(world.Id, EntityType.Character, $"Character {i}", TestOwnerId, null, null, null);
             await context.WorldEntities.AddAsync(entity);
             await context.SaveChangesAsync();
             if (i < 5) await Task.Delay(10); // Ensure different timestamps
@@ -449,8 +451,8 @@ public class WorldEntityRepositoryIntegrationTests
 
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
-        var activeEntity = WorldEntity.Create(world.Id, EntityType.Character, "Active Character", null, null, null);
-        var deletedEntity = WorldEntity.Create(world.Id, EntityType.Character, "Deleted Character", null, null, null);
+        var activeEntity = WorldEntity.Create(world.Id, EntityType.Character, "Active Character", TestOwnerId, null, null, null);
+        var deletedEntity = WorldEntity.Create(world.Id, EntityType.Character, "Deleted Character", TestOwnerId, null, null, null);
         deletedEntity.SoftDelete();
 
         await context.WorldEntities.AddRangeAsync(activeEntity, deletedEntity);
@@ -491,13 +493,13 @@ public class WorldEntityRepositoryIntegrationTests
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
         // Create parent and children
-        var parent = WorldEntity.Create(world.Id, EntityType.Location, "Continent", null, null, null);
+        var parent = WorldEntity.Create(world.Id, EntityType.Location, "Continent", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(parent);
         await context.SaveChangesAsync();
 
-        var child1 = WorldEntity.Create(world.Id, EntityType.Location, "Country 1", null, parent.Id, null);
-        var child2 = WorldEntity.Create(world.Id, EntityType.Location, "Country 2", null, parent.Id, null);
-        var child3 = WorldEntity.Create(world.Id, EntityType.Location, "Country 3", null, parent.Id, null);
+        var child1 = WorldEntity.Create(world.Id, EntityType.Location, "Country 1", TestOwnerId, null, parent.Id, null);
+        var child2 = WorldEntity.Create(world.Id, EntityType.Location, "Country 2", TestOwnerId, null, parent.Id, null);
+        var child3 = WorldEntity.Create(world.Id, EntityType.Location, "Country 3", TestOwnerId, null, parent.Id, null);
         await context.WorldEntities.AddRangeAsync(child1, child2, child3);
         await context.SaveChangesAsync();
 
@@ -536,12 +538,12 @@ public class WorldEntityRepositoryIntegrationTests
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
         // Create parent and children
-        var parent = WorldEntity.Create(world.Id, EntityType.Location, "Parent", null, null, null);
+        var parent = WorldEntity.Create(world.Id, EntityType.Location, "Parent", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(parent);
         await context.SaveChangesAsync();
 
-        var activeChild = WorldEntity.Create(world.Id, EntityType.Location, "Active Child", null, parent.Id, null);
-        var deletedChild = WorldEntity.Create(world.Id, EntityType.Location, "Deleted Child", null, parent.Id, null);
+        var activeChild = WorldEntity.Create(world.Id, EntityType.Location, "Active Child", TestOwnerId, null, parent.Id, null);
+        var deletedChild = WorldEntity.Create(world.Id, EntityType.Location, "Deleted Child", TestOwnerId, null, parent.Id, null);
         deletedChild.SoftDelete();
         await context.WorldEntities.AddRangeAsync(activeChild, deletedChild);
         await context.SaveChangesAsync();
@@ -580,7 +582,7 @@ public class WorldEntityRepositoryIntegrationTests
 
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Original Name", "Original Description", null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Original Name", TestOwnerId, "Original Description", null, null);
         await context.WorldEntities.AddAsync(entity);
         await context.SaveChangesAsync();
 
@@ -619,7 +621,7 @@ public class WorldEntityRepositoryIntegrationTests
         await context.Worlds.AddAsync(world);
         await context.SaveChangesAsync();
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
         await context.SaveChangesAsync();
 
@@ -667,7 +669,7 @@ public class WorldEntityRepositoryIntegrationTests
 
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
         await context.SaveChangesAsync();
 
@@ -707,15 +709,15 @@ public class WorldEntityRepositoryIntegrationTests
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
         // Create hierarchy: parent -> child -> grandchild
-        var parent = WorldEntity.Create(world.Id, EntityType.Location, "Parent", null, null, null);
+        var parent = WorldEntity.Create(world.Id, EntityType.Location, "Parent", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(parent);
         await context.SaveChangesAsync();
 
-        var child = WorldEntity.Create(world.Id, EntityType.Location, "Child", null, parent.Id, null);
+        var child = WorldEntity.Create(world.Id, EntityType.Location, "Child", TestOwnerId, null, parent.Id, null);
         await context.WorldEntities.AddAsync(child);
         await context.SaveChangesAsync();
 
-        var grandchild = WorldEntity.Create(world.Id, EntityType.Location, "Grandchild", null, child.Id, null);
+        var grandchild = WorldEntity.Create(world.Id, EntityType.Location, "Grandchild", TestOwnerId, null, child.Id, null);
         await context.WorldEntities.AddAsync(grandchild);
         await context.SaveChangesAsync();
 
@@ -759,11 +761,11 @@ public class WorldEntityRepositoryIntegrationTests
         var repository = new WorldEntityRepository(context, userContextService, worldRepository);
 
         // Create parent with child
-        var parent = WorldEntity.Create(world.Id, EntityType.Location, "Parent", null, null, null);
+        var parent = WorldEntity.Create(world.Id, EntityType.Location, "Parent", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(parent);
         await context.SaveChangesAsync();
 
-        var child = WorldEntity.Create(world.Id, EntityType.Location, "Child", null, parent.Id, null);
+        var child = WorldEntity.Create(world.Id, EntityType.Location, "Child", TestOwnerId, null, parent.Id, null);
         await context.WorldEntities.AddAsync(child);
         await context.SaveChangesAsync();
 
@@ -792,7 +794,7 @@ public class WorldEntityRepositoryIntegrationTests
         await context.Worlds.AddAsync(world);
         await context.SaveChangesAsync();
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
         await context.SaveChangesAsync();
 

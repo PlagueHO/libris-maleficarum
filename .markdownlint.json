@@ -8,7 +8,7 @@
         "siblings_only": true
     },
     "MD033": {
-        "allowed_elements": ["ValidationError", "T", "World", "WorldEntity", "WorldResponse", "Asset", "Api", "string"]
+        "allowed_elements": ["ValidationError", "T", "World", "WorldEntity", "WorldResponse", "Asset", "Api", "string", "br"]
     },
     "MD034": true,
     "MD036": false,

@@ -214,42 +214,46 @@ interface SelectedCacheEntry {
 **Scenario**: User selects a world in WorldSelector
 
 **Flow**:
+
 1. Check cache: `get('sidebar_hierarchy_{worldId}_root', [])`
-2. If cache hit → render immediately
-3. If cache miss → API call: `GET /api/v1/worlds/{worldId}/entities?parentId={worldId}`
-4. Cache response: `set('sidebar_hierarchy_{worldId}_root', entities)`
-5. Render entities in EntityTree
+1. If cache hit → render immediately
+1. If cache miss → API call: `GET /api/v1/worlds/{worldId}/entities?parentId={worldId}`
+1. Cache response: `set('sidebar_hierarchy_{worldId}_root', entities)`
+1. Render entities in EntityTree
 
 ### Expanding Entity Node
 
 **Scenario**: User clicks chevron to expand entity with children
 
 **Flow**:
+
 1. Check `hasChildren` flag → if false, skip (leaf node)
-2. Check cache: `get('sidebar_hierarchy_{worldId}_{parentId}', [])`
-3. If cache hit → render children instantly (<100ms per FR-002)
-4. If cache miss → API call: `GET /api/v1/worlds/{worldId}/entities?parentId={parentId}`
-5. Cache response: `set('sidebar_hierarchy_{worldId}_{parentId}', children)`
-6. Update expanded state: `add parentId to expandedIds array`
-7. Cache expanded state: `set('sidebar_expanded_{worldId}', expandedIds)`
-8. Render children
+1. Check cache: `get('sidebar_hierarchy_{worldId}_{parentId}', [])`
+1. If cache hit → render children instantly (<100ms per FR-002)
+1. If cache miss → API call: `GET /api/v1/worlds/{worldId}/entities?parentId={parentId}`
+1. Cache response: `set('sidebar_hierarchy_{worldId}_{parentId}', children)`
+1. Update expanded state: `add parentId to expandedIds array`
+1. Cache expanded state: `set('sidebar_expanded_{worldId}', expandedIds)`
+1. Render children
 
 ### Switching Worlds
 
 **Scenario**: User selects different world from WorldSelector dropdown
 
 **Flow**:
+
 1. Clear current world UI state (collapse all nodes, deselect)
-2. Load new world: follow "Loading Root Entities" flow
-3. Restore expanded state from cache: `get('sidebar_expanded_{newWorldId}', [])`
-4. For each cached expandedId, follow "Expanding Entity Node" flow (should hit cache)
-5. Restore selected entity: `get('sidebar_selected_{newWorldId}', null)`
+1. Load new world: follow "Loading Root Entities" flow
+1. Restore expanded state from cache: `get('sidebar_expanded_{newWorldId}', [])`
+1. For each cached expandedId, follow "Expanding Entity Node" flow (should hit cache)
+1. Restore selected entity: `get('sidebar_selected_{newWorldId}', null)`
 
 ### Cache Invalidation on Mutation
 
 **Scenario**: User creates, updates, deletes, or moves an entity
 
 **Triggers**:
+
 - **Create**: Invalidate parent's children cache (`sidebar_hierarchy_{worldId}_{parentId}`)
 - **Update**: Invalidate entity's cache entry + parent's children cache
 - **Delete**: Invalidate entity's cache + parent's children cache + all descendant caches
@@ -279,6 +283,7 @@ createEntity: builder.mutation({
 ### GET /api/v1/worlds/{worldId}/entities
 
 **Query Parameters**:
+
 - `parentId`: Filter by parent (null or worldId for root entities)
 - `type`: Filter by entity type (optional)
 - `tags`: Comma-separated tags filter (optional)
@@ -353,6 +358,7 @@ interface WorldSidebarState {
 ```
 
 **Actions**:
+
 - `setSelectedWorld(worldId)`: Change active world
 - `setSelectedEntity(entityId)`: Select entity (update main panel)
 - `toggleNodeExpanded(entityId)`: Expand/collapse entity
@@ -399,8 +405,8 @@ interface WorldSidebarState {
 If migrating from localStorage to sessionStorage or changing cache structure:
 
 1. **Breaking change**: Old cache keys incompatible (different structure)
-2. **No migration script needed**: sessionStorage clears on tab close
-3. **User impact**: First load after deploy will be cache miss (acceptable)
+1. **No migration script needed**: sessionStorage clears on tab close
+1. **User impact**: First load after deploy will be cache miss (acceptable)
 
 ---
 

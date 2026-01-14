@@ -25,6 +25,7 @@ public class SearchServiceTests
     private SearchService _searchService = null!;
     private Guid _worldId;
     private Guid _userId;
+    private const string TestOwnerId = "test-owner-id";
 
     [TestInitialize]
     public void TestInitialize()
@@ -323,6 +324,7 @@ public class SearchServiceTests
             _worldId,
             EntityType.Other,
             name,
+            TestOwnerId,
             description,
             null,
             tags ?? new List<string>(),

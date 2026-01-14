@@ -11,6 +11,7 @@ using LibrisMaleficarum.Domain.ValueObjects;
 [TestCategory("Unit")]
 public class WorldEntityTests
 {
+    private const string TestOwnerId = "test-owner-id";
     [TestMethod]
     public void Create_WithValidParameters_ShouldCreateEntity()
     {
@@ -23,7 +24,7 @@ public class WorldEntityTests
         var attributes = new Dictionary<string, object> { ["level"] = 10, ["class"] = "ranger" };
 
         // Act
-        var entity = WorldEntity.Create(worldId, entityType, name, description, null, tags, attributes);
+        var entity = WorldEntity.Create(worldId, entityType, name, TestOwnerId, description, null, tags, attributes);
 
         // Assert
         entity.Should().NotBeNull();
@@ -52,7 +53,7 @@ public class WorldEntityTests
         var name = "Rivendell";
 
         // Act
-        var entity = WorldEntity.Create(worldId, entityType, name);
+        var entity = WorldEntity.Create(worldId, entityType, name, TestOwnerId);
 
         // Assert
         entity.Should().NotBeNull();
@@ -71,7 +72,7 @@ public class WorldEntityTests
         var entityType = EntityType.Character;
 
         // Act
-        var action = () => WorldEntity.Create(worldId, entityType, string.Empty);
+        var action = () => WorldEntity.Create(worldId, entityType, string.Empty, TestOwnerId);
 
         // Assert
         action.Should().Throw<ArgumentException>()
@@ -87,7 +88,7 @@ public class WorldEntityTests
         var nameTooLong = new string('A', 201);
 
         // Act
-        var action = () => WorldEntity.Create(worldId, entityType, nameTooLong);
+        var action = () => WorldEntity.Create(worldId, entityType, nameTooLong, TestOwnerId);
 
         // Assert
         action.Should().Throw<ArgumentException>()
@@ -104,7 +105,7 @@ public class WorldEntityTests
         var descriptionTooLong = new string('B', 5001);
 
         // Act
-        var action = () => WorldEntity.Create(worldId, entityType, name, descriptionTooLong);
+        var action = () => WorldEntity.Create(worldId, entityType, name, TestOwnerId, descriptionTooLong);
 
         // Assert
         action.Should().Throw<ArgumentException>()
@@ -121,7 +122,7 @@ public class WorldEntityTests
         var tooManyTags = Enumerable.Range(1, 21).Select(i => $"tag{i}").ToList();
 
         // Act
-        var action = () => WorldEntity.Create(worldId, entityType, name, tags: tooManyTags);
+        var action = () => WorldEntity.Create(worldId, entityType, name, TestOwnerId, tags: tooManyTags);
 
         // Assert
         action.Should().Throw<ArgumentException>()
@@ -138,7 +139,7 @@ public class WorldEntityTests
         var tagTooLong = new List<string> { new string('C', 51) };
 
         // Act
-        var action = () => WorldEntity.Create(worldId, entityType, name, tags: tagTooLong);
+        var action = () => WorldEntity.Create(worldId, entityType, name, TestOwnerId, tags: tagTooLong);
 
         // Assert
         action.Should().Throw<ArgumentException>()
@@ -150,7 +151,7 @@ public class WorldEntityTests
     {
         // Arrange
         var worldId = Guid.NewGuid();
-        var entity = WorldEntity.Create(worldId, EntityType.Character, "Aragorn", "Ranger");
+        var entity = WorldEntity.Create(worldId, EntityType.Character, "Aragorn", TestOwnerId, "Ranger");
         var originalModifiedDate = entity.ModifiedDate;
         System.Threading.Thread.Sleep(10); // Ensure time difference
 
@@ -175,7 +176,7 @@ public class WorldEntityTests
     {
         // Arrange
         var worldId = Guid.NewGuid();
-        var entity = WorldEntity.Create(worldId, EntityType.Character, "Frodo");
+        var entity = WorldEntity.Create(worldId, EntityType.Character, "Frodo", TestOwnerId);
 
         // Act
         var action = () => entity.Update(string.Empty, null, EntityType.Character, null, null, null);
@@ -190,7 +191,7 @@ public class WorldEntityTests
     {
         // Arrange
         var worldId = Guid.NewGuid();
-        var entity = WorldEntity.Create(worldId, EntityType.City, "Minas Tirith");
+        var entity = WorldEntity.Create(worldId, EntityType.City, "Minas Tirith", TestOwnerId);
         var newParentId = Guid.NewGuid();
         var originalModifiedDate = entity.ModifiedDate;
         System.Threading.Thread.Sleep(10); // Ensure time difference
@@ -208,7 +209,7 @@ public class WorldEntityTests
     {
         // Arrange
         var worldId = Guid.NewGuid();
-        var entity = WorldEntity.Create(worldId, EntityType.Character, "Boromir");
+        var entity = WorldEntity.Create(worldId, EntityType.Character, "Boromir", TestOwnerId);
         var originalModifiedDate = entity.ModifiedDate;
         System.Threading.Thread.Sleep(10); // Ensure time difference
 
@@ -231,7 +232,7 @@ public class WorldEntityTests
             ["dexterity"] = 14,
             ["constitution"] = 16
         };
-        var entity = WorldEntity.Create(worldId, EntityType.Character, "Gimli", attributes: attributes);
+        var entity = WorldEntity.Create(worldId, EntityType.Character, "Gimli", TestOwnerId, attributes: attributes);
 
         // Act
         var retrievedAttributes = entity.GetAttributes();
