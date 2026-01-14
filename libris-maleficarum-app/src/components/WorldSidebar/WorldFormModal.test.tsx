@@ -303,7 +303,6 @@ describe('WorldFormModal', () => {
 
     it('should limit description to 500 characters', async () => {
       // Arrange
-      const user = userEvent.setup();
       const store = createMockStore();
       render(
         <Provider store={store}>
@@ -314,7 +313,7 @@ describe('WorldFormModal', () => {
       // Act - Use fireEvent to bypass browser maxLength validation and test handler logic
       const descriptionInput = screen.getByLabelText(/description/i);
       const longDescription = 'a'.repeat(501);
-      // user.paste/type is blocked by maxLength attribute in jsdom
+      // fireEvent bypasses jsdom's maxLength attribute enforcement
       fireEvent.change(descriptionInput, { target: { value: longDescription } });
 
       // Assert - Component slices to 500 characters
