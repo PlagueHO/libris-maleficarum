@@ -1,6 +1,5 @@
 import { TopToolbar } from './components/TopToolbar/TopToolbar'
 import { WorldSidebar } from './components/WorldSidebar/WorldSidebar'
-import { SidePanel } from './components/SidePanel/SidePanel'
 import { MainPanel } from './components/MainPanel/MainPanel'
 import { ChatWindow } from './components/ChatWindow/ChatWindow'
 
@@ -13,7 +12,6 @@ function App() {
       <TopToolbar />
       <div className="flex-1 flex overflow-hidden">
         <WorldSidebar />
-        <SidePanel />
         <MainPanel />
         <ChatWindow />
       </div>
