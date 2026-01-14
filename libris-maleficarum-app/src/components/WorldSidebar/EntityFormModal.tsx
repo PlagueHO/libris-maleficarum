@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { closeEntityForm } from '../../store/worldSidebarSlice';
@@ -7,7 +7,10 @@ import {
   useUpdateWorldEntityMutation,
   useGetWorldEntityByIdQuery,
 } from '../../services/worldEntityApi';
-import { WorldEntityType } from '../../services/types/worldEntity.types';
+import {
+  WorldEntityType,
+  getEntityTypeSuggestions,
+} from '../../services/types/worldEntity.types';
 import {
   Dialog,
   DialogContent,
@@ -51,6 +54,30 @@ export function EntityFormModal() {
       { worldId: selectedWorldId!, entityId: editingEntityId! },
       { skip: !isEditing || !selectedWorldId }
     );
+
+  // Data Fetching for Create Mode (Parent Entity Context)
+  const { data: parentEntity, isLoading: isLoadingParent } =
+    useGetWorldEntityByIdQuery(
+      { worldId: selectedWorldId!, entityId: newEntityParentId! },
+      { skip: isEditing || !selectedWorldId || !newEntityParentId }
+    );
+
+  // Determine available entity types based on context
+  const availableTypes = useMemo(() => {
+    if (isEditing) {
+      // Allow all types when editing (or could be restricted)
+      return Object.values(WorldEntityType);
+    }
+
+    if (newEntityParentId) {
+      // Child entity: depends on parent type
+      if (!parentEntity) return []; // Wait for parent to load
+      return getEntityTypeSuggestions(parentEntity.entityType);
+    }
+
+    // Root entity
+    return getEntityTypeSuggestions(null);
+  }, [isEditing, newEntityParentId, parentEntity]);
 
   // Mutations
   const [createEntity, { isLoading: isCreating }] =
@@ -115,7 +142,6 @@ export function EntityFormModal() {
         await createEntity({
           worldId: selectedWorldId,
           data: {
-            worldId: selectedWorldId,
             parentId: newEntityParentId,
             name,
             description,
@@ -146,7 +172,7 @@ export function EntityFormModal() {
           </DialogDescription>
         </DialogHeader>
 
-        {isLoadingEntity && isEditing ? (
+        {(isLoadingEntity && isEditing) || (isLoadingParent && !isEditing && newEntityParentId) ? (
           <div className="flex justify-center p-4">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
@@ -175,19 +201,24 @@ export function EntityFormModal() {
               <Select
                 value={entityType}
                 onValueChange={(val) => setEntityType(val as WorldEntityType)}
-                // disabled={isEditing} // Allow changing type during edit for now
+                disabled={isLoadingParent} // Disable while loading parent context
               >
                 <SelectTrigger id="type" aria-label="Type">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(WorldEntityType).map((type) => (
+                  {availableTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {availableTypes.length === 0 && !isLoadingParent && !isEditing && (
+                <span className="text-xs text-amber-500">
+                  No valid child types available for this parent.
+                </span>
+              )}
               {errors.type && (
                 <span className="text-xs text-red-500">{errors.type}</span>
               )}
@@ -222,3 +253,4 @@ export function EntityFormModal() {
     </Dialog>
   );
 }
+

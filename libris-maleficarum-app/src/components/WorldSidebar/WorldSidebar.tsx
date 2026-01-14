@@ -10,12 +10,16 @@
  */
 
 import { useSelector, useDispatch } from 'react-redux';
+import { Plus } from 'lucide-react';
 import {
   selectIsWorldFormOpen,
   selectEditingWorldId,
+  selectSelectedWorldId,
   closeWorldForm,
+  openEntityFormCreate,
 } from '@/store/worldSidebarSlice';
 import { useGetWorldByIdQuery } from '@/services/worldApi';
+import { Button } from '@/components/ui/button';
 import { WorldSelector } from './WorldSelector';
 import { WorldFormModal } from './WorldFormModal';
 import { EntityFormModal } from './EntityFormModal';
@@ -31,6 +35,7 @@ export function WorldSidebar() {
   const dispatch = useDispatch();
   const isWorldFormOpen = useSelector(selectIsWorldFormOpen);
   const editingWorldId = useSelector(selectEditingWorldId);
+  const selectedWorldId = useSelector(selectSelectedWorldId);
 
   // Fetch world data if editing
   const { data: editingWorld } = useGetWorldByIdQuery(editingWorldId!, {
@@ -41,10 +46,31 @@ export function WorldSidebar() {
     dispatch(closeWorldForm());
   };
 
+  const handleAddRootEntity = () => {
+    dispatch(openEntityFormCreate(null));
+  };
+
   return (
     <aside className={styles.sidebar} role="complementary" aria-label="World navigation">
       {/* World Selector */}
       <WorldSelector />
+
+      {/* Entity Toolbar */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border/40">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Entities
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={handleAddRootEntity}
+          disabled={!selectedWorldId}
+          aria-label="Add Root Entity"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
 
       {/* Entity Tree Navigation */}
       <EntityTree />
@@ -56,7 +82,7 @@ export function WorldSidebar() {
         world={editingWorld}
         onClose={handleCloseWorldForm}
       />
-      
+
       {/* Entity Form Modal */}
       <EntityFormModal />
     </aside>

@@ -15,12 +15,17 @@ export const WorldEntityType = {
   Country: 'Country',
   Region: 'Region',
   City: 'City',
+  Building: 'Building',
+  Room: 'Room',
   Location: 'Location',
   Character: 'Character',
-  Organization: 'Organization',
+  Faction: 'Faction',
   Event: 'Event',
   Item: 'Item',
   Campaign: 'Campaign',
+  Session: 'Session',
+  Quest: 'Quest',
+  Other: 'Other',
 } as const;
 
 export type WorldEntityType = (typeof WorldEntityType)[keyof typeof WorldEntityType];
@@ -78,9 +83,6 @@ export interface WorldEntity {
  * API request to create a new WorldEntity
  */
 export interface CreateWorldEntityRequest {
-  /** Parent world ID (required) */
-  worldId: string;
-
   /** Parent entity ID (null for root entities) */
   parentId: string | null;
 
@@ -188,46 +190,81 @@ export const ENTITY_TYPE_SUGGESTIONS: Record<
   [WorldEntityType.Continent]: [
     WorldEntityType.Country,
     WorldEntityType.Region,
+    WorldEntityType.Faction,
+    WorldEntityType.Event,
   ],
   [WorldEntityType.Country]: [
     WorldEntityType.Region,
     WorldEntityType.City,
     WorldEntityType.Location,
+    WorldEntityType.Faction,
+    WorldEntityType.Event,
   ],
   [WorldEntityType.Region]: [
     WorldEntityType.City,
     WorldEntityType.Location,
     WorldEntityType.Character,
+    WorldEntityType.Faction,
   ],
   [WorldEntityType.City]: [
+    WorldEntityType.Building,
     WorldEntityType.Location,
     WorldEntityType.Character,
-    WorldEntityType.Organization,
+    WorldEntityType.Faction,
+    WorldEntityType.Event,
+  ],
+  [WorldEntityType.Building]: [
+    WorldEntityType.Room,
+    WorldEntityType.Character,
+    WorldEntityType.Item,
+    WorldEntityType.Event,
+  ],
+  [WorldEntityType.Room]: [
+    WorldEntityType.Character,
+    WorldEntityType.Item,
+    WorldEntityType.Event,
   ],
   [WorldEntityType.Location]: [
     WorldEntityType.Character,
     WorldEntityType.Item,
     WorldEntityType.Event,
+    WorldEntityType.Quest,
   ],
   [WorldEntityType.Character]: [
     WorldEntityType.Item,
-    WorldEntityType.Event,
+    WorldEntityType.Quest,
   ],
-  [WorldEntityType.Organization]: [
+  [WorldEntityType.Faction]: [
     WorldEntityType.Character,
     WorldEntityType.Location,
     WorldEntityType.Event,
+    WorldEntityType.Quest,
   ],
   [WorldEntityType.Event]: [
     WorldEntityType.Character,
     WorldEntityType.Location,
+    WorldEntityType.Item,
   ],
   [WorldEntityType.Item]: [],
   [WorldEntityType.Campaign]: [
+    WorldEntityType.Session,
+    WorldEntityType.Quest,
     WorldEntityType.Event,
     WorldEntityType.Character,
     WorldEntityType.Location,
+    WorldEntityType.Faction,
   ],
+  [WorldEntityType.Session]: [
+    WorldEntityType.Event,
+    WorldEntityType.Location,
+  ],
+  [WorldEntityType.Quest]: [
+    WorldEntityType.Character,
+    WorldEntityType.Item,
+    WorldEntityType.Location,
+    WorldEntityType.Event,
+  ],
+  [WorldEntityType.Other]: [],
 };
 
 /**

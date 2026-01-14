@@ -136,7 +136,7 @@
 
 - [X] T062 [P] [US3] Write WorldFormModal edit mode test in libris-maleficarum-app/src/components/WorldSidebar/WorldFormModal.test.tsx
 - [X] T063 [P] [US3] Write WorldSelector edit button test in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
-- [ ] T064 [P] [US3] Write integration test for world update flow in libris-maleficarum-app/src/**tests**/integration/worldEdit.test.tsx
+- [X] T064 [P] [US3] Write integration test for world update flow in libris-maleficarum-app/src/__tests__/integration/worldEdit.test.tsx
 
 ### Implementation for User Story 3
 
@@ -220,28 +220,28 @@
 ### Tests for Entity Creation ⚠️
 
 - [X] T099 [P] Write EntityFormModal component test in libris-maleficarum-app/src/components/WorldSidebar/EntityFormModal.test.tsx
-- [ ] T100 [P] Write EntityContextMenu component test in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.test.tsx
-- [ ] T101 [P] Write context-aware type suggestions test in EntityFormModal.test.tsx
-- [ ] T102 [P] Write accessibility test for EntityContextMenu keyboard trigger (Shift+F10)
+- [X] T100 [P] Write EntityContextMenu component test in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.test.tsx
+- [X] T101 [P] Write context-aware type suggestions test in EntityFormModal.test.tsx
+- [X] T102 [P] Write accessibility test for EntityContextMenu keyboard trigger (Shift+F10)
 
 ### Implementation for Entity Creation
 
 - [X] T103 [P] Create EntityFormModal component in libris-maleficarum-app/src/components/WorldSidebar/EntityFormModal.tsx
-- [ ] T104 [P] Create EntityContextMenu component in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.tsx
-- [ ] T105 Add inline "+" button to EntityTreeNode (visible on hover)
-- [ ] T106 Add "Add Root Entity" button to WorldSidebar
+- [X] T104 [P] Create EntityContextMenu component in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.tsx
+- [X] T105 Add inline "+" button to EntityTreeNode (visible on hover)
+- [X] T106 Add "Add Root Entity" button to WorldSidebar
 - [X] T107 Implement context-aware entity type suggestions in EntityFormModal
 - [X] T108 Connect EntityFormModal to createEntity mutation
-- [ ] T109 Add context menu "Add Child Entity" action
-- [ ] T110 Add context menu "Edit Entity" action
-- [ ] T111 Add context menu "Delete Entity" action with confirmation
-- [ ] T112 Add context menu "Move Entity" action (future: opens move dialog)
+- [X] T109 Add context menu "Add Child Entity" action
+- [X] T110 Add context menu "Edit Entity" action
+- [X] T111 Add context menu "Delete Entity" action with confirmation
+- [X] T112 Add context menu "Move Entity" action (future: opens move dialog)
 - [X] T113 Update worldSidebarSlice to track entity form modal state (open/close, editing entity, parent entity)
-- [ ] T114 Connect inline "+" button to open EntityFormModal with parent pre-selected
-- [ ] T115 Connect "Add Root Entity" button to open EntityFormModal with worldId as parent
+- [X] T114 Connect inline "+" button to open EntityFormModal with parent pre-selected
+- [X] T115 Connect "Add Root Entity" button to open EntityFormModal with worldId as parent
 - [X] T116 Implement entity creation form validation (name required, max lengths)
-- [ ] T117 Add CSS Modules styling for EntityFormModal
-- [ ] T118 Add CSS Modules styling for EntityContextMenu
+- [X] T117 Add CSS Modules styling for EntityFormModal
+- [X] T118 Add CSS Modules styling for EntityContextMenu
 
 **Checkpoint**: Full entity CRUD operations available via sidebar
 
@@ -255,17 +255,17 @@
 
 ### Tests for Entity Selection ⚠️
 
-- [ ] T119 [P] Write entity selection test in EntityTreeNode.test.tsx
-- [ ] T120 [P] Write integration test for sidebar → main panel communication in libris-maleficarum-app/src/**tests**/integration/entitySelection.test.tsx
+- [X] T119 [P] Write entity selection test in EntityTreeNode.test.tsx
+- [X] T120 [P] Write integration test for sidebar → main panel communication in libris-maleficarum-app/src/**tests**/integration/entitySelection.test.tsx
 
 ### Implementation for Entity Selection
 
-- [ ] T121 Add click handler to EntityTreeNode to dispatch setSelectedEntity action
-- [ ] T122 Update worldSidebarSlice to track selectedEntityId
-- [ ] T123 Add visual selection highlight styling to EntityTreeNode.module.css
-- [ ] T124 Update MainPanel component to listen to selectedEntityId from Redux store
-- [ ] T125 Create basic EntityDetailView component in MainPanel (future enhancement)
-- [ ] T126 Test entity selection flow end-to-end
+- [X] T121 Add click handler to EntityTreeNode to dispatch setSelectedEntity action
+- [X] T122 Update worldSidebarSlice to track selectedEntityId
+- [X] T123 Add visual selection highlight styling to EntityTreeNode.module.css
+- [X] T124 Update MainPanel component to listen to selectedEntityId from Redux store
+- [X] T125 Create basic EntityDetailView component in MainPanel (future enhancement)
+- [X] T126 Test entity selection flow end-to-end
 
 **Checkpoint**: Complete sidebar-to-main-panel communication established
 

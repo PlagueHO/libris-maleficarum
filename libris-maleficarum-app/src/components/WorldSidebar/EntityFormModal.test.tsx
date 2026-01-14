@@ -72,6 +72,24 @@ describe('EntityFormModal', () => {
         const user = userEvent.setup();
         
         server.use(
+            http.get(`${BASE_URL}/api/v1/worlds/world-1/entities/parent-1`, () => {
+                return HttpResponse.json({
+                    entity: {
+                        id: 'parent-1',
+                        name: 'Parent Entity',
+                        entityType: WorldEntityType.Region, // Region allows City
+                        worldId: 'world-1',
+                        parentId: 'root',
+                        hasChildren: true,
+                        //... minimal fields
+                        path: ['root'],
+                        depth: 0,
+                        ownerId: 'u1',
+                        createdAt: '', updatedAt: '', isDeleted: false,
+                        tags: []
+                    }
+                });
+            }),
             http.post(`${BASE_URL}/api/v1/worlds/world-1/entities`, async () => {
                 return HttpResponse.json({
                     entity: {
@@ -96,7 +114,10 @@ describe('EntityFormModal', () => {
 
         const { store } = renderWithProviders(<EntityFormModal />, { preloadedState });
 
-        await user.type(screen.getByRole('textbox', { name: /name/i }), 'New Entity');
+        // Wait for form to appear (loader to disappear)
+        const nameInput = await screen.findByRole('textbox', { name: /name/i });
+        await user.type(nameInput, 'New Entity');
+        
         await user.type(screen.getByRole('textbox', { name: /description/i }), 'Description');
         
         // Use fireEvent for Select interaction to avoid user-event flakiness with Radix primitives in tests
@@ -223,6 +244,84 @@ describe('EntityFormModal', () => {
         await screen.findByRole('dialog');
         const results = await axe(container);
         expect(results).toHaveNoViolations();
+    });
+  });
+
+  describe('Context Awareness', () => {
+    it('should filter entity types based on parent entity type (Continent -> Country/Region)', async () => {
+        const preloadedState = {
+            worldSidebar: {
+              isEntityFormOpen: true,
+              editingEntityId: null,
+              newEntityParentId: 'continent-1',
+              selectedWorldId: 'world-1',
+              expandedNodeIds: [],
+              selectedEntityId: null,
+              isWorldFormOpen: false,
+              editingWorldId: null,
+            },
+        };
+        
+        server.use(
+            http.get(`${BASE_URL}/api/v1/worlds/world-1/entities/continent-1`, () => {
+                return HttpResponse.json({
+                    entity: {
+                        id: 'continent-1',
+                        name: 'My Continent',
+                        entityType: WorldEntityType.Continent,
+                        worldId: 'world-1',
+                        tags: [],
+                        parentId: 'root', 
+                        path: ['root'],
+                        depth: 0,
+                        hasChildren: true,
+                        ownerId: 'user-1',
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(), 
+                        isDeleted: false,
+                    }
+                });
+            })
+        );
+        
+        renderWithProviders(<EntityFormModal />, { preloadedState });
+        
+        // Open Select
+        const typeSelect = await screen.findByRole('combobox', { name: /type/i });
+        fireEvent.click(typeSelect);
+        
+        // Check Country is present (Continent -> Country is valid)
+        expect(screen.getByRole('option', { name: WorldEntityType.Country })).toBeInTheDocument();
+        
+        // Check City is NOT present (Continent -> City is invalid)
+        expect(screen.queryByRole('option', { name: WorldEntityType.City })).not.toBeInTheDocument();
+    });
+
+    it('should show root types when no parent is selected', async () => {
+        const preloadedState = {
+            worldSidebar: {
+              isEntityFormOpen: true,
+              editingEntityId: null,
+              newEntityParentId: null, // Root
+              selectedWorldId: 'world-1',
+              expandedNodeIds: [],
+              selectedEntityId: null,
+              isWorldFormOpen: false,
+              editingWorldId: null,
+            },
+        };
+        
+        renderWithProviders(<EntityFormModal />, { preloadedState });
+        
+        const typeSelect = await screen.findByRole('combobox', { name: /type/i });
+        fireEvent.click(typeSelect);
+        
+        // Root types: Continent, Campaign
+        expect(screen.getByRole('option', { name: WorldEntityType.Continent })).toBeInTheDocument();
+        expect(screen.getByRole('option', { name: WorldEntityType.Campaign })).toBeInTheDocument();
+        
+        // Non-root types should not be present
+        expect(screen.queryByRole('option', { name: WorldEntityType.City })).not.toBeInTheDocument();
     });
   });
 });
