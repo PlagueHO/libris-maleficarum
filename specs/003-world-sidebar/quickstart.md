@@ -33,7 +33,7 @@ All dependencies are already present in `package.json` (see plan.md Appendix).
 
 ### Component Location
 
-```
+```text
 libris-maleficarum-app/src/components/WorldSidebar/
 ├── WorldSidebar.tsx          # Container component
 ├── WorldSelector.tsx         # World dropdown

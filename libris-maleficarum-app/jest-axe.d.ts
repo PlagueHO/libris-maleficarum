@@ -18,6 +18,7 @@ declare module 'jest-axe' {
   /**
    * Jest/Vitest matcher to assert that axe results have no violations
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export const toHaveNoViolations: any;
 
   /**
@@ -27,10 +28,10 @@ declare module 'jest-axe' {
 }
 
 declare module 'vitest' {
-  interface Assertion<T = any> {
+  interface Assertion<T = unknown> {
     toHaveNoViolations(): T;
   }
   interface AsymmetricMatchersContaining {
-    toHaveNoViolations(): any;
+    toHaveNoViolations(): unknown;
   }
 }
