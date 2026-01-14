@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeAll, afterEach, afterAll } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { Provider } from 'react-redux';
@@ -311,11 +311,11 @@ describe('WorldFormModal', () => {
         </Provider>,
       );
 
-      // Act - Use paste instead of typing 501 characters
+      // Act - Use fireEvent to bypass browser maxLength validation and test handler logic
       const descriptionInput = screen.getByLabelText(/description/i);
       const longDescription = 'a'.repeat(501);
-      await user.click(descriptionInput);
-      await user.paste(longDescription);
+      // user.paste/type is blocked by maxLength attribute in jsdom
+      fireEvent.change(descriptionInput, { target: { value: longDescription } });
 
       // Assert - Component slices to 500 characters
       await waitFor(() => {
