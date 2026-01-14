@@ -91,47 +91,46 @@ export function WorldSelector() {
   const selectedWorld = worlds.find((w) => w.id === selectedWorldId);
   const sortedWorlds = [...worlds].sort((a, b) => a.name.localeCompare(b.name));
 
-  // Single world - show name with edit button
-  if (worlds.length === 1) {
-    const world = worlds[0];
-    return (
-      <div className={styles.container}>
-        <div className={styles.singleWorld}>
-          <span className={styles.worldName}>{world.name}</span>
-          <button
-            type="button"
-            onClick={() => handleEditWorld(world.id)}
-            className={styles.editButton}
-            aria-label="Edit world"
-          >
-            <Settings size={16} aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Multiple worlds - show dropdown
+  // Show dropdown with create button
   return (
     <div className={styles.container}>
-      <Select value={selectedWorldId || undefined} onValueChange={handleWorldChange}>
-        <SelectTrigger className={styles.selectTrigger} aria-label="Select world">
-          <SelectValue placeholder="Select a world">
-            {selectedWorld?.name || 'Select a world'}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {sortedWorlds.map((world) => (
-            <SelectItem
-              key={world.id}
-              value={world.id}
-              aria-selected={world.id === selectedWorldId}
-            >
-              {world.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className={styles.selectorRow}>
+        <Select value={selectedWorldId || undefined} onValueChange={handleWorldChange}>
+          <SelectTrigger className={styles.selectTrigger} aria-label="Select world">
+            <SelectValue placeholder="Select a world">
+              {selectedWorld?.name || 'Select a world'}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {sortedWorlds.map((world) => (
+              <SelectItem
+                key={world.id}
+                value={world.id}
+                aria-selected={world.id === selectedWorldId}
+              >
+                {world.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <button
+          type="button"
+          onClick={() => selectedWorldId && handleEditWorld(selectedWorldId)}
+          className={styles.editButton}
+          aria-label="Edit current world"
+          disabled={!selectedWorldId}
+        >
+          <Settings size={16} aria-hidden="true" />
+        </button>
+      </div>
+      <button
+        type="button"
+        onClick={handleCreateWorld}
+        className={styles.createButton}
+        aria-label="Create new world"
+      >
+        + Create World
+      </button>
     </div>
   );
 }
