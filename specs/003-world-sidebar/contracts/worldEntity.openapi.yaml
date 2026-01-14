@@ -1,0 +1,518 @@
+openapi: 3.0.3
+info:
+  title: WorldEntity API
+  description: |
+    API contract for hierarchical World Entity management in Libris Maleficarum.
+    
+    WorldEntities represent hierarchical content within Worlds (continents, countries, 
+    cities, characters, campaigns, etc.). This API supports CRUD operations, hierarchy 
+    navigation, and entity type management.
+  version: 1.0.0
+  contact:
+    name: Libris Maleficarum Development Team
+
+servers:
+  - url: https://api.librismaleficarum.com/v1
+    description: Production API
+  - url: https://api-staging.librismaleficarum.com/v1
+    description: Staging API
+  - url: http://localhost:8080/v1
+    description: Local development (Aspire.NET)
+
+paths:
+  /worlds/{worldId}/entities:
+    get:
+      summary: List WorldEntities
+      description: |
+        Retrieve entities for a world, optionally filtered by parent, type, or tags.
+        Supports pagination for large hierarchies.
+      operationId: getWorldEntities
+      tags:
+        - WorldEntity
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          description: World identifier (GUID)
+          schema:
+            type: string
+            format: uuid
+        - name: parentId
+          in: query
+          required: false
+          description: |
+            Filter by parent entity ID. Use worldId value for root-level entities, 
+            or omit to get all entities in the world.
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          required: false
+          description: Filter by entity type
+          schema:
+            $ref: '#/components/schemas/WorldEntityType'
+        - name: tags
+          in: query
+          required: false
+          description: Comma-separated list of tags to filter by (OR logic)
+          schema:
+            type: string
+            example: "dungeon,quest"
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of results per page (default: 50, max: 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: cursor
+          in: query
+          required: false
+          description: Pagination cursor from previous response
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Entities retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorldEntityListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - BearerAuth: []
+
+    post:
+      summary: Create WorldEntity
+      description: Create a new entity within a world hierarchy
+      operationId: createWorldEntity
+      tags:
+        - WorldEntity
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorldEntityRequest'
+      responses:
+        '201':
+          description: Entity created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorldEntity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - BearerAuth: []
+
+  /worlds/{worldId}/entities/{entityId}:
+    get:
+      summary: Get WorldEntity by ID
+      description: Retrieve a specific entity by its identifier
+      operationId: getWorldEntityById
+      tags:
+        - WorldEntity
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: entityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Entity retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorldEntity'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - BearerAuth: []
+
+    put:
+      summary: Update WorldEntity
+      description: Update entity metadata (name, description, tags, type)
+      operationId: updateWorldEntity
+      tags:
+        - WorldEntity
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: entityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorldEntityRequest'
+      responses:
+        '200':
+          description: Entity updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorldEntity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - BearerAuth: []
+
+    delete:
+      summary: Delete WorldEntity (soft delete)
+      description: |
+        Soft delete an entity by setting isDeleted=true. 
+        The entity and all its descendants are marked as deleted but remain in the database.
+      operationId: deleteWorldEntity
+      tags:
+        - WorldEntity
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: entityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Entity deleted successfully (no content)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - BearerAuth: []
+
+  /worlds/{worldId}/entities/{entityId}/move:
+    patch:
+      summary: Move WorldEntity to new parent
+      description: |
+        Change the parent of an entity, updating its path, depth, and hierarchy.
+        This operation recalculates the path for the entity and all descendants.
+      operationId: moveWorldEntity
+      tags:
+        - WorldEntity
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: entityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveWorldEntityRequest'
+      responses:
+        '200':
+          description: Entity moved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorldEntity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflict - cannot move entity (would create cycle)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - BearerAuth: []
+
+components:
+  schemas:
+    WorldEntity:
+      type: object
+      required:
+        - id
+        - worldId
+        - entityType
+        - name
+        - tags
+        - path
+        - depth
+        - hasChildren
+        - ownerId
+        - createdAt
+        - updatedAt
+        - isDeleted
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique entity identifier (GUID)
+        worldId:
+          type: string
+          format: uuid
+          description: Parent world reference
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Parent entity ID (null for root entities)
+        entityType:
+          $ref: '#/components/schemas/WorldEntityType'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Entity display name
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          description: Optional entity description
+        tags:
+          type: array
+          items:
+            type: string
+          description: User-defined tags for filtering/search
+        path:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Array of ancestor IDs (for hierarchy queries)
+        depth:
+          type: integer
+          minimum: 0
+          description: Hierarchy level (0 = root)
+        hasChildren:
+          type: boolean
+          description: Optimization flag - skip children query if false
+        ownerId:
+          type: string
+          description: Owner user identifier
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO 8601 creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 last update timestamp
+        isDeleted:
+          type: boolean
+          description: Soft delete flag
+
+    WorldEntityType:
+      type: string
+      enum:
+        - Continent
+        - Country
+        - Region
+        - City
+        - Location
+        - Character
+        - Organization
+        - Event
+        - Item
+        - Campaign
+      description: Entity classification type
+
+    CreateWorldEntityRequest:
+      type: object
+      required:
+        - entityType
+        - name
+      properties:
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: |
+            Parent entity ID. Use null for root entities, worldId for root-level entities,
+            or another entityId for child entities.
+        entityType:
+          $ref: '#/components/schemas/WorldEntityType'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+          default: []
+
+    UpdateWorldEntityRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        entityType:
+          $ref: '#/components/schemas/WorldEntityType'
+
+    MoveWorldEntityRequest:
+      type: object
+      required:
+        - newParentId
+      properties:
+        newParentId:
+          type: string
+          format: uuid
+          description: New parent entity ID (cannot be self or descendant)
+
+    WorldEntityListResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorldEntity'
+        pagination:
+          type: object
+          nullable: true
+          properties:
+            cursor:
+              type: string
+              nullable: true
+              description: Cursor for next page (null if no more results)
+            hasMore:
+              type: boolean
+              description: True if more results available
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable error message
+        code:
+          type: string
+          description: Machine-readable error code
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error context
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters or body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Missing or invalid authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: World or entity not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Azure Entra ID JWT token. Include in Authorization header as:
+        `Authorization: Bearer <token>`
+
+tags:
+  - name: WorldEntity
+    description: Hierarchical entity management within Worlds

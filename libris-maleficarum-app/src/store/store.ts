@@ -1,6 +1,7 @@
 import { configureStore, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { api } from '@/services/api';
+import worldSidebarReducer from './worldSidebarSlice';
 
 // Side panel slice for managing expand/collapse state
 interface SidePanelState {
@@ -30,6 +31,7 @@ export const { toggle, setExpanded } = sidePanelSlice.actions;
 export const store = configureStore({
   reducer: {
     sidePanel: sidePanelSlice.reducer,
+    worldSidebar: worldSidebarReducer,
     // Add RTK Query API reducer
     [api.reducerPath]: api.reducer,
   },

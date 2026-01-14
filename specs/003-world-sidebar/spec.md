@@ -148,7 +148,7 @@ A user needs an intuitive, visually appealing sidebar that clearly communicates 
 - **FR-010**: System MUST NOT display expand/collapse indicators for leaf entities (entities without children)
 - **FR-011**: System MUST lazy-load child entities when a user expands a parent entity for the first time
 - **FR-012**: System MUST visually indicate loading state (spinner/skeleton) while fetching entity children from the API
-- **FR-013**: System MUST cache loaded hierarchy data (entity children) in sessionStorage with a 5-minute TTL (cleared on tab/browser close)
+- **FR-013**: System MUST cache loaded hierarchy data (entity children), expanded node state, and selected entity in sessionStorage with separate keys for each concern and a 5-minute TTL (cleared on tab/browser close)
 - **FR-014**: System MUST restore previously expanded/collapsed hierarchy state from sessionStorage when a user returns to a world within the cache window (same browser session only)
 - **FR-015**: System MUST invalidate cache entries when entity data changes (create, update, delete, move operations)
 - **FR-016**: System MUST visually distinguish entity types using distinctive icons (based on EntityType field)

@@ -1,0 +1,116 @@
+/**
+ * EntityTreeNode Component Styles
+ */
+
+.nodeContainer {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Connecting line from parent to child */
+.nodeContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10px;
+  width: 1px;
+  height: 100%;
+  background-color: var(--color-border);
+  opacity: 0.3;
+}
+
+/* Hide connecting line for root level nodes */
+.nodeContainer[data-level='0']::before {
+  display: none;
+}
+
+/* Horizontal line to node */
+.nodeContainer::after {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 10px;
+  width: 10px;
+  height: 1px;
+  background-color: var(--color-border);
+  opacity: 0.3;
+}
+
+/* Hide horizontal line for root level nodes */
+.nodeContainer[data-level='0']::after {
+  display: none;
+}
+
+.node {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background-color 0.15s;
+  user-select: none;
+  outline: none;
+  position: relative;
+  z-index: 1;
+}
+
+.node:hover {
+  background-color: var(--color-accent);
+}
+
+.node:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.node.selected {
+  background-color: var(--color-accent);
+  color: var(--color-accent-foreground);
+  font-weight: 500;
+}
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0.25rem;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.expandButton:hover {
+  background-color: var(--color-muted);
+  color: var(--color-foreground);
+}
+
+.expandButton:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 1px;
+}
+
+.spacer {
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.icon {
+  flex-shrink: 0;
+  color: var(--color-muted-foreground);
+}
+
+.name {
+  flex: 1;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
