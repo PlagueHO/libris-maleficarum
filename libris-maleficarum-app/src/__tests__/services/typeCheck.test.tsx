@@ -32,18 +32,18 @@ const mockWorlds: World[] = [
 ];
 
 const server = setupServer(
-  http.get('http://localhost:5000/api/worlds', () => {
+  http.get('http://localhost:5000/api/v1/worlds', () => {
     const response: WorldListResponse = {
       data: mockWorlds,
       meta: { requestId: 'test-1', timestamp: new Date().toISOString() },
     };
     return HttpResponse.json(response);
   }),
-  http.get('http://localhost:5000/api/worlds/:id', ({ params }) => {
+  http.get('http://localhost:5000/api/v1/worlds/:id', ({ params }) => {
     const world = mockWorlds.find((w) => w.id === params.id);
     if (!world) {
       return HttpResponse.json(
-        { type: 'not-found', title: 'Not Found', status: 404 },
+        { type: 'not-found', title: 'Resource Not Found', status: 404 },
         { status: 404 }
       );
     }
@@ -52,7 +52,7 @@ const server = setupServer(
       meta: { requestId: 'test-2', timestamp: new Date().toISOString() },
     });
   }),
-  http.post('http://localhost:5000/api/worlds', () => {
+  http.post('http://localhost:5000/api/v1/worlds', () => {
     return HttpResponse.json(
       {
         data: { ...mockWorlds[0], id: 'new-id' },
