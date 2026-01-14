@@ -169,16 +169,17 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
   } = useGetEntitiesByParentQuery(
     { worldId, parentId },
     {
-      skip: cachedData.length > 0, // Skip fetch if cache hit
+      // Refetch on mount or arguments change (RTK Query handles deduplication)
+      // We don't skip based on cache anymore to ensure we receive updates like new entities
     },
   );
 
-  // Update cache when data fetched
+  // Update cache when data fetched (keep sync)
   useEffect(() => {
-    if (entities && entities.length > 0 && cachedData.length === 0) {
+    if (entities && entities.length > 0) {
       cacheSet(cacheKey, entities);
     }
-  }, [entities, cachedData.length, cacheKey]);
+  }, [entities, cacheKey]);
 
   // Loading state
   if (isLoading) {
