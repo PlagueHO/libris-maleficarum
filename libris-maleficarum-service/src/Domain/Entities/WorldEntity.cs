@@ -45,6 +45,26 @@ public class WorldEntity
     public List<string> Tags { get; private set; }
 
     /// <summary>
+    /// Gets the array of ancestor IDs from root to parent (for hierarchy queries).
+    /// </summary>
+    public List<Guid> Path { get; private set; }
+
+    /// <summary>
+    /// Gets the hierarchy level (0 = root).
+    /// </summary>
+    public int Depth { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether this entity has children (optimization flag).
+    /// </summary>
+    public bool HasChildren { get; private set; }
+
+    /// <summary>
+    /// Gets the identifier of the user who owns this entity.
+    /// </summary>
+    public string OwnerId { get; private set; }
+
+    /// <summary>
     /// Gets the custom attributes as a JSON string (flexible schema).
     /// </summary>
     public string Attributes { get; private set; }
@@ -71,6 +91,8 @@ public class WorldEntity
     {
         Name = string.Empty;
         Tags = [];
+        Path = [];
+        OwnerId = string.Empty;
         Attributes = "{}";
     }
 
@@ -80,20 +102,42 @@ public class WorldEntity
     /// <param name="worldId">The world identifier.</param>
     /// <param name="entityType">The type of entity.</param>
     /// <param name="name">The entity name (1-200 characters).</param>
+    /// <param name="ownerId">The identifier of the user who owns this entity.</param>
     /// <param name="description">Optional description (max 5000 characters).</param>
     /// <param name="parentId">Optional parent entity identifier for hierarchical relationships.</param>
     /// <param name="tags">Optional list of tags (max 20, each max 50 characters).</param>
     /// <param name="attributes">Optional custom attributes as dictionary (serialized to JSON, max 100KB).</param>
+    /// <param name="parentPath">Optional parent's path (for calculating this entity's path).</param>
+    /// <param name="parentDepth">Optional parent's depth (for calculating this entity's depth).</param>
     /// <returns>A new WorldEntity instance.</returns>
     public static WorldEntity Create(
         Guid worldId,
         EntityType entityType,
         string name,
+        string ownerId,
         string? description = null,
         Guid? parentId = null,
         List<string>? tags = null,
-        Dictionary<string, object>? attributes = null)
+        Dictionary<string, object>? attributes = null,
+        List<Guid>? parentPath = null,
+        int parentDepth = -1)
     {
+        // Calculate path and depth
+        var path = new List<Guid>();
+        var depth = 0;
+
+        if (parentId.HasValue)
+        {
+            // If parent provided, path = parent's path + parent's ID
+            if (parentPath != null)
+            {
+                path.AddRange(parentPath);
+            }
+
+            path.Add(parentId.Value);
+            depth = parentDepth + 1;
+        }
+
         var entity = new WorldEntity
         {
             Id = Guid.NewGuid(),
@@ -103,6 +147,10 @@ public class WorldEntity
             Name = name,
             Description = description,
             Tags = tags ?? [],
+            Path = path,
+            Depth = depth,
+            HasChildren = false,
+            OwnerId = ownerId,
             Attributes = attributes != null ? JsonSerializer.Serialize(attributes) : "{}",
             CreatedDate = DateTime.UtcNow,
             ModifiedDate = DateTime.UtcNow,
@@ -145,9 +193,31 @@ public class WorldEntity
     /// Moves this entity to a new parent.
     /// </summary>
     /// <param name="newParentId">The new parent entity identifier (null for root-level).</param>
-    public void Move(Guid? newParentId)
+    /// <param name="newParentPath">The new parent's path (for calculating this entity's path).</param>
+    /// <param name="newParentDepth">The new parent's depth (for calculating this entity's depth).</param>
+    public void Move(Guid? newParentId, List<Guid>? newParentPath = null, int newParentDepth = -1)
     {
         ParentId = newParentId;
+
+        // Recalculate path and depth based on new parent
+        if (newParentId.HasValue)
+        {
+            Path = new List<Guid>();
+            if (newParentPath != null)
+            {
+                Path.AddRange(newParentPath);
+            }
+
+            Path.Add(newParentId.Value);
+            Depth = newParentDepth + 1;
+        }
+        else
+        {
+            // Root-level entity
+            Path = [];
+            Depth = 0;
+        }
+
         ModifiedDate = DateTime.UtcNow;
     }
 
@@ -158,6 +228,15 @@ public class WorldEntity
     {
         IsDeleted = true;
         ModifiedDate = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Sets the HasChildren flag (typically updated by repository after child count check).
+    /// </summary>
+    /// <param name="hasChildren">True if this entity has children, false otherwise.</param>
+    public void SetHasChildren(bool hasChildren)
+    {
+        HasChildren = hasChildren;
     }
 
     /// <summary>
@@ -176,6 +255,11 @@ public class WorldEntity
             throw new ArgumentException("Entity name must not exceed 200 characters.");
         }
 
+        if (string.IsNullOrWhiteSpace(OwnerId))
+        {
+            throw new ArgumentException("OwnerId is required.");
+        }
+
         if (Description?.Length > 5000)
         {
             throw new ArgumentException("Description must not exceed 5000 characters.");
@@ -189,6 +273,11 @@ public class WorldEntity
         if (Tags.Any(t => string.IsNullOrWhiteSpace(t) || t.Length > 50))
         {
             throw new ArgumentException("Each tag must be 1-50 characters.");
+        }
+
+        if (Depth < 0 || Depth > 10)
+        {
+            throw new ArgumentException("Hierarchy depth must be between 0 and 10.");
         }
 
         // Validate Attributes JSON size (max 100KB)

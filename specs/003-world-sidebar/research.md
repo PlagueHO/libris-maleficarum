@@ -263,18 +263,30 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem } from '@/components/u
 - **Flexibility Preserved**: Full type list available via "Show All" or scrolling
 - **Domain Knowledge Encoded**: Suggestions reflect TTRPG world-building patterns
 
-**Suggestion Rules**:
+**Suggestion Rules** *(Addresses FR-032 - Context-aware type suggestions with deterministic algorithm)*:
 
 ```typescript
-const entityTypeSuggestions: Record<string, string[]> = {
-  World: ['Continent', 'Campaign', 'Character'],        // Root-level suggestions
-  Continent: ['Country', 'GeographicRegion'],
-  Country: ['City', 'PoliticalRegion'],
-  GeographicRegion: ['City', 'Location'],
-  City: ['Location', 'Character'],
-  Campaign: ['Session', 'Character'],
-  // Fallback: All entity types alphabetically
+const entityTypeSuggestions: Record<WorldEntityType, WorldEntityType[]> = {
+  // Geographic hierarchy
+  "Continent": ["Country", "Region"],
+  "Country": ["Region", "City", "Location"],
+  "Region": ["City", "Location"],
+  "City": ["Location", "Character", "Organization"],
+  "Location": ["Character", "Item", "Event"],
+  
+  // Character/organizational hierarchy
+  "Character": ["Item", "Event"],
+  "Organization": ["Character", "Location", "Event"],
+  
+  // Campaign/narrative hierarchy
+  "Campaign": ["Event", "Character", "Location", "Item"],
+  "Event": ["Character", "Location", "Item"],
+  
+  // Items rarely have children
+  "Item": []
 };
+
+// For root entities (parent = World), no suggestions—show all types alphabetically
 ```
 
 **Implementation Pattern**:

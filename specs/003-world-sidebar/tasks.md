@@ -17,12 +17,15 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create WorldSidebar component directory structure at libris-maleficarum-app/src/components/WorldSidebar/
-- [ ] T002 [P] Create sessionStorage cache utilities at libris-maleficarum-app/src/lib/sessionCache.ts
-- [ ] T003 [P] Create entity icon mapping utilities at libris-maleficarum-app/src/lib/entityIcons.ts
-- [ ] T004 [P] Add context menu primitive from Shadcn/UI (npx shadcn@latest add context-menu) if not already present
-- [ ] T005 [P] Add dialog primitive from Shadcn/UI (npx shadcn@latest add dialog) if not already present
-- [ ] T006 [P] Add select primitive from Shadcn/UI (npx shadcn@latest add select) if not already present
+- [X] T001 Create WorldSidebar component directory structure at libris-maleficarum-app/src/components/WorldSidebar/
+- [X] T002 [P] Create sessionStorage cache utilities at libris-maleficarum-app/src/lib/sessionCache.ts
+- [X] T003 [P] Create entity icon mapping utilities at libris-maleficarum-app/src/lib/entityIcons.ts
+- [X] T004 [P] Add context menu primitive from Shadcn/UI (npx shadcn@latest add context-menu) if not already present
+- [X] T005 [P] Add dialog primitive from Shadcn/UI (npx shadcn@latest add dialog) if not already present
+- [X] T006 [P] Add select primitive from Shadcn/UI (npx shadcn@latest add select) if not already present
+- [X] T007 [P] Create data-model.md with WorldEntity schema, cache structures, and hierarchy navigation patterns at specs/003-world-sidebar/data-model.md
+- [X] T008 [P] Create contracts/worldEntity.openapi.yaml with API contract definitions for 7 WorldEntity endpoints at specs/003-world-sidebar/contracts/worldEntity.openapi.yaml
+- [X] T009 [P] Create quickstart.md developer guide for WorldSidebar component usage at specs/003-world-sidebar/quickstart.md
 
 ---
 
@@ -32,17 +35,17 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Define WorldEntity TypeScript interfaces in libris-maleficarum-app/src/services/types/worldEntity.types.ts
-- [ ] T008 Define WorldEntity API request/response types in libris-maleficarum-app/src/services/types/worldEntity.types.ts
-- [ ] T009 Create RTK Query worldEntityApi endpoints in libris-maleficarum-app/src/services/worldEntityApi.ts
-- [ ] T010 Create worldSidebarSlice Redux slice in libris-maleficarum-app/src/store/worldSidebarSlice.ts
-- [ ] T011 Register worldSidebarSlice in root Redux store at libris-maleficarum-app/src/store/store.ts
-- [ ] T012 [P] Create MSW handlers for worldEntityApi endpoints in libris-maleficarum-app/src/**tests**/mocks/handlers.ts
-- [ ] T013 [P] Backend: Create WorldEntity domain entity at libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs
-- [ ] T014 [P] Backend: Create WorldEntityRepository at libris-maleficarum-service/src/Infrastructure/Repositories/WorldEntityRepository.cs
-- [ ] T015 [P] Backend: Create WorldEntityController at libris-maleficarum-service/src/Api/Controllers/WorldEntityController.cs
-- [ ] T016 [P] Backend: Add unit tests for WorldEntityRepository at libris-maleficarum-service/tests/unit/Infrastructure.UnitTests/Repositories/WorldEntityRepositoryTests.cs
-- [ ] T017 [P] Backend: Add unit tests for WorldEntityController at libris-maleficarum-service/tests/unit/Api.UnitTests/Controllers/WorldEntityControllerTests.cs
+- [X] T010 Define WorldEntity TypeScript interfaces in libris-maleficarum-app/src/services/types/worldEntity.types.ts
+- [X] T011 Define WorldEntity API request/response types in libris-maleficarum-app/src/services/types/worldEntity.types.ts
+- [X] T012 Create RTK Query worldEntityApi endpoints in libris-maleficarum-app/src/services/worldEntityApi.ts
+- [X] T013 Create worldSidebarSlice Redux slice in libris-maleficarum-app/src/store/worldSidebarSlice.ts
+- [X] T014 Register worldSidebarSlice in root Redux store at libris-maleficarum-app/src/store/store.ts
+- [X] T015 [P] Create MSW handlers for worldEntityApi endpoints in libris-maleficarum-app/src/__tests__/mocks/handlers.ts
+- [X] T016 [P] Backend: Create WorldEntity domain entity at libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs
+- [X] T017 [P] Backend: Create WorldEntityRepository at libris-maleficarum-service/src/Infrastructure/Repositories/WorldEntityRepository.cs
+- [X] T018 [P] Backend: Create WorldEntityController at libris-maleficarum-service/src/Api/Controllers/WorldEntitiesController.cs
+- [X] T019 [P] Backend: Add unit tests for WorldEntityRepository at libris-maleficarum-service/tests/unit/Infrastructure.UnitTests/Repositories/WorldEntityRepositoryTests.cs
+- [X] T020 [P] Backend: Add unit tests for WorldEntityController at libris-maleficarum-service/tests/unit/Api.UnitTests/Controllers/WorldEntityControllerTests.cs
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -58,25 +61,25 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T018 [P] [US1] Write EmptyState component test in libris-maleficarum-app/src/components/WorldSidebar/EmptyState.test.tsx
-- [ ] T019 [P] [US1] Write WorldFormModal component test in libris-maleficarum-app/src/components/WorldSidebar/WorldFormModal.test.tsx
-- [ ] T020 [P] [US1] Write WorldSelector test for empty state handling in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
-- [ ] T021 [P] [US1] Write accessibility test for WorldFormModal with jest-axe in libris-maleficarum-app/src/components/WorldSidebar/WorldFormModal.test.tsx
+- [X] T021 [P] [US1] Write EmptyState component test in libris-maleficarum-app/src/components/WorldSidebar/EmptyState.test.tsx
+- [X] T022 [P] [US1] Write WorldFormModal component test in libris-maleficarum-app/src/components/WorldSidebar/WorldFormModal.test.tsx
+- [X] T023 [P] [US1] Write WorldSelector test for empty state handling in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
+- [X] T024 [P] [US1] Write accessibility test for WorldFormModal with jest-axe in libris-maleficarum-app/src/components/WorldSidebar/WorldFormModal.test.tsx
 
 ### Implementation for User Story 1
 
-- [ ] T022 [P] [US1] Create EmptyState component in libris-maleficarum-app/src/components/WorldSidebar/EmptyState.tsx
-- [ ] T023 [P] [US1] Create WorldFormModal component in libris-maleficarum-app/src/components/WorldSidebar/WorldFormModal.tsx
-- [ ] T024 [US1] Create WorldSelector component in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.tsx
-- [ ] T025 [US1] Create WorldSidebar container component in libris-maleficarum-app/src/components/WorldSidebar/WorldSidebar.tsx
-- [ ] T026 [US1] Add WorldSidebar to App layout in libris-maleficarum-app/src/App.tsx
-- [ ] T027 [US1] Implement world creation form validation in WorldFormModal.tsx
-- [ ] T028 [US1] Connect WorldFormModal to createWorld mutation from worldApi
-- [ ] T029 [US1] Handle successful world creation (set as active world, display empty hierarchy)
-- [ ] T030 [US1] Add CSS Modules styling for EmptyState in libris-maleficarum-app/src/components/WorldSidebar/EmptyState.module.css
-- [ ] T031 [US1] Add CSS Modules styling for WorldFormModal (if needed beyond Shadcn Dialog defaults)
-- [ ] T032 [US1] Add CSS Modules styling for WorldSelector in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.module.css
-- [ ] T033 [US1] Add CSS Modules styling for WorldSidebar layout in libris-maleficarum-app/src/components/WorldSidebar/WorldSidebar.module.css
+- [X] T025 [P] [US1] Create EmptyState component in libris-maleficarum-app/src/components/WorldSidebar/EmptyState.tsx
+- [X] T026 [P] [US1] Create WorldFormModal component in libris-maleficarum-app/src/components/WorldSidebar/WorldFormModal.tsx
+- [X] T027 [US1] Create WorldSelector component in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.tsx
+- [X] T028 [US1] Create WorldSidebar container component in libris-maleficarum-app/src/components/WorldSidebar/WorldSidebar.tsx
+- [X] T029 [US1] Add WorldSidebar to App layout in libris-maleficarum-app/src/App.tsx
+- [X] T030 [US1] Implement world creation form validation in WorldFormModal.tsx
+- [X] T031 [US1] Connect WorldFormModal to createWorld mutation from worldApi
+- [X] T032 [US1] Handle successful world creation (set as active world, display empty hierarchy)
+- [X] T033 [US1] Add CSS Modules styling for EmptyState in libris-maleficarum-app/src/components/WorldSidebar/EmptyState.module.css
+- [X] T034 [US1] Add CSS Modules styling for WorldFormModal (if needed beyond Shadcn Dialog defaults)
+- [X] T035 [US1] Add CSS Modules styling for WorldSelector in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.module.css
+- [X] T036 [US1] Add CSS Modules styling for WorldSidebar layout in libris-maleficarum-app/src/components/WorldSidebar/WorldSidebar.module.css
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - users can create their first world and see it in the sidebar
 
@@ -90,34 +93,34 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T034 [P] [US2] Write EntityTree component test in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.test.tsx
-- [ ] T035 [P] [US2] Write EntityTreeNode component test in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.test.tsx
-- [ ] T036 [P] [US2] Write WorldSelector test for multi-world dropdown in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
-- [ ] T037 [P] [US2] Write accessibility test for EntityTree with ARIA tree pattern in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.test.tsx
-- [ ] T038 [P] [US2] Write sessionCache utility tests in libris-maleficarum-app/src/lib/sessionCache.test.ts
-- [ ] T039 [P] [US2] Write integration test for hierarchy caching with MSW in libris-maleficarum-app/src/**tests**/integration/hierarchyCaching.test.tsx
+- [X] T037 [P] [US2] Write EntityTree component test in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.test.tsx
+- [X] T038 [P] [US2] Write EntityTreeNode component test in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.test.tsx
+- [ ] T039 [P] [US2] Write WorldSelector test for multi-world dropdown in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
+- [X] T043 [P] [US2] Write accessibility test for EntityTree with ARIA tree pattern in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.test.tsx
+- [ ] T044 [P] [US2] Write sessionCache utility tests in libris-maleficarum-app/src/lib/sessionCache.test.ts
+- [ ] T045 [P] [US2] Write integration test for hierarchy caching with MSW in libris-maleficarum-app/src/__tests__/integration/hierarchyCaching.test.tsx
 
 ### Implementation for User Story 2
 
-- [ ] T040 [P] [US2] Implement sessionCache.get() utility in libris-maleficarum-app/src/lib/sessionCache.ts
-- [ ] T041 [P] [US2] Implement sessionCache.set() utility with TTL in libris-maleficarum-app/src/lib/sessionCache.ts
-- [ ] T042 [P] [US2] Implement sessionCache.invalidate() utility in libris-maleficarum-app/src/lib/sessionCache.ts
-- [ ] T043 [P] [US2] Create EntityTreeNode component in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.tsx
-- [ ] T044 [P] [US2] Create EntityTree recursive component in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.tsx
-- [ ] T045 [US2] Add expand/collapse logic to EntityTreeNode with chevron icons
-- [ ] T046 [US2] Implement lazy loading of children in EntityTree (check cache first, then fetch)
-- [ ] T047 [US2] Connect EntityTree to getEntitiesByParent RTK Query endpoint
-- [ ] T048 [US2] Update worldSidebarSlice to track expandedNodeIds array
-- [ ] T049 [US2] Implement visual indentation for hierarchy levels in EntityTreeNode
-- [ ] T050 [US2] Implement connecting lines between parent-child entities in EntityTree
-- [ ] T051 [US2] Add world switching logic in WorldSelector (clear cache, load new world entities)
-- [ ] T052 [US2] Implement cache restoration when returning to previously viewed world
-- [ ] T053 [US2] Add loading skeleton UI while fetching entity children
-- [ ] T054 [US2] Update WorldSelector to display all worlds alphabetically with current world highlighted
-- [ ] T055 [US2] Add keyboard navigation handlers (Arrow keys, Enter) in EntityTree
-- [ ] T056 [US2] Add ARIA tree roles and attributes in EntityTree and EntityTreeNode
-- [ ] T057 [US2] Add CSS Modules styling for EntityTree in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.module.css
-- [ ] T058 [US2] Add CSS Modules styling for EntityTreeNode in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.module.css
+- [X] T043 [P] [US2] Implement sessionCache.get() utility in libris-maleficarum-app/src/lib/sessionCache.ts
+- [X] T044 [P] [US2] Implement sessionCache.set() utility with TTL in libris-maleficarum-app/src/lib/sessionCache.ts
+- [X] T045 [P] [US2] Implement sessionCache.invalidate() utility in libris-maleficarum-app/src/lib/sessionCache.ts
+- [X] T046 [P] [US2] Create EntityTreeNode component in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.tsx
+- [X] T047 [P] [US2] Create EntityTree recursive component in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.tsx
+- [X] T048 [US2] Add expand/collapse logic to EntityTreeNode with chevron icons
+- [X] T049 [US2] Implement lazy loading of children in EntityTree (check cache first, then fetch)
+- [X] T050 [US2] Connect EntityTree to getEntitiesByParent RTK Query endpoint
+- [X] T051 [US2] Update worldSidebarSlice to track expandedNodeIds array
+- [X] T052 [US2] Implement visual indentation for hierarchy levels in EntityTreeNode
+- [X] T053 [US2] Implement connecting lines between parent-child entities in EntityTree
+- [X] T054 [US2] Add world switching logic in WorldSelector (clear cache, load new world entities)
+- [X] T055 [US2] Implement cache restoration when returning to previously viewed world
+- [X] T056 [US2] Add loading skeleton UI while fetching entity children
+- [X] T057 [US2] Update WorldSelector to display all worlds alphabetically with current world highlighted
+- [X] T058 [US2] Add keyboard navigation handlers (Arrow keys, Enter) in EntityTree
+- [X] T059 [US2] Add ARIA tree roles and attributes in EntityTree and EntityTreeNode
+- [X] T060 [US2] Add CSS Modules styling for EntityTree in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.module.css
+- [X] T061 [US2] Add CSS Modules styling for EntityTreeNode in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.module.css
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - full world navigation with caching
 
@@ -131,20 +134,20 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T059 [P] [US3] Write WorldFormModal edit mode test in libris-maleficarum-app/src/components/WorldSidebar/WorldFormModal.test.tsx
-- [ ] T060 [P] [US3] Write WorldSelector edit button test in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
-- [ ] T061 [P] [US3] Write integration test for world update flow in libris-maleficarum-app/src/**tests**/integration/worldEdit.test.tsx
+- [X] T062 [P] [US3] Write WorldFormModal edit mode test in libris-maleficarum-app/src/components/WorldSidebar/WorldFormModal.test.tsx
+- [X] T063 [P] [US3] Write WorldSelector edit button test in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
+- [ ] T064 [P] [US3] Write integration test for world update flow in libris-maleficarum-app/src/__tests__/integration/worldEdit.test.tsx
 
 ### Implementation for User Story 3
 
-- [ ] T062 [US3] Add edit mode support to WorldFormModal (pre-populate fields when worldId provided)
-- [ ] T063 [US3] Add edit icon/button to WorldSelector for current world
-- [ ] T064 [US3] Connect edit button to open WorldFormModal in edit mode
-- [ ] T065 [US3] Connect WorldFormModal save to updateWorld mutation
-- [ ] T066 [US3] Update worldSidebarSlice to track editingWorldId state
-- [ ] T067 [US3] Implement optimistic update in worldSelector to show changes immediately
-- [ ] T068 [US3] Add cancel handling for WorldFormModal (close without saving)
-- [ ] T069 [US3] Add validation for empty world name in edit mode
+- [X] T065 [US3] Add edit mode support to WorldFormModal (pre-populate fields when worldId provided)
+- [X] T066 [US3] Add edit icon/button to WorldSelector for current world
+- [X] T067 [US3] Connect edit button to open WorldFormModal in edit mode
+- [X] T068 [US3] Connect WorldFormModal save to updateWorld mutation
+- [X] T069 [US3] Update worldSidebarSlice to track editingWorldId state
+- [X] T070 [US3] Implement optimistic update in worldSelector to show changes immediately
+- [X] T071 [US3] Add cancel handling for WorldFormModal (close without saving)
+- [X] T072 [US3] Add validation for empty world name in edit mode
 
 **Checkpoint**: All P1-P2 user stories complete - users can create, navigate, and edit worlds
 
@@ -158,21 +161,21 @@
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T070 [P] [US4] Write cache hit test in libris-maleficarum-app/src/lib/sessionCache.test.ts
-- [ ] T071 [P] [US4] Write cache expiry (TTL) test in libris-maleficarum-app/src/lib/sessionCache.test.ts
-- [ ] T072 [P] [US4] Write cache invalidation test in libris-maleficarum-app/src/**tests**/integration/cacheInvalidation.test.tsx
-- [ ] T073 [P] [US4] Write performance test for cached vs uncached loads in libris-maleficarum-app/src/**tests**/performance/hierarchyLoad.test.tsx
+- [ ] T073 [P] [US4] Write cache hit test in libris-maleficarum-app/src/lib/sessionCache.test.ts
+- [ ] T074 [P] [US4] Write cache expiry (TTL) test in libris-maleficarum-app/src/lib/sessionCache.test.ts
+- [ ] T075 [P] [US4] Write cache invalidation test in libris-maleficarum-app/src/**tests**/integration/cacheInvalidation.test.tsx
+- [ ] T076 [P] [US4] Write performance test for cached vs uncached loads in libris-maleficarum-app/src/**tests**/performance/hierarchyLoad.test.tsx
 
 ### Implementation for User Story 4
 
-- [ ] T074 [US4] Implement 5-minute TTL logic in sessionCache.get()
-- [ ] T075 [US4] Add cache invalidation on entity create mutation
-- [ ] T076 [US4] Add cache invalidation on entity update mutation
-- [ ] T077 [US4] Add cache invalidation on entity delete mutation
-- [ ] T078 [US4] Add cache invalidation on entity move mutation
-- [ ] T079 [US4] Implement cache hit rate logging (for debugging)
-- [ ] T080 [US4] Add cache restoration logic for expanded state in worldSidebarSlice
-- [ ] T081 [US4] Test cache behavior with 100+ entities to verify performance goals (<100ms cached expansion)
+- [ ] T077 [US4] Implement 5-minute TTL logic in sessionCache.get()
+- [ ] T078 [US4] Add cache invalidation on entity create mutation
+- [ ] T079 [US4] Add cache invalidation on entity update mutation
+- [ ] T080 [US4] Add cache invalidation on entity delete mutation
+- [ ] T081 [US4] Add cache invalidation on entity move mutation
+- [ ] T082 [US4] Implement cache hit rate logging (for debugging)
+- [ ] T083 [US4] Add cache restoration logic for expanded state in worldSidebarSlice
+- [ ] T084 [US4] Test cache behavior with 100+ entities to verify performance goals (<100ms cached expansion)
 
 **Checkpoint**: Caching fully functional - 80%+ cache hit rate achieved for typical navigation
 
@@ -186,23 +189,23 @@
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T082 [P] [US5] Write entity icon mapping test in libris-maleficarum-app/src/lib/entityIcons.test.ts
-- [ ] T083 [P] [US5] Write visual regression tests for theme support (if tooling available)
-- [ ] T084 [P] [US5] Write accessibility contrast test with jest-axe for dark/light themes
+- [ ] T085 [P] [US5] Write entity icon mapping test in libris-maleficarum-app/src/lib/entityIcons.test.ts
+- [ ] T086 [P] [US5] Write visual regression tests for theme support (if tooling available)
+- [ ] T087 [P] [US5] Write accessibility contrast test with jest-axe for dark/light themes
 
 ### Implementation for User Story 5
 
-- [ ] T085 [P] [US5] Create entity type to Lucide icon mapping in libris-maleficarum-app/src/lib/entityIcons.ts
-- [ ] T086 [US5] Add entity type icons to EntityTreeNode
-- [ ] T087 [US5] Implement hover states for EntityTreeNode (inline + button appears)
-- [ ] T088 [US5] Add smooth scrolling support to WorldSidebar with ScrollArea component
-- [ ] T089 [US5] Implement sticky positioning for WorldSelector at top of sidebar
-- [ ] T090 [US5] Add expand/collapse chevron icons to EntityTreeNode
-- [ ] T091 [US5] Refine visual indentation styling (8-level max) in EntityTree.module.css
-- [ ] T092 [US5] Add connecting lines styling between parent-child in EntityTree.module.css
-- [ ] T093 [US5] Add dark theme support with appropriate contrast in all WorldSidebar components
-- [ ] T094 [US5] Add hover tooltip support for truncated entity names
-- [ ] T095 [US5] Polish empty state visual design in EmptyState.module.css
+- [ ] T088 [P] [US5] Create entity type to Lucide icon mapping in libris-maleficarum-app/src/lib/entityIcons.ts
+- [ ] T089 [US5] Add entity type icons to EntityTreeNode
+- [ ] T090 [US5] Implement hover states for EntityTreeNode (inline + button appears)
+- [ ] T091 [US5] Add smooth scrolling support to WorldSidebar with ScrollArea component
+- [ ] T092 [US5] Implement sticky positioning for WorldSelector at top of sidebar
+- [ ] T093 [US5] Add expand/collapse chevron icons to EntityTreeNode
+- [ ] T094 [US5] Refine visual indentation styling (8-level max) in EntityTree.module.css
+- [ ] T095 [US5] Add connecting lines styling between parent-child in EntityTree.module.css
+- [ ] T096 [US5] Add dark theme support with appropriate contrast in all WorldSidebar components
+- [ ] T097 [US5] Add hover tooltip support for truncated entity names
+- [ ] T098 [US5] Polish empty state visual design in EmptyState.module.css
 
 **Checkpoint**: All user stories complete with polished UI - ready for production
 
@@ -216,29 +219,29 @@
 
 ### Tests for Entity Creation ⚠️
 
-- [ ] T096 [P] Write EntityFormModal component test in libris-maleficarum-app/src/components/WorldSidebar/EntityFormModal.test.tsx
-- [ ] T097 [P] Write EntityContextMenu component test in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.test.tsx
-- [ ] T098 [P] Write context-aware type suggestions test in EntityFormModal.test.tsx
-- [ ] T099 [P] Write accessibility test for EntityContextMenu keyboard trigger (Shift+F10)
+- [ ] T099 [P] Write EntityFormModal component test in libris-maleficarum-app/src/components/WorldSidebar/EntityFormModal.test.tsx
+- [ ] T100 [P] Write EntityContextMenu component test in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.test.tsx
+- [ ] T101 [P] Write context-aware type suggestions test in EntityFormModal.test.tsx
+- [ ] T102 [P] Write accessibility test for EntityContextMenu keyboard trigger (Shift+F10)
 
 ### Implementation for Entity Creation
 
-- [ ] T100 [P] Create EntityFormModal component in libris-maleficarum-app/src/components/WorldSidebar/EntityFormModal.tsx
-- [ ] T101 [P] Create EntityContextMenu component in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.tsx
-- [ ] T102 Add inline "+" button to EntityTreeNode (visible on hover)
-- [ ] T103 Add "Add Root Entity" button to WorldSidebar
-- [ ] T104 Implement context-aware entity type suggestions in EntityFormModal
-- [ ] T105 Connect EntityFormModal to createEntity mutation
-- [ ] T106 Add context menu "Add Child Entity" action
-- [ ] T107 Add context menu "Edit Entity" action
-- [ ] T108 Add context menu "Delete Entity" action with confirmation
-- [ ] T109 Add context menu "Move Entity" action (future: opens move dialog)
-- [ ] T110 Update worldSidebarSlice to track entity form modal state (open/close, editing entity, parent entity)
-- [ ] T111 Connect inline "+" button to open EntityFormModal with parent pre-selected
-- [ ] T112 Connect "Add Root Entity" button to open EntityFormModal with worldId as parent
-- [ ] T113 Implement entity creation form validation (name required, max lengths)
-- [ ] T114 Add CSS Modules styling for EntityFormModal
-- [ ] T115 Add CSS Modules styling for EntityContextMenu
+- [ ] T103 [P] Create EntityFormModal component in libris-maleficarum-app/src/components/WorldSidebar/EntityFormModal.tsx
+- [ ] T104 [P] Create EntityContextMenu component in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.tsx
+- [ ] T105 Add inline "+" button to EntityTreeNode (visible on hover)
+- [ ] T106 Add "Add Root Entity" button to WorldSidebar
+- [ ] T107 Implement context-aware entity type suggestions in EntityFormModal
+- [ ] T108 Connect EntityFormModal to createEntity mutation
+- [ ] T109 Add context menu "Add Child Entity" action
+- [ ] T110 Add context menu "Edit Entity" action
+- [ ] T111 Add context menu "Delete Entity" action with confirmation
+- [ ] T112 Add context menu "Move Entity" action (future: opens move dialog)
+- [ ] T113 Update worldSidebarSlice to track entity form modal state (open/close, editing entity, parent entity)
+- [ ] T114 Connect inline "+" button to open EntityFormModal with parent pre-selected
+- [ ] T115 Connect "Add Root Entity" button to open EntityFormModal with worldId as parent
+- [ ] T116 Implement entity creation form validation (name required, max lengths)
+- [ ] T117 Add CSS Modules styling for EntityFormModal
+- [ ] T118 Add CSS Modules styling for EntityContextMenu
 
 **Checkpoint**: Full entity CRUD operations available via sidebar
 
@@ -252,17 +255,17 @@
 
 ### Tests for Entity Selection ⚠️
 
-- [ ] T116 [P] Write entity selection test in EntityTreeNode.test.tsx
-- [ ] T117 [P] Write integration test for sidebar → main panel communication in libris-maleficarum-app/src/**tests**/integration/entitySelection.test.tsx
+- [ ] T119 [P] Write entity selection test in EntityTreeNode.test.tsx
+- [ ] T120 [P] Write integration test for sidebar → main panel communication in libris-maleficarum-app/src/**tests**/integration/entitySelection.test.tsx
 
 ### Implementation for Entity Selection
 
-- [ ] T118 Add click handler to EntityTreeNode to dispatch setSelectedEntity action
-- [ ] T119 Update worldSidebarSlice to track selectedEntityId
-- [ ] T120 Add visual selection highlight styling to EntityTreeNode.module.css
-- [ ] T121 Update MainPanel component to listen to selectedEntityId from Redux store
-- [ ] T122 Create basic EntityDetailView component in MainPanel (future enhancement)
-- [ ] T123 Test entity selection flow end-to-end
+- [ ] T121 Add click handler to EntityTreeNode to dispatch setSelectedEntity action
+- [ ] T122 Update worldSidebarSlice to track selectedEntityId
+- [ ] T123 Add visual selection highlight styling to EntityTreeNode.module.css
+- [ ] T124 Update MainPanel component to listen to selectedEntityId from Redux store
+- [ ] T125 Create basic EntityDetailView component in MainPanel (future enhancement)
+- [ ] T126 Test entity selection flow end-to-end
 
 **Checkpoint**: Complete sidebar-to-main-panel communication established
 
@@ -272,17 +275,17 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T124 [P] Add JSDoc comments to all public component props and functions
-- [ ] T125 [P] Create barrel export (index.ts) for WorldSidebar component
-- [ ] T126 [P] Update README.md with WorldSidebar usage instructions
-- [ ] T127 [P] Add error boundary around WorldSidebar for graceful error handling
-- [ ] T128 Code cleanup: Remove console.logs, ensure consistent formatting
-- [ ] T129 Run full test suite and ensure 100% pass rate
-- [ ] T130 Run jest-axe accessibility validation across all components
-- [ ] T131 Performance profiling: Verify <2s initial load, <100ms cached expansion
-- [ ] T132 Security review: Ensure no sensitive data in sessionStorage
-- [ ] T133 [P] Backend: Add API integration tests for WorldEntity endpoints
-- [ ] T134 Final code review and constitution compliance check
+- [ ] T127 [P] Add JSDoc comments to all public component props and functions
+- [ ] T128 [P] Create barrel export (index.ts) for WorldSidebar component
+- [ ] T129 [P] Update README.md with WorldSidebar usage instructions
+- [ ] T130 [P] Add error boundary around WorldSidebar for graceful error handling
+- [ ] T131 Code cleanup: Remove console.logs, ensure consistent formatting
+- [ ] T132 Run full test suite and ensure 100% pass rate
+- [ ] T133 Run jest-axe accessibility validation across all components
+- [ ] T134 Performance profiling: Verify <2s initial load, <100ms cached expansion
+- [ ] T135 Security review: Ensure no sensitive data in sessionStorage
+- [ ] T136 [P] Backend: Add API integration tests for WorldEntity endpoints
+- [ ] T137 Final code review and constitution compliance check
 
 ---
 
@@ -309,17 +312,17 @@
 1. Phase 1: Setup (T001-T006)
 1. Phase 2: Foundational (T007-T017) ⚠️ BLOCKS EVERYTHING
 1. Phase 3: US1 - First-Time World Creation (T018-T033) → DEMO 1
-1. Phase 4: US2 - World Selection & Hierarchy (T034-T058) → DEMO 2
-1. Phase 8: Entity Creation (T096-T115) → DEMO 3
-1. Phase 9: Entity Selection (T116-T123) → DEMO 4
+1. Phase 4: US2 - World Selection & Hierarchy (T034-T061) → DEMO 2
+1. Phase 8: Entity Creation (T099-T118) → DEMO 3
+1. Phase 9: Entity Selection (T119-T126) → DEMO 4
 
 **Full Feature Path** (all user stories):
 
 1. MVP Path above (Phases 1-4, 8-9)
-1. Phase 5: US3 - World Metadata Editing (T059-T069)
-1. Phase 6: US4 - Efficient Caching (T070-T081)
-1. Phase 7: US5 - Visual Polish (T082-T095)
-1. Phase 10: Final Polish (T124-T134)
+1. Phase 5: US3 - World Metadata Editing (T062-T072)
+1. Phase 6: US4 - Efficient Caching (T073-T084)
+1. Phase 7: US5 - Visual Polish (T085-T098)
+1. Phase 10: Final Polish (T127-T137)
 
 ### Parallel Opportunities
 
@@ -355,9 +358,9 @@ T038: sessionCache.test.ts
 T039: hierarchyCaching integration test
 
 # Launch all component creation tasks:
-T040-T042: sessionCache utilities (3 functions)
-T043: EntityTreeNode.tsx
-T044: EntityTree.tsx
+T043-T045: sessionCache utilities (3 functions)
+T046: EntityTreeNode.tsx
+T047: EntityTree.tsx
 ```
 
 ---
@@ -366,13 +369,13 @@ T044: EntityTree.tsx
 
 ### MVP First (User Stories 1-2 + Entity Creation)
 
-1. Complete Phase 1: Setup (6 tasks)
-1. Complete Phase 2: Foundational (11 tasks) → Foundation ready
-1. Complete Phase 3: US1 - First-Time World Creation (16 tasks) → Demo MVP
-1. Complete Phase 4: US2 - World Selection & Hierarchy (25 tasks) → Core feature complete
-1. Complete Phase 8: Entity Creation (16 tasks) → Full CRUD available
-1. Complete Phase 9: Entity Selection (6 tasks) → Sidebar integrated with main panel
-1. **STOP and VALIDATE**: 80 tasks complete, full feature functional
+1. Complete Phase 1: Setup (9 tasks)
+2. Complete Phase 2: Foundational (11 tasks) → Foundation ready
+3. Complete Phase 3: US1 - First-Time World Creation (16 tasks) → Demo MVP
+4. Complete Phase 4: US2 - World Selection & Hierarchy (25 tasks) → Core feature complete
+5. Complete Phase 8: Entity Creation (16 tasks) → Full CRUD available
+6. Complete Phase 9: Entity Selection (6 tasks) → Sidebar integrated with main panel
+7. **STOP and VALIDATE**: 83 tasks complete, full feature functional
 
 ### Incremental Delivery Beyond MVP
 
@@ -381,9 +384,9 @@ T044: EntityTree.tsx
 1. Add Phase 7: US5 - Visual Polish (14 tasks) → Production-ready UI
 1. Complete Phase 10: Polish (11 tasks) → Ship it!
 
-**Total Tasks**: 134 tasks
-**MVP Subset**: ~80 tasks (Phases 1-4, 8-9)
-**Estimated Effort**: 25-30 hours for MVP, 40-45 hours for full feature
+**Total Tasks**: 137 tasks
+**MVP Subset**: ~83 tasks (Phases 1-4, 8-9)
+**Estimated Effort**: 26-31 hours for MVP, 41-46 hours for full feature
 
 ---
 
