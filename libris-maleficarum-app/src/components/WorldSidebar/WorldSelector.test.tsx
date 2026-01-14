@@ -346,7 +346,7 @@ describe('WorldSelector', () => {
       // Assert
       await waitFor(() => {
         const state = store.getState();
-        expect(state.worldSidebar.expandedNodeIds.size).toBe(0);
+        expect(state.worldSidebar.expandedNodeIds.length).toBe(0);
       });
     });
 

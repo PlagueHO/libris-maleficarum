@@ -169,7 +169,7 @@ export const worldHandlers = [
     const worlds = Array.from(mockWorlds.values()).filter(w => !w.isDeleted);
     const response: WorldListResponse = {
       data: worlds,
-      totalCount: worlds.length,
+      meta: { requestId: 'mock-1', timestamp: new Date().toISOString() },
     };
     return HttpResponse.json(response);
   }),
@@ -192,6 +192,7 @@ export const worldHandlers = [
     };
     const response: WorldResponse = {
       data: world2,
+      meta: { requestId: 'mock-world-2', timestamp: new Date().toISOString() },
     };
     return HttpResponse.json(response);
   }),
@@ -214,6 +215,7 @@ export const worldHandlers = [
 
     const response: WorldResponse = {
       data: world,
+      meta: { requestId: 'mock-world-get', timestamp: new Date().toISOString() },
     };
     return HttpResponse.json(response);
   }),
@@ -241,6 +243,7 @@ export const worldHandlers = [
 
     const response: WorldResponse = {
       data: newWorld,
+      meta: { requestId: 'mock-3', timestamp: new Date().toISOString() },
     };
     return HttpResponse.json(response, { status: 201 });
   }),
@@ -268,6 +271,7 @@ export const worldHandlers = [
 
     const response: WorldResponse = {
       data: world,
+      meta: { requestId: 'mock-4', timestamp: new Date().toISOString() },
     };
     return HttpResponse.json(response);
   }),

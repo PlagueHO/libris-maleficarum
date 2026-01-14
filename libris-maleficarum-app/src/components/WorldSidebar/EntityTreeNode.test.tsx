@@ -30,7 +30,7 @@ const mockEntity: WorldEntity = {
   name: 'Faerûn',
   description: 'The main continent',
   tags: ['primary'],
-  path: '/Faerûn',
+  path: ['/Faerûn'],
   depth: 0,
   hasChildren: true,
   ownerId: 'user-1',
@@ -46,7 +46,7 @@ const mockEntityNoChildren: WorldEntity = {
   parentId: 'entity-1',
   entityType: WorldEntityType.Country,
   hasChildren: false,
-  path: '/Faerûn/Cormyr',
+  path: ['/Faerûn', '/Cormyr'],
   depth: 1,
 };
 

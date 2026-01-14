@@ -88,7 +88,7 @@ const axiosBaseQuery = (): BaseQueryFn<
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['World', 'Character', 'Location', 'Organization'], // Tag types for cache invalidation
+  tagTypes: ['World', 'WorldEntity', 'Character', 'Location', 'Organization'], // Tag types for cache invalidation
   keepUnusedDataFor: 60, // Cache data for 60 seconds after last component unmounts
   refetchOnMountOrArgChange: 30, // Refetch if data is older than 30 seconds
   endpoints: () => ({}), // Endpoints defined via injectEndpoints in feature slices

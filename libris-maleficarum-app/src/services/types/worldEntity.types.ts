@@ -10,18 +10,20 @@
 /**
  * Entity type classification
  */
-export enum WorldEntityType {
-  Continent = 'Continent',
-  Country = 'Country',
-  Region = 'Region',
-  City = 'City',
-  Location = 'Location',
-  Character = 'Character',
-  Organization = 'Organization',
-  Event = 'Event',
-  Item = 'Item',
-  Campaign = 'Campaign',
-}
+export const WorldEntityType = {
+  Continent: 'Continent',
+  Country: 'Country',
+  Region: 'Region',
+  City: 'City',
+  Location: 'Location',
+  Character: 'Character',
+  Organization: 'Organization',
+  Event: 'Event',
+  Item: 'Item',
+  Campaign: 'Campaign',
+} as const;
+
+export type WorldEntityType = (typeof WorldEntityType)[keyof typeof WorldEntityType];
 
 /**
  * Hierarchical entity within a World
