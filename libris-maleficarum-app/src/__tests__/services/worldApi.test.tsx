@@ -56,8 +56,8 @@ const mockWorlds: World[] = [
 
 // MSW server setup with all handlers
 const server = setupServer(
-  // GET /api/worlds
-  http.get('http://localhost:5000/api/worlds', () => {
+  // GET /api/v1/worlds
+  http.get('http://localhost:5000/api/v1/worlds', () => {
     const response: WorldListResponse = {
       data: mockWorlds,
       meta: {
@@ -69,7 +69,7 @@ const server = setupServer(
   }),
 
   // GET /api/worlds/:id
-  http.get('http://localhost:5000/api/worlds/:id', ({ params }) => {
+  http.get('http://localhost:5000/api/v1/worlds/:id', ({ params }) => {
     const world = mockWorlds.find((w) => w.id === params.id);
     if (!world) {
       const problemDetails: ProblemDetails = {
@@ -93,7 +93,7 @@ const server = setupServer(
   }),
 
   // POST /api/worlds
-  http.post('http://localhost:5000/api/worlds', async ({ request }) => {
+  http.post('http://localhost:5000/api/v1/worlds', async ({ request }) => {
     const body = (await request.json()) as CreateWorldRequest;
     const newWorld: World = {
       id: '770e8400-e29b-41d4-a716-446655440002',
@@ -116,7 +116,7 @@ const server = setupServer(
   }),
 
   // PUT /api/worlds/:id
-  http.put('http://localhost:5000/api/worlds/:id', async ({ params, request }) => {
+  http.put('http://localhost:5000/api/v1/worlds/:id', async ({ params, request }) => {
     const world = mockWorlds.find((w) => w.id === params.id);
     if (!world) {
       const problemDetails: ProblemDetails = {
@@ -148,7 +148,7 @@ const server = setupServer(
   }),
 
   // DELETE /api/worlds/:id
-  http.delete('http://localhost:5000/api/worlds/:id', ({ params }) => {
+  http.delete('http://localhost:5000/api/v1/worlds/:id', ({ params }) => {
     const world = mockWorlds.find((w) => w.id === params.id);
     if (!world) {
       const problemDetails: ProblemDetails = {
@@ -219,7 +219,7 @@ describe('World API - GET Endpoints', () => {
     it('should cache results and not refetch on subsequent renders', async () => {
       let requestCount = 0;
       server.use(
-        http.get('http://localhost:5000/api/worlds', () => {
+        http.get('http://localhost:5000/api/v1/worlds', () => {
           requestCount++;
           const response: WorldListResponse = {
             data: mockWorlds,
@@ -276,7 +276,7 @@ describe('World API - GET Endpoints', () => {
   describe('Error Handling', () => {
     it('should handle 500 Internal Server Error', async () => {
       server.use(
-        http.get('http://localhost:5000/api/worlds', () => {
+        http.get('http://localhost:5000/api/v1/worlds', () => {
           const problemDetails: ProblemDetails = {
             type: 'https://api.librismaleficarum.com/errors/server-error',
             title: 'Internal Server Error',
@@ -302,7 +302,7 @@ describe('World API - GET Endpoints', () => {
     });
 
     it('should handle network errors', async () => {
-      server.use(http.get('http://localhost:5000/api/worlds', () => {
+      server.use(http.get('http://localhost:5000/api/v1/worlds', () => {
         // Return a proper error response instead of HttpResponse.error()
         return new HttpResponse(null, { status: 0 });
       }));
@@ -386,7 +386,7 @@ describe('World API - Mutation Endpoints', () => {
 
     it('should handle validation errors on creation', async () => {
       server.use(
-        http.post('http://localhost:5000/api/worlds', () => {
+        http.post('http://localhost:5000/api/v1/worlds', () => {
           const problemDetails: ProblemDetails = {
             type: 'https://api.librismaleficarum.com/errors/validation',
             title: 'Validation Failed',

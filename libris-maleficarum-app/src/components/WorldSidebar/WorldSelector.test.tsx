@@ -75,11 +75,11 @@ async function renderWorldSelector(mswOverrides: Parameters<typeof server.use>[0
 }
 
 // Mock data helpers
-const emptyWorldsHandler = http.get('http://localhost:5000/api/worlds', () => {
+const emptyWorldsHandler = http.get('http://localhost:5000/api/v1/worlds', () => {
   return HttpResponse.json({ data: [], totalCount: 0 });
 });
 
-const multipleWorldsHandler = http.get('http://localhost:5000/api/worlds', () => {
+const multipleWorldsHandler = http.get('http://localhost:5000/api/v1/worlds', () => {
   return HttpResponse.json({
     data: [
       {
@@ -114,7 +114,7 @@ const multipleWorldsHandler = http.get('http://localhost:5000/api/worlds', () =>
   });
 });
 
-const errorWorldsHandler = http.get('http://localhost:5000/api/worlds', () => {
+const errorWorldsHandler = http.get('http://localhost:5000/api/v1/worlds', () => {
   return new HttpResponse(null, { status: 500, statusText: 'Internal Server Error' });
 });
 
@@ -132,8 +132,8 @@ describe('WorldSelector', () => {
       // Act
       await renderWorldSelector([emptyWorldsHandler]);
 
-      // Assert
-      expect(screen.getByRole('button', { name: /create world/i })).toBeInTheDocument();
+      // Assert - EmptyState component has "Create World" button
+      expect(screen.getByRole('button', { name: /^create world$/i })).toBeInTheDocument();
     });
 
     it('should open WorldFormModal when "Create World" button is clicked in empty state', async () => {
@@ -141,8 +141,8 @@ describe('WorldSelector', () => {
       const user = userEvent.setup();
       const { store } = await renderWorldSelector([emptyWorldsHandler]);
 
-      // Act
-      const createButton = screen.getByRole('button', { name: /create world/i });
+      // Act - EmptyState component has "Create World" button
+      const createButton = screen.getByRole('button', { name: /^create world$/i });
       await user.click(createButton);
 
       // Assert
@@ -164,21 +164,20 @@ describe('WorldSelector', () => {
       expect(screen.getByText(/forgotten realms/i)).toBeInTheDocument();
     });
 
-    it('should not show dropdown when only one world exists', async () => {
+    it('should show dropdown even with only one world', async () => {
       // Act
       await renderWorldSelector(); // Uses default handler with 1 world
 
-      // Assert
-      // Select trigger should not be present (no need to choose from 1 item)
-      expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+      // Assert - Dropdown should be present even with one world
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
     });
 
     it('should show edit icon for single world', async () => {
       // Act
       await renderWorldSelector(); // Uses default handler with 1 world
 
-      // Assert
-      const editButton = screen.getByLabelText(/edit world/i);
+      // Assert - Edit button has aria-label "Edit current world"
+      const editButton = screen.getByLabelText(/edit current world/i);
       expect(editButton).toBeInTheDocument();
     });
 
@@ -187,8 +186,8 @@ describe('WorldSelector', () => {
       const user = userEvent.setup();
       const { store } = await renderWorldSelector(); // Uses default handler with 1 world
 
-      // Act
-      const editButton = screen.getByLabelText(/edit world/i);
+      // Act - Edit button has aria-label "Edit current world"
+      const editButton = screen.getByLabelText(/edit current world/i);
       await user.click(editButton);
 
       // Assert
