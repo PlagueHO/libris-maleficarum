@@ -25,7 +25,6 @@ static int FindAvailablePort(int startPort)
     throw new InvalidOperationException($"No available ports found starting from {startPort}");
 }
 
-#pragma warning disable ASPIRECOSMOSDB001 // Suppress experimental diagnostic for preview emulator
 // Configure Azure Cosmos DB Emulator for local development
 //
 // CRITICAL: These ports MUST remain fixed at 8081 and 1234.
@@ -42,6 +41,21 @@ static int FindAvailablePort(int startPort)
 var cosmosDbGatewayPort = 8081;
 var cosmosDbDataExplorerPort = 1234;
 
+// Add Azure Cosmos DB Linux-based Emulator (preview) for local development
+// Configure emulator using documented environment variables
+// See: https://learn.microsoft.com/en-us/azure/cosmos-db/emulator-linux#docker-commands
+#pragma warning disable ASPIRECOSMOSDB001 // Suppress experimental diagnostic for preview emulator
+var cosmosDb = builder.AddAzureCosmosDB("cosmosdb")
+    .RunAsPreviewEmulator(emulator =>
+    {
+        emulator.WithGatewayPort(cosmosDbGatewayPort);
+        emulator.WithDataExplorer(cosmosDbDataExplorerPort);
+    });
+    
+// Add the database to the Cosmos DB account
+var cosmosDbDatabase = cosmosDb.AddCosmosDatabase("LibrisMaleficarum");
+#pragma warning restore ASPIRECOSMOSDB001
+
 // Add Azure Storage (Azurite emulator) for local development
 // Azurite provides blob, queue, and table storage emulation
 // 
@@ -53,20 +67,6 @@ var queuePort = FindAvailablePort(blobPort + 1);
 var tablePort = FindAvailablePort(queuePort + 1);
 
 Console.WriteLine($"[AppHost] Azurite ports: Blob={blobPort}, Queue={queuePort}, Table={tablePort}");
-
-IResourceBuilder<AzureCosmosDBResource> cosmosdb;
-
-// Add Azure Cosmos DB Linux-based Emulator (preview) for local development
-// Configure emulator using documented environment variables
-// See: https://learn.microsoft.com/en-us/azure/cosmos-db/emulator-linux#docker-commands
-cosmosdb = builder.AddAzureCosmosDB("cosmosdb")
-    .RunAsPreviewEmulator(emulator =>
-    {
-        emulator.WithGatewayPort(cosmosDbGatewayPort);
-        emulator.WithDataExplorer(cosmosDbDataExplorerPort);
-    })
-    .AddDatabase("LibrisMaleficarum");
-#pragma warning restore ASPIRECOSMOSDB001
 
 var storage = builder.AddAzureStorage("storage")
     .RunAsEmulator(emulator =>
@@ -82,9 +82,10 @@ var blobs = storage.AddBlobs("blobs");
 
 // Add the API service with Cosmos DB and Blob Storage references
 var apiService = builder.AddProject<Projects.LibrisMaleficarum_Api>("api")
-    .WithReference(cosmosdb)
+    .WithReference(cosmosDb)
     .WithReference(blobs)
-    .WaitFor(cosmosdb)
+    .WaitFor(cosmosDb)
+    .WaitFor(cosmosDbDatabase)
     .WaitFor(storage);
 
 // Add the React Vite frontend

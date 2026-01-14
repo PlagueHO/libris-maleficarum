@@ -95,10 +95,10 @@
 
 - [X] T037 [P] [US2] Write EntityTree component test in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.test.tsx
 - [X] T038 [P] [US2] Write EntityTreeNode component test in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.test.tsx
-- [ ] T039 [P] [US2] Write WorldSelector test for multi-world dropdown in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
+- [X] T039 [P] [US2] Write WorldSelector test for multi-world dropdown in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
 - [X] T043 [P] [US2] Write accessibility test for EntityTree with ARIA tree pattern in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.test.tsx
-- [ ] T044 [P] [US2] Write sessionCache utility tests in libris-maleficarum-app/src/lib/sessionCache.test.ts
-- [ ] T045 [P] [US2] Write integration test for hierarchy caching with MSW in libris-maleficarum-app/src/**tests**/integration/hierarchyCaching.test.tsx
+- [X] T044 [P] [US2] Write sessionCache utility tests in libris-maleficarum-app/src/lib/sessionCache.test.ts
+- [X] T045 [P] [US2] Write integration test for hierarchy caching with MSW in libris-maleficarum-app/src/**tests**/integration/hierarchyCaching.test.tsx
 
 ### Implementation for User Story 2
 
@@ -219,27 +219,27 @@
 
 ### Tests for Entity Creation ⚠️
 
-- [ ] T099 [P] Write EntityFormModal component test in libris-maleficarum-app/src/components/WorldSidebar/EntityFormModal.test.tsx
+- [X] T099 [P] Write EntityFormModal component test in libris-maleficarum-app/src/components/WorldSidebar/EntityFormModal.test.tsx
 - [ ] T100 [P] Write EntityContextMenu component test in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.test.tsx
 - [ ] T101 [P] Write context-aware type suggestions test in EntityFormModal.test.tsx
 - [ ] T102 [P] Write accessibility test for EntityContextMenu keyboard trigger (Shift+F10)
 
 ### Implementation for Entity Creation
 
-- [ ] T103 [P] Create EntityFormModal component in libris-maleficarum-app/src/components/WorldSidebar/EntityFormModal.tsx
+- [X] T103 [P] Create EntityFormModal component in libris-maleficarum-app/src/components/WorldSidebar/EntityFormModal.tsx
 - [ ] T104 [P] Create EntityContextMenu component in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.tsx
 - [ ] T105 Add inline "+" button to EntityTreeNode (visible on hover)
 - [ ] T106 Add "Add Root Entity" button to WorldSidebar
-- [ ] T107 Implement context-aware entity type suggestions in EntityFormModal
-- [ ] T108 Connect EntityFormModal to createEntity mutation
+- [X] T107 Implement context-aware entity type suggestions in EntityFormModal
+- [X] T108 Connect EntityFormModal to createEntity mutation
 - [ ] T109 Add context menu "Add Child Entity" action
 - [ ] T110 Add context menu "Edit Entity" action
 - [ ] T111 Add context menu "Delete Entity" action with confirmation
 - [ ] T112 Add context menu "Move Entity" action (future: opens move dialog)
-- [ ] T113 Update worldSidebarSlice to track entity form modal state (open/close, editing entity, parent entity)
+- [X] T113 Update worldSidebarSlice to track entity form modal state (open/close, editing entity, parent entity)
 - [ ] T114 Connect inline "+" button to open EntityFormModal with parent pre-selected
 - [ ] T115 Connect "Add Root Entity" button to open EntityFormModal with worldId as parent
-- [ ] T116 Implement entity creation form validation (name required, max lengths)
+- [X] T116 Implement entity creation form validation (name required, max lengths)
 - [ ] T117 Add CSS Modules styling for EntityFormModal
 - [ ] T118 Add CSS Modules styling for EntityContextMenu
 
