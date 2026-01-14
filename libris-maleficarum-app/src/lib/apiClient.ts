@@ -13,14 +13,17 @@ import axiosRetry from 'axios-retry';
 /**
  * Base URL for API requests
  *
- * Prioritizes Aspire-injected environment variables for local development,
- * falls back to VITE_API_BASE_URL for deployed environments.
+ * In development mode (with Vite), uses relative URLs that are proxied by Vite dev server.
+ * The Vite proxy (configured in vite.config.ts) forwards /api/* requests to the Aspire-managed API service.
+ *
+ * In production, uses VITE_API_BASE_URL environment variable.
+ *
+ * @see vite.config.ts for proxy configuration
  */
 const baseURL =
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.APISERVICE_HTTPS ||
-  import.meta.env.APISERVICE_HTTP ||
-  'http://localhost:5000';
+  import.meta.env.MODE === 'development'
+    ? '' // Use relative URLs in development (proxied by Vite)
+    : import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 /**
  * Axios instance with retry configuration
