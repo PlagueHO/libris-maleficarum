@@ -36,8 +36,39 @@
       "options": {
         "cwd": "${workspaceFolder}/libris-maleficarum-app"
       },
+      "group": "test",
       "icon": {
         "id": "beaker",
+        "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "app: test (watch)",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["test:watch"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      },
+      "isBackground": true,
+      "group": "test",
+      "icon": {
+        "id": "eye-watch",
+        "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "app: test (ui)",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["test:ui"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      },
+      "isBackground": true,
+      "group": "test",
+      "icon": {
+        "id": "browser",
         "color": "terminal.ansiCyan"
       }
     },
