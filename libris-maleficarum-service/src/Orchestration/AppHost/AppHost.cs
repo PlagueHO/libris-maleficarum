@@ -51,7 +51,7 @@ var cosmosDb = builder.AddAzureCosmosDB("cosmosdb")
         emulator.WithGatewayPort(cosmosDbGatewayPort);
         emulator.WithDataExplorer(cosmosDbDataExplorerPort);
     });
-    
+
 // Add the database to the Cosmos DB account
 var cosmosDbDatabase = cosmosDb.AddCosmosDatabase("LibrisMaleficarum");
 #pragma warning restore ASPIRECOSMOSDB001
