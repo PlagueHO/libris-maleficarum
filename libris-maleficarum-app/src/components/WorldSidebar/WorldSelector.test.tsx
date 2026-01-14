@@ -496,6 +496,36 @@ describe('WorldSelector', () => {
     });
   });
 
+  describe('Multi-World Dropdown Interaction (T039)', () => {
+    it('should render dropdown trigger when multiple worlds available', async () => {
+      // Arrange
+      const { getByRole } = await renderWorldSelector([multipleWorldsHandler]);
+
+      // Act & Assert
+      const trigger = getByRole('combobox');
+      expect(trigger).toBeInTheDocument();
+    });
+
+    it('should display current world in dropdown trigger', async () => {
+      // Arrange
+      const { getByRole } = await renderWorldSelector([multipleWorldsHandler]);
+
+      // Act & Assert
+      expect(getByRole('combobox')).toHaveTextContent(/world 1|world 2|world 3/i);
+    });
+
+    it('should be keyboard accessible for world selection', async () => {
+      // Arrange
+      await renderWorldSelector([multipleWorldsHandler]);
+
+      // Act & Assert
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).toBeVisible();
+      // Ensure it is a button which is naturally keyboard accessible
+      expect(trigger.tagName).toBe('BUTTON');
+    });
+  });;
+
   describe('Loading States', () => {
     it('should show loading skeleton while fetching worlds', () => {
       // Arrange

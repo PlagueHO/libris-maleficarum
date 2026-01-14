@@ -18,6 +18,7 @@ import {
 import { useGetWorldByIdQuery } from '@/services/worldApi';
 import { WorldSelector } from './WorldSelector';
 import { WorldFormModal } from './WorldFormModal';
+import { EntityFormModal } from './EntityFormModal';
 import { EntityTree } from './EntityTree';
 import styles from './WorldSidebar.module.css';
 
@@ -55,6 +56,9 @@ export function WorldSidebar() {
         world={editingWorld}
         onClose={handleCloseWorldForm}
       />
+      
+      {/* Entity Form Modal */}
+      <EntityFormModal />
     </aside>
   );
 }
