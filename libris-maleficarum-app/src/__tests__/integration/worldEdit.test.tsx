@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterAll, beforeAll } from 'vitest';
-import { screen, waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../utils/test-utils';
 import { server } from '../mocks/server';
@@ -65,7 +65,7 @@ describe('World Editing Integration', () => {
 
             // 3. Update World
             http.put(`${BASE_URL}/api/v1/worlds/world-1`, async ({ request }) => {
-                const body = await request.json() as any;
+                const body = await request.json() as { name: string; description: string };
                 
                 if (body.name !== 'Updated World' || body.description !== 'Updated Description') {
                      return new HttpResponse(null, { status: 400 });

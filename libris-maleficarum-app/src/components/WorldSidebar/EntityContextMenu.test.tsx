@@ -63,7 +63,7 @@ describe('EntityContextMenu', () => {
   });
 
   it('dispatches openEntityFormCreate when "Add Child Entity" is clicked', async () => {
-    const { store } = renderWithProviders(<TestWrapper />);
+    renderWithProviders(<TestWrapper />);
     const trigger = screen.getByTestId('trigger');
 
     await userEvent.pointer({ keys: '[MouseRight]', target: trigger });
