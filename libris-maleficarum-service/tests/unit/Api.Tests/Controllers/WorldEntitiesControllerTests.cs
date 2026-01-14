@@ -34,6 +34,7 @@ public class EntitiesControllerTests
     private readonly Guid _worldId = Guid.NewGuid();
     private readonly Guid _entityId = Guid.NewGuid();
     private readonly Guid _parentId = Guid.NewGuid();
+    private const string TestOwnerId = "test-owner-id";
 
     [TestInitialize]
     public void Setup()
@@ -74,7 +75,7 @@ public class EntitiesControllerTests
             Name = "Test Character",
             Description = "Test Description"
         };
-        var entity = WorldEntity.Create(_worldId, request.EntityType, request.Name, request.Description);
+        var entity = WorldEntity.Create(_worldId, request.EntityType, request.Name, TestOwnerId, request.Description);
 
         _createValidator.ValidateAsync(request, Arg.Any<CancellationToken>())
             .Returns(new ValidationResult());
@@ -155,8 +156,8 @@ public class EntitiesControllerTests
         // Arrange
         var entities = new List<WorldEntity>
         {
-            WorldEntity.Create(_worldId, EntityType.Character, "Entity 1", "Description 1"),
-            WorldEntity.Create(_worldId, EntityType.Location, "Entity 2", null)
+            WorldEntity.Create(_worldId, EntityType.Character, "Entity 1", TestOwnerId, "Description 1"),
+            WorldEntity.Create(_worldId, EntityType.Location, "Entity 2", TestOwnerId, null)
         };
 
         _entityRepository.GetAllByWorldAsync(_worldId, null, null, 50, null, Arg.Any<CancellationToken>())
@@ -223,7 +224,7 @@ public class EntitiesControllerTests
     public async Task GetEntity_WithValidId_ReturnsOkWithEntity()
     {
         // Arrange
-        var entity = WorldEntity.Create(_worldId, EntityType.Item, "Test Item", "Test Description");
+        var entity = WorldEntity.Create(_worldId, EntityType.Item, "Test Item", TestOwnerId, "Test Description");
 
         _entityRepository.GetByIdAsync(_worldId, _entityId, Arg.Any<CancellationToken>())
             .Returns(entity);
@@ -271,7 +272,7 @@ public class EntitiesControllerTests
             Description = "Updated Description",
             EntityType = EntityType.Character
         };
-        var existingEntity = WorldEntity.Create(_worldId, EntityType.Character, "Original Name", "Original Description");
+        var existingEntity = WorldEntity.Create(_worldId, EntityType.Character, "Original Name", TestOwnerId, "Original Description");
         var etag = "test-etag";
 
         _updateValidator.ValidateAsync(request, Arg.Any<CancellationToken>())
@@ -349,7 +350,7 @@ public class EntitiesControllerTests
     {
         // Arrange
         var request = new PatchEntityRequest { Name = "Patched Name" };
-        var existingEntity = WorldEntity.Create(_worldId, EntityType.Character, "Original Name", "Description");
+        var existingEntity = WorldEntity.Create(_worldId, EntityType.Character, "Original Name", TestOwnerId, "Description");
 
         _entityRepository.GetByIdAsync(_worldId, _entityId, Arg.Any<CancellationToken>())
             .Returns(existingEntity);
@@ -428,8 +429,8 @@ public class EntitiesControllerTests
         // Arrange
         var children = new List<WorldEntity>
         {
-            WorldEntity.Create(_worldId, EntityType.Location, "Child 1", null, _parentId),
-            WorldEntity.Create(_worldId, EntityType.Location, "Child 2", null, _parentId)
+            WorldEntity.Create(_worldId, EntityType.Location, "Child 1", TestOwnerId, null, _parentId),
+            WorldEntity.Create(_worldId, EntityType.Location, "Child 2", TestOwnerId, null, _parentId)
         };
 
         _entityRepository.GetChildrenAsync(_worldId, _parentId, Arg.Any<CancellationToken>())

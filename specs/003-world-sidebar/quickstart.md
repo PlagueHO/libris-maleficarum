@@ -105,44 +105,44 @@ export type AppDispatch = typeof store.dispatch;
 When a user has no worlds:
 
 1. **WorldSidebar** detects empty world list via `useGetWorldsQuery()`
-2. **EmptyState** component displays: "Create Your First World" CTA
-3. User clicks button → **WorldFormModal** opens
-4. User fills name + description → submits form
-5. **worldApi.createWorld** mutation creates world
-6. **WorldSelector** updates to show new world
-7. **EntityTree** displays empty hierarchy (root level)
+1. **EmptyState** component displays: "Create Your First World" CTA
+1. User clicks button → **WorldFormModal** opens
+1. User fills name + description → submits form
+1. **worldApi.createWorld** mutation creates world
+1. **WorldSelector** updates to show new world
+1. **EntityTree** displays empty hierarchy (root level)
 
 ### World Selection
 
 User selects different world from dropdown:
 
 1. User clicks **WorldSelector** dropdown
-2. Dropdown lists all worlds alphabetically with current highlighted
-3. User selects world → `dispatch(setSelectedWorld(worldId))`
-4. **EntityTree** loads root entities for new world (cache-first)
-5. Previous world's expanded state saved to sessionStorage
-6. New world's expanded state restored from cache (if exists)
+1. Dropdown lists all worlds alphabetically with current highlighted
+1. User selects world → `dispatch(setSelectedWorld(worldId))`
+1. **EntityTree** loads root entities for new world (cache-first)
+1. Previous world's expanded state saved to sessionStorage
+1. New world's expanded state restored from cache (if exists)
 
 ### Entity Hierarchy Navigation
 
 User expands entity to see children:
 
 1. User clicks chevron icon on **EntityTreeNode**
-2. Check cache: `sessionCache.get('sidebar_hierarchy_{worldId}_{parentId}')`
-3. **If cache hit**: Render children instantly (<100ms per FR-002)
-4. **If cache miss**: Fetch via `worldEntityApi.getEntitiesByParent(parentId)`
-5. Cache response: `sessionCache.set(key, children, 300000)` (5 min TTL)
-6. Update Redux: `dispatch(toggleNodeExpanded(parentId))`
-7. Render children with indentation and connecting lines
+1. Check cache: `sessionCache.get('sidebar_hierarchy_{worldId}_{parentId}')`
+1. **If cache hit**: Render children instantly (<100ms per FR-002)
+1. **If cache miss**: Fetch via `worldEntityApi.getEntitiesByParent(parentId)`
+1. Cache response: `sessionCache.set(key, children, 300000)` (5 min TTL)
+1. Update Redux: `dispatch(toggleNodeExpanded(parentId))`
+1. Render children with indentation and connecting lines
 
 ### Entity Selection (Main Panel Integration)
 
 User clicks entity to display details:
 
 1. User clicks **EntityTreeNode** name/icon
-2. `dispatch(setSelectedEntity(entityId))`
-3. **EntityTreeNode** adds selection highlight styling
-4. **MainPanel** component listens to `selectedEntityId` from Redux:
+1. `dispatch(setSelectedEntity(entityId))`
+1. **EntityTreeNode** adds selection highlight styling
+1. **MainPanel** component listens to `selectedEntityId` from Redux:
 
    ```tsx
    // MainPanel.tsx
@@ -162,37 +162,37 @@ User clicks entity to display details:
 **Option 1: Inline "+" Button** (hover on entity)
 
 1. User hovers over **EntityTreeNode**
-2. Inline "+" button appears (progressive disclosure)
-3. User clicks → `dispatch(openEntityForm({ parentId: entityId }))`
-4. **EntityFormModal** opens with context-aware type suggestions
-5. User selects type, enters name/description → submits
-6. **worldEntityApi.createEntity** mutation creates entity
-7. Cache invalidated: `invalidate('sidebar_hierarchy_{worldId}_{parentId}')`
-8. Parent node refreshes to show new child
+1. Inline "+" button appears (progressive disclosure)
+1. User clicks → `dispatch(openEntityForm({ parentId: entityId }))`
+1. **EntityFormModal** opens with context-aware type suggestions
+1. User selects type, enters name/description → submits
+1. **worldEntityApi.createEntity** mutation creates entity
+1. Cache invalidated: `invalidate('sidebar_hierarchy_{worldId}_{parentId}')`
+1. Parent node refreshes to show new child
 
 **Option 2: Context Menu** (right-click entity)
 
 1. User right-clicks **EntityTreeNode**
-2. **EntityContextMenu** appears with actions: Add Child, Edit, Delete, Move
-3. User clicks "Add Child Entity" → same flow as Option 1
+1. **EntityContextMenu** appears with actions: Add Child, Edit, Delete, Move
+1. User clicks "Add Child Entity" → same flow as Option 1
 
 **Option 3: "Add Root Entity" Button** (world level)
 
 1. User clicks button at bottom of **WorldSidebar**
-2. `dispatch(openEntityForm({ parentId: selectedWorldId }))`
-3. **EntityFormModal** opens with root-level type suggestions (Continent, Campaign, Character)
-4. Same creation flow
+1. `dispatch(openEntityForm({ parentId: selectedWorldId }))`
+1. **EntityFormModal** opens with root-level type suggestions (Continent, Campaign, Character)
+1. Same creation flow
 
 ### World Metadata Editing
 
 User edits world name/description:
 
 1. User clicks edit icon next to world name in **WorldSelector**
-2. `dispatch(openWorldForm(worldId))`
-3. **WorldFormModal** opens in edit mode (fields pre-populated)
-4. User modifies name/description → submits
-5. **worldApi.updateWorld** mutation updates world
-6. **WorldSelector** updates optimistically (no page refresh required)
+1. `dispatch(openWorldForm(worldId))`
+1. **WorldFormModal** opens in edit mode (fields pre-populated)
+1. User modifies name/description → submits
+1. **worldApi.updateWorld** mutation updates world
+1. **WorldSelector** updates optimistically (no page refresh required)
 
 ---
 
@@ -422,9 +422,10 @@ Optimization: Prefetch children of visible nodes (future enhancement)
 **Symptom**: Entities refetched on every expansion
 
 **Causes**:
+
 1. sessionStorage disabled (private browsing mode)
-2. TTL expired (>5 minutes since last cache)
-3. Cache invalidation triggered unexpectedly
+1. TTL expired (>5 minutes since last cache)
+1. Cache invalidation triggered unexpectedly
 
 **Fix**: Check browser console for cache logs, verify sessionStorage availability
 
@@ -433,9 +434,10 @@ Optimization: Prefetch children of visible nodes (future enhancement)
 **Symptom**: Blank sidebar after world selection
 
 **Causes**:
+
 1. Redux slice not registered in store
-2. API endpoint returning empty array
-3. Frontend filtering excluding all entities
+1. API endpoint returning empty array
+1. Frontend filtering excluding all entities
 
 **Fix**: Check Redux DevTools, Network tab for API response, verify `isDeleted=false` filter
 
@@ -444,9 +446,10 @@ Optimization: Prefetch children of visible nodes (future enhancement)
 **Symptom**: Arrow keys don't navigate tree
 
 **Causes**:
+
 1. ARIA roles missing (`role="tree"`, `role="treeitem"`)
-2. `tabindex` not set correctly
-3. Event handlers not attached
+1. `tabindex` not set correctly
+1. Event handlers not attached
 
 **Fix**: Run `jest-axe` tests, verify `onKeyDown` handlers in EntityTree
 
@@ -459,9 +462,9 @@ Optimization: Prefetch children of visible nodes (future enhancement)
 If replacing existing sidebar:
 
 1. **Import**: Replace `import { SidePanel }` with `import { WorldSidebar }`
-2. **Props**: WorldSidebar has no required props (uses Redux)
-3. **Redux**: Register `worldSidebarSlice` in store
-4. **Cleanup**: Remove old SidePanel state management
+1. **Props**: WorldSidebar has no required props (uses Redux)
+1. **Redux**: Register `worldSidebarSlice` in store
+1. **Cleanup**: Remove old SidePanel state management
 
 ---
 

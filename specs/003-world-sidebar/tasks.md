@@ -40,7 +40,7 @@
 - [X] T012 Create RTK Query worldEntityApi endpoints in libris-maleficarum-app/src/services/worldEntityApi.ts
 - [X] T013 Create worldSidebarSlice Redux slice in libris-maleficarum-app/src/store/worldSidebarSlice.ts
 - [X] T014 Register worldSidebarSlice in root Redux store at libris-maleficarum-app/src/store/store.ts
-- [X] T015 [P] Create MSW handlers for worldEntityApi endpoints in libris-maleficarum-app/src/__tests__/mocks/handlers.ts
+- [X] T015 [P] Create MSW handlers for worldEntityApi endpoints in libris-maleficarum-app/src/**tests**/mocks/handlers.ts
 - [X] T016 [P] Backend: Create WorldEntity domain entity at libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs
 - [X] T017 [P] Backend: Create WorldEntityRepository at libris-maleficarum-service/src/Infrastructure/Repositories/WorldEntityRepository.cs
 - [X] T018 [P] Backend: Create WorldEntityController at libris-maleficarum-service/src/Api/Controllers/WorldEntitiesController.cs
@@ -98,7 +98,7 @@
 - [ ] T039 [P] [US2] Write WorldSelector test for multi-world dropdown in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
 - [X] T043 [P] [US2] Write accessibility test for EntityTree with ARIA tree pattern in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.test.tsx
 - [ ] T044 [P] [US2] Write sessionCache utility tests in libris-maleficarum-app/src/lib/sessionCache.test.ts
-- [ ] T045 [P] [US2] Write integration test for hierarchy caching with MSW in libris-maleficarum-app/src/__tests__/integration/hierarchyCaching.test.tsx
+- [ ] T045 [P] [US2] Write integration test for hierarchy caching with MSW in libris-maleficarum-app/src/**tests**/integration/hierarchyCaching.test.tsx
 
 ### Implementation for User Story 2
 
@@ -136,7 +136,7 @@
 
 - [X] T062 [P] [US3] Write WorldFormModal edit mode test in libris-maleficarum-app/src/components/WorldSidebar/WorldFormModal.test.tsx
 - [X] T063 [P] [US3] Write WorldSelector edit button test in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
-- [ ] T064 [P] [US3] Write integration test for world update flow in libris-maleficarum-app/src/__tests__/integration/worldEdit.test.tsx
+- [ ] T064 [P] [US3] Write integration test for world update flow in libris-maleficarum-app/src/**tests**/integration/worldEdit.test.tsx
 
 ### Implementation for User Story 3
 
@@ -370,12 +370,12 @@ T047: EntityTree.tsx
 ### MVP First (User Stories 1-2 + Entity Creation)
 
 1. Complete Phase 1: Setup (9 tasks)
-2. Complete Phase 2: Foundational (11 tasks) → Foundation ready
-3. Complete Phase 3: US1 - First-Time World Creation (16 tasks) → Demo MVP
-4. Complete Phase 4: US2 - World Selection & Hierarchy (25 tasks) → Core feature complete
-5. Complete Phase 8: Entity Creation (16 tasks) → Full CRUD available
-6. Complete Phase 9: Entity Selection (6 tasks) → Sidebar integrated with main panel
-7. **STOP and VALIDATE**: 83 tasks complete, full feature functional
+1. Complete Phase 2: Foundational (11 tasks) → Foundation ready
+1. Complete Phase 3: US1 - First-Time World Creation (16 tasks) → Demo MVP
+1. Complete Phase 4: US2 - World Selection & Hierarchy (25 tasks) → Core feature complete
+1. Complete Phase 8: Entity Creation (16 tasks) → Full CRUD available
+1. Complete Phase 9: Entity Selection (6 tasks) → Sidebar integrated with main panel
+1. **STOP and VALIDATE**: 83 tasks complete, full feature functional
 
 ### Incremental Delivery Beyond MVP
 

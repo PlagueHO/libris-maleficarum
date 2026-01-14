@@ -22,6 +22,8 @@ using Microsoft.EntityFrameworkCore;
 [DoNotParallelize] // AppHost tests must run sequentially to avoid port conflicts
 public class AssetRepositoryIntegrationTests
 {
+    private const string TestOwnerId = "test-owner-id";
+
     public TestContext? TestContext { get; set; }
 
     [ClassInitialize]
@@ -69,7 +71,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(userId, "Test World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
         await context.SaveChangesAsync();
 
@@ -146,7 +148,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(ownerId, "Owner's World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Location, "Test Location", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Location, "Test Location", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
         await context.SaveChangesAsync();
 
@@ -236,7 +238,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(userId, "Test World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
 
         var asset = Asset.Create(
@@ -286,7 +288,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(ownerId, "Owner's World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
 
         var asset = Asset.Create(
@@ -356,7 +358,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(userId, "Test World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
 
         var asset = Asset.Create(
@@ -402,7 +404,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(userId, "Test World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
 
         // Create multiple assets
@@ -447,7 +449,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(userId, "Test World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
 
         // Create multiple assets
@@ -500,7 +502,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(userId, "Test World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
 
         // Create multiple assets with delays to ensure different timestamps
@@ -566,7 +568,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(userId, "Test World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
 
         // Create assets
@@ -613,7 +615,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(ownerId, "Owner's World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
         await context.SaveChangesAsync();
 
@@ -650,7 +652,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(userId, "Test World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
 
         var blobUrl = "https://storage.blob.core.windows.net/assets/test.jpg";
@@ -701,7 +703,7 @@ public class AssetRepositoryIntegrationTests
         var world = World.Create(ownerId, "Owner's World", null);
         await context.Worlds.AddAsync(world);
 
-        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", null, null, null);
+        var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
 
         var asset = Asset.Create(

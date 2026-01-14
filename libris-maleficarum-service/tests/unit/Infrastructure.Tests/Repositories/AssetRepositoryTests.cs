@@ -27,6 +27,7 @@ public class AssetRepositoryTests
     private readonly Guid _worldId = Guid.NewGuid();
     private readonly Guid _entityId = Guid.NewGuid();
     private const string ValidBlobUrl = "https://storage.azure.com/container/blob";
+    private const string TestOwnerId = "test-owner-id";
 
     [TestInitialize]
     public void Setup()
@@ -328,7 +329,7 @@ public class AssetRepositoryTests
 
     private void ConfigureExistingEntity()
     {
-        var entity = WorldEntity.Create(_worldId, EntityType.Location, "Test Entity");
+        var entity = WorldEntity.Create(_worldId, EntityType.Location, "Test Entity", TestOwnerId);
         // Use reflection to set the Id
         var idProperty = typeof(WorldEntity).GetProperty("Id");
         idProperty?.SetValue(entity, _entityId);

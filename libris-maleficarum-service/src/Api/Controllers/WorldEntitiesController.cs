@@ -78,11 +78,16 @@ public class WorldEntitiesController : ControllerBase
             });
         }
 
+        // Get current user ID
+        var userId = await _userContextService.GetCurrentUserIdAsync();
+        var ownerId = userId.ToString();
+
         // Create entity
         var entity = WorldEntity.Create(
             worldId,
             request.EntityType,
             request.Name,
+            ownerId,
             request.Description,
             request.ParentId,
             request.Tags,

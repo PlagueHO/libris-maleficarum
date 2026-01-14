@@ -30,6 +30,7 @@ public class WorldsControllerTests
 
     private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _worldId = Guid.NewGuid();
+    private const string TestOwnerId = "test-owner-id";
 
     [TestInitialize]
     public void Setup()
@@ -321,7 +322,7 @@ public class WorldsControllerTests
         var query = "test";
         var entities = new List<WorldEntity>
         {
-            WorldEntity.Create(_worldId, Domain.ValueObjects.EntityType.Character, "Test Character", "Description")
+            WorldEntity.Create(_worldId, Domain.ValueObjects.EntityType.Character, "Test Character", TestOwnerId, "Description")
         };
 
         _searchService.SearchEntitiesAsync(_worldId, query, null, null, 50, null, Arg.Any<CancellationToken>())

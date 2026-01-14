@@ -27,6 +27,7 @@ public class WorldEntityRepositoryTests
     private readonly Guid _otherUserId = Guid.NewGuid();
     private readonly Guid _worldId = Guid.NewGuid();
     private readonly string _testDatabaseName = $"TestDb_{Guid.NewGuid()}";
+    private const string TestOwnerId = "test-owner-id";
 
     [TestInitialize]
     public void Setup()
@@ -106,7 +107,7 @@ public class WorldEntityRepositoryTests
         EntityType type = EntityType.Location,
         Guid? parentId = null)
     {
-        var entity = WorldEntity.Create(_worldId, type, name, null, parentId);
+        var entity = WorldEntity.Create(_worldId, type, name, TestOwnerId, null, parentId);
         await _context.WorldEntities.AddAsync(entity);
         await _context.SaveChangesAsync();
         return entity;
@@ -118,7 +119,7 @@ public class WorldEntityRepositoryTests
     public async Task CreateAsync_WithValidEntity_CreatesAndReturnsEntity()
     {
         // Arrange
-        var entity = WorldEntity.Create(_worldId, EntityType.Character, "Test Entity", "A test character");
+        var entity = WorldEntity.Create(_worldId, EntityType.Character, "Test Entity", TestOwnerId, "A test character");
 
         // Act
         var result = await _repository.CreateAsync(entity);
@@ -139,7 +140,7 @@ public class WorldEntityRepositoryTests
     {
         // Arrange
         var parent = await CreateEntityInDatabase("Parent Location", EntityType.Location);
-        var child = WorldEntity.Create(_worldId, EntityType.Location, "Child Location", null, parent.Id);
+        var child = WorldEntity.Create(_worldId, EntityType.Location, "Child Location", TestOwnerId, null, parent.Id);
 
         // Act
         var result = await _repository.CreateAsync(child);
@@ -153,7 +154,7 @@ public class WorldEntityRepositoryTests
     {
         // Arrange
         var nonExistentParentId = Guid.NewGuid();
-        var entity = WorldEntity.Create(_worldId, EntityType.Location, "Test", null, nonExistentParentId);
+        var entity = WorldEntity.Create(_worldId, EntityType.Location, "Test", TestOwnerId, null, nonExistentParentId);
 
         // Act & Assert
         await Assert.ThrowsExactlyAsync<EntityNotFoundException>(
@@ -167,7 +168,7 @@ public class WorldEntityRepositoryTests
         _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<World?>(null));
 
-        var entity = WorldEntity.Create(_worldId, EntityType.Location, "Test");
+        var entity = WorldEntity.Create(_worldId, EntityType.Location, "Test", TestOwnerId);
 
         // Act & Assert
         await Assert.ThrowsExactlyAsync<WorldNotFoundException>(
@@ -179,7 +180,7 @@ public class WorldEntityRepositoryTests
     {
         // Arrange
         ConfigureUnauthorizedWorld();
-        var entity = WorldEntity.Create(_worldId, EntityType.Character, "Test");
+        var entity = WorldEntity.Create(_worldId, EntityType.Character, "Test", TestOwnerId);
 
         // Act & Assert
         await Assert.ThrowsExactlyAsync<UnauthorizedWorldAccessException>(
@@ -394,7 +395,7 @@ public class WorldEntityRepositoryTests
     public async Task UpdateAsync_WithNonexistentEntity_ThrowsEntityNotFoundException()
     {
         // Arrange
-        var entity = WorldEntity.Create(_worldId, EntityType.Location, "Test");
+        var entity = WorldEntity.Create(_worldId, EntityType.Location, "Test", TestOwnerId);
 
         // Act & Assert
         await Assert.ThrowsExactlyAsync<EntityNotFoundException>(
