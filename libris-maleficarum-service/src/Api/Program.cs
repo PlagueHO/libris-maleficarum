@@ -84,6 +84,14 @@ builder.Services.AddOpenApi(options =>
 
 var app = builder.Build();
 
+// Ensure database and containers exist
+// Database created by Aspire AppHost (.AddDatabase), but containers must be created by EF Core
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.Database.EnsureCreatedAsync();
+}
+
 // Configure the HTTP request pipeline.
 
 // Exception handling (must be first)

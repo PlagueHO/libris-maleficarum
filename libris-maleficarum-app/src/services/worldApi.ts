@@ -22,14 +22,14 @@ import type {
 export const worldApi = api.injectEndpoints({
   endpoints: (builder) => ({
     /**
-     * GET /api/worlds
+     * GET /api/v1/worlds
      *
      * Fetch list of all worlds owned by the authenticated user.
      * Response is cached and tagged with 'World' for automatic invalidation.
      */
     getWorlds: builder.query<World[], void>({
       query: () => ({
-        url: '/api/worlds',
+        url: '/api/v1/worlds',
         method: 'GET',
       }),
       transformResponse: (response: WorldListResponse) => response.data,
@@ -43,14 +43,14 @@ export const worldApi = api.injectEndpoints({
     }),
 
     /**
-     * GET /api/worlds/{id}
+     * GET /api/v1/worlds/{id}
      *
      * Fetch a single world by ID.
      * Response is cached and tagged with specific world ID for targeted invalidation.
      */
     getWorldById: builder.query<World, string>({
       query: (id) => ({
-        url: `/api/worlds/${id}`,
+        url: `/api/v1/worlds/${id}`,
         method: 'GET',
       }),
       transformResponse: (response: WorldResponse) => response.data,
@@ -58,14 +58,14 @@ export const worldApi = api.injectEndpoints({
     }),
 
     /**
-     * POST /api/worlds
+     * POST /api/v1/worlds
      *
      * Create a new world.
      * Automatically invalidates the worlds list cache on success.
      */
     createWorld: builder.mutation<World, CreateWorldRequest>({
       query: (body) => ({
-        url: '/api/worlds',
+        url: '/api/v1/worlds',
         method: 'POST',
         data: body,
       }),
@@ -74,7 +74,7 @@ export const worldApi = api.injectEndpoints({
     }),
 
     /**
-     * PUT /api/worlds/{id}
+     * PUT /api/v1/worlds/{id}
      *
      * Update an existing world.
      * Invalidates both the specific world cache and the worlds list.
@@ -84,7 +84,7 @@ export const worldApi = api.injectEndpoints({
       { id: string; data: UpdateWorldRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/api/worlds/${id}`,
+        url: `/api/v1/worlds/${id}`,
         method: 'PUT',
         data,
       }),
@@ -96,14 +96,14 @@ export const worldApi = api.injectEndpoints({
     }),
 
     /**
-     * DELETE /api/worlds/{id}
+     * DELETE /api/v1/worlds/{id}
      *
      * Soft delete a world.
      * Invalidates both the specific world cache and the worlds list.
      */
     deleteWorld: builder.mutation<void, string>({
       query: (id) => ({
-        url: `/api/worlds/${id}`,
+        url: `/api/v1/worlds/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: (_result, _error, id) => [
