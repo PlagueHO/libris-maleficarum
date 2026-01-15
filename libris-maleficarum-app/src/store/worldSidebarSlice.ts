@@ -48,6 +48,9 @@ export interface WorldSidebarState {
 
   /** Parent entity ID for new entity creation (null for root entities) */
   newEntityParentId: string | null;
+
+  /** Whether the current form has unsaved changes */
+  hasUnsavedChanges: boolean;
 }
 
 /**
@@ -63,6 +66,7 @@ const initialState: WorldSidebarState = {
   isEntityFormOpen: false,
   editingEntityId: null,
   newEntityParentId: null,
+  hasUnsavedChanges: false,
 };
 
 /**
@@ -193,6 +197,17 @@ export const worldSidebarSlice = createSlice({
     closeWorldForm: (state) => {
       state.editingWorldId = null;
       state.mainPanelMode = 'empty';
+      state.hasUnsavedChanges = false;
+    },
+
+    /**
+     * Set unsaved changes flag
+     *
+     * @param state - Current state
+     * @param action - Payload with boolean flag
+     */
+    setUnsavedChanges: (state, action: PayloadAction<boolean>) => {
+      state.hasUnsavedChanges = action.payload;
     },
 
     /**
@@ -249,6 +264,7 @@ export const {
   openWorldFormCreate,
   openWorldFormEdit,
   closeWorldForm,
+  setUnsavedChanges,
   openEntityFormCreate,
   openEntityFormEdit,
   closeEntityForm,
@@ -289,6 +305,9 @@ export const selectEditingEntityId = (state: RootState): string | null =>
 
 export const selectNewEntityParentId = (state: RootState): string | null =>
   state.worldSidebar.newEntityParentId;
+
+export const selectHasUnsavedChanges = (state: RootState): boolean =>
+  state.worldSidebar.hasUnsavedChanges;
 
 /**
  * Reducer export for store configuration
