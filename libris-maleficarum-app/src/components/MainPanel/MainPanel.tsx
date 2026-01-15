@@ -1,18 +1,37 @@
 import { useSelector } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { selectSelectedEntityId, selectSelectedWorldId } from '@/store/worldSidebarSlice';
+import { selectSelectedEntityId, selectSelectedWorldId, selectMainPanelMode, selectEditingWorldId } from '@/store/worldSidebarSlice';
 import { useGetWorldEntityByIdQuery } from '@/services/worldEntityApi';
+import { useGetWorldByIdQuery } from '@/services/worldApi';
+import { WorldDetailForm } from './WorldDetailForm';
 import { Loader2 } from 'lucide-react';
 
 export function MainPanel() {
   const selectedWorldId = useSelector(selectSelectedWorldId);
   const selectedEntityId = useSelector(selectSelectedEntityId);
+  const mainPanelMode = useSelector(selectMainPanelMode);
+  const editingWorldId = useSelector(selectEditingWorldId);
+
+  // Get editing world data if in edit mode
+  const { data: editingWorld } = useGetWorldByIdQuery(editingWorldId!, {
+    skip: !editingWorldId,
+  });
 
   const { data: entity, isLoading, error } = useGetWorldEntityByIdQuery(
     { worldId: selectedWorldId!, entityId: selectedEntityId! },
     { skip: !selectedWorldId || !selectedEntityId }
   );
+
+  // Creating World Mode
+  if (mainPanelMode === 'creating_world') {
+    return <WorldDetailForm mode="create" world={undefined} />;
+  }
+
+  // Editing World Mode
+  if (mainPanelMode === 'editing_world' && editingWorldId && editingWorld) {
+    return <WorldDetailForm mode="edit" world={editingWorld} />;
+  }
 
   // Initial Welcome State (No Entity Selected)
   if (!selectedEntityId) {

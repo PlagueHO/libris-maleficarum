@@ -95,7 +95,7 @@ export function WorldSelector() {
   return (
     <div className={styles.container}>
       <div className={styles.selectorRow}>
-        <Select value={selectedWorldId || undefined} onValueChange={handleWorldChange}>
+        <Select value={selectedWorldId || ''} onValueChange={handleWorldChange}>
           <SelectTrigger className={styles.selectTrigger} aria-label="Select world">
             <SelectValue placeholder="Select a world">
               {selectedWorld?.name || 'Select a world'}

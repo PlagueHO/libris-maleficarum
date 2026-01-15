@@ -7,19 +7,23 @@
 
 This feature implements a comprehensive world navigation sidebar for the Libris Maleficarum frontend application. The sidebar provides:
 
-1. **World Management**: Dropdown selector to switch between user's worlds, with create/edit modals for world metadata
+1. **World Management**: Dropdown selector to switch between user's worlds, with create/edit forms displayed in the main panel for easy access to ChatWindow during world-building
 1. **Hierarchical Entity Display**: Lazy-loaded tree view of world entities (continents, countries, characters, campaigns, etc.) with expand/collapse navigation
+1. **Entity Viewing & Editing**: Click entity to display read-only details in main panel; future iterations will add full edit mode with Edit button
 1. **Client-Side Caching**: sessionStorage-based caching (5-minute TTL) for hierarchy data to minimize API calls
-1. **Context-Aware Creation**: Multiple entry points for creating entities (inline "+", context menu, root button) with intelligent type suggestions
-1. **Entity Selection**: Click entity to display details in main panel, with visual selection highlighting
+1. **Context-Aware Creation**: Multiple entry points for creating entities (inline "+", context menu, root button) with intelligent type suggestions; entity creation forms appear in main panel with ChatWindow accessible
+1. **Responsive Design**: Adapts seamlessly across desktop (3-column layout), tablet (2-column with drawer), and mobile (single column with tabbed ChatWindow)
 
 **Technical Approach**:
 
 - **Frontend**: React 19 + TypeScript component in existing Vite/Redux app, using Shadcn/UI components and Tailwind CSS
-- **State Management**: Redux Toolkit slices for selected world, hierarchy state, and expanded nodes
+- **State Management**: Redux Toolkit slices for selected world, hierarchy state, expanded nodes, and main panel form modes (viewing_entity, creating_world, editing_world, creating_entity, etc.)
+- **Main Panel Forms**: World creation/editing and entity creation forms render in main panel (not modals) alongside ChatWindow for AI-assisted world-building
+- **Entity Display**: Selected entities display as read-only forms in main panel with future Edit button for full edit mode
 - **API Integration**: RTK Query endpoints for world entities (extends existing `worldApi.ts` pattern)
 - **Caching Strategy**: sessionStorage with TTL timestamps, invalidation on mutations
-- **Accessibility**: Full ARIA support, keyboard navigation, screen reader compatibility (jest-axe validated)
+- **Responsive Design**: Tailwind CSS breakpoints (768px, 1024px) with adaptive layouts for mobile/tablet/desktop; ChatWindow drawer/sheet on mobile
+- **Accessibility**: Full ARIA support, keyboard navigation, screen reader compatibility, unsaved change warnings on navigation (jest-axe validated)
 
 ## Technical Context
 
@@ -52,8 +56,10 @@ This feature implements a comprehensive world navigation sidebar for the Libris 
 - Initial sidebar load: <2s for 50 root entities
 - Cached expansion: <100ms (instant from sessionStorage)
 - World switching: <200ms to restore cached state
+- Form panel transitions: <300ms (CSS animations)
 - Smooth scrolling: 60fps with 500+ visible entities
 - API response: <500ms p95 for entity children queries
+- Responsive layout shift: <150ms on viewport resize (tablet/mobile)
 
 **Constraints**:
 
@@ -61,6 +67,8 @@ This feature implements a comprehensive world navigation sidebar for the Libris 
 - Maximum hierarchy depth: 10 levels (visual indentation up to 8 levels)
 - sessionStorage 5MB limit per origin (hierarchy cache ~10KB per world)
 - WCAG 2.2 Level AA compliance (keyboard nav, screen readers, color contrast)
+- Main panel form display: Responsive viewports require different layout strategies (stacked on mobile, side-by-side on desktop)
+- ChatWindow always discoverable: Mobile constraint requires tab/drawer pattern to preserve sidebar and form visibility
 
 **Scale/Scope**:
 
@@ -157,28 +165,38 @@ specs/003-world-sidebar/
 libris-maleficarum-app/                          # React 19 + Vite frontend
 ├── src/
 │   ├── components/
-│   │   ├── WorldSidebar/                        # 🆕 NEW: Main sidebar component
-│   │   │   ├── WorldSidebar.tsx                 # Container component with Redux integration
-│   │   │   ├── WorldSidebar.module.css          # CSS Modules for sidebar layout
-│   │   │   ├── WorldSidebar.test.tsx            # Component + accessibility tests
+│   │   ├── WorldSidebar/                        # 🆕 NEW: Sidebar navigation component
+│   │   │   ├── WorldSidebar.tsx                 # Container with Redux integration & responsive logic
+│   │   │   ├── WorldSidebar.module.css          # Responsive sidebar layout (mobile drawer on <768px)
+│   │   │   ├── WorldSidebar.test.tsx            # Tests including responsive behavior
 │   │   │   ├── WorldSelector.tsx                # Dropdown for world selection
 │   │   │   ├── WorldSelector.test.tsx           #
 │   │   │   ├── EntityTree.tsx                   # Recursive tree component for hierarchy
 │   │   │   ├── EntityTree.test.tsx              #
 │   │   │   ├── EntityTreeNode.tsx               # Individual tree node (expand/collapse)
 │   │   │   ├── EntityTreeNode.test.tsx          #
-│   │   │   ├── EntityContextMenu.tsx            # Right-click menu (add, edit, delete, move)
+│   │   │   ├── EntityContextMenu.tsx            # Right-click menu (edit, add, delete, move)
 │   │   │   ├── EntityContextMenu.test.tsx       #
-│   │   │   ├── WorldFormModal.tsx               # Modal for create/edit world
-│   │   │   ├── WorldFormModal.test.tsx          #
-│   │   │   ├── EntityFormModal.tsx              # Modal for create/edit entity
-│   │   │   ├── EntityFormModal.test.tsx         #
 │   │   │   ├── EmptyState.tsx                   # "Create Your First World" prompt
 │   │   │   ├── EmptyState.test.tsx              #
 │   │   │   └── index.ts                         # Barrel export
-│   │   ├── SidePanel/                           # EXISTING: Current sidebar (may be replaced)
-│   │   ├── MainPanel/                           # EXISTING: Will display selected entity
-│   │   └── ui/                                  # EXISTING: Shadcn/UI primitives
+│   │   ├── MainPanel/                           # EXISTING (extended): Forms + entity details
+│   │   │   ├── MainPanel.tsx                    # Router component for form modes
+│   │   │   ├── MainPanel.module.css             # Responsive layout (stacked on <768px)
+│   │   │   ├── WorldDetailForm.tsx              # 🆕 World create/edit form (main panel)
+│   │   │   ├── WorldDetailForm.test.tsx         #
+│   │   │   ├── EntityDetailForm.tsx             # 🆕 Entity view/edit form (main panel)
+│   │   │   ├── EntityDetailForm.test.tsx        #
+│   │   │   ├── EntityCreationForm.tsx           # 🆕 Entity creation form (main panel)
+│   │   │   ├── EntityCreationForm.test.tsx      #
+│   │   │   ├── DeleteConfirmationModal.tsx      # Modal for delete operations (only modal in feature)
+│   │   │   ├── DeleteConfirmationModal.test.tsx #
+│   │   │   ├── MainPanel.test.tsx               # Integration tests for form routing
+│   │   │   └── index.ts
+│   │   ├── ChatWindow/                          # EXISTING (enhanced): Always accessible on desktop/tablet/mobile
+│   │   │   └── Responsive drawer/sheet on mobile, right column on desktop
+│   │   ├── SidePanel/                           # EXISTING: Legacy sidebar (may be replaced)
+│   │   └── ui/                                  # EXISTING: Shadcn/UI primitives (Dialog, Drawer, Sheet)
 │   ├── services/
 │   │   ├── worldApi.ts                          # EXISTING: World CRUD endpoints
 │   │   ├── worldEntityApi.ts                    # 🆕 NEW: WorldEntity CRUD endpoints
@@ -224,9 +242,14 @@ libris-maleficarum-service/                      # .NET 10 backend (minimal chan
 
 **Key Additions**:
 
-- **Frontend**: 14 new component files + tests, 2 new service files, 1 Redux slice, 2 utility modules
+- **Frontend**: 10 new component files + tests (6 in MainPanel, 4 in WorldSidebar), 2 new service files, 1 Redux slice (extended with mainPanel state), 2 utility modules
 - **Backend**: 1 controller, 1 domain entity, 1 repository, 2 test files
-- **Existing Files Modified**: `App.tsx` (add WorldSidebar), `store.ts` (register new slice), `SidePanel.tsx` (potentially replaced)
+- **Existing Files Modified**: 
+  - `App.tsx` (add WorldSidebar + responsive layout wrapper)
+  - `MainPanel/MainPanel.tsx` (new router component for form modes)
+  - `MainPanel.module.css` (responsive breakpoints at 768px/1024px)
+  - `store.ts` (register new slice + extend existing slices with mainPanel state)
+  - `ChatWindow.tsx` (enhance for responsive drawer/sheet on mobile/tablet)
 
 ## Phase 0: Research & Decision Documentation
 
@@ -236,13 +259,17 @@ libris-maleficarum-service/                      # .NET 10 backend (minimal chan
 All technical unknowns resolved:
 
 - sessionStorage for hierarchy caching (5-minute TTL + mutation invalidation)
-- Modal dialogs for world/entity forms (Shadcn Dialog component)
-- Master-detail pattern: entity click → main panel display
-- Context menu with basic actions (add, edit, delete, move)
-- Multi-entry point entity creation (inline +, context menu, root button)
-- Context-aware entity type suggestions in creation modal
+- **Main panel forms** for world/entity creation and editing (not modals) to enable ChatWindow access
+- Entity detail viewing as read-only forms in main panel (edit mode deferred to future iteration)
+- Master-detail pattern: entity click → main panel form display with form state tracking
+- Context menu with basic actions (add, edit, delete, move); delete/move trigger modals only
+- Multi-entry point entity creation (inline +, context menu, root button) → main panel form
+- Context-aware entity type suggestions in creation form
+- Responsive layouts: Desktop 3-column (sidebar|form|chat), Tablet 2-column with drawer, Mobile single-column with tabs
+- ChatWindow accessibility: Always visible on desktop, drawer/sheet on tablet, tab on mobile
+- Unsaved change warnings when navigating between forms or back to sidebar
 - Full ARIA Tree View implementation for accessibility
-- Keyboard navigation patterns (arrows, enter, tab, shift+F10)
+- Keyboard navigation patterns (arrows, enter, tab, shift+F10, escape to close modals)
 
 See [research.md](research.md) for complete decision rationale and references.
 
@@ -253,9 +280,35 @@ See [research.md](research.md) for complete decision rationale and references.
 **Status**: 🔄 IN PROGRESS  
 **Outputs**:
 
-- [data-model.md](data-model.md) - WorldEntity schema, hierarchy navigation patterns, cache structures
+- [data-model.md](data-model.md) - WorldEntity schema, main panel state patterns, cache structures, responsive layouts
 - [contracts/worldEntity.openapi.yaml](contracts/worldEntity.openapi.yaml) - API contract for backend
-- [quickstart.md](quickstart.md) - Developer guide for using WorldSidebar component
+- [quickstart.md](quickstart.md) - Developer guide for using WorldSidebar component and main panel form integration
+
+**Responsive Design Breakpoints** (from spec.md):
+
+```css
+/* Desktop (1024px+): 3-column layout */
+@media (min-width: 1024px) {
+  Layout: Sidebar (250px) | MainPanel (flex) | ChatWindow (350px)
+  ChatWindow: Always visible on right
+  WorldSelector: Sticky at top of sidebar
+}
+
+/* Tablet (768px-1023px): 2-column with drawer */
+@media (min-width: 768px) and (max-width: 1023px) {
+  Layout: Sidebar (250px) | MainPanel (flex)
+  ChatWindow: Bottom drawer/sheet (30-40% height) or sliding panel
+  Interaction: Swipe up to expand ChatWindow drawer
+}
+
+/* Mobile (<768px): Single column with tabs */
+@media (max-width: 767px) {
+  Layout: Single column full-width
+  Tabs: [Sidebar | Form | ChatWindow]
+  Interaction: Swipe left/right or tap tabs to switch views
+  ChatWindow: Always discoverable via tab or bottom sheet toggle
+}
+```
 
 ### Data Model Overview
 
@@ -276,6 +329,23 @@ export interface WorldEntity {
   createdAt: string;                   // ISO 8601 timestamp
   updatedAt: string;                   // ISO 8601 timestamp
   isDeleted: boolean;                  // Soft delete flag
+}
+```
+
+**Main Panel State** (Redux slice extension):
+
+```typescript
+type MainPanelMode = 
+  | 'viewing_entity'       // Selected entity displayed as read-only form
+  | 'creating_world'       // World creation form in main panel
+  | 'editing_world'        // World editing form in main panel
+  | 'creating_entity'      // Entity creation form in main panel
+  | 'empty';               // No world selected (empty state)
+
+interface MainPanelState {
+  mode: MainPanelMode;              // Current main panel display mode
+  hasUnsavedChanges: boolean;       // Used to warn on navigation
+  isProcessing: boolean;             // Shows spinner during API calls
 }
 ```
 
@@ -302,29 +372,43 @@ export interface WorldEntity {
   timestamp: number;
   ttl: 300000;
 }
+
+// Cache Invalidation Scope:
+// When ANY entity in a world changes (create, update, delete, move),
+// the entire hierarchy cache (sidebar_hierarchy_{worldId}) MUST be cleared
+// to prevent serving stale child entity lists. This is a pessimistic approach
+// that prioritizes data freshness over performance for mutations.
 ```
 
 ### API Endpoints (extends #file:API.md)
 
-**New WorldEntity Endpoints**:
+**WorldEntity Endpoints** (implemented):
 
 ```http
-GET    /api/v1/worlds/{worldId}/entities                     # List all entities (with filters)
-GET    /api/v1/worlds/{worldId}/entities?parentId={id}       # Get root or children
-POST   /api/v1/worlds/{worldId}/entities                     # Create entity
-GET    /api/v1/worlds/{worldId}/entities/{entityId}          # Get entity details
-PUT    /api/v1/worlds/{worldId}/entities/{entityId}          # Update entity
-DELETE /api/v1/worlds/{worldId}/entities/{entityId}          # Soft delete
-PATCH  /api/v1/worlds/{worldId}/entities/{entityId}/move     # Move to new parent
+GET    /api/v1/worlds/{worldId}/entities                         # List all entities (with optional filters)
+GET    /api/v1/worlds/{worldId}/entities/{parentId}/children     # Get children of parent entity
+POST   /api/v1/worlds/{worldId}/entities                         # Create entity
+GET    /api/v1/worlds/{worldId}/entities/{entityId}              # Get entity details
+PUT    /api/v1/worlds/{worldId}/entities/{entityId}              # Update entity
+DELETE /api/v1/worlds/{worldId}/entities/{entityId}              # Soft delete
+PATCH  /api/v1/worlds/{worldId}/entities/{entityId}              # Partial update entity
+POST   /api/v1/worlds/{worldId}/entities/{entityId}/move         # Move to new parent
 ```
 
-**Query Parameters**:
+**Query Parameters** (on GET `/entities`):
 
-- `parentId`: Filter by parent (null/worldId for root entities)
 - `type`: Filter by entity type
 - `tags`: Filter by tags (comma-separated)
 - `limit`: Pagination limit (default 50, max 100)
-- `cursor`: Pagination cursor
+- `cursor`: Pagination cursor for cursor-based pagination
+
+**Design Rationale**: Two separate endpoints for hierarchy operations:
+- `GET /api/v1/worlds/{worldId}/entities` - General listing with flexible filtering
+- `GET /api/v1/worlds/{worldId}/entities/{parentId}/children` - Optimized for hierarchy expansion
+
+This pattern matches the existing backend implementation and provides clear semantic meaning (children endpoint explicitly returns parent's children).
+
+**Root Entities**: Retrieved by querying all entities and filtering client-side where `ParentId == WorldId`. This allows unified caching of all entities per world.
 
 ### Redux State Structure
 
@@ -334,37 +418,68 @@ interface WorldSidebarState {
   selectedWorldId: string | null;      // Currently active world
   selectedEntityId: string | null;     // Currently selected entity (drives main panel)
   expandedNodeIds: string[];           // Array of expanded entity IDs
-  isWorldFormOpen: boolean;            // Modal state: create/edit world
-  isEntityFormOpen: boolean;           // Modal state: create/edit entity
-  editingWorldId: string | null;       // World being edited (null = create)
-  editingEntityId: string | null;      // Entity being edited (null = create)
+  mainPanel: MainPanelState;           // Main panel display mode & state (replaces modal flags)
+  editingWorldId: string | null;       // World being edited (null = create new)
+  editingEntityId: string | null;      // Entity being edited (null = create new)
   parentEntityId: string | null;       // Parent for new entity creation
+  // ℹ️ Note: Delete confirmations still use modals (not main panel forms)
+}  
+
+interface MainPanelState {
+  mode: 'viewing_entity' | 'creating_world' | 'editing_world' | 'creating_entity' | 'empty';
+  hasUnsavedChanges: boolean;          // Triggers "Save before navigating?" warning
+  isProcessing: boolean;                // Loading state during API calls
 }
 ```
 
 ### Component Hierarchy
 
 ```text
-WorldSidebar (container)
-├── WorldSelector (dropdown + modals)
-│   ├── Select (Shadcn/UI)
-│   ├── WorldFormModal
-│   │   └── Dialog → Form (name, description)
-│   └── Button (Add World)
-├── EntityTree (recursive tree view)
-│   └── EntityTreeNode (recursive)
-│       ├── Button (expand/collapse chevron)
-│       ├── Icon (entity type icon)
-│       ├── Span (entity name)
-│       ├── Button (inline +, hover only)
-│       ├── EntityContextMenu
-│       │   └── ContextMenu (Shadcn/UI)
-│       └── EntityTree (children, if expanded)
-├── EmptyState ("Create Your First World")
-├── EntityFormModal
-│   └── Dialog → Form (type, name, description, tags)
-└── Button (Add Root Entity)
+App
+├── WorldSidebar (left column/drawer)
+│   ├── WorldSelector (dropdown)
+│   │   ├── Select (Shadcn/UI)
+│   │   └── Button (Add World - opens form in main panel)
+│   ├── EntityTree (recursive tree view)
+│   │   └── EntityTreeNode (recursive)
+│   │       ├── Button (expand/collapse chevron)
+│   │       ├── Icon (entity type icon)
+│   │       ├── Span (entity name - clickable)
+│   │       ├── Button (inline +, hover only - triggers create form)
+│   │       └── EntityContextMenu
+│   │           └── ContextMenu (Shadcn/UI)
+│   │               ├── Edit (opens edit form in main panel)
+│   │               ├── Add Child (opens create form in main panel)
+│   │               ├── Delete (modal confirmation, then soft delete)
+│   │               └── Move (modal picker - may become AI-driven)
+│   └── EmptyState ("Create Your First World")
+├── MainPanel (center column - responsive)
+│   ├── WorldDetailForm (main panel, not modal)
+│   │   ├── Form (name, description - with unsaved warning)
+│   │   ├── Save/Cancel buttons
+│   │   └── Error messages inline
+│   ├── EntityDetailForm (main panel, read-only or view-edit)
+│   │   ├── Form (type, name, description, tags - view-only initially)
+│   │   ├── Edit button (disabled in MVP with "Coming soon" tooltip)
+│   │   └── Future: Save/Cancel buttons (in edit mode)
+│   ├── EntityCreationForm (main panel, not modal)
+│   │   ├── Form (type selector, name, description, tags)
+│   │   ├── Save/Cancel buttons
+│   │   └── Error messages inline
+│   └── EmptyState (no world selected)
+├── ChatWindow (right column/drawer/tab)
+│   └── Accessible during all form interactions
+└── DeleteConfirmationModal (only modal in feature)
+    ├── Asks confirmation for entity/world deletion
+    └── On confirm: soft delete & refresh sidebar
 ```
+
+**Key Architectural Patterns**:
+
+1. **Main Panel Forms** (not modals): World creation/editing, entity creation/viewing displayed in center column alongside ChatWindow for AI-assisted decision-making
+2. **Delete Modal**: Only modal for entity/world operations; blocking UX confirms user intent before destructive action
+3. **Move Modal**: Entity move uses modal picker for new parent selection; may become AI-driven main panel form in future
+4. **Optimistic Updates**: Form submissions trigger instant Redux state changes; user sees feedback before API response; reverts on API error
 
 ---
 
@@ -378,15 +493,20 @@ Tasks will be broken down into:
 1. **Backend API** (WorldEntity endpoints, repository, domain entities)
 1. **Frontend Types** (TypeScript interfaces for WorldEntity, API responses)
 1. **RTK Query** (worldEntityApi.ts endpoints with cache tags)
-1. **Redux State** (worldSidebarSlice.ts with actions/selectors)
-1. **Utilities** (sessionCache.ts, entityIcons.ts)
-1. **Components** (WorldSidebar, WorldSelector, EntityTree, modals, etc.)
-1. **Tests** (unit tests for all components, integration tests with MSW)
-1. **Accessibility** (ARIA attributes, keyboard handlers, jest-axe validation)
-1. **Integration** (wire WorldSidebar into App.tsx, connect to MainPanel)
-1. **Documentation** (inline JSDoc, README updates)
+1. **Redux State** (worldSidebarSlice.ts extended with mainPanel modes + actions/selectors)
+1. **Utilities** (sessionCache.ts, entityIcons.ts, responsive hooks)
+1. **Sidebar Components** (WorldSidebar, WorldSelector, EntityTree, EntityTreeNode, EntityContextMenu)
+1. **Main Panel Components** (MainPanel router, WorldDetailForm, EntityDetailForm, EntityCreationForm, DeleteConfirmationModal)
+1. **Responsive Layout** (CSS Modules for 768px/1024px breakpoints, ChatWindow drawer/sheet, sidebar drawer on mobile)
+1. **Form State Management** (unsaved change detection, navigation warnings, form submission handling)
+1. **Tests** (unit tests for all components, integration tests with MSW, responsive viewport testing)
+1. **Accessibility** (ARIA attributes, keyboard handlers, jest-axe validation, screen reader announcements)
+1. **Integration** (wire WorldSidebar into App.tsx, connect forms to MainPanel, ChatWindow accessibility)
+1. **Documentation** (inline JSDoc, README updates, responsive design guide)
 
-**Estimated Effort**: 20-25 hours (5-7 days @ 4 hours/day)
+**Estimated Effort**: 28-35 hours (7-9 days @ 4 hours/day)
+
+*Increase due to: responsive layout implementation, form state management across multiple modes, ChatWindow drawer/sheet integration, unsaved change warnings, and enhanced accessibility for multi-panel layout*
 
 ---
 

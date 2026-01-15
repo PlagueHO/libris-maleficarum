@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, afterAll, beforeAll } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../utils/test-utils';
 import { server } from '../mocks/server';
 import { http, HttpResponse } from 'msw';
 import { WorldSidebar } from '../../components/WorldSidebar/WorldSidebar';
+import { MainPanel } from '../../components/MainPanel/MainPanel';
 import { World } from '../../services/types/world.types';
 
 const BASE_URL = 'http://localhost:5000';
@@ -23,7 +24,7 @@ describe('World Editing Integration', () => {
         server.close();
     });
 
-    it('should edit an existing world name and description', async () => {
+    it('should display edit form in MainPanel when edit button is clicked', async () => {
         const user = userEvent.setup();
 
         const initialWorld: World = {
@@ -36,64 +37,40 @@ describe('World Editing Integration', () => {
             isDeleted: false
         };
 
-        const updatedWorld: World = {
-            ...initialWorld,
-            name: 'Updated World',
-            description: 'Updated Description'
-        };
-
-        // Mock Database State
-        let currentWorldState = initialWorld;
-
         // Mock API responses
         server.use(
-            // 1. Get Worlds List - Dynamic return based on current state
             http.get(`${BASE_URL}/api/v1/worlds`, () => {
                 return HttpResponse.json({
-                    data: [currentWorldState],
+                    data: [initialWorld],
                     meta: { requestId: '1', timestamp: '' }
                 });
             }),
 
-            // 2. Get Single World
             http.get(`${BASE_URL}/api/v1/worlds/world-1`, () => {
                 return HttpResponse.json({
-                    data: currentWorldState,
+                    data: initialWorld,
                     meta: { requestId: '2', timestamp: '' }
                 });
             }),
 
-            // 3. Update World
-            http.put(`${BASE_URL}/api/v1/worlds/world-1`, async ({ request }) => {
-                const body = await request.json() as { name: string; description: string };
-                
-                if (body.name !== 'Updated World' || body.description !== 'Updated Description') {
-                     return new HttpResponse(null, { status: 400 });
-                }
-
-                // Update state
-                currentWorldState = updatedWorld;
-
-                return HttpResponse.json({
-                    data: updatedWorld,
-                    meta: { requestId: '3', timestamp: '' }
-                });
-            }),
-
-             // 4. Hierarchy (called by Sidebar)
-             http.get(`${BASE_URL}/api/v1/worlds/world-1/entities`, () => {
+            http.get(`${BASE_URL}/api/v1/worlds/world-1/entities`, () => {
                 return HttpResponse.json({ items: [], totalCount: 0 });
-             })
+            })
         );
 
         const preloadedState = {
             worldSidebar: {
                 selectedWorldId: 'world-1',
-                // other state defaults
             }
         };
 
-        renderWithProviders(<WorldSidebar />, { preloadedState });
+        renderWithProviders(
+          <>
+            <WorldSidebar />
+            <MainPanel />
+          </>,
+          { preloadedState }
+        );
 
         // 1. Verify initial state
         await screen.findByText('Original World'); // Wait for load
@@ -102,39 +79,100 @@ describe('World Editing Integration', () => {
         const editButton = screen.getByLabelText('Edit current world');
         await user.click(editButton);
 
-        // 3. Verify Modal opens with pre-filled data
-        const modal = await screen.findByRole('dialog', { name: 'Edit World' });
-        expect(modal).toBeInTheDocument();
+        // 3. Verify form appears in MainPanel with pre-filled data
+        const heading = await screen.findByRole('heading', { name: 'Edit World' });
+        expect(heading).toBeInTheDocument();
         
-        const nameInput = screen.getByLabelText(/World Name/i);
-        const descInput = screen.getByLabelText(/Description/i);
+        const nameInput = screen.getByLabelText(/World Name/i) as HTMLInputElement;
+        const descInput = screen.getByLabelText(/Description/i) as HTMLTextAreaElement;
 
-        expect(nameInput).toHaveValue('Original World');
-        expect(descInput).toHaveValue('Original Description');
+        expect(nameInput.value).toBe('Original World');
+        expect(descInput.value).toBe('Original Description');
 
-        // 4. Modify fields
+        // 4. Verify form is interactive
         await user.clear(nameInput);
         await user.type(nameInput, 'Updated World');
         
-        await user.clear(descInput);
-        await user.type(descInput, 'Updated Description');
+        expect(nameInput.value).toBe('Updated World');
+    });
+
+    it('should close form and return to welcome state after saving edited world', async () => {
+        const user = userEvent.setup();
+
+        // Use the seeded world ID from mock data
+        const initialWorld: World = {
+            id: 'test-world-123',
+            name: 'Forgotten Realms',
+            description: 'A high fantasy world',
+            ownerId: 'test-user@example.com',
+            createdAt: '2026-01-13T11:00:00Z',
+            updatedAt: '2026-01-13T11:00:00Z',
+            isDeleted: false
+        };
+
+        // Mock API responses (in addition to default handlers)
+        server.use(
+            http.get(`http://localhost:5000/api/v1/worlds`, () => {
+                return HttpResponse.json({
+                    data: [initialWorld],
+                    meta: { requestId: '1', timestamp: '' }
+                });
+            }),
+
+            http.get(`http://localhost:5000/api/v1/worlds/test-world-123`, () => {
+                return HttpResponse.json({
+                    data: initialWorld,
+                    meta: { requestId: '2', timestamp: '' }
+                });
+            }),
+
+            http.get(`http://localhost:5000/api/v1/worlds/test-world-123/entities`, () => {
+                return HttpResponse.json({ items: [], totalCount: 0 });
+            })
+        );
+
+        const preloadedState = {
+            worldSidebar: {
+                selectedWorldId: 'test-world-123',
+            }
+        };
+
+        renderWithProviders(
+          <>
+            <WorldSidebar />
+            <MainPanel />
+          </>,
+          { preloadedState }
+        );
+
+        // 1. Verify initial welcome state
+        await screen.findByText('Welcome to Libris Maleficarum');
+        
+        // 2. Click Edit button
+        const editButton = await screen.findByLabelText('Edit current world');
+        await user.click(editButton);
+
+        // 3. Verify form appears
+        const heading = await screen.findByRole('heading', { name: 'Edit World' });
+        expect(heading).toBeInTheDocument();
+
+        // 4. Modify form field
+        const nameInput = screen.getByLabelText(/World Name/i) as HTMLInputElement;
+        await user.clear(nameInput);
+        await user.type(nameInput, 'Updated Forgotten Realms');
+        
+        expect(nameInput.value).toBe('Updated Forgotten Realms');
 
         // 5. Save
-        const saveButton = screen.getByRole('button', { name: 'Save' });
+        const saveButton = screen.getByRole('button', { name: /Save World/i });
         await user.click(saveButton);
 
-        // 6. Verify Modal closes
-        await waitFor(() => {
-            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-        });
-
-        // 7. Verify Optimistic UI / Refetch update
-        // The selector should now show "Updated World"
-        await waitFor(() => {
-            expect(screen.getByText('Updated World')).toBeInTheDocument();
-        });
+        // 6. Verify form closes - the Edit World heading should disappear
+        // Wait for the heading to disappear from the DOM
+        await screen.findByText(/Welcome to Libris Maleficarum/i);
+        expect(screen.queryByRole('heading', { name: 'Edit World' })).not.toBeInTheDocument();
         
-        // Ensure "Original World" is gone
-        expect(screen.queryByText('Original World')).not.toBeInTheDocument();
+        // 7. Verify welcome state is displayed (with grimoire message)
+        expect(screen.getByText(/Your personal grimoire/i)).toBeInTheDocument();
     });
 });

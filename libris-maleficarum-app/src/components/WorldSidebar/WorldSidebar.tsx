@@ -4,7 +4,7 @@
  * Main sidebar container that orchestrates:
  * - World selection via WorldSelector
  * - Entity tree navigation (future)
- * - World/entity form modals
+ * - Entity form modals
  *
  * @module components/WorldSidebar/WorldSidebar
  */
@@ -12,16 +12,11 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { Plus } from 'lucide-react';
 import {
-  selectIsWorldFormOpen,
-  selectEditingWorldId,
   selectSelectedWorldId,
-  closeWorldForm,
   openEntityFormCreate,
 } from '@/store/worldSidebarSlice';
-import { useGetWorldByIdQuery } from '@/services/worldApi';
 import { Button } from '@/components/ui/button';
 import { WorldSelector } from './WorldSelector';
-import { WorldFormModal } from './WorldFormModal';
 import { EntityFormModal } from './EntityFormModal';
 import { EntityTree } from './EntityTree';
 import styles from './WorldSidebar.module.css';
@@ -33,18 +28,7 @@ import styles from './WorldSidebar.module.css';
  */
 export function WorldSidebar() {
   const dispatch = useDispatch();
-  const isWorldFormOpen = useSelector(selectIsWorldFormOpen);
-  const editingWorldId = useSelector(selectEditingWorldId);
   const selectedWorldId = useSelector(selectSelectedWorldId);
-
-  // Fetch world data if editing
-  const { data: editingWorld } = useGetWorldByIdQuery(editingWorldId!, {
-    skip: !editingWorldId,
-  });
-
-  const handleCloseWorldForm = () => {
-    dispatch(closeWorldForm());
-  };
 
   const handleAddRootEntity = () => {
     dispatch(openEntityFormCreate(null));
@@ -74,14 +58,6 @@ export function WorldSidebar() {
 
       {/* Entity Tree Navigation */}
       <EntityTree />
-
-      {/* World Form Modal */}
-      <WorldFormModal
-        isOpen={isWorldFormOpen}
-        mode={editingWorldId ? 'edit' : 'create'}
-        world={editingWorld}
-        onClose={handleCloseWorldForm}
-      />
 
       {/* Entity Form Modal */}
       <EntityFormModal />

@@ -14,6 +14,11 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from './store';
 
 /**
+ * Main panel display modes
+ */
+export type MainPanelMode = 'empty' | 'viewing_entity' | 'editing_world' | 'creating_world';
+
+/**
  * World Sidebar state shape
  */
 export interface WorldSidebarState {
@@ -25,6 +30,9 @@ export interface WorldSidebarState {
 
   /** Array of expanded entity IDs for tree navigation */
   expandedNodeIds: string[];
+
+  /** Main panel display mode */
+  mainPanelMode: MainPanelMode;
 
   /** World form modal visibility */
   isWorldFormOpen: boolean;
@@ -49,6 +57,7 @@ const initialState: WorldSidebarState = {
   selectedWorldId: null,
   selectedEntityId: null,
   expandedNodeIds: [],
+  mainPanelMode: 'empty',
   isWorldFormOpen: false,
   editingWorldId: null,
   isEntityFormOpen: false,
@@ -85,8 +94,12 @@ export const worldSidebarSlice = createSlice({
      * @param action - Payload with entity ID (null to clear selection)
      */
     setSelectedEntity: (state, action: PayloadAction<string | null>) => {
-
       state.selectedEntityId = action.payload;
+      if (action.payload) {
+        state.mainPanelMode = 'viewing_entity';
+      } else {
+        state.mainPanelMode = 'empty';
+      }
     },
 
     /**
@@ -151,12 +164,12 @@ export const worldSidebarSlice = createSlice({
     },
 
     /**
-     * Open the world form modal in create mode
+     * Open the world form in main panel in create mode
      *
      * @param state - Current state
      */
     openWorldFormCreate: (state) => {
-      state.isWorldFormOpen = true;
+      state.mainPanelMode = 'creating_world';
       state.editingWorldId = null;
     },
 
@@ -169,16 +182,17 @@ export const worldSidebarSlice = createSlice({
     openWorldFormEdit: (state, action: PayloadAction<string>) => {
       state.isWorldFormOpen = true;
       state.editingWorldId = action.payload;
+      state.mainPanelMode = 'editing_world';
     },
 
     /**
-     * Close the world form modal
+     * Close the world form
      *
      * @param state - Current state
      */
     closeWorldForm: (state) => {
-      state.isWorldFormOpen = false;
       state.editingWorldId = null;
+      state.mainPanelMode = 'empty';
     },
 
     /**
@@ -251,6 +265,9 @@ export const selectSelectedWorldId = (state: RootState): string | null =>
 
 export const selectSelectedEntityId = (state: RootState): string | null =>
   state.worldSidebar.selectedEntityId;
+
+export const selectMainPanelMode = (state: RootState): MainPanelMode =>
+  state.worldSidebar.mainPanelMode;
 
 export const selectExpandedNodeIds = (state: RootState): string[] =>
   state.worldSidebar.expandedNodeIds;
