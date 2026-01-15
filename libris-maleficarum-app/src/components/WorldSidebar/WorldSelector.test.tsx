@@ -136,7 +136,7 @@ describe('WorldSelector', () => {
       expect(screen.getByRole('button', { name: /^create world$/i })).toBeInTheDocument();
     });
 
-    it('should open WorldFormModal when "Create World" button is clicked in empty state', async () => {
+    it('should open WorldForm in MainPanel when "Create World" button is clicked in empty state', async () => {
       // Arrange
       const user = userEvent.setup();
       const { store } = await renderWorldSelector([emptyWorldsHandler]);
@@ -147,9 +147,9 @@ describe('WorldSelector', () => {
 
       // Assert
       await waitFor(() => {
-        // WorldFormModal should open (tested via Redux state)
+        // WorldDetailForm should open in MainPanel via mainPanelMode
         const state = store.getState();
-        expect(state.worldSidebar.isWorldFormOpen).toBe(true);
+        expect(state.worldSidebar.mainPanelMode).toBe('creating_world');
         expect(state.worldSidebar.editingWorldId).toBeNull();
       });
     });
@@ -181,7 +181,7 @@ describe('WorldSelector', () => {
       expect(editButton).toBeInTheDocument();
     });
 
-    it('should open WorldFormModal in edit mode when edit icon is clicked', async () => {
+    it('should open WorldForm in MainPanel when edit icon is clicked', async () => {
       // Arrange
       const user = userEvent.setup();
       const { store } = await renderWorldSelector(); // Uses default handler with 1 world
@@ -193,7 +193,7 @@ describe('WorldSelector', () => {
       // Assert
       await waitFor(() => {
         const state = store.getState();
-        expect(state.worldSidebar.isWorldFormOpen).toBe(true);
+        expect(state.worldSidebar.mainPanelMode).toBe('editing_world');
         expect(state.worldSidebar.editingWorldId).toBe('test-world-123');
       });
     });
