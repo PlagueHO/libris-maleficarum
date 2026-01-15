@@ -7,6 +7,8 @@ using LibrisMaleficarum.Infrastructure.Persistence;
 using LibrisMaleficarum.Infrastructure.Repositories;
 using LibrisMaleficarum.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -14,6 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add Aspire service defaults (OpenTelemetry, health checks, resilience, service discovery)
 builder.AddServiceDefaults();
+
+// Add custom application telemetry (meters, activity sources, and counters)
+// Must be called after AddServiceDefaults to ensure OpenTelemetry is configured
+builder.AddApplicationTelemetry();
 
 // Configure DbContext with Cosmos DB provider
 var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb")
@@ -43,6 +49,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Register domain services
 builder.Services.AddScoped<IUserContextService, UserContextService>();
+builder.Services.AddScoped<ITelemetryService>(sp =>
+    new TelemetryService(
+        sp.GetRequiredService<Meter>(),
+        sp.GetRequiredService<ActivitySource>()));
 builder.Services.AddScoped<IWorldRepository, WorldRepository>();
 builder.Services.AddScoped<IWorldEntityRepository, WorldEntityRepository>();
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
@@ -68,6 +78,15 @@ builder.Services.AddControllers(options =>
 
 // Add FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// Add HTTP request logging for OpenTelemetry/Aspire Dashboard
+builder.Services.AddHttpLogging(logging =>
+{
+    logging.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
+    logging.RequestBodyLogLimit = 4096;
+    logging.ResponseBodyLogLimit = 4096;
+    logging.CombineLogs = true; // Combine request and response into a single log entry
+});
 
 // Add OpenAPI document generation with metadata
 builder.Services.AddOpenApi(options =>
@@ -95,6 +114,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+
+// HTTP request logging (must be early in pipeline, after exception handling)
+app.UseHttpLogging();
 
 // Exception handling (must be first)
 app.UseExceptionHandling();

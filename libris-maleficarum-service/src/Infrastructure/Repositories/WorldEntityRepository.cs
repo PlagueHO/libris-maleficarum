@@ -17,6 +17,7 @@ public class WorldEntityRepository : IWorldEntityRepository
     private readonly ApplicationDbContext _context;
     private readonly IUserContextService _userContextService;
     private readonly IWorldRepository _worldRepository;
+    private readonly ITelemetryService _telemetryService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorldEntityRepository"/> class.
@@ -24,14 +25,17 @@ public class WorldEntityRepository : IWorldEntityRepository
     /// <param name="context">The application database context.</param>
     /// <param name="userContextService">The user context service for authorization.</param>
     /// <param name="worldRepository">The world repository for validation.</param>
+    /// <param name="telemetryService">The telemetry service for tracking metrics and traces.</param>
     public WorldEntityRepository(
         ApplicationDbContext context,
         IUserContextService userContextService,
-        IWorldRepository worldRepository)
+        IWorldRepository worldRepository,
+        ITelemetryService telemetryService)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
         _worldRepository = worldRepository ?? throw new ArgumentNullException(nameof(worldRepository));
+        _telemetryService = telemetryService ?? throw new ArgumentNullException(nameof(telemetryService));
     }
 
     /// <inheritdoc/>
@@ -187,10 +191,29 @@ public class WorldEntityRepository : IWorldEntityRepository
             }
         }
 
-        await _context.WorldEntities.AddAsync(entity, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        using var activity = _telemetryService.StartActivity("CreateWorldEntity", new Dictionary<string, object>
+        {
+            { "world.id", entity.WorldId },
+            { "entity.id", entity.Id },
+            { "entity.name", entity.Name },
+            { "entity.type", entity.EntityType.ToString() },
+            { "entity.parent_id", entity.ParentId?.ToString() ?? "null" }
+        });
 
-        return entity;
+        try
+        {
+            await _context.WorldEntities.AddAsync(entity, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Record metric
+            _telemetryService.RecordEntityCreated(entity.EntityType.ToString());
+
+            return entity;
+        }
+        finally
+        {
+            activity?.Dispose();
+        }
     }
 
     /// <inheritdoc/>
@@ -254,18 +277,37 @@ public class WorldEntityRepository : IWorldEntityRepository
                 "Use cascade=true to delete all descendants.");
         }
 
-        // Recursively delete children if cascade is enabled
-        if (cascade && childrenList.Any())
+        using var activity = _telemetryService.StartActivity("DeleteWorldEntity", new Dictionary<string, object>
         {
-            foreach (var child in childrenList)
-            {
-                await DeleteAsync(worldId, child.Id, cascade: true, cancellationToken);
-            }
-        }
+            { "world.id", worldId },
+            { "entity.id", entityId },
+            { "entity.name", entity.Name },
+            { "entity.type", entity.EntityType.ToString() },
+            { "cascade", cascade }
+        });
 
-        // Soft delete the entity
-        entity.SoftDelete();
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            // Recursively delete children if cascade is enabled
+            if (cascade && childrenList.Any())
+            {
+                foreach (var child in childrenList)
+                {
+                    await DeleteAsync(worldId, child.Id, cascade: true, cancellationToken);
+                }
+            }
+
+            // Soft delete the entity
+            entity.SoftDelete();
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Record metric
+            _telemetryService.RecordEntityDeleted(entity.EntityType.ToString());
+        }
+        finally
+        {
+            activity?.Dispose();
+        }
     }
 
     /// <summary>

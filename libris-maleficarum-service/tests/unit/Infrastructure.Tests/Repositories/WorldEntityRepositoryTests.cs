@@ -8,6 +8,7 @@ using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Domain.ValueObjects;
 using LibrisMaleficarum.Infrastructure.Persistence;
 using LibrisMaleficarum.Infrastructure.Repositories;
+using LibrisMaleficarum.Infrastructure.Tests.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
@@ -22,6 +23,7 @@ public class WorldEntityRepositoryTests
     private ApplicationDbContext _context = null!;
     private IUserContextService _userContextService = null!;
     private IWorldRepository _worldRepository = null!;
+    private ITelemetryService _telemetryService = null!;
     private WorldEntityRepository _repository = null!;
     private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _otherUserId = Guid.NewGuid();
@@ -36,11 +38,12 @@ public class WorldEntityRepositoryTests
         _context = new ApplicationDbContext(options);
         _userContextService = Substitute.For<IUserContextService>();
         _worldRepository = Substitute.For<IWorldRepository>();
+        _telemetryService = new NoOpTelemetryService();
 
         _userContextService.GetCurrentUserIdAsync().Returns(_userId);
         ConfigureAuthorizedWorld();
 
-        _repository = new WorldEntityRepository(_context, _userContextService, _worldRepository);
+        _repository = new WorldEntityRepository(_context, _userContextService, _worldRepository, _telemetryService);
     }
 
     private DbContextOptions<ApplicationDbContext> GetDbContextOptions()
