@@ -15,16 +15,22 @@ public class WorldRepository : IWorldRepository
 {
     private readonly ApplicationDbContext _context;
     private readonly IUserContextService _userContextService;
+    private readonly ITelemetryService _telemetryService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorldRepository"/> class.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="userContextService">The user context service.</param>
-    public WorldRepository(ApplicationDbContext context, IUserContextService userContextService)
+    /// <param name="telemetryService">The telemetry service for tracking metrics and traces.</param>
+    public WorldRepository(
+        ApplicationDbContext context,
+        IUserContextService userContextService,
+        ITelemetryService telemetryService)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
+        _telemetryService = telemetryService ?? throw new ArgumentNullException(nameof(telemetryService));
     }
 
     /// <inheritdoc />
@@ -92,10 +98,27 @@ public class WorldRepository : IWorldRepository
         // Create new world with current user as owner
         var newWorld = World.Create(currentUserId, world.Name, world.Description);
 
-        await _context.Worlds.AddAsync(newWorld, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        using var activity = _telemetryService.StartActivity("CreateWorld", new Dictionary<string, object>
+        {
+            { "world.id", newWorld.Id },
+            { "world.name", newWorld.Name },
+            { "world.owner_id", currentUserId }
+        });
 
-        return newWorld;
+        try
+        {
+            await _context.Worlds.AddAsync(newWorld, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Record metric
+            _telemetryService.RecordWorldCreated(newWorld.Name);
+
+            return newWorld;
+        }
+        finally
+        {
+            activity?.Dispose();
+        }
     }
 
     /// <inheritdoc />
@@ -159,9 +182,26 @@ public class WorldRepository : IWorldRepository
             throw new UnauthorizedWorldAccessException(worldId, currentUserId);
         }
 
-        // Soft delete
-        world.SoftDelete();
+        using var activity = _telemetryService.StartActivity("DeleteWorld", new Dictionary<string, object>
+        {
+            { "world.id", worldId },
+            { "world.name", world.Name },
+            { "world.owner_id", currentUserId }
+        });
 
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            // Soft delete
+            world.SoftDelete();
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Record metric
+            _telemetryService.RecordWorldDeleted(world.Name);
+        }
+        finally
+        {
+            activity?.Dispose();
+        }
     }
 }

@@ -57,6 +57,33 @@ public class AssetRepositoryIntegrationTests
         return new ApplicationDbContext(options);
     }
 
+    /// <summary>
+    /// Ensures database and containers are created with retries for reliability.
+    /// Cosmos DB container creation can be slow, so we retry if needed.
+    /// </summary>
+    private static async Task EnsureDatabaseCreatedAsync(ApplicationDbContext context)
+    {
+        const int maxRetries = 3;
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                await context.Database.EnsureCreatedAsync();
+                // Verify container exists by making a simple query
+                _ = await context.Worlds.FirstOrDefaultAsync();
+                return;
+            }
+            catch (Exception) when (i < maxRetries - 1)
+            {
+                // Wait before retrying
+                await Task.Delay(500);
+            }
+        }
+
+        // Final attempt without catching
+        await context.Database.EnsureCreatedAsync();
+    }
+
     [TestMethod]
     public async Task CreateAsync_CreatesAssetWithBlobStorage()
     {
@@ -65,7 +92,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world and entity
         var world = World.Create(userId, "Test World", null);
@@ -142,7 +169,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world owned by different user
         var world = World.Create(ownerId, "Owner's World", null);
@@ -189,7 +216,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world
         var world = World.Create(userId, "Test World", null);
@@ -232,7 +259,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world and entity
         var world = World.Create(userId, "Test World", null);
@@ -282,7 +309,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world owned by different user
         var world = World.Create(ownerId, "Owner's World", null);
@@ -326,7 +353,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         var worldRepository = Substitute.For<IWorldRepository>();
         var blobStorageService = Substitute.For<IBlobStorageService>();
@@ -352,7 +379,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world and entity
         var world = World.Create(userId, "Test World", null);
@@ -398,7 +425,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world and entity
         var world = World.Create(userId, "Test World", null);
@@ -443,7 +470,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world and entity
         var world = World.Create(userId, "Test World", null);
@@ -496,7 +523,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world and entity
         var world = World.Create(userId, "Test World", null);
@@ -562,7 +589,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world and entity
         var world = World.Create(userId, "Test World", null);
@@ -609,7 +636,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world owned by different user
         var world = World.Create(ownerId, "Owner's World", null);
@@ -646,7 +673,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world and entity
         var world = World.Create(userId, "Test World", null);
@@ -697,7 +724,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         // Create world owned by different user
         var world = World.Create(ownerId, "Owner's World", null);
@@ -741,7 +768,7 @@ public class AssetRepositoryIntegrationTests
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
-        await context.Database.EnsureCreatedAsync();
+        await EnsureDatabaseCreatedAsync(context);
 
         var worldRepository = Substitute.For<IWorldRepository>();
         var blobStorageService = Substitute.For<IBlobStorageService>();

@@ -6,6 +6,7 @@ using LibrisMaleficarum.Domain.Exceptions;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Infrastructure.Persistence;
 using LibrisMaleficarum.Infrastructure.Repositories;
+using LibrisMaleficarum.Infrastructure.Tests.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
@@ -19,6 +20,7 @@ public class WorldRepositoryTests
 {
     private ApplicationDbContext _context = null!;
     private IUserContextService _userContextService = null!;
+    private ITelemetryService _telemetryService = null!;
     private WorldRepository _repository = null!;
     private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _otherUserId = Guid.NewGuid();
@@ -31,8 +33,9 @@ public class WorldRepositoryTests
         _context = new ApplicationDbContext(options);
         _userContextService = Substitute.For<IUserContextService>();
         _userContextService.GetCurrentUserIdAsync().Returns(_userId);
+        _telemetryService = new NoOpTelemetryService();
 
-        _repository = new WorldRepository(_context, _userContextService);
+        _repository = new WorldRepository(_context, _userContextService, _telemetryService);
     }
 
     private DbContextOptions<ApplicationDbContext> GetDbContextOptions()

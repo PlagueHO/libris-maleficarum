@@ -5,6 +5,7 @@ using LibrisMaleficarum.Domain.Exceptions;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Infrastructure.Persistence;
 using LibrisMaleficarum.Infrastructure.Repositories;
+using LibrisMaleficarum.Infrastructure.IntegrationTests.Fixtures;
 using LibrisMaleficarum.IntegrationTests.Shared;
 using Microsoft.EntityFrameworkCore;
 
@@ -64,7 +65,8 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(userId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService();
+        var repository = new WorldRepository(context, userContextService, telemetryService);
 
         var worldToCreate = World.Create(Guid.NewGuid(), "Test World", "Test Description");
 
@@ -94,7 +96,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(userId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         var world = World.Create(userId, "Test World", "Test Description");
         await context.Worlds.AddAsync(world);
@@ -130,7 +132,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(unauthorizedUserId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         // Act & Assert
         var act = async () => await repository.GetByIdAsync(world.Id);
@@ -153,7 +155,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(userId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         var world = World.Create(userId, "Test World", null);
         await context.Worlds.AddAsync(world);
@@ -184,7 +186,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(userId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         var world1 = World.Create(userId, "World 1", null);
         var world2 = World.Create(userId, "World 2", null);
@@ -218,7 +220,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(userId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         var firstWorld = World.Create(userId, "World 1", null);
         await context.Worlds.AddAsync(firstWorld);
@@ -254,7 +256,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(userId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         // Create 5 worlds
         for (int i = 1; i <= 5; i++)
@@ -288,7 +290,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(userId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         var activeWorld = World.Create(userId, "Active World", null);
         var deletedWorld = World.Create(userId, "Deleted World", null);
@@ -320,7 +322,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(userId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         var world = World.Create(userId, "Original Name", "Original Description");
         await context.Worlds.AddAsync(world);
@@ -362,7 +364,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(unauthorizedUserId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         // Detach to simulate retrieval in a different context
         context.Entry(world).State = EntityState.Detached;
@@ -389,7 +391,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(userId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         var world = World.Create(userId, "Test World", null);
         await context.Worlds.AddAsync(world);
@@ -425,7 +427,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(unauthorizedUserId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         // Act & Assert
         var act = async () => await repository.DeleteAsync(world.Id);
@@ -449,7 +451,7 @@ public class WorldRepositoryIntegrationTests
 
         var userContextService = Substitute.For<IUserContextService>();
         userContextService.GetCurrentUserIdAsync().Returns(userId);
-        var repository = new WorldRepository(context, userContextService);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldRepository(context, userContextService, telemetryService);
 
         // Act & Assert
         var act = async () => await repository.DeleteAsync(nonExistentWorldId);

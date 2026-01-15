@@ -5,8 +5,12 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ServiceDiscovery;
 using OpenTelemetry;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -57,11 +61,15 @@ public static class Extensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
+                    .AddRuntimeInstrumentation()
+                    // Add custom application meters
+                    .AddMeter("LibrisMaleficarum.Api");
             })
             .WithTracing(tracing =>
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
+                    // Add custom application activity source
+                    .AddSource("LibrisMaleficarum.Api")
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
                         tracing.Filter = context =>
@@ -71,7 +79,15 @@ public static class Extensions
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
                     //.AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation();
-            });
+
+                // Use AlwaysOnSampler in development to view all traces
+                if (builder.Environment.IsDevelopment())
+                {
+                    tracing.SetSampler(new AlwaysOnSampler());
+                }
+            })
+            .ConfigureResource(resource => resource
+                .AddService(serviceName: builder.Environment.ApplicationName));
 
         builder.AddOpenTelemetryExporters();
 
@@ -93,6 +109,26 @@ public static class Extensions
         //    builder.Services.AddOpenTelemetry()
         //       .UseAzureMonitor();
         //}
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Creates and registers the custom application Meter and ActivitySource for instrumentation.
+    /// These are registered as singletons so they can be injected into services.
+    /// The Meter creates its own counters on demand.
+    /// </summary>
+    public static TBuilder AddApplicationTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    {
+        // Create custom application meter - counters will be created by TelemetryService as needed
+        var applicationMeter = new Meter("LibrisMaleficarum.Api", "1.0.0");
+
+        // Create custom activity source for distributed tracing
+        var applicationActivitySource = new ActivitySource("LibrisMaleficarum.Api");
+
+        // Register as singletons for dependency injection
+        builder.Services.AddSingleton(applicationMeter);
+        builder.Services.AddSingleton(applicationActivitySource);
 
         return builder;
     }

@@ -7,6 +7,7 @@ using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Domain.ValueObjects;
 using LibrisMaleficarum.Infrastructure.Persistence;
 using LibrisMaleficarum.Infrastructure.Repositories;
+using LibrisMaleficarum.Infrastructure.IntegrationTests.Fixtures;
 using LibrisMaleficarum.IntegrationTests.Shared;
 using Microsoft.EntityFrameworkCore;
 
@@ -78,7 +79,8 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService();
+        var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         var entityToCreate = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, "Description", null, new List<string> { "hero" });
 
@@ -119,7 +121,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         var entity = WorldEntity.Create(world.Id, EntityType.Location, "Test Location", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
@@ -164,7 +166,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         // Act & Assert
         var act = async () => await repository.GetByIdAsync(world.Id, entity.Id);
@@ -196,7 +198,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
@@ -236,7 +238,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         var entity1 = WorldEntity.Create(world.Id, EntityType.Character, "Character 1", TestOwnerId, null, null, null);
         var entity2 = WorldEntity.Create(world.Id, EntityType.Location, "Location 1", TestOwnerId, null, null, null);
@@ -279,7 +281,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         var entity1 = WorldEntity.Create(world.Id, EntityType.Character, "Character 1", TestOwnerId, null, null, null);
         var entity2 = WorldEntity.Create(world.Id, EntityType.Character, "Character 2", TestOwnerId, null, null, null);
@@ -319,7 +321,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         var entity1 = WorldEntity.Create(world.Id, EntityType.Character, "Hero 1", TestOwnerId, null, null, new List<string> { "hero", "warrior" });
         var entity2 = WorldEntity.Create(world.Id, EntityType.Character, "Villain 1", TestOwnerId, null, null, new List<string> { "villain", "mage" });
@@ -359,7 +361,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         var firstEntity = WorldEntity.Create(world.Id, EntityType.Location, "Entity 1", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(firstEntity);
@@ -406,7 +408,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         // Create 5 entities
         for (int i = 1; i <= 5; i++)
@@ -449,7 +451,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         var activeEntity = WorldEntity.Create(world.Id, EntityType.Character, "Active Character", TestOwnerId, null, null, null);
         var deletedEntity = WorldEntity.Create(world.Id, EntityType.Character, "Deleted Character", TestOwnerId, null, null, null);
@@ -490,7 +492,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         // Create parent and children
         var parent = WorldEntity.Create(world.Id, EntityType.Location, "Continent", TestOwnerId, null, null, null);
@@ -535,7 +537,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         // Create parent and children
         var parent = WorldEntity.Create(world.Id, EntityType.Location, "Parent", TestOwnerId, null, null, null);
@@ -580,7 +582,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         var entity = WorldEntity.Create(world.Id, EntityType.Character, "Original Name", TestOwnerId, "Original Description", null, null);
         await context.WorldEntities.AddAsync(entity);
@@ -631,7 +633,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         // Detach and modify
         context.Entry(entity).State = EntityState.Detached;
@@ -667,7 +669,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         var entity = WorldEntity.Create(world.Id, EntityType.Character, "Test Character", TestOwnerId, null, null, null);
         await context.WorldEntities.AddAsync(entity);
@@ -706,7 +708,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         // Create hierarchy: parent -> child -> grandchild
         var parent = WorldEntity.Create(world.Id, EntityType.Location, "Parent", TestOwnerId, null, null, null);
@@ -758,7 +760,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         // Create parent with child
         var parent = WorldEntity.Create(world.Id, EntityType.Location, "Parent", TestOwnerId, null, null, null);
@@ -804,7 +806,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         // Act & Assert
         var act = async () => await repository.DeleteAsync(world.Id, entity.Id);
@@ -836,7 +838,7 @@ public class WorldEntityRepositoryIntegrationTests
         var worldRepository = Substitute.For<IWorldRepository>();
         worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
 
-        var repository = new WorldEntityRepository(context, userContextService, worldRepository);
+        var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         var nonExistentEntityId = Guid.NewGuid();
 

@@ -41,7 +41,7 @@ export function ChatPanel() {
       <div className="p-4 border-b border-border">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">AI Assistant</h2>
+          <h2 className="text-lg font-semibold">Malleus</h2>
         </div>
       </div>
 

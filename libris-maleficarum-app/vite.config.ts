@@ -17,18 +17,22 @@ export default defineConfig({
     // services__<servicename>__<protocol>__<index>
     // For service named "api": services__api__https__0, services__api__http__0
     // In deployed environments, use VITE_API_BASE_URL
-    proxy: {
-      '/api/v1': {
-        target:
-          process.env.services__api__https__0 ||
-          process.env.services__api__http__0 ||
-          process.env.VITE_API_BASE_URL ||
-          'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-        // Keep /api/v1 prefix - backend expects it
-        rewrite: (path) => path,
-      },
-    },
+    proxy:
+      // Disable proxy if using MSW for development (detected by VITE_API_BASE_URL=http://localhost:5000)
+      process.env.VITE_API_BASE_URL === 'http://localhost:5000'
+        ? {} // Empty proxy config lets MSW intercept directly
+        : {
+            '/api/v1': {
+              target:
+                process.env.services__api__https__0 ||
+                process.env.services__api__http__0 ||
+                process.env.VITE_API_BASE_URL ||
+                'http://localhost:5077', // Point to Aspire backend
+              changeOrigin: true,
+              secure: false,
+              // Keep /api/v1 prefix - backend expects it
+              rewrite: (path) => path,
+            },
+          },
   },
 })
