@@ -332,10 +332,22 @@ export const worldEntityHandlers = [
     const pageSize = parseInt(url.searchParams.get('pageSize') ?? '50', 10);
     const includeDeleted = url.searchParams.get('includeDeleted') === 'true';
 
+    console.log('[MSW GET /entities] Request:', {
+      worldId,
+      parentId,
+      entityType,
+      mockEntitiesCount: mockEntities.size,
+      mockEntitiesWorldIds: Array.from(mockEntities.values())
+        .map((e) => e.worldId)
+        .filter((id) => id === worldId),
+    });
+
     // Filter entities by worldId
     let filteredEntities = Array.from(mockEntities.values()).filter(
       (entity) => entity.worldId === worldId,
     );
+
+    console.log('[MSW GET /entities] After worldId filter:', filteredEntities.length);
 
     // Filter by parentId (support null for root entities)
     // If parentId query param not provided, return only root entities
@@ -349,6 +361,11 @@ export const worldEntityHandlers = [
       // Specific parentId - filter by it
       filteredEntities = filteredEntities.filter((entity) => entity.parentId === parentId);
     }
+
+    console.log('[MSW GET /entities] After parentId filter:', {
+      filteredCount: filteredEntities.length,
+      parentIdParam: parentId,
+    });
 
     // Filter by entityType
     if (entityType) {
@@ -375,6 +392,11 @@ export const worldEntityHandlers = [
       pageSize,
       hasMore: endIndex < totalCount,
     };
+
+    console.log('[MSW GET /entities] Response:', {
+      itemsCount: paginatedEntities.length,
+      totalCount,
+    });
 
     return HttpResponse.json(response);
   }),
@@ -434,6 +456,14 @@ export const worldEntityHandlers = [
     };
 
     mockEntities.set(newEntityId, newEntity);
+
+    console.log('[MSW POST /entities] Entity created:', {
+      newEntityId,
+      worldId,
+      parentId: body.parentId,
+      name: body.name,
+      mockEntitiesCount: mockEntities.size,
+    });
 
     // Update parent's hasChildren flag if needed
     if (parentEntity) {

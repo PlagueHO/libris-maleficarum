@@ -65,33 +65,44 @@ export const worldEntityApi = api.injectEndpoints({
       WorldEntity[],
       { worldId: string; parentId: string | null }
     >({
-      query: ({ worldId, parentId }) => ({
-        url: `/api/v1/worlds/${worldId}/entities`,
-        method: 'GET',
-        params: {
-          parentId,
+      query: ({ worldId, parentId }) => {
+        const params: Record<string, string | number> = {
           pageSize: 100, // Assume most parents have <100 children
-        },
-      }),
+        };
+        // Explicitly set parentId to 'null' string for root entities so the backend can distinguish
+        if (parentId === null) {
+          params.parentId = 'null';
+        } else {
+          params.parentId = parentId;
+        }
+        return {
+          url: `/api/v1/worlds/${worldId}/entities`,
+          method: 'GET',
+          params,
+        };
+      },
       transformResponse: (response: WorldEntityListResponse) => response.items,
-      providesTags: (result, _error, { worldId, parentId }) =>
-        result
+      providesTags: (result, _error, { worldId, parentId }) => {
+        const parentTag = {
+          type: 'WorldEntity' as const,
+          id: `PARENT_${worldId}_${parentId ?? 'ROOT'}`,
+        };
+        console.log('[getEntitiesByParent] Providing tags:', {
+          worldId,
+          parentId,
+          tag: parentTag,
+          resultCount: result?.length ?? 0,
+        });
+        return result
           ? [
               ...result.map(({ id }) => ({
                 type: 'WorldEntity' as const,
                 id,
               })),
-              {
-                type: 'WorldEntity',
-                id: `PARENT_${worldId}_${parentId ?? 'ROOT'}`,
-              },
+              parentTag,
             ]
-          : [
-              {
-                type: 'WorldEntity',
-                id: `PARENT_${worldId}_${parentId ?? 'ROOT'}`,
-              },
-            ],
+          : [parentTag];
+      },
     }),
 
     /**
@@ -136,13 +147,18 @@ export const worldEntityApi = api.injectEndpoints({
         data,
       }),
       transformResponse: (response: WorldEntityResponse) => response.entity,
-      invalidatesTags: (_result, _error, { worldId, data }) => [
-        { type: 'WorldEntity', id: `LIST_${worldId}` },
-        {
-          type: 'WorldEntity',
+      invalidatesTags: (_result, _error, { worldId, data }) => {
+        const parentTag = {
+          type: 'WorldEntity' as const,
           id: `PARENT_${worldId}_${data.parentId ?? 'ROOT'}`,
-        },
-      ],
+        };
+        console.log('[createWorldEntity] Invalidating tags:', {
+          worldId,
+          parentId: data.parentId,
+          tag: parentTag,
+        });
+        return [{ type: 'WorldEntity', id: `LIST_${worldId}` }, parentTag];
+      },
     }),
 
     /**

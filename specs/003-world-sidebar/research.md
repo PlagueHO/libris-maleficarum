@@ -161,8 +161,8 @@ function handleEntityClick(entityId: string) {
 
 **Actions Included**:
 
-1. **Add Child Entity**: Opens EntityFormModal with parent pre-selected
-1. **Edit Entity**: Opens EntityFormModal with entity data pre-populated
+1. **Add Child Entity**: Opens EntityDetailForm in MainPanel with parent pre-selected
+1. **Edit Entity**: Opens EntityDetailForm in MainPanel with entity data pre-populated
 1. **Delete Entity**: Confirmation dialog → soft delete API call
 1. **Move Entity**: Opens MoveTo dialog with target parent selector
 
@@ -292,35 +292,26 @@ const entityTypeSuggestions: Record<WorldEntityType, WorldEntityType[]> = {
 **Implementation Pattern**:
 
 ```tsx
-// EntityFormModal.tsx
-<Select value={entityType} onValueChange={setEntityType}>
-  <SelectTrigger>
-    <SelectValue placeholder="Select entity type" />
-  </SelectTrigger>
-  <SelectContent>
-    {/* Suggested types (based on parent) */}
-    <SelectGroup>
-      <SelectLabel>Suggested</SelectLabel>
-      {suggestedTypes.map(type => (
-        <SelectItem key={type} value={type}>
-          {getEntityIcon(type)} {type}
-        </SelectItem>
-      ))}
-    </SelectGroup>
-    
-    {/* All types */}
-    <SelectSeparator />
-    <SelectGroup>
-      <SelectLabel>All Types</SelectLabel>
-      {allTypes.map(type => (
-        <SelectItem key={type} value={type}>
-          {getEntityIcon(type)} {type}
-        </SelectItem>
-      ))}
-    </SelectGroup>
-  </SelectContent>
-</Select>
+// EntityDetailForm.tsx (MainPanel form for entity creation/editing)
+<EntityTypeSelector
+  value={entityType}
+  onValueChange={setEntityType}
+  parentType={parentEntity?.entityType || null}
+  allowAllTypes={isEditing}
+  disabled={isSubmitting}
+  placeholder="Select entity type"
+  aria-label="Entity type"
+  aria-invalid={!!errors.type}
+/>
 ```
+
+EntityTypeSelector provides:
+
+- Suggested types at top (based on parent entity type)
+- All types searchable
+- Alphabetical organization by category
+- Full keyboard navigation
+- Screen reader support
 
 **References**:
 

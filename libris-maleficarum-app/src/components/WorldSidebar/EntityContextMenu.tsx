@@ -5,6 +5,7 @@
  * - Add Child Entity
  * - Edit Entity
  * - Delete Entity
+ * - Move Entity
  *
  * @module components/WorldSidebar/EntityContextMenu
  */
@@ -22,6 +23,8 @@ import {
 import {
   openEntityFormCreate,
   openEntityFormEdit,
+  openDeleteConfirmation,
+  openMoveEntity,
 } from '@/store/worldSidebarSlice';
 import type { WorldEntity } from '@/services/types/worldEntity.types';
 
@@ -48,11 +51,11 @@ export function EntityContextMenu({ entity, children }: EntityContextMenuProps) 
   };
 
   const handleDelete = () => {
-    // TODO: Replace with proper dialog in T111
-    if (confirm(`Are you sure you want to delete "${entity.name}"?`)) {
-      console.log('Delete confirmed', entity.id);
-      // dispatch(deleteEntity(entity.id));
-    }
+    dispatch(openDeleteConfirmation(entity.id));
+  };
+
+  const handleMove = () => {
+    dispatch(openMoveEntity(entity.id));
   };
 
   return (
@@ -67,7 +70,7 @@ export function EntityContextMenu({ entity, children }: EntityContextMenuProps) 
           <Edit className="mr-2 h-4 w-4" />
           Edit Entity
         </ContextMenuItem>
-        <ContextMenuItem disabled>
+        <ContextMenuItem onClick={handleMove}>
           <Move className="mr-2 h-4 w-4" />
           Move Entity
         </ContextMenuItem>

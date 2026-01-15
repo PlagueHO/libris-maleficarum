@@ -34,16 +34,20 @@ All dependencies are already present in `package.json` (see plan.md Appendix).
 ### Component Location
 
 ```text
-libris-maleficarum-app/src/components/WorldSidebar/
-├── WorldSidebar.tsx          # Container component
-├── WorldSelector.tsx         # World dropdown
-├── EntityTree.tsx            # Recursive tree view
-├── EntityTreeNode.tsx        # Individual tree node
-├── EntityContextMenu.tsx     # Right-click menu
-├── WorldFormModal.tsx        # World create/edit form
-├── EntityFormModal.tsx       # Entity create/edit form
-├── EmptyState.tsx            # "Create Your First World" prompt
-└── index.ts                  # Barrel export
+libris-maleficarum-app/src/components/
+├── WorldSidebar/
+│   ├── WorldSidebar.tsx          # Container component
+│   ├── WorldSelector.tsx         # World dropdown
+│   ├── EntityTree.tsx            # Recursive tree view
+│   ├── EntityTreeNode.tsx        # Individual tree node
+│   ├── EntityContextMenu.tsx     # Right-click menu
+│   ├── EmptyState.tsx            # "Create Your First World" prompt
+│   └── index.ts                  # Barrel export
+├── MainPanel/
+│   ├── MainPanel.tsx             # Main content area router
+│   ├── WorldDetailForm.tsx       # World create/edit form
+│   ├── EntityDetailForm.tsx      # Entity create/edit form
+│   └── ...
 ```
 
 ---
@@ -163,8 +167,9 @@ User clicks entity to display details:
 
 1. User hovers over **EntityTreeNode**
 1. Inline "+" button appears (progressive disclosure)
-1. User clicks → `dispatch(openEntityForm({ parentId: entityId }))`
-1. **EntityFormModal** opens with context-aware type suggestions
+1. User clicks → `dispatch(openEntityFormCreate(parentId))`
+1. **MainPanel** routing sets mode to `'creating_entity'`
+1. **EntityDetailForm** renders in main panel with context-aware type suggestions
 1. User selects type, enters name/description → submits
 1. **worldEntityApi.createEntity** mutation creates entity
 1. Cache invalidated: `invalidate('sidebar_hierarchy_{worldId}_{parentId}')`
@@ -179,8 +184,9 @@ User clicks entity to display details:
 **Option 3: "Add Root Entity" Button** (world level)
 
 1. User clicks button at bottom of **WorldSidebar**
-1. `dispatch(openEntityForm({ parentId: selectedWorldId }))`
-1. **EntityFormModal** opens with root-level type suggestions (Continent, Campaign, Character)
+1. `dispatch(openEntityFormCreate(null))`
+1. **MainPanel** routing sets mode to `'creating_entity'`
+1. **EntityDetailForm** opens in main panel with root-level type suggestions (Continent, Campaign, Character)
 1. Same creation flow
 
 ### World Metadata Editing

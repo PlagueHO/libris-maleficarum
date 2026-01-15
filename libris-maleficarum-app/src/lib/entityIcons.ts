@@ -29,12 +29,17 @@ export type EntityType =
   | 'Country'
   | 'Region'
   | 'City'
+  | 'Building'
+  | 'Room'
   | 'Location'
   | 'Character'
-  | 'Organization'
+  | 'Faction'
   | 'Event'
   | 'Item'
-  | 'Campaign';
+  | 'Campaign'
+  | 'Session'
+  | 'Quest'
+  | 'Other';
 
 /**
  * Mapping from entity type to Lucide icon component
@@ -44,12 +49,17 @@ export const entityIconMap: Record<EntityType, LucideIcon> = {
   Country: Map,            // Geographic: Map for countries
   Region: MapPin,          // Geographic: MapPin for regions
   City: Building,          // Geographic: Building for cities
+  Building: Building,      // Geographic: Building for buildings
+  Room: Home,              // Geographic: Home for rooms
   Location: Home,          // Geographic: Home for specific locations
   Character: User,         // Narrative: User for characters
-  Organization: Users,     // Narrative: Users (group) for organizations
+  Faction: Users,          // Narrative: Users (group) for factions
   Event: Calendar,         // Narrative: Calendar for events
   Item: Package,           // Narrative: Package for items
   Campaign: Scroll,        // Campaign: Scroll for campaign
+  Session: Calendar,       // Session: Calendar for sessions
+  Quest: Map,              // Quest: Map for quests
+  Other: Package,          // Other: Default package icon
 };
 
 /**
