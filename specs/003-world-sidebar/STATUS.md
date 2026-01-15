@@ -39,14 +39,17 @@ All critical consistency issues identified in the analysis have been **remediate
 ### 1. API Design 🔌
 
 **Decision**: Query parameter pattern for entity hierarchy queries
-```
+
+```shell
 GET /api/v1/worlds/{worldId}/entities?parentId={id}
 ```
+
 **Rationale**: Consistency with RTK Query cache tagging and reduced endpoint proliferation
 
 ### 2. Mobile UX 📱
 
 **Decision**: ChatWindow as bottom sheet drawer on mobile
+
 - **Pattern**: Swipes up from bottom with visible drag handle
 - **Always Discoverable**: Minimum visible affordance ensures discoverability
 - **Consistency**: Same pattern for tablet (768px+) and mobile (<768px)
@@ -54,6 +57,7 @@ GET /api/v1/worlds/{worldId}/entities?parentId={id}
 ### 3. Cache Invalidation 💾
 
 **Decision**: Entire world hierarchy cache invalidates on ANY entity mutation
+
 - **Scope**: `sidebar_hierarchy_{worldId}` clears when any entity changes
 - **Rationale**: Pessimistic approach prioritizes data freshness over performance
 - **Implementation**: Handled via RTK Query mutation.fulfilled listeners or onQueryStarted
@@ -61,27 +65,31 @@ GET /api/v1/worlds/{worldId}/entities?parentId={id}
 ### 4. Entity Edit Button 🖊️
 
 **MVP Behavior**: Visible but disabled with tooltip "Entity editing coming in Phase 2"
+
 - **Future Phase 2**: Enable button and show full edit form
 - **MVP Priority**: Focus on view-only entity details and creation/deletion
 
 ### 5. Form State Management 📋
 
 **Optimistic Update Pattern**:
+
 1. User submits form → Immediately update Redux state (user sees feedback)
-2. Dispatch mutation to backend
-3. On API success: Confirm update, user sees persisted feedback
-4. On API failure: Revert state, display error with retry option
+1. Dispatch mutation to backend
+1. On API success: Confirm update, user sees persisted feedback
+1. On API failure: Revert state, display error with retry option
 
 **Unsaved Changes Warning**: All forms track `hasUnsavedChanges` flag; prompt user before navigation
 
 ### 6. Modal vs. Main Panel Forms 🪟
 
 **Main Panel Forms** (creation, editing, viewing):
+
 - Displayed in center column alongside ChatWindow
 - Enable real-time AI suggestions during decision-making
 - Examples: World creation/editing, entity creation/viewing
 
 **Modal Dialogs** (destructive operations):
+
 - Delete confirmation (blocking UX confirms user intent)
 - Move picker (complex entity parent selection)
 - Examples: Entity deletion, entity move operations
@@ -103,12 +111,12 @@ GET /api/v1/worlds/{worldId}/entities?parentId={id}
    - Mobile section: ChatWindow pattern defined
    - Edge cases: Empty state coordination clarified
 
-2. **plan.md** (3 sections enhanced)
+1. **plan.md** (3 sections enhanced)
    - API Endpoints: Pattern and rationale documented
    - Cache Structure: Invalidation scope and implementation strategy
    - Form State Management: New section with optimistic update pattern and modal vs. main panel rationale
 
-3. **tasks.md** (major reorganization)
+1. **tasks.md** (major reorganization)
    - Task IDs: Sequentially numbered T001-T159 (was 137, now 159)
    - Phase 5.5: New MVP clarification phase (T087)
    - Phase 8: Dedicated User Story 4 (Caching) phase (T122-T134)
@@ -134,20 +142,20 @@ GET /api/v1/worlds/{worldId}/entities?parentId={id}
 ### MVP (Fastest to Value)
 
 1. **Phase 1**: Setup (T001-T011) - 11 tasks
-2. **Phase 2**: Foundational (T012-T023) - 12 tasks
-3. **Phase 3**: US1 - World Creation (T024-T042) - 19 tasks
-4. **Phase 4**: US2 - Hierarchy Navigation (T043-T073) - 31 tasks
-5. **Phase 5.5**: Edit Button MVP (T087) - 1 task
-6. **Phase 6**: US2.5 - Entity CRUD (T088-T109) - 22 tasks
-7. **Phase 7**: Responsive Design (T110-T121) - 12 tasks
+1. **Phase 2**: Foundational (T012-T023) - 12 tasks
+1. **Phase 3**: US1 - World Creation (T024-T042) - 19 tasks
+1. **Phase 4**: US2 - Hierarchy Navigation (T043-T073) - 31 tasks
+1. **Phase 5.5**: Edit Button MVP (T087) - 1 task
+1. **Phase 6**: US2.5 - Entity CRUD (T088-T109) - 22 tasks
+1. **Phase 7**: Responsive Design (T110-T121) - 12 tasks
 
 **Subtotal**: ~108 tasks | **Effort**: 30-35 hours | **Result**: Fully functional feature
 
 ### Beyond MVP
 
-8. **Phase 8**: US4 - Caching Optimization (T122-T134) - 13 tasks
-9. **Phase 9**: US5 - Visual Polish (T135-T148) - 14 tasks
-10. **Phase 10**: Cross-Cutting Polish (T149-T159) - 11 tasks
+1. **Phase 8**: US4 - Caching Optimization (T122-T134) - 13 tasks
+1. **Phase 9**: US5 - Visual Polish (T135-T148) - 14 tasks
+1. **Phase 10**: Cross-Cutting Polish (T149-T159) - 11 tasks
 
 **Total**: 159 tasks | **Effort**: 48-54 hours | **Result**: Production-ready feature
 

@@ -17,7 +17,6 @@ import {
 } from '@/store/worldSidebarSlice';
 import { Button } from '@/components/ui/button';
 import { WorldSelector } from './WorldSelector';
-import { EntityFormModal } from './EntityFormModal';
 import { EntityTree } from './EntityTree';
 import styles from './WorldSidebar.module.css';
 
@@ -58,9 +57,6 @@ export function WorldSidebar() {
 
       {/* Entity Tree Navigation */}
       <EntityTree />
-
-      {/* Entity Form Modal */}
-      <EntityFormModal />
     </aside>
   );
 }

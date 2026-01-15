@@ -5,6 +5,7 @@ import { selectSelectedEntityId, selectSelectedWorldId, selectMainPanelMode, sel
 import { useGetWorldEntityByIdQuery } from '@/services/worldEntityApi';
 import { useGetWorldByIdQuery } from '@/services/worldApi';
 import { WorldDetailForm } from './WorldDetailForm';
+import { EntityDetailForm } from './EntityDetailForm';
 import { Loader2 } from 'lucide-react';
 
 export function MainPanel() {
@@ -31,6 +32,16 @@ export function MainPanel() {
   // Editing World Mode
   if (mainPanelMode === 'editing_world' && editingWorldId && editingWorld) {
     return <WorldDetailForm mode="edit" world={editingWorld} />;
+  }
+
+  // Creating Entity Mode
+  if (mainPanelMode === 'creating_entity') {
+    return <EntityDetailForm />;
+  }
+
+  // Editing Entity Mode
+  if (mainPanelMode === 'editing_entity') {
+    return <EntityDetailForm />;
   }
 
   // Initial Welcome State (No Entity Selected)

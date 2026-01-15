@@ -6,7 +6,7 @@ import { server } from '../mocks/server';
 import { http, HttpResponse } from 'msw';
 import { WorldSidebar } from '../../components/WorldSidebar/WorldSidebar';
 import { MainPanel } from '../../components/MainPanel/MainPanel';
-import { World } from '../../services/types/world.types';
+import type { World } from '../../services/types/world.types';
 
 const BASE_URL = 'http://localhost:5000';
 
@@ -61,7 +61,19 @@ describe('World Editing Integration', () => {
         const preloadedState = {
             worldSidebar: {
                 selectedWorldId: 'world-1',
-            }
+                selectedEntityId: null,
+                expandedNodeIds: [],
+                mainPanelMode: 'empty' as const,
+                isWorldFormOpen: false,
+                editingWorldId: null,
+                editingEntityId: null,
+                newEntityParentId: null,
+                hasUnsavedChanges: false,
+                deletingEntityId: null,
+                showDeleteConfirmation: false,
+                movingEntityId: null,
+                creatingEntityParentId: null,
+            },
         };
 
         renderWithProviders(
@@ -134,7 +146,19 @@ describe('World Editing Integration', () => {
         const preloadedState = {
             worldSidebar: {
                 selectedWorldId: 'test-world-123',
-            }
+                selectedEntityId: null,
+                expandedNodeIds: [],
+                mainPanelMode: 'empty' as const,
+                isWorldFormOpen: false,
+                editingWorldId: null,
+                editingEntityId: null,
+                newEntityParentId: null,
+                hasUnsavedChanges: false,
+                deletingEntityId: null,
+                showDeleteConfirmation: false,
+                movingEntityId: null,
+                creatingEntityParentId: null,
+            },
         };
 
         renderWithProviders(

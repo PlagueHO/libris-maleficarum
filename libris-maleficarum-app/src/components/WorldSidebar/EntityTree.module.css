@@ -65,3 +65,27 @@
   font-size: 0.75rem;
   opacity: 0.7;
 }
+
+.addRootButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.addRootButton:hover {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.addRootButton:focus {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}

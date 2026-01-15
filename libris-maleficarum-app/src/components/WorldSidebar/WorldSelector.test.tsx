@@ -217,9 +217,10 @@ describe('WorldSelector', () => {
           expandedNodeIds: new Set(),
           isWorldFormOpen: false,
           editingWorldId: null,
-          isEntityFormOpen: false,
           editingEntityId: null,
           newEntityParentId: null,
+          mainPanelMode: 'empty' as const,
+          hasUnsavedChanges: false,
         },
       });
 
@@ -264,9 +265,10 @@ describe('WorldSelector', () => {
           expandedNodeIds: new Set(),
           isWorldFormOpen: false,
           editingWorldId: null,
-          isEntityFormOpen: false,
           editingEntityId: null,
           newEntityParentId: null,
+          mainPanelMode: 'empty' as const,
+          hasUnsavedChanges: false,
         },
       });
 
@@ -294,9 +296,10 @@ describe('WorldSelector', () => {
           expandedNodeIds: new Set(),
           isWorldFormOpen: false,
           editingWorldId: null,
-          isEntityFormOpen: false,
           editingEntityId: null,
           newEntityParentId: null,
+          mainPanelMode: 'empty' as const,
+          hasUnsavedChanges: false,
         },
       });
 
@@ -327,9 +330,10 @@ describe('WorldSelector', () => {
           expandedNodeIds: new Set(['entity-1', 'entity-2']),
           isWorldFormOpen: false,
           editingWorldId: null,
-          isEntityFormOpen: false,
           editingEntityId: null,
           newEntityParentId: null,
+          mainPanelMode: 'empty' as const,
+          hasUnsavedChanges: false,
         },
       });
 
@@ -360,9 +364,10 @@ describe('WorldSelector', () => {
           expandedNodeIds: new Set(),
           isWorldFormOpen: false,
           editingWorldId: null,
-          isEntityFormOpen: false,
           editingEntityId: null,
           newEntityParentId: null,
+          mainPanelMode: 'empty' as const,
+          hasUnsavedChanges: false,
         },
       });
 

@@ -9,6 +9,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { Plus } from 'lucide-react';
 import { useGetEntitiesByParentQuery } from '@/services/worldEntityApi';
 import {
   selectSelectedWorldId,
@@ -16,6 +17,7 @@ import {
   selectSelectedEntityId,
   setSelectedEntity,
   toggleNodeExpanded,
+  openEntityFormCreate,
 } from '@/store/worldSidebarSlice';
 import { EntityTreeNode } from './EntityTreeNode';
 import { get as cacheGet, set as cacheSet } from '@/lib/sessionCache';
@@ -156,30 +158,48 @@ interface EntityTreeLevelProps {
  * Fetches children for a given parent entity
  */
 function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
+  const dispatch = useDispatch();
   const expandedNodeIds = useSelector(selectExpandedNodeIds);
   const cacheKey = `sidebar_hierarchy_${worldId}_${parentId || 'root'}`;
 
   // Check cache first
   const cachedData = cacheGet<WorldEntity[]>(cacheKey, []);
 
+  console.log(
+    `[EntityTreeLevel] Mounting/updating: worldId=${worldId}, parentId=${parentId}, level=${level}`,
+  );
+
   const {
-    data: entities = cachedData,
+    data: fetchedEntities,
     isLoading,
     error,
   } = useGetEntitiesByParentQuery(
     { worldId, parentId },
     {
-      // Refetch on mount or arguments change (RTK Query handles deduplication)
-      // We don't skip based on cache anymore to ensure we receive updates like new entities
+      // Always fetch to ensure fresh data after mutations
+      // RTK Query cache tags will invalidate when entities are created/updated/deleted
+      refetchOnMountOrArgChange: true, // Force refetch on arg change
     },
   );
 
+  // Use fetched data if available, otherwise use cache as fallback
+  const entities = fetchedEntities || cachedData;
+
+  // Debug logging
+  useEffect(() => {
+    if (fetchedEntities) {
+      console.log(
+        `[EntityTreeLevel] Fetched entities for world=${worldId}, parentId=${parentId}, count=${fetchedEntities.length}`,
+      );
+    }
+  }, [fetchedEntities, worldId, parentId]);
+
   // Update cache when data fetched (keep sync)
   useEffect(() => {
-    if (entities && entities.length > 0) {
-      cacheSet(cacheKey, entities);
+    if (fetchedEntities && fetchedEntities.length > 0) {
+      cacheSet(cacheKey, fetchedEntities);
     }
-  }, [entities, cacheKey]);
+  }, [fetchedEntities, cacheKey]);
 
   // Loading state
   if (isLoading) {
@@ -206,7 +226,15 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
       return (
         <div className={styles.empty}>
           <p>No entities yet</p>
-          <p className={styles.hint}>Create your first entity to get started</p>
+          <button
+            type="button"
+            onClick={() => dispatch(openEntityFormCreate(null))}
+            className={styles.addRootButton}
+            aria-label="Add root entity"
+          >
+            <Plus size={16} aria-hidden="true" />
+            Add Root Entity
+          </button>
         </div>
       );
     }

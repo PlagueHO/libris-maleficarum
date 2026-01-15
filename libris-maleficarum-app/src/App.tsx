@@ -1,7 +1,8 @@
 import { TopToolbar } from './components/TopToolbar/TopToolbar'
 import { WorldSidebar } from './components/WorldSidebar/WorldSidebar'
 import { MainPanel } from './components/MainPanel/MainPanel'
-import { ChatWindow } from './components/ChatWindow/ChatWindow'
+import { ChatPanel } from './components/ChatPanel/ChatPanel'
+import { DeleteConfirmationModal } from './components/MainPanel/DeleteConfirmationModal'
 
 function App() {
   // Temporary: Test if React is rendering
@@ -13,8 +14,9 @@ function App() {
       <div className="flex-1 flex overflow-hidden">
         <WorldSidebar />
         <MainPanel />
-        <ChatWindow />
+        <ChatPanel />
       </div>
+      <DeleteConfirmationModal />
     </div>
   )
 }

@@ -19,6 +19,7 @@
 **Why**: Matches existing backend implementation. Two separate endpoints provide clear semantics and are equally cacheable with RTK Query.
 
 **Frontend Logic**:
+
 - Root entities: Call `GET /entities`, filter where `parentId == worldId`
 - Expand entity: Call `GET /entities/{parentId}/children`
 - Both use same cache tag: `{ type: 'WorldEntity', id: worldId }`
@@ -29,7 +30,7 @@
 
 **Pattern**: Bottom sheet drawer (swipes up from bottom of screen)
 
-```
+```text
 Desktop (1024px+)     Tablet (768px-1023px)    Mobile (<768px)
 ┌─────────────────────────────────────────────────────────┐
 │ Sidebar | Main Panel | ChatWindow    │ Sidebar | Main   │
@@ -107,7 +108,7 @@ sessionStorage.removeItem(`sidebar_hierarchy_{worldId}`);
 
 **User Experience**:
 
-```
+```text
 1. User submits form
    ↓
 2. Redux state updates IMMEDIATELY (user sees feedback instantly)
@@ -126,7 +127,7 @@ sessionStorage.removeItem(`sidebar_hierarchy_{worldId}`);
 
 When user tries to navigate away with unsaved form input:
 
-```
+```text
 ┌──────────────────────────────────┐
 │ You have unsaved changes.         │
 │ What would you like to do?        │
@@ -164,6 +165,7 @@ Applied to all creation/editing forms.
 | `Shift+F10` | Open context menu for entity |
 
 **ARIA Roles Applied**:
+
 - `role="tree"` on EntityTree container
 - `role="treeitem"` on each EntityTreeNode
 - `aria-expanded="true|false"` for expand/collapse state
@@ -196,7 +198,7 @@ All tasks are now sequential **T001-T159** with no gaps or collisions:
 
 ### File Locations
 
-```
+```text
 libris-maleficarum-app/src/
 ├── components/
 │   ├── WorldSidebar/
@@ -265,10 +267,10 @@ A: **Before** (TDD). Write tests, ensure they fail, implement code until tests p
 ## Next Steps
 
 1. **Review**: Read through all clarifications above
-2. **Questions?**: Ask before starting implementation
-3. **Start**: Phase 1 Setup (T001-T011)
-4. **Reference**: Keep these docs open during implementation
-5. **Validate**: Stop at checkpoint after each major phase
+1. **Questions?**: Ask before starting implementation
+1. **Start**: Phase 1 Setup (T001-T011)
+1. **Reference**: Keep these docs open during implementation
+1. **Validate**: Stop at checkpoint after each major phase
 
 ---
 

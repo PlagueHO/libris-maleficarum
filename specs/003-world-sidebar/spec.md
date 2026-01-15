@@ -243,6 +243,7 @@ A user needs an intuitive, visually appealing sidebar that clearly communicates 
 The sidebar and main panel layout must adapt gracefully across device sizes while maintaining ChatWindow accessibility for AI-assisted creation and editing. The following breakpoints and layouts ensure that users can access all features on any device.
 
 ### Desktop (1024px and above)
+
 - **Layout**: Three-column layout (Sidebar | Main Panel | ChatWindow)
 - **Sidebar Width**: 250-300px, may be collapsible via toggle button
 - **Main Panel Width**: 600-800px (flexible based on ChatWindow size)
@@ -252,6 +253,7 @@ The sidebar and main panel layout must adapt gracefully across device sizes whil
 - **Scrolling**: Sidebar scrolls independently for long entity hierarchies; ChatWindow scrolls independently for long conversation history
 
 ### Tablet (768px - 1023px)
+
 - **Layout**: Two-column layout (Sidebar + toggle | Main Panel) with ChatWindow in drawer
 - **Sidebar**: Collapsible via hamburger menu or toggle button to maximize main panel space
 - **Main Panel Width**: Takes available space when sidebar is collapsed (full width)
@@ -261,6 +263,7 @@ The sidebar and main panel layout must adapt gracefully across device sizes whil
 - **Orientation**: Layout adapts to portrait and landscape orientations
 
 ### Mobile (below 768px)
+
 - **Layout**: Single column with stacked components or tabs
 - **Sidebar**: Accessible via hamburger menu toggle; when open, takes full screen or slides in from left
 - **Main Panel**: Full width when sidebar is closed
@@ -273,6 +276,7 @@ The sidebar and main panel layout must adapt gracefully across device sizes whil
 - **Future Consideration**: Initial mobile implementation may defer ChatWindow prominence if space becomes constraint; plan to refine in later iteration
 
 ### Cross-Device Principles
+
 - **ChatWindow Always Discoverable**: Never completely hide ChatWindow access; minimum a button or tab to open it
 - **Progressive Disclosure**: Hide non-essential visual elements on mobile (e.g., connecting lines in hierarchy, decorative icons) but maintain core functionality
 - **Touch Targets**: Minimum 44x44px tap targets on mobile devices for buttons and interactive elements

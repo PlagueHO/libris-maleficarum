@@ -181,7 +181,7 @@ export interface GetWorldEntitiesQueryParams {
 /**
  * Context-aware entity type suggestions based on parent type
  *
- * Used by EntityFormModal to suggest relevant entity types when creating children
+ * Used by EntityDetailForm (in MainPanel) to suggest relevant entity types when creating children
  */
 export const ENTITY_TYPE_SUGGESTIONS: Record<
   WorldEntityType,
@@ -282,4 +282,107 @@ export function getEntityTypeSuggestions(
   }
 
   return ENTITY_TYPE_SUGGESTIONS[parentType] ?? [];
+}
+
+/**
+ * Entity type metadata: description, category, and icon hints
+ *
+ * Provides human-readable descriptions and categorization for entity types
+ * to improve discoverability in the entity type selector
+ */
+export const ENTITY_TYPE_META: Record<
+  WorldEntityType,
+  {
+    label: string;
+    description: string;
+    category: 'Geography' | 'Characters & Factions' | 'Events & Quests' | 'Items' | 'Campaigns' | 'Other';
+  }
+> = {
+  [WorldEntityType.Continent]: {
+    label: 'Continent',
+    description: 'A large continental landmass',
+    category: 'Geography',
+  },
+  [WorldEntityType.Country]: {
+    label: 'Country',
+    description: 'A nation or political territory',
+    category: 'Geography',
+  },
+  [WorldEntityType.Region]: {
+    label: 'Region',
+    description: 'A geographic area within a country',
+    category: 'Geography',
+  },
+  [WorldEntityType.City]: {
+    label: 'City',
+    description: 'A city, town, or settlement',
+    category: 'Geography',
+  },
+  [WorldEntityType.Building]: {
+    label: 'Building',
+    description: 'A building or structure',
+    category: 'Geography',
+  },
+  [WorldEntityType.Room]: {
+    label: 'Room',
+    description: 'A room or interior space',
+    category: 'Geography',
+  },
+  [WorldEntityType.Location]: {
+    label: 'Location',
+    description: 'A generic location or landmark',
+    category: 'Geography',
+  },
+  [WorldEntityType.Character]: {
+    label: 'Character',
+    description: 'A person, NPC, or creature',
+    category: 'Characters & Factions',
+  },
+  [WorldEntityType.Faction]: {
+    label: 'Faction',
+    description: 'An organization, guild, or political group',
+    category: 'Characters & Factions',
+  },
+  [WorldEntityType.Event]: {
+    label: 'Event',
+    description: 'A happening, battle, or historical moment',
+    category: 'Events & Quests',
+  },
+  [WorldEntityType.Quest]: {
+    label: 'Quest',
+    description: 'A mission, objective, or adventure hook',
+    category: 'Events & Quests',
+  },
+  [WorldEntityType.Item]: {
+    label: 'Item',
+    description: 'An object, artifact, or piece of equipment',
+    category: 'Items',
+  },
+  [WorldEntityType.Campaign]: {
+    label: 'Campaign',
+    description: 'A campaign, story arc, or adventure series',
+    category: 'Campaigns',
+  },
+  [WorldEntityType.Session]: {
+    label: 'Session',
+    description: 'A game session or play session',
+    category: 'Campaigns',
+  },
+  [WorldEntityType.Other]: {
+    label: 'Other',
+    description: 'Any other entity type',
+    category: 'Other',
+  },
+};
+
+/**
+ * Get metadata for an entity type
+ *
+ * @param type - The entity type
+ * @returns Metadata including label, description, and category
+ */
+export function getEntityTypeMeta(
+  type: WorldEntityType,
+): (typeof ENTITY_TYPE_META)[WorldEntityType] {
+  return ENTITY_TYPE_META[type];
 }

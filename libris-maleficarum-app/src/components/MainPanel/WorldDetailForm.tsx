@@ -12,11 +12,11 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useCreateWorldMutation, useUpdateWorldMutation } from '@/services/worldApi';
 import { closeWorldForm, setUnsavedChanges, selectHasUnsavedChanges } from '@/store/worldSidebarSlice';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { FormActions } from '@/components/ui/form-actions';
+import { FormLayout } from '@/components/ui/form-layout';
 import type { World } from '@/services/types/world.types';
-import styles from './WorldDetailForm.module.css';
 
 export interface WorldDetailFormProps {
   /** Form mode: 'create' for new world, 'edit' for existing */
@@ -164,98 +164,80 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
     dispatch(closeWorldForm());
   };
 
-  const isSubmitDisabled = isLoading;
-
   return (
-    <main className={styles.container}>
-      <div className={styles.formWrapper}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>
-            {mode === 'create' ? 'Create World' : 'Edit World'}
-          </h1>
-          <p className={styles.subtitle}>
-            {mode === 'create'
-              ? 'Create a new world for your campaign'
-              : 'Update your world details'}
+    <FormLayout onBack={handleCancel}>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">
+          {mode === 'create' ? 'Create World' : 'Edit World'}
+        </h1>
+        <p className="text-sm text-muted-foreground mb-4">
+          {mode === 'create'
+            ? 'Create a new world for your campaign'
+            : 'Update your world details'}
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="world-name-input" className="block text-sm font-medium mb-3">
+            World Name <span className="text-destructive">*</span>
+          </label>
+          <Input
+            id="world-name-input"
+            type="text"
+            value={name}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue.length <= 100) {
+                setName(newValue);
+              }
+            }}
+            placeholder="Enter world name"
+            maxLength={100}
+            disabled={isLoading}
+            aria-invalid={!!errors.name}
+            aria-describedby={errors.name ? 'world-name-error' : undefined}
+          />
+          {errors.name && (
+            <p id="world-name-error" className="text-xs text-destructive block mt-1">
+              {errors.name}
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground mt-2">
+            {name.length}/100 characters
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
-            <label htmlFor="world-name-input" className={styles.label}>
-              World Name <span className={styles.required}>*</span>
-            </label>
-            <Input
-              id="world-name-input"
-              type="text"
-              value={name}
-              onChange={(e) => {
-                const newValue = e.target.value;
-                if (newValue.length <= 100) {
-                  setName(newValue);
-                }
-              }}
-              placeholder="Enter world name"
-              maxLength={100}
-              disabled={isLoading}
-              className={errors.name ? styles.inputError : ''}
-              aria-invalid={!!errors.name}
-              aria-describedby={errors.name ? 'world-name-error' : undefined}
-            />
-            {errors.name && (
-              <p id="world-name-error" className={styles.errorMessage}>
-                {errors.name}
-              </p>
-            )}
-            <p className={styles.charCount}>
-              {name.length}/100 characters
-            </p>
-          </div>
+        <div>
+          <label htmlFor="world-description-input" className="block text-sm font-medium mb-3">
+            Description
+          </label>
+          <Textarea
+            id="world-description-input"
+            value={description}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue.length <= 500) {
+                setDescription(newValue);
+              }
+            }}
+            placeholder="Enter world description (optional)"
+            maxLength={500}
+            disabled={isLoading}
+            className="min-h-32"
+          />
+          <p className="text-xs text-muted-foreground mt-2">
+            {description.length}/500 characters
+          </p>
+        </div>
 
-          <div className={styles.formGroup}>
-            <label htmlFor="world-description-input" className={styles.label}>
-              Description
-            </label>
-            <Textarea
-              id="world-description-input"
-              value={description}
-              onChange={(e) => {
-                const newValue = e.target.value;
-                if (newValue.length <= 500) {
-                  setDescription(newValue);
-                }
-              }}
-              placeholder="Enter world description (optional)"
-              maxLength={500}
-              disabled={isLoading}
-              className={styles.textarea}
-            />
-            <p className={styles.charCount}>
-              {description.length}/500 characters
-            </p>
-          </div>
-
-          <div className={styles.actions}>
-            <Button
-              type="submit"
-              disabled={isSubmitDisabled}
-              className={styles.submitButton}
-            >
-              {isLoading && <span className={styles.spinner} aria-hidden="true">⋯</span>}
-              {mode === 'create' ? 'Create' : 'Save'} World
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isLoading}
-              className={styles.cancelButton}
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
-      </div>
-    </main>
+        <FormActions
+          submitLabel={mode === 'create' ? 'Create World' : 'Save World'}
+          cancelLabel="Cancel"
+          isLoading={isLoading}
+          onCancel={handleCancel}
+        />
+      </form>
+    </FormLayout>
   );
 }

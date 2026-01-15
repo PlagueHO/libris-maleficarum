@@ -29,8 +29,13 @@ describe('EntityContextMenu', () => {
     worldId: 'world-1',
     parentId: 'parent-1',
     hasChildren: false,
+    tags: [],
+    path: ['root', 'entity-1'],
+    depth: 1,
+    ownerId: 'u1',
     createdAt: '2023-01-01',
     updatedAt: '2023-01-01',
+    isDeleted: false,
   };
 
   const TestWrapper = () => (

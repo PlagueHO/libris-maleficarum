@@ -16,7 +16,7 @@ import type { RootState } from './store';
 /**
  * Main panel display modes
  */
-export type MainPanelMode = 'empty' | 'viewing_entity' | 'editing_world' | 'creating_world';
+export type MainPanelMode = 'empty' | 'viewing_entity' | 'editing_world' | 'creating_world' | 'creating_entity' | 'editing_entity' | 'moving_entity';
 
 /**
  * World Sidebar state shape
@@ -40,9 +40,6 @@ export interface WorldSidebarState {
   /** World ID being edited (null for create mode, non-null for edit mode) */
   editingWorldId: string | null;
 
-  /** Entity form modal visibility */
-  isEntityFormOpen: boolean;
-
   /** Entity ID being edited (null for create mode, non-null for edit mode) */
   editingEntityId: string | null;
 
@@ -51,6 +48,18 @@ export interface WorldSidebarState {
 
   /** Whether the current form has unsaved changes */
   hasUnsavedChanges: boolean;
+
+  /** Entity ID pending deletion confirmation (null when not deleting) */
+  deletingEntityId: string | null;
+
+  /** Whether delete confirmation modal is open */
+  showDeleteConfirmation: boolean;
+
+  /** Entity ID being moved (null when not moving) */
+  movingEntityId: string | null;
+
+  /** Parent ID for entity creation (used when right-clicking context menu) */
+  creatingEntityParentId: string | null;
 }
 
 /**
@@ -63,10 +72,13 @@ const initialState: WorldSidebarState = {
   mainPanelMode: 'empty',
   isWorldFormOpen: false,
   editingWorldId: null,
-  isEntityFormOpen: false,
   editingEntityId: null,
   newEntityParentId: null,
   hasUnsavedChanges: false,
+  deletingEntityId: null,
+  showDeleteConfirmation: false,
+  movingEntityId: null,
+  creatingEntityParentId: null,
 };
 
 /**
@@ -211,7 +223,7 @@ export const worldSidebarSlice = createSlice({
     },
 
     /**
-     * Open the entity form modal in create mode
+     * Open the entity form in main panel in create mode
      *
      * @param state - Current state
      * @param action - Payload with parent entity ID (null for root entities)
@@ -220,32 +232,75 @@ export const worldSidebarSlice = createSlice({
       state,
       action: PayloadAction<string | null>,
     ) => {
-      state.isEntityFormOpen = true;
+      state.mainPanelMode = 'creating_entity';
       state.editingEntityId = null;
       state.newEntityParentId = action.payload;
     },
 
     /**
-     * Open the entity form modal in edit mode
+     * Open the entity form in main panel in edit mode
      *
      * @param state - Current state
      * @param action - Payload with entity ID to edit
      */
     openEntityFormEdit: (state, action: PayloadAction<string>) => {
-      state.isEntityFormOpen = true;
+      state.mainPanelMode = 'editing_entity';
       state.editingEntityId = action.payload;
       state.newEntityParentId = null;
     },
 
     /**
-     * Close the entity form modal
+     * Close the entity form (return to empty/previous state)
      *
      * @param state - Current state
      */
     closeEntityForm: (state) => {
-      state.isEntityFormOpen = false;
+      state.mainPanelMode = 'empty';
       state.editingEntityId = null;
       state.newEntityParentId = null;
+      state.hasUnsavedChanges = false;
+    },
+
+    /**
+     * Open delete confirmation for an entity
+     *
+     * @param state - Current state
+     * @param action - Payload with entity ID to delete
+     */
+    openDeleteConfirmation: (state, action: PayloadAction<string>) => {
+      state.deletingEntityId = action.payload;
+      state.showDeleteConfirmation = true;
+    },
+
+    /**
+     * Close delete confirmation modal
+     *
+     * @param state - Current state
+     */
+    closeDeleteConfirmation: (state) => {
+      state.deletingEntityId = null;
+      state.showDeleteConfirmation = false;
+    },
+
+    /**
+     * Open move modal for an entity
+     *
+     * @param state - Current state
+     * @param action - Payload with entity ID to move
+     */
+    openMoveEntity: (state, action: PayloadAction<string>) => {
+      state.mainPanelMode = 'moving_entity';
+      state.movingEntityId = action.payload;
+    },
+
+    /**
+     * Close move modal
+     *
+     * @param state - Current state
+     */
+    closeMoveEntity: (state) => {
+      state.mainPanelMode = 'empty';
+      state.movingEntityId = null;
     },
   },
 });
@@ -268,6 +323,10 @@ export const {
   openEntityFormCreate,
   openEntityFormEdit,
   closeEntityForm,
+  openDeleteConfirmation,
+  closeDeleteConfirmation,
+  openMoveEntity,
+  closeMoveEntity,
 } = worldSidebarSlice.actions;
 
 /**
@@ -296,9 +355,6 @@ export const selectIsWorldFormOpen = (state: RootState): boolean =>
 
 export const selectEditingWorldId = (state: RootState): string | null =>
   state.worldSidebar.editingWorldId;
-
-export const selectIsEntityFormOpen = (state: RootState): boolean =>
-  state.worldSidebar.isEntityFormOpen;
 
 export const selectEditingEntityId = (state: RootState): string | null =>
   state.worldSidebar.editingEntityId;

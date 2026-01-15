@@ -10,7 +10,7 @@ interface Message {
   content: string;
 }
 
-export function ChatWindow() {
+export function ChatPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
 

@@ -244,7 +244,7 @@ libris-maleficarum-service/                      # .NET 10 backend (minimal chan
 
 - **Frontend**: 10 new component files + tests (6 in MainPanel, 4 in WorldSidebar), 2 new service files, 1 Redux slice (extended with mainPanel state), 2 utility modules
 - **Backend**: 1 controller, 1 domain entity, 1 repository, 2 test files
-- **Existing Files Modified**: 
+- **Existing Files Modified**:
   - `App.tsx` (add WorldSidebar + responsive layout wrapper)
   - `MainPanel/MainPanel.tsx` (new router component for form modes)
   - `MainPanel.module.css` (responsive breakpoints at 768px/1024px)
@@ -403,6 +403,7 @@ POST   /api/v1/worlds/{worldId}/entities/{entityId}/move         # Move to new p
 - `cursor`: Pagination cursor for cursor-based pagination
 
 **Design Rationale**: Two separate endpoints for hierarchy operations:
+
 - `GET /api/v1/worlds/{worldId}/entities` - General listing with flexible filtering
 - `GET /api/v1/worlds/{worldId}/entities/{parentId}/children` - Optimized for hierarchy expansion
 
@@ -477,9 +478,9 @@ App
 **Key Architectural Patterns**:
 
 1. **Main Panel Forms** (not modals): World creation/editing, entity creation/viewing displayed in center column alongside ChatWindow for AI-assisted decision-making
-2. **Delete Modal**: Only modal for entity/world operations; blocking UX confirms user intent before destructive action
-3. **Move Modal**: Entity move uses modal picker for new parent selection; may become AI-driven main panel form in future
-4. **Optimistic Updates**: Form submissions trigger instant Redux state changes; user sees feedback before API response; reverts on API error
+1. **Delete Modal**: Only modal for entity/world operations; blocking UX confirms user intent before destructive action
+1. **Move Modal**: Entity move uses modal picker for new parent selection; may become AI-driven main panel form in future
+1. **Optimistic Updates**: Form submissions trigger instant Redux state changes; user sees feedback before API response; reverts on API error
 
 ---
 

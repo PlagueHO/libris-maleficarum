@@ -45,15 +45,15 @@
 - [X] T012 Define WorldEntity TypeScript interfaces in libris-maleficarum-app/src/services/types/worldEntity.types.ts
 - [X] T013 Define WorldEntity API request/response types in libris-maleficarum-app/src/services/types/worldEntity.types.ts
 - [X] T014 Create RTK Query worldEntityApi endpoints in libris-maleficarum-app/src/services/worldEntityApi.ts with cache tags for invalidation
-  - **API Endpoint Pattern**: 
+  - **API Endpoint Pattern**:
     - `getEntities`: `GET /api/v1/worlds/{worldId}/entities` (returns all entities, filter client-side for roots)
     - `getChildrenByParent`: `GET /api/v1/worlds/{worldId}/entities/{parentId}/children` (returns only direct children)
-  - **Cache Tag Strategy**: 
+  - **Cache Tag Strategy**:
     - Tag: `{ type: 'WorldEntity', id: worldId }` for all entity queries per world
     - Invalidate entire world hierarchy on any entity mutation to ensure freshness
 - [X] T015 Create worldSidebarSlice Redux slice in libris-maleficarum-app/src/store/worldSidebarSlice.ts with MainPanelMode types
 - [X] T016 Register worldSidebarSlice in root Redux store at libris-maleficarum-app/src/store/store.ts
-- [X] T017 [P] Create MSW handlers for worldEntityApi endpoints in libris-maleficarum-app/src/__tests__/mocks/handlers.ts
+- [X] T017 [P] Create MSW handlers for worldEntityApi endpoints in libris-maleficarum-app/src/**tests**/mocks/handlers.ts
 - [X] T018 [P] Backend: Create WorldEntity domain entity at libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs
 - [X] T019 [P] Backend: Create WorldEntityRepository at libris-maleficarum-service/src/Infrastructure/Repositories/WorldEntityRepository.cs
 - [X] T020 [P] Backend: Create WorldEntityController at libris-maleficarum-service/src/Api/Controllers/WorldEntitiesController.cs
@@ -79,7 +79,7 @@
 - [x] T026 [P] [US1] Write WorldDetailForm component test in libris-maleficarum-app/src/components/MainPanel/WorldDetailForm.test.tsx
 - [x] T027 [P] [US1] Write WorldSelector test for empty state and world creation trigger in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
 - [x] T028 [P] [US1] Write accessibility test for WorldDetailForm with jest-axe in libris-maleficarum-app/src/components/MainPanel/WorldDetailForm.test.tsx
-- [x] T029 [P] [US1] Write integration test for world creation flow in libris-maleficarum-app/src/__tests__/integration/worldCreation.test.tsx
+- [x] T029 [P] [US1] Write integration test for world creation flow in libris-maleficarum-app/src/**tests**/integration/worldCreation.test.tsx
 
 ### Implementation for User Story 1
 
@@ -117,7 +117,7 @@
 - [x] T048 [P] [US2] Write EntityDetailForm test for read-only entity display in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
 - [x] T049 [P] [US2] Write accessibility test for EntityTree with ARIA tree pattern in libris-maleficarum-app/src/components/WorldSidebar/EntityTree.test.tsx
 - [x] T050 [P] [US2] Write sessionCache utility tests in libris-maleficarum-app/src/lib/sessionCache.test.ts
-- [x] T051 [P] [US2] Write integration test for hierarchy caching with MSW in libris-maleficarum-app/src/__tests__/integration/hierarchyCaching.test.tsx
+- [x] T051 [P] [US2] Write integration test for hierarchy caching with MSW in libris-maleficarum-app/src/**tests**/integration/hierarchyCaching.test.tsx
 
 ### Implementation for User Story 2
 
@@ -159,7 +159,7 @@
 
 - [X] T075 [P] [US3] Write WorldDetailForm edit mode test in libris-maleficarum-app/src/components/MainPanel/WorldDetailForm.test.tsx
 - [X] T076 [P] [US3] Write WorldSelector edit button test in libris-maleficarum-app/src/components/WorldSidebar/WorldSelector.test.tsx
-- [X] T077 [P] [US3] Write integration test for world update flow in libris-maleficarum-app/src/__tests__/integration/worldEdit.test.tsx
+- [X] T077 [P] [US3] Write integration test for world update flow in libris-maleficarum-app/src/**tests**/integration/worldEdit.test.tsx
 
 ### Implementation for User Story 3
 
@@ -196,33 +196,33 @@
 
 ### Tests for User Story 2.5 ⚠️
 
-- [ ] T088 [P] [US2.5] Write EntityContextMenu component test in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.test.tsx
-- [ ] T089 [P] [US2.5] Write EntityCreationForm component test in libris-maleficarum-app/src/components/MainPanel/EntityCreationForm.test.tsx
-- [ ] T090 [P] [US2.5] Write integration test for entity creation flow in libris-maleficarum-app/src/__tests__/integration/entityCreation.test.tsx
-- [ ] T091 [P] [US2.5] Write DeleteConfirmationModal component test in libris-maleficarum-app/src/components/MainPanel/DeleteConfirmationModal.test.tsx
+- [x] T088 [P] [US2.5] Write EntityContextMenu component test in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.test.tsx
+- [x] T089 [P] [US2.5] Write EntityCreationForm component test in libris-maleficarum-app/src/components/MainPanel/EntityCreationForm.test.tsx (implemented as EntityDetailForm.test.tsx)
+- [x] T090 [P] [US2.5] Write integration test for entity creation flow in libris-maleficarum-app/src/**tests**/integration/entityCreation.test.tsx
+- [x] T091 [P] [US2.5] Write DeleteConfirmationModal component test in libris-maleficarum-app/src/components/MainPanel/DeleteConfirmationModal.test.tsx
 
 ### Implementation for User Story 2.5
 
-- [ ] T092 [P] [US2.5] Create EntityContextMenu component in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.tsx with Shadcn ContextMenu
-- [ ] T093 [P] [US2.5] Create EntityCreationForm component in libris-maleficarum-app/src/components/MainPanel/EntityCreationForm.tsx (main panel form, not modal)
-- [ ] T094 [P] [US2.5] Create DeleteConfirmationModal component in libris-maleficarum-app/src/components/MainPanel/DeleteConfirmationModal.tsx (ONLY modal for entity operations)
-- [ ] T095 [US2.5] Add context menu (right-click) to EntityTreeNode nodes with Edit, Add Child, Delete, Move options
-- [ ] T096 [US2.5] Add inline "+" button to EntityTreeNode (appears on hover) to create child entities
-- [ ] T097 [US2.5] Add "Add Root Entity" button at end of EntityTree for creating world-level entities
-- [ ] T098 [US2.5] Implement entity creation form with type selector, name, description, tags fields
-- [ ] T099 [US2.5] Add context-aware entity type suggestions in EntityCreationForm based on parent entity type
-- [ ] T100 [US2.5] Connect EntityContextMenu actions to mainPanel mode updates (set mode to 'creating_entity', store parentEntityId)
-- [ ] T101 [US2.5] Connect EntityCreationForm to createEntity mutation with proper parent and world ID parameters
-- [ ] T102 [US2.5] Implement "Edit" action in EntityContextMenu (future: full edit form, currently view-only detail form)
-- [ ] T103 [US2.5] Implement "Delete" action with DeleteConfirmationModal overlay confirmation
-- [ ] T104 [US2.5] Implement "Move" action with move modal (picker for new parent - per spec, move stays as modal for now)
-- [ ] T105 [US2.5] Add CSS Modules styling for EntityContextMenu in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.module.css
-- [ ] T106 [US2.5] Add CSS Modules styling for EntityCreationForm in libris-maleficarum-app/src/components/MainPanel/EntityCreationForm.module.css
-- [ ] T107 [US2.5] Add CSS Modules styling for DeleteConfirmationModal in libris-maleficarum-app/src/components/MainPanel/DeleteConfirmationModal.module.css
-- [ ] T108 [US2.5] Integrate MainPanel router to display EntityCreationForm when mode is 'creating_entity'
-- [ ] T109 [US2.5] Add unsaved change detection for EntityCreationForm (warn on navigation away with unsaved input)
+- [x] T092 [P] [US2.5] Create EntityContextMenu component in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.tsx with Shadcn ContextMenu
+- [x] T093 [P] [US2.5] Create EntityCreationForm component in libris-maleficarum-app/src/components/MainPanel/EntityCreationForm.tsx (main panel form, not modal) - implemented as EntityDetailForm
+- [x] T094 [P] [US2.5] Create DeleteConfirmationModal component in libris-maleficarum-app/src/components/MainPanel/DeleteConfirmationModal.tsx (ONLY modal for entity operations)
+- [x] T095 [US2.5] Add context menu (right-click) to EntityTreeNode nodes with Edit, Add Child, Delete, Move options
+- [x] T096 [US2.5] Add inline "+" button to EntityTreeNode (appears on hover) to create child entities
+- [x] T097 [US2.5] Add "Add Root Entity" button at end of EntityTree for creating world-level entities
+- [x] T098 [US2.5] Implement entity creation form with type selector, name, description, tags fields - implemented in EntityDetailForm
+- [x] T099 [US2.5] Add context-aware entity type suggestions in EntityCreationForm based on parent entity type
+- [x] T100 [US2.5] Connect EntityContextMenu actions to mainPanel mode updates (set mode to 'creating_entity', store parentEntityId) - openEntityFormCreate implemented
+- [x] T101 [US2.5] Connect EntityCreationForm to createEntity mutation with proper parent and world ID parameters - implemented in EntityDetailForm
+- [x] T102 [US2.5] Implement "Edit" action in EntityContextMenu (future: full edit form, currently view-only detail form)
+- [x] T103 [US2.5] Implement "Delete" action with DeleteConfirmationModal overlay confirmation
+- [x] T104 [US2.5] Implement "Move" action with move modal (picker for new parent - per spec, move stays as modal for now)
+- [x] T105 [US2.5] Add CSS Modules styling for EntityContextMenu in libris-maleficarum-app/src/components/WorldSidebar/EntityContextMenu.module.css
+- [x] T106 [US2.5] Add CSS Modules styling for EntityCreationForm in libris-maleficarum-app/src/components/MainPanel/EntityCreationForm.module.css - implemented as EntityDetailForm styles
+- [x] T107 [US2.5] Add CSS Modules styling for DeleteConfirmationModal in libris-maleficarum-app/src/components/MainPanel/DeleteConfirmationModal.module.css
+- [x] T108 [US2.5] Integrate MainPanel router to display EntityCreationForm when mode is 'creating_entity' - MainPanel already routes this
+- [x] T109 [US2.5] Add unsaved change detection for EntityCreationForm (warn on navigation away with unsaved input)
 
-**Checkpoint**: Users can now create entities via multiple entry points with ChatWindow accessible throughout
+**Checkpoint**: Phase 6 COMPLETE - Users can now create entities via context menu, inline buttons, or root button with main panel form display and delete confirmation dialog
 
 ---
 
@@ -234,9 +234,9 @@
 
 ### Tests for Responsive Design ⚠️
 
-- [ ] T110 [P] Write responsive layout test for MainPanel at 768px breakpoint in libris-maleficarum-app/src/__tests__/integration/responsiveLayout.test.tsx
-- [ ] T111 [P] Write ChatWindow drawer test for mobile viewport in libris-maleficarum-app/src/__tests__/integration/chatWindowDrawer.test.tsx
-- [ ] T112 [P] Write WorldSidebar drawer test for mobile (<768px) in libris-maleficarum-app/src/__tests__/integration/sidebarResponsive.test.tsx
+- [ ] T110 [P] Write responsive layout test for MainPanel at 768px breakpoint in libris-maleficarum-app/src/**tests**/integration/responsiveLayout.test.tsx
+- [ ] T111 [P] Write ChatWindow drawer test for mobile viewport in libris-maleficarum-app/src/**tests**/integration/chatWindowDrawer.test.tsx
+- [ ] T112 [P] Write WorldSidebar drawer test for mobile (<768px) in libris-maleficarum-app/src/**tests**/integration/sidebarResponsive.test.tsx
 
 ### Implementation for Responsive Design
 
@@ -269,9 +269,9 @@
   - **Test**: Verify cached expansion loads instantly (<100ms) without API call
 - [ ] T123 [P] [US4] Write cache expiry (TTL) test in libris-maleficarum-app/src/lib/sessionCache.test.ts
   - **Test**: Verify 5-minute TTL causes cache invalidation after expiry
-- [ ] T124 [P] [US4] Write cache invalidation test in libris-maleficarum-app/src/__tests__/integration/cacheInvalidation.test.tsx
+- [ ] T124 [P] [US4] Write cache invalidation test in libris-maleficarum-app/src/**tests**/integration/cacheInvalidation.test.tsx
   - **Test**: Verify cache clears when entity created/updated/deleted
-- [ ] T125 [P] [US4] Write performance test for cached vs uncached loads in libris-maleficarum-app/src/__tests__/performance/hierarchyLoad.test.tsx
+- [ ] T125 [P] [US4] Write performance test for cached vs uncached loads in libris-maleficarum-app/src/**tests**/performance/hierarchyLoad.test.tsx
   - **Test**: Verify 80%+ cache hit rate for typical navigation (SC-008)
 
 ### Implementation for User Story 4 (Caching)
