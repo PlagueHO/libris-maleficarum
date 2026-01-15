@@ -9,7 +9,13 @@
 
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Settings } from 'lucide-react';
+import { Settings, Plus } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useGetWorldsQuery } from '@/services/worldApi';
 import {
   Select,
@@ -113,24 +119,36 @@ export function WorldSelector() {
             ))}
           </SelectContent>
         </Select>
-        <button
-          type="button"
-          onClick={() => selectedWorldId && handleEditWorld(selectedWorldId)}
-          className={styles.editButton}
-          aria-label="Edit current world"
-          disabled={!selectedWorldId}
-        >
-          <Settings size={16} aria-hidden="true" />
-        </button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={handleCreateWorld}
+                className={styles.iconButton}
+                aria-label="Create new world"
+              >
+                <Plus size={16} aria-hidden="true" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Create new world</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => selectedWorldId && handleEditWorld(selectedWorldId)}
+                className={styles.iconButton}
+                aria-label="Edit current world"
+                disabled={!selectedWorldId}
+              >
+                <Settings size={16} aria-hidden="true" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Edit world details</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
-      <button
-        type="button"
-        onClick={handleCreateWorld}
-        className={styles.createButton}
-        aria-label="Create new world"
-      >
-        + Create World
-      </button>
     </div>
   );
 }

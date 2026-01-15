@@ -163,16 +163,16 @@
 
 ### Implementation for User Story 3
 
-- [ ] T078 [US3] Add edit mode support to WorldDetailForm (pre-populate fields when worldId provided via Redux state)
+- [X] T078 [US3] Add edit mode support to WorldDetailForm (pre-populate fields when worldId provided via Redux state)
 - [X] T079 [US3] Add edit icon/button to WorldSelector for current world with menu/dropdown
-- [ ] T080 [US3] Connect edit button to dispatch action that sets mainPanel mode to 'editing_world' and loads world data
-- [ ] T081 [US3] Connect WorldDetailForm save to updateWorld mutation with optimistic update
-- [ ] T082 [US3] Update worldSidebarSlice to track editingWorldId state and edit mode
-- [ ] T083 [US3] Implement optimistic update in worldSelector to show changes immediately after edit
+- [X] T080 [US3] Connect edit button to dispatch action that sets mainPanel mode to 'editing_world' and loads world data
+- [X] T081 [US3] Connect WorldDetailForm save to updateWorld mutation with optimistic update
+- [X] T082 [US3] Update worldSidebarSlice to track editingWorldId state and edit mode
+- [X] T083 [US3] Implement optimistic update in worldSelector to show changes immediately after edit
   - **Pattern**: Dispatch Redux state change immediately on form submit (user sees instant feedback), revert if API fails with error message
-- [ ] T084 [US3] Add cancel handling for WorldDetailForm (close without saving, return to previous mode)
-- [ ] T085 [US3] Add validation for empty world name in edit mode (same as create mode)
-- [ ] T086 [US3] Implement "unsaved changes" warning when user attempts to navigate away from editing_world mode
+- [X] T084 [US3] Add cancel handling for WorldDetailForm (close without saving, return to previous mode)
+- [X] T085 [US3] Add validation for empty world name in edit mode (same as create mode)
+- [X] T086 [US3] Implement "unsaved changes" warning when user attempts to navigate away from editing_world mode
 
 **Checkpoint**: All P1-P2 user stories complete - users can create, navigate, view, and edit worlds with ChatWindow accessibility
 

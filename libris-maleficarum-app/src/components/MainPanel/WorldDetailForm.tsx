@@ -9,9 +9,9 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useCreateWorldMutation, useUpdateWorldMutation } from '@/services/worldApi';
-import { closeWorldForm } from '@/store/worldSidebarSlice';
+import { closeWorldForm, setUnsavedChanges, selectHasUnsavedChanges } from '@/store/worldSidebarSlice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,10 +37,13 @@ export interface WorldDetailFormProps {
  */
 export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps) {
   const dispatch = useDispatch();
+  const hasUnsavedChanges = useSelector(selectHasUnsavedChanges);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState<{ name?: string }>({});
+  const [originalName, setOriginalName] = useState('');
+  const [originalDescription, setOriginalDescription] = useState('');
 
   const [createWorld, { isLoading: isCreating }] = useCreateWorldMutation();
   const [updateWorld, { isLoading: isUpdating }] = useUpdateWorldMutation();
@@ -54,14 +57,42 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
     if (mode === 'edit' && world) {
       setName(world.name);
       setDescription(world.description || '');
+      setOriginalName(world.name);
+      setOriginalDescription(world.description || '');
     } else if (mode === 'create') {
       setName('');
       setDescription('');
+      setOriginalName('');
+      setOriginalDescription('');
     }
     // Clear validation errors when mode or world changes
     setErrors({});
-  }, [mode, world]);
+    // Reset unsaved changes flag
+    dispatch(setUnsavedChanges(false));
+  }, [mode, world, dispatch]);
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Track unsaved changes
+  useEffect(() => {
+    const hasChanges = name !== originalName || description !== originalDescription;
+    if (hasChanges !== hasUnsavedChanges) {
+      dispatch(setUnsavedChanges(hasChanges));
+    }
+  }, [name, description, originalName, originalDescription, hasUnsavedChanges, dispatch]);
+
+  // Warn user about unsaved changes when leaving
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   // Auto-focus name input when component mounts
   useEffect(() => {
