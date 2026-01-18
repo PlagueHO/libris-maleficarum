@@ -158,14 +158,14 @@ export const worldEntityApi = api.injectEndpoints({
           tag: parentTag,
         });
 
-        const tags = [
-          { type: 'WorldEntity', id: `LIST_${worldId}` } as const,
+        const tags: { type: 'WorldEntity'; id: string }[] = [
+          { type: 'WorldEntity', id: `LIST_${worldId}` },
           parentTag,
         ];
 
         // If a child is created, invalidate the parent entity so its HasChildren flag updates in the UI
         if (data.parentId) {
-          tags.push({ type: 'WorldEntity', id: data.parentId } as const);
+          tags.push({ type: 'WorldEntity', id: data.parentId });
         }
 
         return tags;
@@ -254,19 +254,19 @@ export const worldEntityApi = api.injectEndpoints({
       }),
       transformResponse: (response: WorldEntityResponse) => response.data,
       invalidatesTags: (result, _error, { worldId, entityId, data }) => {
-        const tags = [
-          { type: 'WorldEntity', id: entityId } as const,
-          { type: 'WorldEntity', id: `LIST_${worldId}` } as const,
+        const tags: { type: 'WorldEntity'; id: string }[] = [
+          { type: 'WorldEntity', id: entityId },
+          { type: 'WorldEntity', id: `LIST_${worldId}` },
           // Invalidate new parent's children cache
           {
-            type: 'WorldEntity' as const,
+            type: 'WorldEntity',
             id: `PARENT_${worldId}_${data.newParentId ?? 'ROOT'}`,
-          } as const,
+          },
         ];
 
         // Invalidate new parent entity so its HasChildren flag updates
         if (data.newParentId) {
-          tags.push({ type: 'WorldEntity', id: data.newParentId } as const);
+          tags.push({ type: 'WorldEntity', id: data.newParentId });
         }
 
         if (result?.parentId && result.parentId !== data.newParentId) {
@@ -274,9 +274,9 @@ export const worldEntityApi = api.injectEndpoints({
           tags.push({
             type: 'WorldEntity',
             id: `PARENT_${worldId}_${result.parentId}`,
-          } as const);
+          });
           // Invalidate old parent entity so its HasChildren flag updates
-          tags.push({ type: 'WorldEntity', id: result.parentId } as const);
+          tags.push({ type: 'WorldEntity', id: result.parentId });
         }
 
         return tags;
