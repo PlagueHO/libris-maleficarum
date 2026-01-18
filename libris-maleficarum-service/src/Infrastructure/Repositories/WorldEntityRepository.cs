@@ -65,6 +65,7 @@ public class WorldEntityRepository : IWorldEntityRepository
     /// <inheritdoc/>
     public async Task<(IEnumerable<WorldEntity> Entities, string? NextCursor)> GetAllByWorldAsync(
         Guid worldId,
+        Guid? parentId = null,
         EntityType? entityType = null,
         List<string>? tags = null,
         int limit = 50,
@@ -93,13 +94,22 @@ public class WorldEntityRepository : IWorldEntityRepository
             .WithPartitionKeyIfCosmos(_context, worldId)
             .Where(e => !e.IsDeleted);
 
+        // Apply parentId filter
+        // If parentId is provided (not Guid.Empty), filter by explicit parentId
+        // If parentId is null (default), filter for root entities (ParentId == null)
+        // Note: To get ALL entities regardless of hierarchy, pass Guid.Empty as parentId
+        if (parentId != Guid.Empty)
+        {
+            query = query.Where(e => e.ParentId == parentId);
+        }
+
         // Apply cursor pagination if provided
         if (!string.IsNullOrWhiteSpace(cursor) && DateTime.TryParse(cursor, null, System.Globalization.DateTimeStyles.RoundtripKind, out var cursorDate))
         {
             query = query.Where(e => e.CreatedDate > cursorDate);
         }
 
-        // Apply entity type filter
+        // Apply entityType filter
         if (entityType.HasValue)
         {
             query = query.Where(e => e.EntityType == entityType.Value);

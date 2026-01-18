@@ -76,7 +76,10 @@ async function renderWorldSelector(mswOverrides: Parameters<typeof server.use>[0
 
 // Mock data helpers
 const emptyWorldsHandler = http.get('http://localhost:5000/api/v1/worlds', () => {
-  return HttpResponse.json({ data: [], totalCount: 0 });
+  return HttpResponse.json({ 
+    data: [],
+    meta: { requestId: 'mock-1', timestamp: new Date().toISOString() },
+  });
 });
 
 const multipleWorldsHandler = http.get('http://localhost:5000/api/v1/worlds', () => {
@@ -110,7 +113,7 @@ const multipleWorldsHandler = http.get('http://localhost:5000/api/v1/worlds', ()
         isDeleted: false,
       },
     ],
-    totalCount: 3,
+    meta: { requestId: 'mock-1', timestamp: new Date().toISOString() },
   });
 });
 

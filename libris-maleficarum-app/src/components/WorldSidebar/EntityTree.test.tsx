@@ -25,7 +25,7 @@ import { WorldEntityType } from '@/services/types/worldEntity.types';
 expect.extend(toHaveNoViolations);
 
 // Additional handler for world-2 (for world switching tests)
-const world2Handler = http.get('http://localhost:5000/api/worlds/world-2/entities', ({ request }) => {
+const world2Handler = http.get('http://localhost:5000/api/v1/worlds/world-2/entities', ({ request }) => {
   const url = new URL(request.url);
   const parentId = url.searchParams.get('parentId');
   
@@ -54,11 +54,11 @@ const world2Handler = http.get('http://localhost:5000/api/worlds/world-2/entitie
     : [];
     
   const response: WorldEntityListResponse = {
-    items: filteredEntities,
-    totalCount: filteredEntities.length,
-    page: 1,
-    pageSize: 100,
-    hasMore: false,
+    data: filteredEntities,
+    meta: {
+      count: filteredEntities.length,
+      nextCursor: null,
+    },
   };
   
   return HttpResponse.json(response);

@@ -160,7 +160,7 @@ public class EntitiesControllerTests
             WorldEntity.Create(_worldId, EntityType.Location, "Entity 2", TestOwnerId, null)
         };
 
-        _entityRepository.GetAllByWorldAsync(_worldId, null, null, 50, null, Arg.Any<CancellationToken>())
+        _entityRepository.GetAllByWorldAsync(_worldId, null, null, null, 50, null, Arg.Any<CancellationToken>())
             .Returns((entities, (string?)null));
 
         // Act
@@ -179,7 +179,7 @@ public class EntitiesControllerTests
     public async Task GetEntities_WithTypeFilter_PassesTypeToRepository()
     {
         // Arrange
-        _entityRepository.GetAllByWorldAsync(_worldId, EntityType.Character, null, 50, null, Arg.Any<CancellationToken>())
+        _entityRepository.GetAllByWorldAsync(_worldId, null, EntityType.Character, null, 50, null, Arg.Any<CancellationToken>())
             .Returns((new List<WorldEntity>(), (string?)null));
 
         // Act
@@ -187,7 +187,7 @@ public class EntitiesControllerTests
 
         // Assert
         await _entityRepository.Received(1).GetAllByWorldAsync(
-            _worldId, EntityType.Character, null, 50, null, Arg.Any<CancellationToken>());
+            _worldId, null, EntityType.Character, null, 50, null, Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
@@ -196,6 +196,7 @@ public class EntitiesControllerTests
         // Arrange
         _entityRepository.GetAllByWorldAsync(
             _worldId,
+            null,
             null,
             Arg.Is<List<string>>(tags => tags.Count == 2 && tags.Contains("hero") && tags.Contains("warrior")),
             50,
@@ -209,6 +210,7 @@ public class EntitiesControllerTests
         // Assert
         await _entityRepository.Received(1).GetAllByWorldAsync(
             _worldId,
+            null,
             null,
             Arg.Is<List<string>>(tags => tags.Count == 2),
             50,
