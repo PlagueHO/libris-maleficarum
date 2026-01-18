@@ -129,27 +129,23 @@ export interface MoveWorldEntityRequest {
  */
 export interface WorldEntityListResponse {
   /** Array of entities */
-  items: WorldEntity[];
+  data: WorldEntity[];
 
-  /** Total count of entities matching the query (before pagination) */
-  totalCount: number;
-
-  /** Current page number (1-indexed) */
-  page: number;
-
-  /** Page size */
-  pageSize: number;
-
-  /** True if more pages available */
-  hasMore: boolean;
+  /** Metadata for pagination */
+  meta: {
+    /** Total count of items in current page */
+    count: number;
+    /** Cursor for next page */
+    nextCursor: string | null;
+  };
 }
 
 /**
  * API response containing a single WorldEntity
  */
 export interface WorldEntityResponse {
-  /** The entity */
-  entity: WorldEntity;
+  /** The entity data */
+  data: WorldEntity;
 }
 
 /**

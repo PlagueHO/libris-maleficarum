@@ -43,7 +43,7 @@ export const worldEntityApi = api.injectEndpoints({
       providesTags: (result, _error, { worldId }) =>
         result
           ? [
-              ...result.items.map(({ id }) => ({
+              ...result.data.map(({ id }) => ({
                 type: 'WorldEntity' as const,
                 id,
               })),
@@ -67,7 +67,7 @@ export const worldEntityApi = api.injectEndpoints({
     >({
       query: ({ worldId, parentId }) => {
         const params: Record<string, string | number> = {
-          pageSize: 100, // Assume most parents have <100 children
+          limit: 100, // Assume most parents have <100 children
         };
         // Explicitly set parentId to 'null' string for root entities so the backend can distinguish
         if (parentId === null) {
@@ -81,7 +81,7 @@ export const worldEntityApi = api.injectEndpoints({
           params,
         };
       },
-      transformResponse: (response: WorldEntityListResponse) => response.items,
+      transformResponse: (response: WorldEntityListResponse) => response.data,
       providesTags: (result, _error, { worldId, parentId }) => {
         const parentTag = {
           type: 'WorldEntity' as const,
@@ -122,7 +122,7 @@ export const worldEntityApi = api.injectEndpoints({
         url: `/api/v1/worlds/${worldId}/entities/${entityId}`,
         method: 'GET',
       }),
-      transformResponse: (response: WorldEntityResponse) => response.entity,
+      transformResponse: (response: WorldEntityResponse) => response.data,
       providesTags: (_result, _error, { entityId }) => [
         { type: 'WorldEntity', id: entityId },
       ],
@@ -146,7 +146,7 @@ export const worldEntityApi = api.injectEndpoints({
         method: 'POST',
         data,
       }),
-      transformResponse: (response: WorldEntityResponse) => response.entity,
+      transformResponse: (response: WorldEntityResponse) => response.data,
       invalidatesTags: (_result, _error, { worldId, data }) => {
         const parentTag = {
           type: 'WorldEntity' as const,
@@ -180,7 +180,7 @@ export const worldEntityApi = api.injectEndpoints({
         method: 'PUT',
         data,
       }),
-      transformResponse: (response: WorldEntityResponse) => response.entity,
+      transformResponse: (response: WorldEntityResponse) => response.data,
       invalidatesTags: (result, _error, { worldId, entityId }) => [
         { type: 'WorldEntity', id: entityId },
         { type: 'WorldEntity', id: `LIST_${worldId}` },
@@ -241,7 +241,7 @@ export const worldEntityApi = api.injectEndpoints({
         method: 'PATCH',
         data,
       }),
-      transformResponse: (response: WorldEntityResponse) => response.entity,
+      transformResponse: (response: WorldEntityResponse) => response.data,
       invalidatesTags: (result, _error, { worldId, entityId, data }) => [
         { type: 'WorldEntity', id: entityId },
         { type: 'WorldEntity', id: `LIST_${worldId}` },

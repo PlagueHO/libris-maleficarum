@@ -262,7 +262,8 @@ public class WorldEntityRepositoryTests
         await CreateEntityInDatabase("Entity 3", EntityType.Item);
 
         // Act
-        var (entities, nextCursor) = await _repository.GetAllByWorldAsync(_worldId);
+        // Pass parentId: Guid.Empty to fetch ALL entities regardless of hierarchy
+        var (entities, nextCursor) = await _repository.GetAllByWorldAsync(_worldId, parentId: Guid.Empty);
 
         // Assert
         entities.Should().HaveCount(3);
@@ -278,7 +279,8 @@ public class WorldEntityRepositoryTests
         await CreateEntityInDatabase("Location 2", EntityType.Location);
 
         // Act
-        var (entities, _) = await _repository.GetAllByWorldAsync(_worldId, entityType: EntityType.Location);
+        // Pass parentId: Guid.Empty to find any matching entities regardless of parent
+        var (entities, _) = await _repository.GetAllByWorldAsync(_worldId, parentId: Guid.Empty, entityType: EntityType.Location);
 
         // Assert
         entities.Should().HaveCount(2);
@@ -296,7 +298,8 @@ public class WorldEntityRepositoryTests
         }
 
         // Act
-        var (entities, nextCursor) = await _repository.GetAllByWorldAsync(_worldId, limit: 5);
+        // Pass parentId: Guid.Empty to get paginated list of ALL entities
+        var (entities, nextCursor) = await _repository.GetAllByWorldAsync(_worldId, parentId: Guid.Empty, limit: 5);
 
         // Assert
         entities.Should().HaveCount(5);
@@ -313,7 +316,7 @@ public class WorldEntityRepositoryTests
         await _context.SaveChangesAsync();
 
         // Act
-        var (entities, _) = await _repository.GetAllByWorldAsync(_worldId);
+        var (entities, _) = await _repository.GetAllByWorldAsync(_worldId, parentId: Guid.Empty);
 
         // Assert
         entities.Should().HaveCount(1);

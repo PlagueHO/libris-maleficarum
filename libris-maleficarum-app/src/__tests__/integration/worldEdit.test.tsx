@@ -54,7 +54,10 @@ describe('World Editing Integration', () => {
             }),
 
             http.get(`${BASE_URL}/api/v1/worlds/world-1/entities`, () => {
-                return HttpResponse.json({ items: [], totalCount: 0 });
+                return HttpResponse.json({ 
+                    data: [],
+                    meta: { count: 0, nextCursor: null },
+                });
             })
         );
 
@@ -139,7 +142,10 @@ describe('World Editing Integration', () => {
             }),
 
             http.get(`http://localhost:5000/api/v1/worlds/test-world-123/entities`, () => {
-                return HttpResponse.json({ items: [], totalCount: 0 });
+                return HttpResponse.json({ 
+                    data: [],
+                    meta: { count: 0, nextCursor: null },
+                });
             })
         );
 

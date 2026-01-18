@@ -101,6 +101,21 @@
       }
     },
     {
+      "label": "app: lint (fix)",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["lint", "--fix"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      },
+      "problemMatcher": ["$eslint-stylish"],
+      "group": "test",
+      "icon": {
+        "id": "checklist",
+        "color": "terminal.ansiGreen"
+      }
+    },
+    {
       "label": "aspire: run",
       "type": "shell",
       "command": "dotnet",

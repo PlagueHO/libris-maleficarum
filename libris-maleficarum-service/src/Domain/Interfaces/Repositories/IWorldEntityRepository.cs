@@ -21,6 +21,7 @@ public interface IWorldEntityRepository
     /// Retrieves all entities in a world with optional filtering by type and tags.
     /// </summary>
     /// <param name="worldId">The world identifier (partition key).</param>
+    /// <param name="parentId">Optional parent entity identifier filter. If null, returns only root entities. Set to Guid.Empty to return all entities.</param>
     /// <param name="entityType">Optional entity type filter.</param>
     /// <param name="tags">Optional tags filter (case-insensitive partial match).</param>
     /// <param name="limit">Maximum number of items to return (clamped to 1-200, default 50).</param>
@@ -29,6 +30,7 @@ public interface IWorldEntityRepository
     /// <returns>Tuple of entities and next cursor (null if no more pages).</returns>
     Task<(IEnumerable<WorldEntity> Entities, string? NextCursor)> GetAllByWorldAsync(
         Guid worldId,
+        Guid? parentId = null,
         EntityType? entityType = null,
         List<string>? tags = null,
         int limit = 50,

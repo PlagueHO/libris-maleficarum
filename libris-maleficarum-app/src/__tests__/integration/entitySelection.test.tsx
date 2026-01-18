@@ -53,7 +53,7 @@ describe('Entity Selection Integration', () => {
                 // Robust check for root level (null/undefined/empty)
                 if (!parentId || parentId === 'null' || parentId === 'undefined' || parentId === '') {
                     return HttpResponse.json({
-                        items: [
+                        data: [
                             {
                                 id: 'continent-1',
                                 name: 'Test Continent',
@@ -68,20 +68,26 @@ describe('Entity Selection Integration', () => {
                                 createdAt: '2024-01-01', updatedAt: '2024-01-01', isDeleted: false
                             }
                         ],
-                        totalCount: 1,
-                        page: 1,
-                        pageSize: 100,
-                        hasMore: false
+                        meta: {
+                            count: 1,
+                            nextCursor: null,
+                        },
                     });
                 }
                 // Return empty for children requests in this simple test
-                return HttpResponse.json({ items: [], totalCount: 0, page: 1, pageSize: 100, hasMore: false });
+                return HttpResponse.json({ 
+                    data: [],
+                    meta: {
+                        count: 0,
+                        nextCursor: null,
+                    },
+                });
             }),
 
             // 2. Get Entity Details for MainPanel
             http.get(`${BASE_URL}/api/v1/worlds/world-1/entities/continent-1`, () => {
                 return HttpResponse.json({
-                    entity: {
+                    data: {
                         id: 'continent-1',
                         name: 'Test Continent',
                         description: 'A vast land of testing.',
@@ -94,7 +100,7 @@ describe('Entity Selection Integration', () => {
                         tags: ['fantasy', 'test'],
                         ownerId: 'u1',
                         createdAt: '2024-01-01', updatedAt: '2024-01-01', isDeleted: false
-                    }
+                    },
                 });
             })
         );
@@ -159,7 +165,7 @@ describe('Entity Selection Integration', () => {
                 const parentId = url.searchParams.get('parentId');
                 if (!parentId || parentId === 'null' || parentId === 'undefined') {
                     return HttpResponse.json({
-                        items: [
+                        data: [
                             {
                                 id: 'e1', name: 'E1', entityType: WorldEntityType.Location,
                                 worldId: 'world-1', parentId: null, hasChildren: false,
@@ -167,24 +173,30 @@ describe('Entity Selection Integration', () => {
                                 createdAt: '', updatedAt: '', isDeleted: false
                             }
                         ],
-                        totalCount: 1,
-                        page: 1,
-                        pageSize: 100,
-                        hasMore: false
+                        meta: {
+                            count: 1,
+                            nextCursor: null,
+                        },
                     });
                 }
-                return HttpResponse.json({ items: [], totalCount: 0, page: 1, pageSize: 100, hasMore: false });
+                return HttpResponse.json({ 
+                    data: [],
+                    meta: {
+                        count: 0,
+                        nextCursor: null,
+                    },
+                });
             }),
             // Entity Details with delay
             http.get(`${BASE_URL}/api/v1/worlds/world-1/entities/e1`, async () => {
                 await new Promise(resolve => setTimeout(resolve, 100));
                 return HttpResponse.json({
-                    entity: {
+                    data: {
                         id: 'e1', name: 'E1', entityType: WorldEntityType.Location,
                         worldId: 'world-1', parentId: null, hasChildren: false,
                         depth: 0, path: [], tags: [], ownerId: 'u1',
                         createdAt: '', updatedAt: '', isDeleted: false
-                    }
+                    },
                 });
             })
         );

@@ -45,6 +45,7 @@
         ".specify/scripts/bash/": true,
         ".specify/scripts/powershell/": true,
         "Get-Job": true,
-        "Receive-Job": true
+        "Receive-Job": true,
+        "libris-maleficarum-service\\tests\\integration\\Infrastructure.IntegrationTests\\bin\\Debug\\net10.0\\LibrisMaleficarum.Infrastructure.IntegrationTests.exe": true
     }
 }

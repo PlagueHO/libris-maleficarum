@@ -115,6 +115,7 @@ public class WorldEntitiesController : ControllerBase
     /// Retrieves all entities in a world with optional filtering.
     /// </summary>
     /// <param name="worldId">The world identifier.</param>
+    /// <param name="parentId">Optional parent entity identifier filter. "null" or empty for root, valid GUID for specific parent.</param>
     /// <param name="type">Optional entity type filter.</param>
     /// <param name="tags">Optional tags filter (comma-separated).</param>
     /// <param name="limit">Maximum number of items to return (default 50, max 200).</param>
@@ -127,6 +128,7 @@ public class WorldEntitiesController : ControllerBase
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetEntities(
         Guid worldId,
+        [FromQuery] string? parentId = null,
         [FromQuery] EntityType? type = null,
         [FromQuery] string? tags = null,
         [FromQuery] int limit = 50,
@@ -135,8 +137,38 @@ public class WorldEntitiesController : ControllerBase
     {
         var tagsList = tags?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
 
+        // Parse parentId parameter
+        // Frontend sends "null" string for root entities (parentId IS NULL)
+        // If string is empty or null (not "null" string), also treat as root query if strict filtering desired,
+        // BUT strict filtering logic in repo says:
+        // - Guid.Empty -> Return ALL entities (ignore hierarchy)
+        // - null -> Return ROOT entities (ParentId is null)
+        // - Valid GUID -> Return children of that GUID
+
+        Guid? parentIdFilter = null; // Default to filtering for Root entities (null)
+
+        if (!string.IsNullOrEmpty(parentId))
+        {
+            if (parentId.Equals("null", StringComparison.OrdinalIgnoreCase))
+            {
+                // Explicitly requesting root entities
+                parentIdFilter = null;
+            }
+            else if (Guid.TryParse(parentId, out var parsedGuid))
+            {
+                // Requesting children of specific entity
+                parentIdFilter = parsedGuid;
+            }
+            else if (parentId.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                // Special case: "all" to return flat list of everything
+                parentIdFilter = Guid.Empty;
+            }
+        }
+
         var (entities, nextCursor) = await _entityRepository.GetAllByWorldAsync(
             worldId,
+            parentIdFilter,
             type,
             tagsList,
             limit,
