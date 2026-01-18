@@ -156,11 +156,16 @@ function seedMockData(): void {
 // Initialize mock data
 seedMockData();
 
+// Detect environment to determine base URL
+// In Node (tests), we need absolute URLs (http://localhost:5000) for MSW to match requests
+// In Browser (dev), we need relative URLS (or match current origin) for MSW to intercept fetch
+const isNode = typeof process !== 'undefined' && process.versions && process.versions.node;
+const baseUrl = isNode ? 'http://localhost:5000' : '';
+
 /**
  * MSW HTTP handlers for World API
  *
- * NOTE: Using full URLs (http://localhost:5000/api/v1/worlds) instead of relative paths
- * because MSW 2.x requires full URLs to properly match requests in Node environments.
+ * NOTE: Using baseUrl to support both Node (tests) and Browser (dev) environments.
  */
 export const worldHandlers = [
   /**
@@ -168,7 +173,7 @@ export const worldHandlers = [
    *
    * Fetch list of worlds for authenticated user
    */
-  http.get('http://localhost:5000/api/v1/worlds', () => {
+  http.get(`${baseUrl}/api/v1/worlds`, () => {
     const worlds = Array.from(mockWorlds.values()).filter(w => !w.isDeleted);
     const response: WorldListResponse = {
       data: worlds,
@@ -183,7 +188,7 @@ export const worldHandlers = [
    * Special handler for world-2 (used in world-switching tests)
    * This world is not in the main list but can be accessed directly
    */
-  http.get('http://localhost:5000/api/v1/worlds/world-2', () => {
+  http.get(`${baseUrl}/api/v1/worlds/world-2`, () => {
     const world2: World = {
       id: 'world-2',
       name: 'World 2',
@@ -205,7 +210,7 @@ export const worldHandlers = [
    *
    * Fetch a single world by ID
    */
-  http.get('http://localhost:5000/api/v1/worlds/:id', ({ params }) => {
+  http.get(`${baseUrl}/api/v1/worlds/:id`, ({ params }) => {
     const { id } = params;
     const world = mockWorlds.get(id as string);
 
@@ -228,7 +233,7 @@ export const worldHandlers = [
    *
    * Create a new world
    */
-  http.post('http://localhost:5000/api/v1/worlds', async ({ request }) => {
+  http.post(`${baseUrl}/api/v1/worlds`, async ({ request }) => {
     const body = (await request.json()) as CreateWorldRequest;
 
     const newWorldId = `world-${Date.now()}`;
@@ -256,7 +261,7 @@ export const worldHandlers = [
    *
    * Update an existing world
    */
-  http.put('http://localhost:5000/api/v1/worlds/:id', async ({ params, request }) => {
+  http.put(`${baseUrl}/api/v1/worlds/:id`, async ({ params, request }) => {
     const { id } = params;
     const body = (await request.json()) as UpdateWorldRequest;
     const world = mockWorlds.get(id as string);
@@ -284,7 +289,7 @@ export const worldHandlers = [
    *
    * Soft delete a world
    */
-  http.delete('http://localhost:5000/api/v1/worlds/:id', ({ params }) => {
+  http.delete(`${baseUrl}/api/v1/worlds/:id`, ({ params }) => {
     const { id } = params;
     const world = mockWorlds.get(id as string);
 
@@ -311,14 +316,14 @@ export const worldEntityHandlers = [
   /**
    * GET /api/v1/worlds/world-error/entities - Test error handling
    */
-  http.get('http://localhost:5000/api/v1/worlds/world-error/entities', () => {
+  http.get(`${baseUrl}/api/v1/worlds/world-error/entities`, () => {
     return new HttpResponse(null, { status: 500 });
   }),
 
   /**
    * GET /api/v1/worlds/world-network-error/entities - Test network error handling
    */
-  http.get('http://localhost:5000/api/v1/worlds/world-network-error/entities', () => {
+  http.get(`${baseUrl}/api/v1/worlds/world-network-error/entities`, () => {
     return new HttpResponse(null, { status: 500 });
   }),
 
@@ -327,7 +332,7 @@ export const worldEntityHandlers = [
    *
    * Fetch list of entities with optional filters
    */
-  http.get('http://localhost:5000/api/v1/worlds/:worldId/entities', ({ params, request }) => {
+  http.get(`${baseUrl}/api/v1/worlds/:worldId/entities`, ({ params, request }) => {
     const { worldId } = params;
     const url = new URL(request.url);
 
@@ -411,7 +416,7 @@ export const worldEntityHandlers = [
    *
    * Fetch a single entity by ID
    */
-  http.get('http://localhost:5000/api/v1/worlds/:worldId/entities/:entityId', ({ params }) => {
+  http.get(`${baseUrl}/api/v1/worlds/:worldId/entities/:entityId`, ({ params }) => {
     const { entityId } = params;
 
     const entity = mockEntities.get(entityId as string);
@@ -435,7 +440,7 @@ export const worldEntityHandlers = [
    *
    * Create a new entity
    */
-  http.post('http://localhost:5000/api/v1/worlds/:worldId/entities', async ({ params, request }) => {
+  http.post(`${baseUrl}/api/v1/worlds/:worldId/entities`, async ({ params, request }) => {
     const { worldId } = params;
     const body = (await request.json()) as CreateWorldEntityRequest;
 
@@ -488,7 +493,7 @@ export const worldEntityHandlers = [
    * Update an existing entity
    */
   http.put(
-    'http://localhost:5000/api/v1/worlds/:worldId/entities/:entityId',
+    `${baseUrl}/api/v1/worlds/:worldId/entities/:entityId`,
     async ({ params, request }) => {
       const { entityId } = params;
       const body = (await request.json()) as UpdateWorldEntityRequest;
@@ -522,7 +527,7 @@ export const worldEntityHandlers = [
    *
    * Soft delete an entity
    */
-  http.delete('http://localhost:5000/api/v1/worlds/:worldId/entities/:entityId', ({ params }) => {
+  http.delete(`${baseUrl}/api/v1/worlds/:worldId/entities/:entityId`, ({ params }) => {
     const { entityId } = params;
 
     const entity = mockEntities.get(entityId as string);
@@ -547,7 +552,7 @@ export const worldEntityHandlers = [
    * Move an entity to a new parent
    */
   http.patch(
-    'http://localhost:5000/api/v1/worlds/:worldId/entities/:entityId/move',
+    `${baseUrl}/api/v1/worlds/:worldId/entities/:entityId/move`,
     async ({ params, request }) => {
       const { entityId } = params;
       const body = (await request.json()) as MoveWorldEntityRequest;
