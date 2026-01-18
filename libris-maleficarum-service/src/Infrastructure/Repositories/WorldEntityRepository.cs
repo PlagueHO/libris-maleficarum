@@ -199,6 +199,13 @@ public class WorldEntityRepository : IWorldEntityRepository
                 throw new EntityNotFoundException(entity.WorldId, entity.ParentId.Value,
                     $"Parent entity with ID '{entity.ParentId.Value}' not found.");
             }
+
+            // Update parent's HasChildren flag if it wasn't set
+            if (!parent.HasChildren)
+            {
+                parent.SetHasChildren(true);
+                // Parent is tracked, so this change will be persisted on SaveChangesAsync
+            }
         }
 
         using var activity = _telemetryService.StartActivity("CreateWorldEntity", new Dictionary<string, object>
@@ -254,14 +261,51 @@ public class WorldEntityRepository : IWorldEntityRepository
             }
         }
 
+        // Apply changes to the tracked entity
+        var entryEntity = _context.Entry(existingEntity);
+        entryEntity.CurrentValues.SetValues(entity);
+
+        // Detect ParentId change using OriginalValues
+        var oldParentId = entryEntity.OriginalValues.GetValue<Guid?>("ParentId");
+        var newParentId = entity.ParentId;
+
         // Check for circular reference if ParentId is being changed
-        if (entity.ParentId.HasValue)
+        if (newParentId.HasValue && newParentId != oldParentId)
         {
-            await ValidateNoCircularReferenceAsync(entity.WorldId, entity.Id, entity.ParentId.Value, cancellationToken);
+            await ValidateNoCircularReferenceAsync(entity.WorldId, entity.Id, newParentId.Value, cancellationToken);
         }
 
-        // Update entity
-        _context.Entry(existingEntity).CurrentValues.SetValues(entity);
+        // Handle Hierarchy updates for HasChildren flag
+        if (oldParentId != newParentId)
+        {
+            // 1. Handle New Parent (increment children)
+            if (newParentId.HasValue)
+            {
+                var newParent = await GetByIdAsync(entity.WorldId, newParentId.Value, cancellationToken);
+                if (newParent != null && !newParent.HasChildren)
+                {
+                    newParent.SetHasChildren(true);
+                }
+            }
+
+            // 2. Handle Old Parent (decrement children/check empty)
+            if (oldParentId.HasValue)
+            {
+                var oldParent = await GetByIdAsync(entity.WorldId, oldParentId.Value, cancellationToken);
+                if (oldParent != null)
+                {
+                    var remainingChildrenAny = await _context.WorldEntities
+                        .WithPartitionKeyIfCosmos(_context, entity.WorldId)
+                        .AnyAsync(e => e.ParentId == oldParentId.Value && !e.IsDeleted && e.Id != entity.Id, cancellationToken);
+
+                    if (!remainingChildrenAny && oldParent.HasChildren)
+                    {
+                        oldParent.SetHasChildren(false);
+                    }
+                }
+            }
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return existingEntity;
@@ -309,6 +353,25 @@ public class WorldEntityRepository : IWorldEntityRepository
 
             // Soft delete the entity
             entity.SoftDelete();
+
+            // Update parent's HasChildren flag if this was the last child
+            if (entity.ParentId.HasValue)
+            {
+                var parent = await GetByIdAsync(worldId, entity.ParentId.Value, cancellationToken);
+                if (parent != null)
+                {
+                    // Check if there are any other non-deleted children
+                    var remainingChildrenAny = await _context.WorldEntities
+                        .WithPartitionKeyIfCosmos(_context, worldId)
+                        .AnyAsync(e => e.ParentId == entity.ParentId.Value && !e.IsDeleted && e.Id != entityId, cancellationToken);
+
+                    if (!remainingChildrenAny && parent.HasChildren)
+                    {
+                        parent.SetHasChildren(false);
+                    }
+                }
+            }
+
             await _context.SaveChangesAsync(cancellationToken);
 
             // Record metric

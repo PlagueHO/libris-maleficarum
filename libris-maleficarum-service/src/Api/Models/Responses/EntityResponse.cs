@@ -43,6 +43,26 @@ public class EntityResponse
     public required List<string> Tags { get; set; }
 
     /// <summary>
+    /// Gets or sets the array of ancestor IDs from root to parent (for hierarchy queries).
+    /// </summary>
+    public required List<Guid> Path { get; set; }
+
+    /// <summary>
+    /// Gets or sets the hierarchy level (0 = root).
+    /// </summary>
+    public required int Depth { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this entity has children (optimization flag).
+    /// </summary>
+    public required bool HasChildren { get; set; }
+
+    /// <summary>
+    /// Gets or sets the identifier of the user who owns this entity.
+    /// </summary>
+    public required string OwnerId { get; set; }
+
+    /// <summary>
     /// Gets or sets the custom attributes.
     /// </summary>
     public required Dictionary<string, object> Attributes { get; set; }
@@ -56,4 +76,9 @@ public class EntityResponse
     /// Gets or sets the last modification timestamp.
     /// </summary>
     public required DateTime ModifiedDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this entity has been soft-deleted.
+    /// </summary>
+    public required bool IsDeleted { get; set; }
 }

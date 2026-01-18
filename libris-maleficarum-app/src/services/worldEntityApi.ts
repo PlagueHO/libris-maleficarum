@@ -151,13 +151,24 @@ export const worldEntityApi = api.injectEndpoints({
         const parentTag = {
           type: 'WorldEntity' as const,
           id: `PARENT_${worldId}_${data.parentId ?? 'ROOT'}`,
-        };
+        } as const;
         console.log('[createWorldEntity] Invalidating tags:', {
           worldId,
           parentId: data.parentId,
           tag: parentTag,
         });
-        return [{ type: 'WorldEntity', id: `LIST_${worldId}` }, parentTag];
+
+        const tags = [
+          { type: 'WorldEntity', id: `LIST_${worldId}` } as const,
+          parentTag,
+        ];
+
+        // If a child is created, invalidate the parent entity so its HasChildren flag updates in the UI
+        if (data.parentId) {
+          tags.push({ type: 'WorldEntity', id: data.parentId } as const);
+        }
+
+        return tags;
       },
     }),
 
@@ -242,24 +253,34 @@ export const worldEntityApi = api.injectEndpoints({
         data,
       }),
       transformResponse: (response: WorldEntityResponse) => response.data,
-      invalidatesTags: (result, _error, { worldId, entityId, data }) => [
-        { type: 'WorldEntity', id: entityId },
-        { type: 'WorldEntity', id: `LIST_${worldId}` },
-        // Invalidate new parent's children cache
-        {
-          type: 'WorldEntity',
-          id: `PARENT_${worldId}_${data.newParentId ?? 'ROOT'}`,
-        },
-        // Invalidate old parent's children cache (if we know it from the result)
-        ...(result?.parentId && result.parentId !== data.newParentId
-          ? [
-              {
-                type: 'WorldEntity' as const,
-                id: `PARENT_${worldId}_${result.parentId}`,
-              },
-            ]
-          : []),
-      ],
+      invalidatesTags: (result, _error, { worldId, entityId, data }) => {
+        const tags = [
+          { type: 'WorldEntity', id: entityId } as const,
+          { type: 'WorldEntity', id: `LIST_${worldId}` } as const,
+          // Invalidate new parent's children cache
+          {
+            type: 'WorldEntity' as const,
+            id: `PARENT_${worldId}_${data.newParentId ?? 'ROOT'}`,
+          } as const,
+        ];
+
+        // Invalidate new parent entity so its HasChildren flag updates
+        if (data.newParentId) {
+          tags.push({ type: 'WorldEntity', id: data.newParentId } as const);
+        }
+
+        if (result?.parentId && result.parentId !== data.newParentId) {
+          // Invalidate old parent's children cache
+          tags.push({
+            type: 'WorldEntity',
+            id: `PARENT_${worldId}_${result.parentId}`,
+          } as const);
+          // Invalidate old parent entity so its HasChildren flag updates
+          tags.push({ type: 'WorldEntity', id: result.parentId } as const);
+        }
+
+        return tags;
+      },
     }),
   }),
 });
