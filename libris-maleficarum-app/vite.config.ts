@@ -6,6 +6,13 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Expose to frontend whether we are running in Aspire (detected by backend service env vars)
+  // This allows us to disable MSW when a real backend is available
+  define: {
+    'import.meta.env.VITE_HAS_ASPIRE_BACKEND': JSON.stringify(
+      !!(process.env.services__api__https__0 || process.env.services__api__http__0)
+    ),
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

@@ -15,17 +15,24 @@ import axiosRetry from 'axios-retry';
  *
  * Priority:
  * 1. VITE_API_BASE_URL env var (set explicitly for MSW or real backend)
- * 2. Aspire service discovery env vars via Vite (VITE_SERVICES_API_HTTPS_0, VITE_SERVICES_API_HTTP_0)
- * 3. Production default to localhost:5000
- * 4. Development: relative URLs (proxied by Vite) only if no env var set
+ * 2. Default to empty string (uses Vite proxy → Aspire backend)
+ * 3. Fallback to localhost:5000 (production default)
  *
  * @see vite.config.ts for proxy configuration
  */
+
+// Debug: Log all environment variables to help troubleshoot Aspire integration
+console.group('🔧 API Client Configuration');
+console.log('Environment mode:', import.meta.env.MODE);
+console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+console.log('VITE_HAS_ASPIRE_BACKEND:', import.meta.env.VITE_HAS_ASPIRE_BACKEND);
+
 const baseURL =
   import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_SERVICES_API_HTTPS_0 ||
-  import.meta.env.VITE_SERVICES_API_HTTP_0 ||
   (import.meta.env.MODE === 'development' ? '' : 'http://localhost:5000');
+
+console.log('✅ Final baseURL:', baseURL || '(empty string - using relative URLs/Proxy)');
+console.groupEnd();
 
 /**
  * Axios instance with retry configuration
