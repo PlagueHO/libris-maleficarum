@@ -373,6 +373,11 @@ public class WorldsController : ControllerBase
             Description = entity.Description,
             Tags = entity.Tags,
             Attributes = entity.GetAttributes(),
+            Path = entity.Path,
+            Depth = entity.Depth,
+            HasChildren = entity.HasChildren,
+            OwnerId = entity.OwnerId,
+            IsDeleted = entity.IsDeleted,
             CreatedDate = entity.CreatedDate,
             ModifiedDate = entity.ModifiedDate
         };
