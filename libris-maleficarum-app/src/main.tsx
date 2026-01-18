@@ -10,7 +10,13 @@ import App from './App.tsx'
  * This mocks API endpoints so the frontend works without a running backend
  */
 async function initializeApp() {
-  if (import.meta.env.MODE === 'development') {
+  // Only use MSW if we are in development and NOT connecting to a real backend (Aspire or explicit URL).
+  // VITE_HAS_ASPIRE_BACKEND is injected by vite.config.ts via 'define' based on Aspire env vars.
+  const isBackendConfigured =
+    import.meta.env.VITE_HAS_ASPIRE_BACKEND ||
+    (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL !== 'http://localhost:5000');
+
+  if (import.meta.env.MODE === 'development' && !isBackendConfigured) {
     try {
       const { worker } = await import('./__mocks__/browser');
       await worker.start({

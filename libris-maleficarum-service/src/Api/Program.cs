@@ -79,6 +79,18 @@ builder.Services.AddControllers(options =>
 // Add FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
+// Add CORS policy to allow frontend access
+// In development, allow any origin (e.g., Vite dev server on localhost:5173)
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Add HTTP request logging for OpenTelemetry/Aspire Dashboard
 builder.Services.AddHttpLogging(logging =>
 {
@@ -132,6 +144,9 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+// Enable CORS (must be before Authorization)
+app.UseCors();
 
 app.UseAuthorization();
 
