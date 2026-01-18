@@ -159,7 +159,14 @@ seedMockData();
 // Detect environment to determine base URL
 // In Node (tests), we need absolute URLs (http://localhost:5000) for MSW to match requests
 // In Browser (dev), we need relative URLS (or match current origin) for MSW to intercept fetch
-const isNode = typeof process !== 'undefined' && process.versions && process.versions.node;
+let isNode = false;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const globalAny = globalThis as any;
+  isNode = typeof globalAny.process !== 'undefined' && !!globalAny.process.versions && !!globalAny.process.versions.node;
+} catch {
+  // ignore
+}
 const baseUrl = isNode ? 'http://localhost:5000' : '';
 
 /**
