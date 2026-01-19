@@ -885,11 +885,10 @@ The `EntityType` property defines the type of each WorldEntity. The hierarchy be
 - **AI Suggestions**: Microsoft Agent Framework uses recommendations to suggest likely entity placements
 - **User Freedom**: All EntityTypes remain accessible via search or scrolling—users can choose any type regardless of recommendations
 
-**Three Categories of EntityTypes:**
+**Two Categories of EntityTypes:**
 
 1. **Container EntityTypes** (e.g., `Locations`, `People`, `Events`, `Lore`, `Items`): Top-level organizational folders typically used as direct children of World
-1. **Organizational EntityTypes** (e.g., `GeographicRegion`, `PoliticalRegion`): Domain-specific grouping entities with properties (Climate, Population, etc.)
-1. **Standard EntityTypes** (e.g., `Country`, `Character`, `Quest`): Concrete domain entities representing actual world content
+1. **Standard EntityTypes** (e.g., `Country`, `Character`, `Quest`, `GeographicRegion`, `PoliticalRegion`): All other entity types representing actual world content. Some Standard types (like GeographicRegion, PoliticalRegion) define custom properties stored in the `Properties` JSON field, but functionally they behave identically to other Standard types.
 
 > [!IMPORTANT]
 > There are **no validation rules** for parent-child relationships. The hierarchy below lists EntityTypes grouped by category for organizational purposes. Recommendations affect only UI presentation order—never restrictions.
@@ -899,10 +898,10 @@ The `EntityType` property defines the type of each WorldEntity. The hierarchy be
 - **World** (root)
   - **Locations**
     - Continent
-    - **GeographicRegion** (organizational grouping by geography: "West Europe", "Balkans", "Scandinavia")
-    - **PoliticalRegion** (organizational grouping by politics: "European Union", "Commonwealth", "Trade Alliance")
-    - **CulturalRegion** (organizational grouping by culture: "Latin Lands", "Slavic Territories", "Nordic Realms")
-    - **MilitaryRegion** (organizational grouping by military zones: "Northern Defense Zone", "Border Territories")
+    - **GeographicRegion** (regional grouping by geography: "West Europe", "Balkans", "Scandinavia")
+    - **PoliticalRegion** (regional grouping by politics: "European Union", "Commonwealth", "Trade Alliance")
+    - **CulturalRegion** (regional grouping by culture: "Latin Lands", "Slavic Territories", "Nordic Realms")
+    - **MilitaryRegion** (regional grouping by military zones: "Northern Defense Zone", "Border Territories")
     - Country
     - Province
     - Region
@@ -1006,7 +1005,7 @@ World: Eldoria
 
 ### Organizational Entity Types
 
-**Organizational EntityTypes** (GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion) serve as semantic grouping containers with domain-specific properties. Unlike Container types that organize by broad category, these types convey specific organizational meaning (geographic, political, cultural, military).
+**Regional EntityTypes** (GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion) are Standard EntityTypes that support custom properties stored in the flexible `Properties` JSON field. They follow the same BaseWorldEntity schema as all other entity types (Country, Character, etc.), with their custom properties (Climate, Population, Government Type, etc.) defined via PropertySchema templates and stored as JSON.
 
 **Key Differences from Containers:**
 
