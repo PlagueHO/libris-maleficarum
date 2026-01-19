@@ -200,7 +200,7 @@ Subclasses of WorldEntity define specific entity types with their own property s
 ```csharp
 // Entity-specific records inherit from base
 // Properties store common cross-system data; SystemProperties store system-specific data
-// SchemaId references which property template/schema to use for validation and UI generation
+// SchemaId references which property template/schema to use for property value validation and UI generation
 
 // Example: Character entity with hybrid property system
 public record CharacterEntity : BaseWorldEntity
@@ -266,9 +266,12 @@ public record CampaignEntity : BaseWorldEntity
 }
 ```
 
-### Property Schema for System Property Validation
+### Property Schema Templates
 
-System property schemas/templates are stored in a separate container or configuration store. Each schema defines the expected properties, data types, validation rules, and default values for a given system/entity type.
+Property schemas/templates are stored in a separate container or configuration store. Each schema defines the expected properties, data types, value validation rules, and default values for a given system/entity type.
+
+> [!NOTE]
+> The `ValidationRule` field validates **property values** (e.g., ensuring Level is 1-20), not parent-child entity relationships. Entity hierarchy has no validation—see Hierarchy Recommendation Patterns section.
 
 ```csharp
 // Property Schema/Template Document (stored separately in Cosmos DB)
@@ -280,7 +283,7 @@ public record PropertySchema
     public string? Description { get; init; }          // "Properties for D&D 5th Edition characters"
     public List<PropertyDefinition>? CommonProperties { get; init; }  // Common property definitions
     public List<PropertyDefinition>? SystemProperties { get; init; }  // System-specific definitions
-    public List<string>? AllowedChildTypes { get; init; }  // Validation: allowed child EntityTypes
+    public List<string>? RecommendedChildTypes { get; init; }  // UI hint: recommended child EntityTypes (shown first in selector)
     public DateTime CreatedDate { get; init; }
     public DateTime ModifiedDate { get; init; }
 }
@@ -309,7 +312,7 @@ public record PropertyDefinition
         { "Name": "Population", "DataType": "number", "DisplayName": "Population (aggregate)" }
     ],
     "SystemProperties": [],
-    "AllowedChildTypes": ["Country", "Province", "Region", "GeographicRegion"],
+    "RecommendedChildTypes": ["Country", "Province", "Region", "GeographicRegion"],
     "CreatedDate": "2024-01-01T00:00:00Z",
     "ModifiedDate": "2024-01-01T00:00:00Z"
 }
@@ -874,7 +877,24 @@ foreach (var change in feed.Changes)
 
 ## WorldEntity.EntityType Hierarchy
 
-The `EntityType` property defines the type of each WorldEntity. The following is a suggested hierarchy for TTRPG world/campaign/setting/adventure/scenario management:
+The `EntityType` property defines the type of each WorldEntity. The hierarchy below provides **UI recommendations and defaults** for creating entities—it is purely informational and **does not enforce any restrictions**. Any EntityType can have any other EntityType as a parent.
+
+**Purpose of Hierarchy:**
+
+- **UI Defaults**: When creating a child entity, the UI shows recommended EntityTypes first in the selector/dropdown
+- **AI Suggestions**: Microsoft Agent Framework uses recommendations to suggest likely entity placements
+- **User Freedom**: All EntityTypes remain accessible via search or scrolling—users can choose any type regardless of recommendations
+
+**Three Categories of EntityTypes:**
+
+1. **Container EntityTypes** (e.g., `Locations`, `People`, `Events`, `Lore`, `Items`): Top-level organizational folders typically used as direct children of World
+1. **Organizational EntityTypes** (e.g., `GeographicRegion`, `PoliticalRegion`): Domain-specific grouping entities with properties (Climate, Population, etc.)
+1. **Standard EntityTypes** (e.g., `Country`, `Character`, `Quest`): Concrete domain entities representing actual world content
+
+> [!IMPORTANT]
+> There are **no validation rules** for parent-child relationships. The hierarchy below lists EntityTypes grouped by category for organizational purposes. Recommendations affect only UI presentation order—never restrictions.
+
+### Hierarchy Structure
 
 - **World** (root)
   - **Locations**
@@ -962,65 +982,88 @@ The `EntityType` property defines the type of each WorldEntity. The following is
 
 This hierarchy is extensible and can be expanded as needed for different TTRPG systems and campaign needs.
 
+### Container Entity Types
+
+**Container EntityTypes** (e.g., `Locations`, `People`, `Events`, `Lore`, `Items`, `Adventures`) provide organizational structure as top-level folders directly under World. These containers help organize entities by domain area (locations, characters, items, etc.) and influence which EntityTypes appear first in UI dropdowns when creating children.
+
+**Example:**
+
+```text
+World: Eldoria
+├── Locations (recommends: Continent, Country, City, Dungeon)
+│   ├── Continent: Arcanis
+│   ├── City: Waterdeep
+│   ├── Character: Town Guard              (user chose unrecommended type)
+│   └── Dungeon: Undermountain
+├── People (recommends: Character, Organization, Faction)
+│   ├── Character: Elminster
+│   ├── Organization: Harpers
+│   └── City: Skullport                    (secret thieves' city)
+└── Events (recommends: Quest, Battle, Festival)
+    ├── Quest: Retrieve the Lost Artifact
+    └── HistoricalEvent: Fall of Myth Drannor
+```
+
 ### Organizational Entity Types
 
-**Regional entity types** (GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion) serve as **semantic organizational containers** for grouping related entities. Unlike generic "folders", these types have domain meaning and support properties, validation, and AI agent understanding.
+**Organizational EntityTypes** (GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion) serve as semantic grouping containers with domain-specific properties. Unlike Container types that organize by broad category, these types convey specific organizational meaning (geographic, political, cultural, military).
 
-**Example hierarchy with organizational grouping**:
+**Key Differences from Containers:**
+
+- **Properties**: Support domain properties (Climate, Population, Area)
+- **Semantic Meaning**: Type name conveys organizational intent ("GeographicRegion" vs generic "Locations")
+- **Nestable**: Can contain other organizational types (e.g., GeographicRegion within Continent)
+- **Queryable**: Enable meaningful queries like "Show all GeographicRegions in Europe"
+
+**Example:**
 
 ```text
 World: Eldoria
 ├── Continent: Europe
 │   ├── GeographicRegion: Western Europe
-│   │   ├── Country: France (path: /europe/western-europe/france)
+│   │   ├── Country: France
 │   │   ├── Country: Belgium
 │   │   └── Country: Netherlands
 │   ├── GeographicRegion: Eastern Europe
 │   │   ├── Country: Poland
 │   │   └── Country: Czech Republic
-│   └── PoliticalRegion: European Alliance (cross-cutting grouping)
-│       └── (references via Tags: france, belgium, poland)
+│   └── PoliticalRegion: European Alliance
+│       └── (cross-cutting: references countries via Tags)
 ```
 
-**Design Rationale**:
+**Cross-cutting organization**: Use `Tags` for entities belonging to multiple groupings (e.g., Country tagged with `["eu-member", "nato", "schengen"]`).
 
-- **Semantic clarity**: "GeographicRegion" conveys meaning; agents understand it's a geographic grouping
-- **Properties support**: Regions can have properties (Climate, Population, Area) unlike folders
-- **Validation-friendly**: Rules enforce valid parent-child relationships (e.g., GeographicRegion can only contain Countries/Regions)
-- **Query power**: "Show all GeographicRegions in Europe" is a meaningful query
-- **Icon differentiation**: Different EntityTypes automatically get appropriate UI icons
-- **AI-compatible**: Microsoft Agent Framework can reason about regional organization
+### Hierarchy Recommendation Patterns
 
-**Cross-cutting organization via Tags**: Use the existing `Tags` property for entities that belong to multiple logical groupings (e.g., a Country tagged with `["eu-member", "nato", "schengen"]`). This avoids deep hierarchy nesting while preserving organizational metadata.
+Recommendations provide **UI defaults and AI suggestions only**—no enforcement. Any EntityType can be a child of any other EntityType.
 
-### Hierarchy Validation Rules
+**How It Works:**
 
-A rules engine (or AI-powered validation via Microsoft Agent Framework) validates parent-child relationships. The following rules apply:
+1. UI queries parent's `RecommendedChildTypes` from PropertySchema when creating child entity
+1. Recommended types appear first in the EntityType selector dropdown
+1. All other types accessible via search or scrolling below recommended types
+1. Microsoft Agent Framework uses recommendations for contextual suggestions
+1. Users can freely choose any EntityType regardless of recommendation status
 
-**Location Entity Rules**:
+**Common Recommendation Patterns:**
 
-- ✅ `Continent` can contain: `GeographicRegion`, `PoliticalRegion`, `CulturalRegion`, `MilitaryRegion`, `Country`, `Region`
-- ✅ `GeographicRegion` can contain: `Country`, `Province`, `Region`, `GeographicRegion` (nested regions)
-- ✅ `PoliticalRegion` can contain: `Country`, `Province`, `Region`, `PoliticalRegion` (nested regions)
-- ✅ `CulturalRegion` can contain: `Country`, `Province`, `Region`, `CulturalRegion` (nested regions)
-- ✅ `MilitaryRegion` can contain: `Country`, `Province`, `Region`, `MilitaryRegion` (nested regions)
-- ✅ `Country` can contain: `Province`, `Region`, `City`, `Landmark`, `Character`, `Organization`
-- ✅ `Region` can contain: `City`, `Settlement`, `Landmark`, `Character`, `Organization`
-- ✅ `City` can contain: `Settlement`, `Building`, `Landmark`, `Character`, `Organization`
+| Parent EntityType | Recommended Children |
+|------------------|---------------------|
+| `Continent` | `GeographicRegion`, `PoliticalRegion`, `CulturalRegion`, `MilitaryRegion`, `Country`, `Region` |
+| `GeographicRegion` | `Country`, `Province`, `Region`, `GeographicRegion` (nested) |
+| `Country` | `Province`, `Region`, `City`, `Landmark`, `Character`, `Organization` |
+| `City` | `Settlement`, `Building`, `Landmark`, `Character`, `Organization` |
+| `Campaign` | `Quest`, `Session`, `Scene`, `PlotHook` |
+| `Character` | `Equipment`, `Weapon`, `Armor` |
 
-**General Rules**:
+**Unusual But Supported Examples:**
 
-- ✅ Valid: `Monster` child of `Continent` (monsters live in continents)
-- ✅ Valid: `Character` child of `City` (characters reside in cities)
-- ✅ Valid: `Quest` child of `Campaign` (quests belong to campaigns)
-- ❌ Invalid: `Continent` child of `Monster` (continents cannot be inside monsters)
-- ❌ Invalid: `World` child of any entity (World is always root)
-- ❌ Invalid: Regional types as children of non-location entities
+- `Monster` → `Continent` (world-turtle carrying a continent)
+- `Locations` → `Character` (flat organization preference)
+- `Character` → `City` (city in a bag of holding)
 
-**Validation Implementation**:
+**Technical Implementation:**
 
-- Rules defined in PropertySchema or separate validation configuration
-- Validation performed at application layer:
-  - **Compile-time**: Common rules enforced in strongly-typed API
-  - **Runtime**: System-specific and user-defined rules via validation service
-- Microsoft Agent Framework can suggest valid child types based on parent EntityType
+- Recommendations stored in PropertySchema `RecommendedChildTypes` field
+- UI queries parent schema to order dropdown selector
+- No validation—all combinations permitted
