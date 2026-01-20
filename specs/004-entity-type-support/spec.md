@@ -3,7 +3,7 @@
 **Feature Branch**: `004-entity-type-support`  
 **Created**: 2026-01-19  
 **Status**: Draft  
-**Input**: User description: "Support for WorldEntity Container Entity Types and Organisational Entity Types in the WorldSidebar Entity Heirarchy and the EntityDetailForm. Ensure aligns to existing codebase & feature definition for Entity Heirarchy any Entity Details."
+**Input**: User description: "Support for WorldEntity Container Entity Types and Organizational Entity Types in the WorldSidebar Entity Heirarchy and the EntityDetailForm. Ensure aligns to existing codebase & feature definition for Entity Heirarchy any Entity Details."
 
 **Note**: After analysis, "Organizational" EntityTypes (GeographicRegion, PoliticalRegion, etc.) have no functional difference from Standard EntityTypes - both use the same schema and Properties field for custom attributes. This specification treats them as Standard EntityTypes with domain-specific properties rather than a separate category.
 
@@ -113,7 +113,7 @@ A user adding entities to the hierarchy benefits from intelligent type suggestio
   - **Behavior**: Population and Area fields accept numeric input with appropriate formatting (e.g., 195,000,000 or 1.95e8). Field validation allows large numbers without overflow.
 
 - What happens when a user copies entities between worlds that have different organizational structures?
-  - **Behavior**: [NEEDS CLARIFICATION: Cross-world entity operations are out of scope for this feature but should be considered in future design]
+  - **Behavior**: Out of scope for this feature iteration; cross-world entity copy/paste operations deferred to future release
 
 ## Requirements *(mandatory)*
 
@@ -148,7 +148,8 @@ A user adding entities to the hierarchy benefits from intelligent type suggestio
   - `Geographies` → Mountain, River, Lake, Forest, Desert, Ocean, Island, ClimateZone
   - `History` → Timeline, Era, Chronicle, HistoricalEvent
   - `Bestiary` → Creature, Monster, Animal
-- **FR-016**: System MUST update the `ENTITY_TYPE_META` mapping to include metadata (label, description, category) for all new Container and regional entity types
+  - `Other` → (any type, catch-all container)
+- **FR-016**: System MUST update the `ENTITY_TYPE_META` mapping to include metadata (label, description, category, icon) for all new Container and regional entity types
 - **FR-017**: EntityTypeSelector MUST group entity types by category in the dropdown: Geography, Characters & Factions, Events & Quests, Items, Campaigns, Containers, Other
 - **FR-018**: EntityTypeSelector search functionality MUST search across entity type labels, descriptions, and categories to find matching types
 - **FR-019**: System MUST allow nesting of regional types (e.g., GeographicRegion within GeographicRegion) without depth restrictions up to the global maximum of 10 levels
@@ -181,7 +182,7 @@ A user adding entities to the hierarchy benefits from intelligent type suggestio
    - Component reads `ENTITY_TYPE_META` to display labels, descriptions, and category groupings
    - Component reads `ENTITY_TYPE_SUGGESTIONS` to determine recommended types based on parent
 
-2. **Creating Entity with Container Type or Custom Properties**:
+1. **Creating Entity with Container Type or Custom Properties**:
    - User selects Container or regional type (GeographicRegion, etc.) from EntityTypeSelector
    - EntityDetailForm detects type and conditionally renders custom property fields if applicable (using TagInput component for text list properties)
    - User fills Name (required), Type (required), and optional custom properties
@@ -189,12 +190,12 @@ A user adding entities to the hierarchy benefits from intelligent type suggestio
    - On submit: POST `/api/v1/worlds/{worldId}/entities` with `entityType` set to Container or regional type
    - Backend stores entity with `Properties` JSON field containing custom properties (including string arrays for tag inputs)
 
-3. **Displaying Entity with Custom Properties**:
+1. **Displaying Entity with Custom Properties**:
    - GET `/api/v1/worlds/{worldId}/entities/{entityId}` returns WorldEntity document
    - Frontend deserializes `Properties` JSON field to extract custom properties (Climate, Population, etc.)
    - EntityDetailForm renders custom properties in read-only layout alongside standard fields (Name, Type, Description)
 
-4. **Sidebar Hierarchy Display**:
+1. **Sidebar Hierarchy Display**:
    - WorldSidebar queries entities and renders hierarchy with type-specific icons
    - Icon mapping: Container types → folder/category icons, regional types → map/globe icons, Standard types → existing entity icons
    - Hierarchy navigation (expand/collapse) works identically for all entity types
