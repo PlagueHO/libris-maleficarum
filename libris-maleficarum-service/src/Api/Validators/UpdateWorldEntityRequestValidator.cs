@@ -2,18 +2,17 @@ namespace LibrisMaleficarum.Api.Validators;
 
 using FluentValidation;
 using LibrisMaleficarum.Api.Models.Requests;
-using LibrisMaleficarum.Domain.ValueObjects;
 using System.Text.Json;
 
 /// <summary>
-/// Validator for CreateEntityRequest.
+/// Validator for UpdateWorldEntityRequest.
 /// </summary>
-public class CreateEntityRequestValidator : AbstractValidator<CreateEntityRequest>
+public class UpdateWorldEntityRequestValidator : AbstractValidator<UpdateWorldEntityRequest>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="CreateEntityRequestValidator"/> class.
+    /// Initializes a new instance of the <see cref="UpdateWorldEntityRequestValidator"/> class.
     /// </summary>
-    public CreateEntityRequestValidator()
+    public UpdateWorldEntityRequestValidator()
     {
         RuleFor(x => x.Name)
             .NotEmpty()

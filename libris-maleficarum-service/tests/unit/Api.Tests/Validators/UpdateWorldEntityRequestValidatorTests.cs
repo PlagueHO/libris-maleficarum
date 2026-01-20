@@ -7,13 +7,13 @@ using LibrisMaleficarum.Domain.ValueObjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
-/// Tests for <see cref="UpdateEntityRequestValidator"/>.
+/// Tests for <see cref="UpdateWorldEntityRequestValidator"/>.
 /// </summary>
 [TestClass]
 [TestCategory("Unit")]
-public class UpdateEntityRequestValidatorTests
+public class UpdateWorldEntityRequestValidatorTests
 {
-    private UpdateEntityRequestValidator _validator = null!;
+    private UpdateWorldEntityRequestValidator _validator = null!;
 
     /// <summary>
     /// Initializes the validator before each test.
@@ -21,7 +21,7 @@ public class UpdateEntityRequestValidatorTests
     [TestInitialize]
     public void Setup()
     {
-        _validator = new UpdateEntityRequestValidator();
+        _validator = new UpdateWorldEntityRequestValidator();
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithValidMinimalRequest_ReturnsNoErrors()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Updated Character",
             EntityType = EntityType.Character
@@ -52,7 +52,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithValidCompleteRequest_ReturnsNoErrors()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Aragorn II",
             Description = "King of Gondor, Ranger of the North",
@@ -81,7 +81,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithEmptyName_ReturnsError()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = string.Empty,
             EntityType = EntityType.Character
@@ -104,7 +104,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithNameTooLong_ReturnsError()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = new string('A', 201), // 201 characters
             EntityType = EntityType.Character
@@ -127,7 +127,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithNameAtMaxLength_ReturnsNoErrors()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = new string('A', 200), // Exactly 200 characters
             EntityType = EntityType.Character
@@ -148,7 +148,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithDescriptionTooLong_ReturnsError()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
@@ -172,7 +172,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithDescriptionAtMaxLength_ReturnsNoErrors()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
@@ -194,7 +194,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithInvalidEntityType_ReturnsError()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = (EntityType)999 // Invalid enum value
@@ -217,7 +217,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithTooManyTags_ReturnsError()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
@@ -241,7 +241,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithMaximumTags_ReturnsNoErrors()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
@@ -263,7 +263,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithTagTooLong_ReturnsError()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
@@ -287,7 +287,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithTagAtMaxLength_ReturnsNoErrors()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
@@ -309,7 +309,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithEmptyTag_ReturnsError()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
@@ -333,7 +333,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithWhitespaceTag_ReturnsError()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
@@ -364,7 +364,7 @@ public class UpdateEntityRequestValidatorTests
             largeAttributes[$"key{i}"] = new string('A', 50);
         }
 
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
@@ -388,7 +388,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithAttributesWithinLimit_ReturnsNoErrors()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
@@ -416,7 +416,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithNullTags_ReturnsNoErrors()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
@@ -438,7 +438,7 @@ public class UpdateEntityRequestValidatorTests
     public async Task ValidateAsync_WithNullAttributes_ReturnsNoErrors()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,

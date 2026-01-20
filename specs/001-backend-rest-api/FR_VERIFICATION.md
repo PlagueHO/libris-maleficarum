@@ -84,7 +84,7 @@
 
 **Implementation Evidence**:
 
-- Validators: `src/Api/Validators/CreateWorldRequestValidator.cs`, `UpdateWorldRequestValidator.cs`, `CreateEntityRequestValidator.cs`
+- Validators: `src/Api/Validators/CreateWorldRequestValidator.cs`, `UpdateWorldRequestValidator.cs`, `CreateWorldEntityRequestValidator.cs`
 - FluentValidation integration: `src/Api/Program.cs` Line 22-24 (AddFluentValidation)
 - Error response: `src/Api/Models/Responses/ErrorResponse.cs`
 - Example validation check: WorldsController.CreateWorld checks Name (1-100 chars), Description (max 2000 chars)

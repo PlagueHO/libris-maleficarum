@@ -165,10 +165,6 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
   // Check cache first
   const cachedData = cacheGet<WorldEntity[]>(cacheKey, []);
 
-  console.log(
-    `[EntityTreeLevel] Mounting/updating: worldId=${worldId}, parentId=${parentId}, level=${level}`,
-  );
-
   const {
     data: fetchedEntities,
     isLoading,
@@ -184,15 +180,6 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
 
   // Use fetched data if available, otherwise use cache as fallback
   const entities = fetchedEntities || cachedData;
-
-  // Debug logging
-  useEffect(() => {
-    if (fetchedEntities) {
-      console.log(
-        `[EntityTreeLevel] Fetched entities for world=${worldId}, parentId=${parentId}, count=${fetchedEntities.length}`,
-      );
-    }
-  }, [fetchedEntities, worldId, parentId]);
 
   // Update cache when data fetched (keep sync)
   useEffect(() => {

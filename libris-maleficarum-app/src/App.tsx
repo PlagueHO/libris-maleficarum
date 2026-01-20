@@ -5,9 +5,6 @@ import { ChatPanel } from './components/ChatPanel/ChatPanel'
 import { DeleteConfirmationModal } from './components/MainPanel/DeleteConfirmationModal'
 
 function App() {
-  // Temporary: Test if React is rendering
-  console.log('App component rendering...');
-  
   return (
     <div className="h-screen flex flex-col bg-background text-foreground">
       <TopToolbar />

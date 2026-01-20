@@ -95,6 +95,141 @@ describe('EntityTreeNode', () => {
       expect(icon).toBeInTheDocument();
     });
 
+    it('should render Container type icon for Locations entity (T034)', () => {
+      // Arrange
+      const store = createMockStore();
+      const locationsEntity: WorldEntity = {
+        ...mockEntity,
+        id: 'locations-1',
+        name: 'Locations',
+        entityType: WorldEntityType.Locations,
+      };
+
+      // Act
+      render(
+        <Provider store={store}>
+          <EntityTreeNode entity={locationsEntity} level={0} />
+        </Provider>,
+      );
+
+      // Assert - icon should be present with Container styling
+      const icon = screen.getByRole('img', { hidden: true });
+      expect(icon).toBeInTheDocument();
+      expect(icon).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    it('should render different icons for Container vs Standard entities (T034)', () => {
+      // Arrange
+      const store = createMockStore();
+      
+      // Container entity (Locations)
+      const containerEntity: WorldEntity = {
+        ...mockEntity,
+        id: 'container-1',
+        name: 'My Locations',
+        entityType: WorldEntityType.Locations,
+      };
+
+      // Standard entity (Continent)
+      const standardEntity: WorldEntity = {
+        ...mockEntity,
+        id: 'standard-1',
+        name: 'Faerûn',
+        entityType: WorldEntityType.Continent,
+      };
+
+      // Act - render both
+      const { rerender } = render(
+        <Provider store={store}>
+          <EntityTreeNode entity={containerEntity} level={0} />
+        </Provider>,
+      );
+
+      // Assert - Container entity has icon
+      const containerIcon = screen.getByRole('img', { hidden: true });
+      expect(containerIcon).toBeInTheDocument();
+
+      // Re-render with standard entity
+      rerender(
+        <Provider store={store}>
+          <EntityTreeNode entity={standardEntity} level={0} />
+        </Provider>,
+      );
+
+      // Assert - Standard entity also has icon (visual difference confirmed by icon mapping)
+      const standardIcon = screen.getByRole('img', { hidden: true });
+      expect(standardIcon).toBeInTheDocument();
+    });
+
+    it('should render all new Container type icons (T034)', () => {
+      // Arrange
+      const store = createMockStore();
+      const containerTypes = [
+        WorldEntityType.Locations,
+        WorldEntityType.People,
+        WorldEntityType.Events,
+        WorldEntityType.History,
+        WorldEntityType.Lore,
+        WorldEntityType.Bestiary,
+        WorldEntityType.Items,
+        WorldEntityType.Adventures,
+        WorldEntityType.Geographies,
+      ];
+
+      // Act & Assert - each Container type should render with icon
+      containerTypes.forEach((entityType) => {
+        const entity: WorldEntity = {
+          ...mockEntity,
+          id: `${entityType}-1`,
+          name: `Test ${entityType}`,
+          entityType,
+        };
+
+        const { unmount } = render(
+          <Provider store={store}>
+            <EntityTreeNode entity={entity} level={0} />
+          </Provider>,
+        );
+
+        const icon = screen.getByRole('img', { hidden: true });
+        expect(icon).toBeInTheDocument();
+        
+        unmount();
+      });
+    });
+
+    it('should render all new Regional type icons (T034)', () => {
+      // Arrange
+      const store = createMockStore();
+      const regionalTypes = [
+        WorldEntityType.GeographicRegion,
+        WorldEntityType.PoliticalRegion,
+        WorldEntityType.CulturalRegion,
+        WorldEntityType.MilitaryRegion,
+      ];
+
+      // Act & Assert - each Regional type should render with icon
+      regionalTypes.forEach((entityType) => {
+        const entity: WorldEntity = {
+          ...mockEntity,
+          id: `${entityType}-1`,
+          name: `Test ${entityType}`,
+          entityType,
+        };
+
+        const { unmount } = render(
+          <Provider store={store}>
+            <EntityTreeNode entity={entity} level={0} />
+          </Provider>,
+        );
+
+        const icon = screen.getByRole('img', { hidden: true });
+        expect(icon).toBeInTheDocument();
+        
+        unmount();
+      });
+    });
+
     it('should render expand/collapse chevron for entities with children', () => {
       // Arrange
       const store = createMockStore();

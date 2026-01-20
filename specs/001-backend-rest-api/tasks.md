@@ -157,12 +157,12 @@
 
 ### API Layer (US2)
 
-- [X] T075 [P] [US2] Create CreateEntityRequest DTO in src/Api/Models/Requests/CreateEntityRequest.cs with Name, Description, EntityType, ParentId, Tags, Attributes
-- [X] T076 [P] [US2] Create UpdateEntityRequest DTO in src/Api/Models/Requests/UpdateEntityRequest.cs with same properties as CreateEntityRequest
-- [X] T077 [P] [US2] Create PatchEntityRequest DTO in src/Api/Models/Requests/PatchEntityRequest.cs with all properties optional (for partial updates)
-- [X] T078 [P] [US2] Create MoveEntityRequest DTO in src/Api/Models/Requests/MoveEntityRequest.cs with NewParentId property
+- [X] T075 [P] [US2] Create CreateWorldEntityRequest DTO in src/Api/Models/Requests/CreateWorldEntityRequest.cs with Name, Description, EntityType, ParentId, Tags, Attributes
+- [X] T076 [P] [US2] Create UpdateWorldEntityRequest DTO in src/Api/Models/Requests/UpdateWorldEntityRequest.cs with same properties as CreateWorldEntityRequest
+- [X] T077 [P] [US2] Create PatchWorldEntityRequest DTO in src/Api/Models/Requests/PatchWorldEntityRequest.cs with all properties optional (for partial updates)
+- [X] T078 [P] [US2] Create MoveWorldEntityRequest DTO in src/Api/Models/Requests/MoveWorldEntityRequest.cs with NewParentId property
 - [X] T079 [P] [US2] Create EntityResponse DTO in src/Api/Models/Responses/EntityResponse.cs with all WorldEntity properties
-- [X] T080 [P] [US2] Create CreateEntityRequestValidator in src/Api/Validators/CreateEntityRequestValidator.cs validating Name length, EntityType enum, Tags count/length, Attributes JSON size
+- [X] T080 [P] [US2] Create CreateWorldEntityRequestValidator in src/Api/Validators/CreateWorldEntityRequestValidator.cs validating Name length, EntityType enum, Tags count/length, Attributes JSON size
 - [X] T081 [US2] Create WorldEntitiesController in src/Api/Controllers/WorldEntitiesController.cs with constructor injection of IWorldEntityRepository, ISearchService, IWorldRepository
 - [X] T082 [US2] Implement POST /api/v1/worlds/{worldId}/entities endpoint in WorldEntitiesController returning 201 Created with Location and ETag headers
 - [X] T083 [US2] Implement GET /api/v1/worlds/{worldId}/entities endpoint in WorldEntitiesController with type and tags query parameters for filtering, pagination
@@ -171,7 +171,7 @@
 - [X] T086 [US2] Implement PATCH /api/v1/worlds/{worldId}/entities/{entityId} endpoint for partial updates (merge Attributes, replace Tags if provided)
 - [X] T087 [US2] Implement DELETE /api/v1/worlds/{worldId}/entities/{entityId} endpoint with cascade query parameter support
 - [X] T088 [US2] Implement GET /api/v1/worlds/{worldId}/entities/{parentId}/children endpoint returning child entities
-- [X] T089 [US2] Implement POST /api/v1/worlds/{worldId}/entities/{entityId}/move endpoint accepting MoveEntityRequest
+- [X] T089 [US2] Implement POST /api/v1/worlds/{worldId}/entities/{entityId}/move endpoint accepting MoveWorldEntityRequest
 
 ### Tests (US2)
 

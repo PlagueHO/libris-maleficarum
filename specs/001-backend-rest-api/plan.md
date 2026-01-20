@@ -147,8 +147,8 @@ libris-maleficarum-service/
 │   │   │   ├── Requests/                     # API request models
 │   │   │   │   ├── CreateWorldRequest.cs
 │   │   │   │   ├── UpdateWorldRequest.cs
-│   │   │   │   ├── CreateEntityRequest.cs
-│   │   │   │   └── UpdateEntityRequest.cs
+│   │   │   │   ├── CreateWorldEntityRequest.cs
+│   │   │   │   └── UpdateWorldEntityRequest.cs
 │   │   │   └── Responses/                    # API response models
 │   │   │       ├── WorldResponse.cs
 │   │   │       ├── EntityResponse.cs
@@ -164,7 +164,7 @@ libris-maleficarum-service/
 │   │   │   └── WebApplicationExtensions.cs
 │   │   └── Validators/                       # FluentValidation validators
 │   │       ├── CreateWorldRequestValidator.cs
-│   │       └── CreateEntityRequestValidator.cs
+│   │       └── CreateWorldEntityRequestValidator.cs
 │   │
 │   ├── Domain/                               # Domain Layer (Business Logic)
 │   │   ├── LibrisMaleficarum.Domain.csproj
