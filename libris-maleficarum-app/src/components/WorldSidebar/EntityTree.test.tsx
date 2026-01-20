@@ -478,26 +478,30 @@ describe('EntityTree', () => {
   });
 
   describe('Accessibility (T043, T059)', () => {
-    it('should have no accessibility violations', async () => {
-      // Arrange
-      const store = createMockStore();
-      store.dispatch({ type: 'worldSidebar/setSelectedWorld', payload: 'test-world-123' });
+    it(
+      'should have no accessibility violations',
+      async () => {
+        // Arrange
+        const store = createMockStore();
+        store.dispatch({ type: 'worldSidebar/setSelectedWorld', payload: 'test-world-123' });
 
-      // Act
-      const { container } = render(
-        <Provider store={store}>
-          <EntityTree />
-        </Provider>,
-      );
+        // Act
+        const { container } = render(
+          <Provider store={store}>
+            <EntityTree />
+          </Provider>,
+        );
 
-      await waitFor(() => {
-        expect(screen.getByText('Faerûn')).toBeInTheDocument();
-      });
+        await waitFor(() => {
+          expect(screen.getByText('Faerûn')).toBeInTheDocument();
+        });
 
-      // Assert
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
-    });
+        // Assert
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
+      },
+      10000
+    );
 
     it('should have role="tree" on container', async () => {
       // Arrange

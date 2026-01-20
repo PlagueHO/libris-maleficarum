@@ -60,14 +60,21 @@ export function GeographicRegionProperties({
     Area?: string;
   }>({});
 
-  // Sync local state with parent value prop
+  // Sync local state with parent value prop (text fields only)
+  // Numeric fields are managed by their own onChange/onBlur handlers
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setClimate(value.Climate || '');
     setTerrain(value.Terrain || '');
-    setPopulation(value.Population ? formatNumericDisplay(value.Population) : '');
-    setArea(value.Area ? formatNumericDisplay(value.Area, 2) : '');
-  }, [value]);
+    // Only sync numeric fields if they're changing from undefined/null to a value
+    // (i.e., when loading an entity), not during user editing
+    if (value.Population !== undefined && !population) {
+      setPopulation(formatNumericDisplay(value.Population));
+    }
+    if (value.Area !== undefined && !area) {
+      setArea(formatNumericDisplay(value.Area, 2));
+    }
+  }, [value, population, area]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleClimateChange = (newClimate: string) => {

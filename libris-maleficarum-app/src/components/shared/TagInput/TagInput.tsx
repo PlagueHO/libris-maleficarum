@@ -19,40 +19,110 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
+/**
+ * Props for the TagInput component
+ *
+ * @public
+ */
 export interface TagInputProps {
-  /** Field label */
+  /**
+   * Field label displayed above the input
+   * @required
+   * @example "Languages", "Member States", "Tags"
+   */
   label: string;
 
-  /** Array of tag values */
+  /**
+   * Controlled array of tag values currently displayed
+   * @required
+   * @example ["English", "Spanish", "French"]
+   */
   value: string[];
 
-  /** Callback when tags change */
+  /**
+   * Callback fired when the tag array changes (add or remove)
+   * @required
+   * @param tags - Updated array of tag values
+   * @example (tags) => setMyTags(tags)
+   */
   onChange: (tags: string[]) => void;
 
-  /** Placeholder text for input */
+  /**
+   * Placeholder text shown in the input field when empty
+   * @optional
+   * @default "Type and press Enter"
+   */
   placeholder?: string;
 
-  /** Disabled state */
+  /**
+   * Whether the input is disabled and non-interactive
+   * @optional
+   * @default false
+   */
   disabled?: boolean;
 
-  /** Required field */
+  /**
+   * Whether the field is required (displays asterisk)
+   * @optional
+   * @default false
+   */
   required?: boolean;
 
-  /** Validation error message */
+  /**
+   * External validation error message to display
+   * Overrides internal validation errors
+   * @optional
+   */
   error?: string;
 
-  /** Maximum length per tag */
+  /**
+   * Maximum character length per individual tag
+   * @optional
+   * @default 50
+   */
   maxLength?: number;
 
-  /** Optional description/hint text */
+  /**
+   * Help text displayed below the label
+   * @optional
+   * @example "Enter languages spoken in this region"
+   */
   description?: string;
 
-  /** Additional className */
+  /**
+   * Additional CSS class names to apply to the root element
+   * @optional
+   */
   className?: string;
 }
 
 /**
- * TagInput component for entering lists of text values as chips
+ * TagInput - Reusable component for entering lists of text values as chips/badges
+ *
+ * Features:
+ * - **Add tags**: Type text and press Enter to add
+ * - **Remove tags**: Click X button or use dismiss interaction
+ * - **Validation**: Prevents duplicates and enforces max length
+ * - **Accessibility**: Full keyboard support and ARIA labels
+ *
+ * @example
+ * ```tsx
+ * const [languages, setLanguages] = useState<string[]>([]);
+ *
+ * <TagInput
+ *   label="Languages"
+ *   value={languages}
+ *   onChange={setLanguages}
+ *   placeholder="Add a language..."
+ *   description="Spoken languages in this region"
+ *   maxLength={30}
+ * />
+ * ```
+ *
+ * @param props - Component props (see TagInputProps)
+ * @returns Accessible tag input component
+ *
+ * @public
  */
 export function TagInput({
   label,

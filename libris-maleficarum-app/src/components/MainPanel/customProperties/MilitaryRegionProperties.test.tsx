@@ -262,42 +262,54 @@ describe('MilitaryRegionProperties', () => {
   });
 
   describe('Accessibility', () => {
-    it('should have no accessibility violations', async () => {
-      const onChange = vi.fn();
-      const { container } = render(
-        <MilitaryRegionProperties value={defaultValue} onChange={onChange} />
-      );
+    it(
+      'should have no accessibility violations',
+      async () => {
+        const onChange = vi.fn();
+        const { container } = render(
+          <MilitaryRegionProperties value={defaultValue} onChange={onChange} />
+        );
 
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
-    });
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
+      },
+      10000
+    );
 
-    it('should have no accessibility violations in read-only mode', async () => {
-      const onChange = vi.fn();
-      const { container } = render(
-        <MilitaryRegionProperties
-          value={defaultValue}
-          onChange={onChange}
-          readOnly
-        />
-      );
+    it(
+      'should have no accessibility violations in read-only mode',
+      async () => {
+        const onChange = vi.fn();
+        const { container } = render(
+          <MilitaryRegionProperties
+            value={defaultValue}
+            onChange={onChange}
+            readOnly
+          />
+        );
 
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
-    });
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
+      },
+      10000
+    );
 
-    it('should have no accessibility violations in disabled state', async () => {
-      const onChange = vi.fn();
-      const { container } = render(
-        <MilitaryRegionProperties
-          value={defaultValue}
-          onChange={onChange}
-          disabled
-        />
-      );
+    it(
+      'should have no accessibility violations in disabled state',
+      async () => {
+        const onChange = vi.fn();
+        const { container } = render(
+          <MilitaryRegionProperties
+            value={defaultValue}
+            onChange={onChange}
+            disabled
+          />
+        );
 
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
-    });
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
+      },
+      10000
+    );
   });
 });

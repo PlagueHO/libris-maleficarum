@@ -73,6 +73,20 @@
       }
     },
     {
+      "label": "app: test (accessibility)",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["test", "-t", "accessibility"],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+      },
+      "group": "test",
+      "icon": {
+        "id": "accessibility",
+        "color": "terminal.ansiMagenta"
+      }
+    },
+    {
       "label": "app: build",
       "type": "shell",
       "command": "pnpm",

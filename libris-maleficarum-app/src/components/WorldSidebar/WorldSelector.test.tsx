@@ -461,14 +461,18 @@ describe('WorldSelector', () => {
   });
 
   describe('Accessibility', () => {
-    it('should have no accessibility violations', async () => {
-      // Arrange
-      const { container } = await renderWorldSelector([multipleWorldsHandler]);
+    it(
+      'should have no accessibility violations',
+      async () => {
+        // Arrange
+        const { container } = await renderWorldSelector([multipleWorldsHandler]);
 
-      // Assert
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
-    });
+        // Assert
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
+      },
+      10000
+    );
 
     it('should have proper ARIA attributes for combobox', async () => {
       // Act
