@@ -14,6 +14,16 @@ import { EntityTypeSelector } from '../ui/entity-type-selector';
 import { FormActions } from '../ui/form-actions';
 import { FormLayout } from '../ui/form-layout';
 import { Loader2 } from 'lucide-react';
+import {
+  GeographicRegionProperties,
+  type GeographicRegionPropertiesData,
+  PoliticalRegionProperties,
+  type PoliticalRegionPropertiesData,
+  CulturalRegionProperties,
+  type CulturalRegionPropertiesData,
+  MilitaryRegionProperties,
+  type MilitaryRegionPropertiesData,
+} from './customProperties';
 
 /**
  * EntityDetailForm Component
@@ -43,6 +53,14 @@ export function EntityDetailForm() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [entityType, setEntityType] = useState<WorldEntityType | ''>('');
+  const [customProperties, setCustomProperties] = useState<
+    | GeographicRegionPropertiesData
+    | PoliticalRegionPropertiesData
+    | CulturalRegionPropertiesData
+    | MilitaryRegionPropertiesData
+    | Record<string, unknown>
+    | null
+  >(null);
   const [errors, setErrors] = useState<{ name?: string; type?: string }>({});
 
   const isEditing = !!editingEntityId;
@@ -76,11 +94,27 @@ export function EntityDetailForm() {
       setName(existingEntity.name);
       setDescription(existingEntity.description || '');
       setEntityType(existingEntity.entityType);
+      
+      // Deserialize Properties field for Regional entity types
+      if (existingEntity.properties) {
+        try {
+          const parsed = typeof existingEntity.properties === 'string' 
+            ? JSON.parse(existingEntity.properties) 
+            : existingEntity.properties;
+          setCustomProperties(parsed);
+        } catch (error) {
+          console.error('[EntityDetailForm] Failed to parse properties:', error);
+          setCustomProperties(null);
+        }
+      } else {
+        setCustomProperties(null);
+      }
     } else if (!isEditing) {
       // Reset for create mode
       setName('');
       setDescription('');
       setEntityType('');
+      setCustomProperties(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingEntityId, existingEntity?.id]);
@@ -134,13 +168,10 @@ export function EntityDetailForm() {
           data: {
             name,
             description,
+            properties: customProperties ? JSON.stringify(customProperties) : undefined,
           },
         }).unwrap();
       } else {
-        console.log(
-          '[EntityDetailForm] Creating entity:',
-          { worldId: selectedWorldId, parentId: newEntityParentId, name, entityType },
-        );
         await createEntity({
           worldId: selectedWorldId,
           data: {
@@ -149,9 +180,9 @@ export function EntityDetailForm() {
             description,
             entityType: entityType as WorldEntityType,
             tags: [],
+            properties: customProperties ? JSON.stringify(customProperties) : undefined,
           },
         }).unwrap();
-        console.log('[EntityDetailForm] Entity created successfully');
       }
       handleClose();
     } catch (error) {
@@ -160,6 +191,62 @@ export function EntityDetailForm() {
   }
 
   const isLoading = (isLoadingEntity && isEditing) || (isLoadingParent && !isEditing && newEntityParentId);
+
+  /**
+   * Renders custom property fields based on the selected entity type
+   */
+  const renderCustomProperties = () => {
+    if (!entityType) return null;
+
+    switch (entityType) {
+      case WorldEntityType.GeographicRegion:
+        return (
+          <div className="border-t pt-6 mt-6">
+            <GeographicRegionProperties
+              value={(customProperties as GeographicRegionPropertiesData) || {}}
+              onChange={(props) => setCustomProperties(props)}
+              disabled={isSubmitting}
+            />
+          </div>
+        );
+
+      case WorldEntityType.PoliticalRegion:
+        return (
+          <div className="border-t pt-6 mt-6">
+            <PoliticalRegionProperties
+              value={(customProperties as PoliticalRegionPropertiesData) || {}}
+              onChange={(props) => setCustomProperties(props)}
+              disabled={isSubmitting}
+            />
+          </div>
+        );
+
+      case WorldEntityType.CulturalRegion:
+        return (
+          <div className="border-t pt-6 mt-6">
+            <CulturalRegionProperties
+              value={(customProperties as CulturalRegionPropertiesData) || {}}
+              onChange={(props) => setCustomProperties(props)}
+              disabled={isSubmitting}
+            />
+          </div>
+        );
+
+      case WorldEntityType.MilitaryRegion:
+        return (
+          <div className="border-t pt-6 mt-6">
+            <MilitaryRegionProperties
+              value={(customProperties as MilitaryRegionPropertiesData) || {}}
+              onChange={(props) => setCustomProperties(props)}
+              disabled={isSubmitting}
+            />
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <FormLayout onBack={handleClose}>
@@ -211,7 +298,7 @@ export function EntityDetailForm() {
               value={entityType}
               onValueChange={(val) => setEntityType(val)}
               parentType={parentEntity?.entityType || null}
-              allowAllTypes={isEditing}
+              allowAllTypes={false}
               disabled={isSubmitting}
               placeholder="Select entity type"
               aria-label="Entity type"
@@ -239,6 +326,8 @@ export function EntityDetailForm() {
               {description.length}/500 characters
             </div>
           </div>
+
+          {renderCustomProperties()}
 
           <FormActions
             submitLabel={isEditing ? 'Save Changes' : 'Create'}

@@ -3,9 +3,9 @@ namespace LibrisMaleficarum.Api.Models.Requests;
 using LibrisMaleficarum.Domain.ValueObjects;
 
 /// <summary>
-/// Request model for updating an existing entity.
+/// Request model for creating a new world entity.
 /// </summary>
-public class UpdateEntityRequest
+public class CreateWorldEntityRequest
 {
     /// <summary>
     /// Gets or sets the entity name (1-200 characters).

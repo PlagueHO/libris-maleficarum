@@ -77,7 +77,7 @@ public class EntityPerformanceTests
             var index = i; // Capture for closure
             createTasks.Add(Task.Run(async () =>
             {
-                var entityRequest = new CreateEntityRequest
+                var entityRequest = new CreateWorldEntityRequest
                 {
                     Name = $"Performance Entity {index}",
                     Description = $"Entity created for performance testing iteration {index}",
@@ -195,7 +195,7 @@ public class EntityPerformanceTests
             var index = i;
             createTasks.Add(Task.Run(async () =>
             {
-                var entityRequest = new CreateEntityRequest
+                var entityRequest = new CreateWorldEntityRequest
                 {
                     Name = $"Filter Test Entity {index}",
                     Description = $"Entity for filter testing",

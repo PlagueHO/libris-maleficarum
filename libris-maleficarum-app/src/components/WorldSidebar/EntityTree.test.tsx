@@ -698,4 +698,202 @@ describe('EntityTree', () => {
       });
     });
   });
+
+  describe('T062: Deep Nesting Support - GeographicRegion → GeographicRegion → GeographicRegion', () => {
+    it('should render and handle deeply nested entities (5+ levels)', async () => {
+      // Arrange - create deeply nested GeographicRegion entities
+      const deepNestHandler = http.get('http://localhost:5000/api/v1/worlds/:worldId/entities', ({ request }) => {
+        const url = new URL(request.url);
+        const parentId = url.searchParams.get('parentId');
+
+        // Root level - GeographicRegion 1
+        if (parentId === 'null' || parentId === null) {
+          const response: WorldEntityListResponse = {
+            data: [
+              {
+                id: 'geo-region-1',
+                worldId: 'test-world-123',
+                parentId: null,
+                entityType: WorldEntityType.GeographicRegion,
+                name: 'Level 1 - Outer Region',
+                description: 'Root geographic region',
+                tags: [],
+                path: [],
+                depth: 0,
+                hasChildren: true,
+                ownerId: 'test-user@example.com',
+                createdAt: '2026-01-14T00:00:00Z',
+                updatedAt: '2026-01-14T00:00:00Z',
+                isDeleted: false,
+              },
+            ],
+            meta: { count: 1, nextCursor: null },
+          };
+          return HttpResponse.json(response);
+        }
+
+        // Level 2
+        if (parentId === 'geo-region-1') {
+          const response: WorldEntityListResponse = {
+            data: [
+              {
+                id: 'geo-region-2',
+                worldId: 'test-world-123',
+                parentId: 'geo-region-1',
+                entityType: WorldEntityType.GeographicRegion,
+                name: 'Level 2 - Middle Region',
+                description: 'Child geographic region',
+                tags: [],
+                path: ['geo-region-1'],
+                depth: 1,
+                hasChildren: true,
+                ownerId: 'test-user@example.com',
+                createdAt: '2026-01-14T00:00:00Z',
+                updatedAt: '2026-01-14T00:00:00Z',
+                isDeleted: false,
+              },
+            ],
+            meta: { count: 1, nextCursor: null },
+          };
+          return HttpResponse.json(response);
+        }
+
+        // Level 3
+        if (parentId === 'geo-region-2') {
+          const response: WorldEntityListResponse = {
+            data: [
+              {
+                id: 'geo-region-3',
+                worldId: 'test-world-123',
+                parentId: 'geo-region-2',
+                entityType: WorldEntityType.GeographicRegion,
+                name: 'Level 3 - Inner Region',
+                description: 'Deep geographic region',
+                tags: [],
+                path: ['geo-region-1', 'geo-region-2'],
+                depth: 2,
+                hasChildren: true,
+                ownerId: 'test-user@example.com',
+                createdAt: '2026-01-14T00:00:00Z',
+                updatedAt: '2026-01-14T00:00:00Z',
+                isDeleted: false,
+              },
+            ],
+            meta: { count: 1, nextCursor: null },
+          };
+          return HttpResponse.json(response);
+        }
+
+        // Level 4
+        if (parentId === 'geo-region-3') {
+          const response: WorldEntityListResponse = {
+            data: [
+              {
+                id: 'geo-region-4',
+                worldId: 'test-world-123',
+                parentId: 'geo-region-3',
+                entityType: WorldEntityType.GeographicRegion,
+                name: 'Level 4 - Deeper Region',
+                description: 'Very deep geographic region',
+                tags: [],
+                path: ['geo-region-1', 'geo-region-2', 'geo-region-3'],
+                depth: 3,
+                hasChildren: true,
+                ownerId: 'test-user@example.com',
+                createdAt: '2026-01-14T00:00:00Z',
+                updatedAt: '2026-01-14T00:00:00Z',
+                isDeleted: false,
+              },
+            ],
+            meta: { count: 1, nextCursor: null },
+          };
+          return HttpResponse.json(response);
+        }
+
+        // Level 5 (leaf node)
+        if (parentId === 'geo-region-4') {
+          const response: WorldEntityListResponse = {
+            data: [
+              {
+                id: 'geo-region-5',
+                worldId: 'test-world-123',
+                parentId: 'geo-region-4',
+                entityType: WorldEntityType.GeographicRegion,
+                name: 'Level 5 - Deepest Region',
+                description: 'Deepest geographic region',
+                tags: [],
+                path: ['geo-region-1', 'geo-region-2', 'geo-region-3', 'geo-region-4'],
+                depth: 4,
+                hasChildren: false,
+                ownerId: 'test-user@example.com',
+                createdAt: '2026-01-14T00:00:00Z',
+                updatedAt: '2026-01-14T00:00:00Z',
+                isDeleted: false,
+              },
+            ],
+            meta: { count: 1, nextCursor: null },
+          };
+          return HttpResponse.json(response);
+        }
+
+        return HttpResponse.json({ data: [], meta: { count: 0, nextCursor: null } });
+      });
+
+      server.use(deepNestHandler);
+      const store = createMockStore();
+      store.dispatch({ type: 'worldSidebar/setSelectedWorld', payload: 'test-world-123' });
+
+      // Act
+      const user = userEvent.setup();
+      render(
+        <Provider store={store}>
+          <EntityTree />
+        </Provider>,
+      );
+
+      // Level 1 should be visible
+      const level1 = await screen.findByText('Level 1 - Outer Region');
+      expect(level1).toBeInTheDocument();
+
+      // Expand Level 1
+      const expand1 = screen.getByRole('button', { name: /expand.*level 1/i });
+      await user.click(expand1);
+
+      // Level 2 should appear
+      const level2 = await screen.findByText('Level 2 - Middle Region');
+      expect(level2).toBeInTheDocument();
+
+      // Expand Level 2
+      const expand2 = screen.getByRole('button', { name: /expand.*level 2/i });
+      await user.click(expand2);
+
+      // Level 3 should appear
+      const level3 = await screen.findByText('Level 3 - Inner Region');
+      expect(level3).toBeInTheDocument();
+
+      // Expand Level 3
+      const expand3 = screen.getByRole('button', { name: /expand.*level 3/i });
+      await user.click(expand3);
+
+      // Level 4 should appear
+      const level4 = await screen.findByText('Level 4 - Deeper Region');
+      expect(level4).toBeInTheDocument();
+
+      // Expand Level 4
+      const expand4 = screen.getByRole('button', { name: /expand.*level 4/i });
+      await user.click(expand4);
+
+      // Level 5 should appear (deepest)
+      const level5 = await screen.findByText('Level 5 - Deepest Region');
+      expect(level5).toBeInTheDocument();
+
+      // Verify correct indentation (level 5 should have most padding)
+      const level5Node = level5.closest('[data-level]');
+      expect(level5Node).toHaveAttribute('data-level', '4'); // 0-indexed, so level 5 is 4
+
+      // Verify ARIA hierarchy
+      const level5TreeItem = level5.closest('[role="treeitem"]');
+      expect(level5TreeItem).toHaveAttribute('aria-level', '5'); // ARIA is 1-indexed
+    });
+  });
 });

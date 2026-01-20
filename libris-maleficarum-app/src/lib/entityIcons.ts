@@ -18,6 +18,16 @@ import {
   Calendar,
   Package,
   Scroll,
+  Folder,
+  CalendarDays,
+  BookOpen,
+  BookMarked,
+  Bug,
+  Box,
+  Compass,
+  Mountain,
+  Shield,
+  HelpCircle,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -25,6 +35,7 @@ import {
  * Entity type enumeration (must match WorldEntityType from types)
  */
 export type EntityType =
+  // Geographic types
   | 'Continent'
   | 'Country'
   | 'Region'
@@ -32,34 +43,82 @@ export type EntityType =
   | 'Building'
   | 'Room'
   | 'Location'
+  // Character & faction types
   | 'Character'
   | 'Faction'
+  // Event & quest types
   | 'Event'
+  | 'Quest'
+  // Item types
   | 'Item'
+  // Campaign types
   | 'Campaign'
   | 'Session'
-  | 'Quest'
+  // Container types
+  | 'Locations'
+  | 'People'
+  | 'Events'
+  | 'History'
+  | 'Lore'
+  | 'Bestiary'
+  | 'Items'
+  | 'Adventures'
+  | 'Geographies'
+  // Regional types with custom properties
+  | 'GeographicRegion'
+  | 'PoliticalRegion'
+  | 'CulturalRegion'
+  | 'MilitaryRegion'
+  // Other
   | 'Other';
 
 /**
  * Mapping from entity type to Lucide icon component
  */
 export const entityIconMap: Record<EntityType, LucideIcon> = {
-  Continent: Globe,        // Geographic: Globe for continents
-  Country: Map,            // Geographic: Map for countries
-  Region: MapPin,          // Geographic: MapPin for regions
-  City: Building,          // Geographic: Building for cities
-  Building: Building,      // Geographic: Building for buildings
-  Room: Home,              // Geographic: Home for rooms
-  Location: Home,          // Geographic: Home for specific locations
-  Character: User,         // Narrative: User for characters
-  Faction: Users,          // Narrative: Users (group) for factions
-  Event: Calendar,         // Narrative: Calendar for events
-  Item: Package,           // Narrative: Package for items
-  Campaign: Scroll,        // Campaign: Scroll for campaign
-  Session: Calendar,       // Session: Calendar for sessions
-  Quest: Map,              // Quest: Map for quests
-  Other: Package,          // Other: Default package icon
+  // Geographic types
+  Continent: Globe,
+  Country: Map,
+  Region: MapPin,
+  City: Building,
+  Building: Building,
+  Room: Home,
+  Location: MapPin,
+  
+  // Character & faction types
+  Character: User,
+  Faction: Users,
+  
+  // Event & quest types
+  Event: Calendar,
+  Quest: Scroll,
+  
+  // Item types
+  Item: Package,
+  
+  // Campaign types
+  Campaign: Scroll,
+  Session: Calendar,
+  
+  // Container types - organizational folders
+  Locations: Folder,
+  People: Users,
+  Events: CalendarDays,
+  History: BookOpen,
+  Lore: BookMarked,
+  Bestiary: Bug,
+  Items: Box,
+  Adventures: Compass,
+  Geographies: Mountain,
+  
+  // Regional types with custom properties
+  GeographicRegion: Globe,
+  PoliticalRegion: Shield,
+  CulturalRegion: Users,
+  MilitaryRegion: Shield,
+  
+  // Other
+  Other: HelpCircle,
 };
 
 /**

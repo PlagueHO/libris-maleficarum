@@ -20,8 +20,8 @@ public class WorldEntitiesController : ControllerBase
     private readonly ISearchService _searchService;
     private readonly IWorldRepository _worldRepository;
     private readonly IUserContextService _userContextService;
-    private readonly IValidator<CreateEntityRequest> _createValidator;
-    private readonly IValidator<UpdateEntityRequest> _updateValidator;
+    private readonly IValidator<CreateWorldEntityRequest> _createValidator;
+    private readonly IValidator<UpdateWorldEntityRequest> _updateValidator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorldEntitiesController"/> class.
@@ -31,8 +31,8 @@ public class WorldEntitiesController : ControllerBase
         ISearchService searchService,
         IWorldRepository worldRepository,
         IUserContextService userContextService,
-        IValidator<CreateEntityRequest> createValidator,
-        IValidator<UpdateEntityRequest> updateValidator)
+        IValidator<CreateWorldEntityRequest> createValidator,
+        IValidator<UpdateWorldEntityRequest> updateValidator)
     {
         _entityRepository = entityRepository;
         _searchService = searchService;
@@ -56,7 +56,7 @@ public class WorldEntitiesController : ControllerBase
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CreateEntity(
         Guid worldId,
-        [FromBody] CreateEntityRequest request,
+        [FromBody] CreateWorldEntityRequest request,
         CancellationToken cancellationToken)
     {
         // Validate request
@@ -246,7 +246,7 @@ public class WorldEntitiesController : ControllerBase
     public async Task<IActionResult> UpdateEntity(
         Guid worldId,
         Guid entityId,
-        [FromBody] UpdateEntityRequest request,
+        [FromBody] UpdateWorldEntityRequest request,
         CancellationToken cancellationToken)
     {
         // Validate request
@@ -324,7 +324,7 @@ public class WorldEntitiesController : ControllerBase
     public async Task<IActionResult> PatchEntity(
         Guid worldId,
         Guid entityId,
-        [FromBody] PatchEntityRequest request,
+        [FromBody] PatchWorldEntityRequest request,
         CancellationToken cancellationToken)
     {
         // Retrieve existing entity
@@ -441,7 +441,7 @@ public class WorldEntitiesController : ControllerBase
     public async Task<IActionResult> MoveEntity(
         Guid worldId,
         Guid entityId,
-        [FromBody] MoveEntityRequest request,
+        [FromBody] MoveWorldEntityRequest request,
         CancellationToken cancellationToken)
     {
         var entity = await _entityRepository.GetByIdAsync(worldId, entityId, cancellationToken);

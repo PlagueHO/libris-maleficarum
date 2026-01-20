@@ -151,7 +151,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateEntityRequest'
+              $ref: '#/components/schemas/CreateWorldEntityRequest'
             example:
               name: "Eldric the Wise"
               description: "An ancient wizard who guards the secrets of the realm"
@@ -299,7 +299,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateEntityRequest'
+              $ref: '#/components/schemas/UpdateWorldEntityRequest'
             example:
               name: "Eldric the Ancient"
               description: "An immortal wizard who has guarded the realm for millennia"
@@ -384,7 +384,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchEntityRequest'
+              $ref: '#/components/schemas/PatchWorldEntityRequest'
             example:
               tags: ["npc", "wizard", "questgiver", "immortal", "archmage"]
               attributes:
@@ -554,7 +554,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MoveEntityRequest'
+              $ref: '#/components/schemas/MoveWorldEntityRequest'
             example:
               newParentId: "8c9d0e1f-2345-6789-abcd-ef0123456789"
       responses:
@@ -621,9 +621,9 @@ components:
         - Other
       example: "Character"
     
-    CreateEntityRequest:
+    CreateWorldEntityRequest:
       type: object
-      description: Request body for creating a new entity
+      description: Request body for creating a new world entity
       required:
         - name
         - entityType
@@ -667,9 +667,9 @@ components:
             alignment: "Lawful Good"
             race: "Human"
     
-    UpdateEntityRequest:
+    UpdateWorldEntityRequest:
       type: object
-      description: Request body for updating an entity (full replace)
+      description: Request body for updating a world entity (full replace)
       required:
         - name
         - entityType
@@ -714,9 +714,9 @@ components:
             race: "Human"
             ageYears: 3000
     
-    PatchEntityRequest:
+    PatchWorldEntityRequest:
       type: object
-      description: Request body for partial entity update (only provided fields updated)
+      description: Request body for partial world entity update (only provided fields updated)
       properties:
         name:
           type: string
@@ -749,9 +749,9 @@ components:
           description: Custom JSON attributes (merged with existing values)
           additionalProperties: true
     
-    MoveEntityRequest:
+    MoveWorldEntityRequest:
       type: object
-      description: Request body for moving an entity to a new parent
+      description: Request body for moving a world entity to a new parent
       required:
         - newParentId
       properties:

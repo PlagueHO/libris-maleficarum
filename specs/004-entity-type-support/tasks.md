@@ -20,11 +20,11 @@
 
 **Purpose**: Project initialization - no feature-specific work yet
 
-- [ ] T001 Ensure Node.js 20.x installed and pnpm available in libris-maleficarum-app/
-- [ ] T002 Verify Fluent UI v9 packages installed: @fluentui/react-components, @fluentui/react-icons
-- [ ] T003 [P] Create directory structure: libris-maleficarum-app/src/components/shared/TagInput/
-- [ ] T004 [P] Create directory structure: libris-maleficarum-app/src/lib/validators/
-- [ ] T005 [P] Create directory structure: libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/ (may exist)
+- [X] T001 Ensure Node.js 20.x installed and pnpm available in libris-maleficarum-app/
+- [X] T002 Verify Fluent UI v9 packages installed: @fluentui/react-components, @fluentui/react-icons
+- [X] T003 [P] Create directory structure: libris-maleficarum-app/src/components/shared/TagInput/
+- [X] T004 [P] Create directory structure: libris-maleficarum-app/src/lib/validators/
+- [X] T005 [P] Create directory structure: libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/ (may exist)
 
 ---
 
@@ -36,34 +36,34 @@
 
 ### Type System Extensions (MUST complete first)
 
-- [ ] T006 Extend WorldEntityType const object with 14 new types in libris-maleficarum-app/src/services/types/worldEntity.types.ts
-- [ ] T007 Extend ENTITY_TYPE_META with metadata for 14 new types (label, description, category, icon) in libris-maleficarum-app/src/services/types/worldEntity.types.ts
-- [ ] T008 Extend ENTITY_TYPE_SUGGESTIONS with mappings for 9 Container types and 4 Regional types in libris-maleficarum-app/src/services/types/worldEntity.types.ts
-- [ ] T009 Update getEntityTypeSuggestions function to recommend Container types for root-level entities in libris-maleficarum-app/src/services/types/worldEntity.types.ts
-- [ ] T010 [P] Create unit tests for new WorldEntityType enum values in libris-maleficarum-app/src/services/types/worldEntity.types.test.ts
-- [ ] T011 [P] Create unit tests for ENTITY_TYPE_META additions in libris-maleficarum-app/src/services/types/worldEntity.types.test.ts
-- [ ] T012 [P] Create unit tests for getEntityTypeSuggestions with Container/Regional types in libris-maleficarum-app/src/services/types/worldEntity.types.test.ts
+- [X] T006 Extend WorldEntityType const object with 14 new types in libris-maleficarum-app/src/services/types/worldEntity.types.ts
+- [X] T007 Extend ENTITY_TYPE_META with metadata for 14 new types (label, description, category, icon) in libris-maleficarum-app/src/services/types/worldEntity.types.ts
+- [X] T008 Extend ENTITY_TYPE_SUGGESTIONS with mappings for 9 Container types and 4 Regional types in libris-maleficarum-app/src/services/types/worldEntity.types.ts
+- [X] T009 Update getEntityTypeSuggestions function to recommend Container types for root-level entities in libris-maleficarum-app/src/services/types/worldEntity.types.ts
+- [X] T010 [P] Create unit tests for new WorldEntityType enum values in libris-maleficarum-app/src/services/types/worldEntity.types.test.ts
+- [X] T011 [P] Create unit tests for ENTITY_TYPE_META additions in libris-maleficarum-app/src/services/types/worldEntity.types.test.ts
+- [X] T012 [P] Create unit tests for getEntityTypeSuggestions with Container/Regional types in libris-maleficarum-app/src/services/types/worldEntity.types.test.ts
 
 ### Reusable Components (Can start after type system)
 
-- [ ] T013 [P] Create TagInput component interface (TagInputProps) in libris-maleficarum-app/src/components/shared/TagInput/TagInput.tsx
-- [ ] T014 [P] Implement TagInput component with Fluent UI Tag, Input, Field primitives in libris-maleficarum-app/src/components/shared/TagInput/TagInput.tsx
-- [ ] T015 [P] Add keyboard handling (Enter to add tag, dismiss to remove) in libris-maleficarum-app/src/components/shared/TagInput/TagInput.tsx
+- [X] T013 [P] Create TagInput component interface (TagInputProps) in libris-maleficarum-app/src/components/shared/TagInput/TagInput.tsx
+- [X] T014 [P] Implement TagInput component with Fluent UI Tag, Input, Field primitives in libris-maleficarum-app/src/components/shared/TagInput/TagInput.tsx
+- [X] T015 [P] Add keyboard handling (Enter to add tag, dismiss to remove) in libris-maleficarum-app/src/components/shared/TagInput/TagInput.tsx
 - [ ] T016 [P] Create TagInput styles in libris-maleficarum-app/src/components/shared/TagInput/TagInput.module.css
-- [ ] T017 [P] Create TagInput barrel export in libris-maleficarum-app/src/components/shared/TagInput/index.ts
-- [ ] T018 Create TagInput accessibility tests with jest-axe in libris-maleficarum-app/src/components/shared/TagInput/TagInput.test.tsx
-- [ ] T019 [P] Create TagInput functionality tests (add tag, remove tag, prevent duplicates) in libris-maleficarum-app/src/components/shared/TagInput/TagInput.test.tsx
+- [X] T017 [P] Create TagInput barrel export in libris-maleficarum-app/src/components/shared/TagInput/index.ts
+- [X] T018 Create TagInput accessibility tests with jest-axe in libris-maleficarum-app/src/components/shared/TagInput/TagInput.test.tsx
+- [X] T019 [P] Create TagInput functionality tests (add tag, remove tag, prevent duplicates) in libris-maleficarum-app/src/components/shared/TagInput/TagInput.test.tsx
 
 ### Validation Utilities
 
-- [ ] T020 [P] Create parseNumericInput function in libris-maleficarum-app/src/lib/validators/numericValidation.ts
-- [ ] T021 [P] Create formatNumericDisplay function in libris-maleficarum-app/src/lib/validators/numericValidation.ts
-- [ ] T022 [P] Create validateInteger function in libris-maleficarum-app/src/lib/validators/numericValidation.ts
-- [ ] T023 [P] Create validateDecimal function in libris-maleficarum-app/src/lib/validators/numericValidation.ts
-- [ ] T024 Create unit tests for parseNumericInput in libris-maleficarum-app/src/lib/validators/numericValidation.test.ts
-- [ ] T025 [P] Create unit tests for formatNumericDisplay in libris-maleficarum-app/src/lib/validators/numericValidation.test.ts
-- [ ] T026 [P] Create unit tests for validateInteger (bounds, non-negative, whole number) in libris-maleficarum-app/src/lib/validators/numericValidation.test.ts
-- [ ] T027 [P] Create unit tests for validateDecimal (bounds, non-negative, decimals allowed) in libris-maleficarum-app/src/lib/validators/numericValidation.test.ts
+- [X] T020 [P] Create parseNumericInput function in libris-maleficarum-app/src/lib/validators/numericValidation.ts
+- [X] T021 [P] Create formatNumericInput function in libris-maleficarum-app/src/lib/validators/numericValidation.ts
+- [X] T022 [P] Create validateInteger function in libris-maleficarum-app/src/lib/validators/numericValidation.ts
+- [X] T023 [P] Create validateDecimal function in libris-maleficarum-app/src/lib/validators/numericValidation.ts
+- [X] T024 Create unit tests for parseNumericInput in libris-maleficarum-app/src/lib/validators/numericValidation.test.ts
+- [X] T025 [P] Create unit tests for formatNumericDisplay in libris-maleficarum-app/src/lib/validators/numericValidation.test.ts
+- [X] T026 [P] Create unit tests for validateInteger (bounds, non-negative, whole number) in libris-maleficarum-app/src/lib/validators/numericValidation.test.ts
+- [X] T027 [P] Create unit tests for validateDecimal (bounds, non-negative, decimals allowed) in libris-maleficarum-app/src/lib/validators/numericValidation.test.ts
 
 **Checkpoint**: Foundation ready - type system extended, TagInput reusable, validators ready. User story implementation can now begin in parallel.
 
@@ -77,16 +77,18 @@
 
 ### Implementation for User Story 1
 
-- [ ] T028 [P] [US1] Update WorldSidebar icon mapping to include all 14 new types in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.tsx
-- [ ] T029 [P] [US1] Import Fluent UI icons (FolderRegular, PeopleRegular, CalendarRegular, BookRegular, PawRegular, BoxRegular, CompassRegular, MapRegular, GlobeRegular, ShieldRegular) in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.tsx
-- [ ] T030 [US1] Create getEntityIcon function using ENTITY_TYPE_META.icon property in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.tsx
-- [ ] T031 [US1] Update entity rendering to use getEntityIcon with aria-hidden="true" in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.tsx
-- [ ] T032 [US1] Add CSS for Container icon styling in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.module.css
-- [ ] T033 [P] [US1] Create accessibility test for icon display in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.test.tsx
-- [ ] T034 [P] [US1] Create visual regression test for Container vs Standard entity icons in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.test.tsx
-- [ ] T035 [US1] Update EntityTypeSelector to categorize Container types separately in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.tsx (if component exists; adjust path as needed)
-- [ ] T036 [US1] Verify EntityTypeSelector shows Container types in recommended section for root-level entities in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.tsx
-- [ ] T037 [US1] Create tests for Container type recommendations in EntityTypeSelector in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.test.tsx
+- [X] T028 [P] [US1] Update WorldSidebar icon mapping to include all 14 new types in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.tsx
+- [X] T029 [P] [US1] Import Fluent UI icons (FolderRegular, PeopleRegular, CalendarRegular, BookRegular, PawRegular, BoxRegular, CompassRegular, MapRegular, GlobeRegular, ShieldRegular) in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.tsx
+- [X] T030 [US1] Create getEntityIcon function using ENTITY_TYPE_META.icon property in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.tsx
+- [X] T031 [US1] Update entity rendering to use getEntityIcon with aria-hidden="true" in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.tsx
+- [X] T032 [US1] Add CSS for Container icon styling in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.module.css
+- [X] T033 [P] [US1] Create accessibility test for icon display in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.test.tsx
+- [X] T034 [P] [US1] Create visual regression test for Container vs Standard entity icons in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.test.tsx
+- [X] T035 [US1] Update EntityTypeSelector to categorize Container types separately in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.tsx (if component exists; adjust path as needed)
+- [X] T036 [US1] Verify EntityTypeSelector shows Container types in recommended section for root-level entities in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.tsx
+- [X] T037 [US1] Create tests for Container type recommendations in EntityTypeSelector in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.test.tsx
+
+**Checkpoint**: User Story 1 MVP complete - Container types functional with icons and recommendations. World organization is now possible.
 
 **Checkpoint**: At this point, Container entities can be created, display with correct icons, and are recommended appropriately. This is the MVP.
 
@@ -100,29 +102,29 @@
 
 ### Custom Property Components
 
-- [ ] T038 [P] [US2] Create GeographicRegionProperties component interface in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/GeographicRegionProperties.tsx
-- [ ] T039 [P] [US2] Implement GeographicRegionProperties with Climate, Terrain, Population, Area fields in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/GeographicRegionProperties.tsx
-- [ ] T040 [P] [US2] Add numeric validation for Population (integer) and Area (decimal) in GeographicRegionProperties in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/GeographicRegionProperties.tsx
-- [ ] T041 [P] [US2] Create PoliticalRegionProperties component with GovernmentType, MemberStates (TagInput), EstablishedDate in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/PoliticalRegionProperties.tsx
-- [ ] T042 [P] [US2] Create CulturalRegionProperties component with Languages (TagInput), Religions (TagInput), CulturalTraits in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/CulturalRegionProperties.tsx
-- [ ] T043 [P] [US2] Create MilitaryRegionProperties component with CommandStructure, StrategicImportance, MilitaryAssets (TagInput) in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/MilitaryRegionProperties.tsx
-- [ ] T044 [P] [US2] Create accessibility tests for GeographicRegionProperties in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/GeographicRegionProperties.test.tsx
-- [ ] T045 [P] [US2] Create accessibility tests for PoliticalRegionProperties in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/PoliticalRegionProperties.test.tsx
-- [ ] T046 [P] [US2] Create accessibility tests for CulturalRegionProperties in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/CulturalRegionProperties.test.tsx
-- [ ] T047 [P] [US2] Create accessibility tests for MilitaryRegionProperties in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm/MilitaryRegionProperties.test.tsx
+- [X] T038 [P] [US2] Create GeographicRegionProperties component interface in libris-maleficarum-app/src/components/MainPanel/customProperties/GeographicRegionProperties.tsx
+- [X] T039 [P] [US2] Implement GeographicRegionProperties with Climate, Terrain, Population, Area fields in libris-maleficarum-app/src/components/MainPanel/customProperties/GeographicRegionProperties.tsx
+- [X] T040 [P] [US2] Add numeric validation for Population (integer) and Area (decimal) in GeographicRegionProperties in libris-maleficarum-app/src/components/MainPanel/customProperties/GeographicRegionProperties.tsx
+- [X] T041 [P] [US2] Create PoliticalRegionProperties component with GovernmentType, MemberStates (TagInput), EstablishedDate in libris-maleficarum-app/src/components/MainPanel/customProperties/PoliticalRegionProperties.tsx
+- [X] T042 [P] [US2] Create CulturalRegionProperties component with Languages (TagInput), Religions (TagInput), CulturalTraits in libris-maleficarum-app/src/components/MainPanel/customProperties/CulturalRegionProperties.tsx
+- [X] T043 [P] [US2] Create MilitaryRegionProperties component with CommandStructure, StrategicImportance, MilitaryAssets (TagInput) in libris-maleficarum-app/src/components/MainPanel/customProperties/MilitaryRegionProperties.tsx
+- [X] T044 [P] [US2] Create accessibility tests for GeographicRegionProperties in libris-maleficarum-app/src/components/MainPanel/customProperties/GeographicRegionProperties.test.tsx
+- [X] T045 [P] [US2] Create accessibility tests for PoliticalRegionProperties in libris-maleficarum-app/src/components/MainPanel/customProperties/PoliticalRegionProperties.test.tsx
+- [X] T046 [P] [US2] Create accessibility tests for CulturalRegionProperties in libris-maleficarum-app/src/components/MainPanel/customProperties/CulturalRegionProperties.test.tsx
+- [X] T047 [P] [US2] Create accessibility tests for MilitaryRegionProperties in libris-maleficarum-app/src/components/MainPanel/customProperties/MilitaryRegionProperties.test.tsx
 
 ### EntityDetailForm Integration
 
-- [ ] T048 [US2] Add customProperties state to EntityDetailForm in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
-- [ ] T049 [US2] Create renderCustomProperties helper function with switch-based conditional rendering in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
-- [ ] T050 [US2] Add renderCustomProperties() call in EntityDetailForm JSX layout in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
-- [ ] T051 [US2] Update form submit handler to include Properties field in request payload in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
-- [ ] T052 [US2] Update form load handler to deserialize Properties from API response in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
-- [ ] T053 [US2] Add CSS for custom properties section layout in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.module.css
-- [ ] T054 [P] [US2] Create test for GeographicRegion custom properties rendering in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
-- [ ] T055 [P] [US2] Create test for PoliticalRegion custom properties rendering in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
-- [ ] T056 [P] [US2] Create test for entity submission with Properties field in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
-- [ ] T057 [P] [US2] Create test for entity loading with Properties deserialization in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
+- [X] T048 [US2] Add customProperties state to EntityDetailForm in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
+- [X] T049 [US2] Create renderCustomProperties helper function with switch-based conditional rendering in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
+- [X] T050 [US2] Add renderCustomProperties() call in EntityDetailForm JSX layout in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
+- [X] T051 [US2] Update form submit handler to include Properties field in request payload in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
+- [X] T052 [US2] Update form load handler to deserialize Properties from API response in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
+- [X] T053 [US2] Add CSS for custom properties section layout in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.module.css
+- [X] T054 [P] [US2] Create test for GeographicRegion custom properties rendering in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
+- [X] T055 [P] [US2] Create test for PoliticalRegion custom properties rendering in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
+- [X] T056 [P] [US2] Create test for entity submission with Properties field in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
+- [X] T057 [P] [US2] Create test for entity loading with Properties deserialization in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
 
 **Checkpoint**: At this point, Regional entities can be created with custom properties, properties persist to Cosmos DB, and display correctly in read-only mode.
 
@@ -136,12 +138,12 @@
 
 ### Implementation for User Story 3
 
-- [ ] T058 [US3] Verify EntityTypeSelector allows ALL entity types regardless of parent (no restrictions) in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.tsx
-- [ ] T059 [US3] Ensure form validation does NOT reject unconventional parent-child combinations in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
-- [ ] T060 [US3] Update WorldSidebar hierarchy rendering to support arbitrary nesting depth in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.tsx
-- [ ] T061 [P] [US3] Create test for creating Character directly under World (bypassing containers) in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
-- [ ] T062 [P] [US3] Create test for nesting GeographicRegion → GeographicRegion → GeographicRegion (deep nesting) in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.test.tsx
-- [ ] T063 [P] [US3] Create test for placing Campaign-specific entities under non-Campaign parents in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
+- [X] T058 [US3] Verify EntityTypeSelector allows ALL entity types regardless of parent (no restrictions) in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.tsx
+- [X] T059 [US3] Ensure form validation does NOT reject unconventional parent-child combinations in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx
+- [X] T060 [US3] Update WorldSidebar hierarchy rendering to support arbitrary nesting depth in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.tsx
+- [X] T061 [P] [US3] Create test for creating Character directly under World (bypassing containers) in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
+- [X] T062 [P] [US3] Create test for nesting GeographicRegion → GeographicRegion → GeographicRegion (deep nesting) in libris-maleficarum-app/src/components/SidePanel/WorldSidebar.test.tsx
+- [X] T063 [P] [US3] Create test for placing Campaign-specific entities under non-Campaign parents in libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx
 
 **Checkpoint**: All entity type combinations are allowed. System provides smart suggestions but never enforces restrictions.
 
@@ -155,14 +157,14 @@
 
 ### Implementation for User Story 4
 
-- [ ] T064 [US4] Verify ENTITY_TYPE_SUGGESTIONS updated for existing types (Continent → GeographicRegion, PoliticalRegion) in libris-maleficarum-app/src/services/types/worldEntity.types.ts (may be done in T008)
-- [ ] T065 [US4] Update EntityTypeSelector to display recommended types in top section in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.tsx
-- [ ] T066 [US4] Ensure EntityTypeSelector maintains search functionality across all types in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.tsx
-- [ ] T067 [US4] Add CSS for recommended vs non-recommended type visual distinction in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.module.css
-- [ ] T068 [P] [US4] Create test for Continent parent suggesting GeographicRegion in top 5 recommendations in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.test.tsx
-- [ ] T069 [P] [US4] Create test for City parent suggesting Building, Location, Character in top recommendations in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.test.tsx
-- [ ] T070 [P] [US4] Create test for EntityTypeSelector search returning results <100ms in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.test.tsx
-- [ ] T071 [P] [US4] Create test for non-recommended types remaining accessible via scroll in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.test.tsx
+- [X] T064 [US4] Verify ENTITY_TYPE_SUGGESTIONS updated for existing types (Continent → GeographicRegion, PoliticalRegion) in libris-maleficarum-app/src/services/types/worldEntity.types.ts (may be done in T008)
+- [X] T065 [US4] Update EntityTypeSelector to display recommended types in top section in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.tsx
+- [X] T066 [US4] Ensure EntityTypeSelector maintains search functionality across all types in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.tsx
+- [X] T067 [US4] Add CSS for recommended vs non-recommended type visual distinction in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.module.css
+- [X] T068 [P] [US4] Create test for Continent parent suggesting GeographicRegion in top 5 recommendations in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.test.tsx
+- [X] T069 [P] [US4] Create test for City parent suggesting Building, Location, Character in top recommendations in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.test.tsx
+- [X] T070 [P] [US4] Create test for EntityTypeSelector search returning results <100ms in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.test.tsx
+- [X] T071 [P] [US4] Create test for non-recommended types remaining accessible via scroll in libris-maleficarum-app/src/components/EntityTypeSelector/EntityTypeSelector.test.tsx
 
 **Checkpoint**: Smart recommendations improve UX for common workflows while maintaining full flexibility for creative structures.
 
@@ -173,13 +175,13 @@
 **Purpose**: Improvements that affect multiple user stories
 
 - [ ] T072 [P] Update quickstart.md validation: manually test all 7 steps in libris-maleficarum-app/ against actual implementation
-- [ ] T073 [P] Code cleanup: Remove console.log statements, unused imports across all modified files
+- [X] T073 [P] Code cleanup: Remove console.log statements, unused imports across all modified files
 - [ ] T074 [P] Refactor: Extract common validation logic from custom property components to shared utility
 - [ ] T075 [P] Documentation: Add JSDoc comments to public TagInput API in libris-maleficarum-app/src/components/shared/TagInput/TagInput.tsx
 - [ ] T076 [P] Documentation: Add JSDoc comments to numeric validation functions in libris-maleficarum-app/src/lib/validators/numericValidation.ts
-- [ ] T077 Run full test suite: `pnpm test` and verify >80% coverage for new code
+- [X] T077 Run full test suite: `pnpm test` and verify >80% coverage for new code
 - [ ] T078 Run accessibility audit: `pnpm test --grep "accessibility"` and verify zero violations
-- [ ] T079 Performance: Profile EntityTypeSelector search with 29 types and optimize if >100ms
+- [X] T079 Performance: Profile EntityTypeSelector search with 29 types and optimize if >100ms
 - [ ] T080 [P] Create integration test for complete entity creation flow (World → Locations → Continent → GeographicRegion with properties) in libris-maleficarum-app/tests/integration/entityCreation.test.tsx
 - [ ] T081 Update CHANGELOG.md with feature summary and user-facing changes
 - [ ] T082 Update cleanup checklist in plan.md: Remove "Active Feature" section from .github/copilot-instructions.md after merge

@@ -1,9 +1,9 @@
 namespace LibrisMaleficarum.Api.Models.Requests;
 
 /// <summary>
-/// Request model for moving an entity to a new parent.
+/// Request model for moving a world entity to a new parent.
 /// </summary>
-public class MoveEntityRequest
+public class MoveWorldEntityRequest
 {
     /// <summary>
     /// Gets or sets the new parent entity identifier (null for root-level).

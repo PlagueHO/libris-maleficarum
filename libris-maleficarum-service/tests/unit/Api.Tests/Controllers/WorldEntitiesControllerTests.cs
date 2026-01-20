@@ -26,8 +26,8 @@ public class EntitiesControllerTests
     private ISearchService _searchService = null!;
     private IWorldRepository _worldRepository = null!;
     private IUserContextService _userContextService = null!;
-    private IValidator<CreateEntityRequest> _createValidator = null!;
-    private IValidator<UpdateEntityRequest> _updateValidator = null!;
+    private IValidator<CreateWorldEntityRequest> _createValidator = null!;
+    private IValidator<UpdateWorldEntityRequest> _updateValidator = null!;
     private WorldEntitiesController _controller = null!;
 
     private readonly Guid _userId = Guid.NewGuid();
@@ -43,8 +43,8 @@ public class EntitiesControllerTests
         _searchService = Substitute.For<ISearchService>();
         _worldRepository = Substitute.For<IWorldRepository>();
         _userContextService = Substitute.For<IUserContextService>();
-        _createValidator = Substitute.For<IValidator<CreateEntityRequest>>();
-        _updateValidator = Substitute.For<IValidator<UpdateEntityRequest>>();
+        _createValidator = Substitute.For<IValidator<CreateWorldEntityRequest>>();
+        _updateValidator = Substitute.For<IValidator<UpdateWorldEntityRequest>>();
 
         _userContextService.GetCurrentUserIdAsync().Returns(_userId);
 
@@ -69,7 +69,7 @@ public class EntitiesControllerTests
     public async Task CreateEntity_WithValidRequest_ReturnsCreatedResult()
     {
         // Arrange
-        var request = new CreateEntityRequest
+        var request = new CreateWorldEntityRequest
         {
             EntityType = EntityType.Character,
             Name = "Test Character",
@@ -99,7 +99,7 @@ public class EntitiesControllerTests
     public async Task CreateEntity_WithParentId_CreatesChildEntity()
     {
         // Arrange
-        var request = new CreateEntityRequest
+        var request = new CreateWorldEntityRequest
         {
             EntityType = EntityType.Location,
             Name = "Child Location",
@@ -127,7 +127,7 @@ public class EntitiesControllerTests
     public async Task CreateEntity_WithInvalidRequest_ReturnsBadRequest()
     {
         // Arrange
-        var request = new CreateEntityRequest { EntityType = EntityType.Character, Name = "" };
+        var request = new CreateWorldEntityRequest { EntityType = EntityType.Character, Name = "" };
         var validationFailures = new List<ValidationFailure>
         {
             new("Name", "Name is required")
@@ -268,7 +268,7 @@ public class EntitiesControllerTests
     public async Task UpdateEntity_WithValidRequest_ReturnsOkWithUpdatedEntity()
     {
         // Arrange
-        var request = new UpdateEntityRequest
+        var request = new UpdateWorldEntityRequest
         {
             Name = "Updated Name",
             Description = "Updated Description",
@@ -304,7 +304,7 @@ public class EntitiesControllerTests
     public async Task UpdateEntity_WithInvalidRequest_ReturnsBadRequest()
     {
         // Arrange
-        var request = new UpdateEntityRequest { Name = "", EntityType = EntityType.Character };
+        var request = new UpdateWorldEntityRequest { Name = "", EntityType = EntityType.Character };
         var validationFailures = new List<ValidationFailure>
         {
             new("Name", "Name is required")
@@ -326,7 +326,7 @@ public class EntitiesControllerTests
     public async Task UpdateEntity_WithNonexistentEntity_ReturnsNotFound()
     {
         // Arrange
-        var request = new UpdateEntityRequest { Name = "Updated", EntityType = EntityType.Character };
+        var request = new UpdateWorldEntityRequest { Name = "Updated", EntityType = EntityType.Character };
 
         _updateValidator.ValidateAsync(request, Arg.Any<CancellationToken>())
             .Returns(new ValidationResult());
@@ -351,7 +351,7 @@ public class EntitiesControllerTests
     public async Task PatchEntity_WithPartialUpdate_ReturnsOkWithUpdatedEntity()
     {
         // Arrange
-        var request = new PatchEntityRequest { Name = "Patched Name" };
+        var request = new PatchWorldEntityRequest { Name = "Patched Name" };
         var existingEntity = WorldEntity.Create(_worldId, EntityType.Character, "Original Name", TestOwnerId, "Description");
 
         _entityRepository.GetByIdAsync(_worldId, _entityId, Arg.Any<CancellationToken>())
@@ -374,7 +374,7 @@ public class EntitiesControllerTests
     public async Task PatchEntity_WithNonexistentEntity_ReturnsNotFound()
     {
         // Arrange
-        var request = new PatchEntityRequest { Name = "Patched Name" };
+        var request = new PatchWorldEntityRequest { Name = "Patched Name" };
 
         _entityRepository.GetByIdAsync(_worldId, _entityId, Arg.Any<CancellationToken>())
             .Returns((WorldEntity?)null);
