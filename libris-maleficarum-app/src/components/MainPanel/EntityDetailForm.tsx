@@ -103,7 +103,7 @@ export function EntityDetailForm() {
             : existingEntity.properties;
           setCustomProperties(parsed);
         } catch (error) {
-          console.error('[EntityDetailForm] Failed to parse properties:', error);
+          console.error('Failed to parse entity properties:', error);
           setCustomProperties(null);
         }
       } else {

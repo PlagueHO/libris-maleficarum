@@ -2,30 +2,6 @@
 
 Use these focused rules to be productive quickly in this monorepo. Keep answers concise and actionable.
 
-## Active Feature: Container Entity Type Support (004-entity-type-support)
-
-**Branch**: `004-entity-type-support`  
-**Status**: Planning complete, ready for implementation  
-**Scope**: Frontend-only changes to support 14 new entity types (10 Container types + 4 regional types with custom properties)
-
-**Key Components Being Added**:
-- `TagInput` component: Reusable tag/chip input using Fluent UI v9 `Tag`, `Input`, `Field` primitives
-- Custom property components: `GeographicRegionProperties`, `PoliticalRegionProperties`, etc.
-- Numeric validation utilities: `lib/validators/numericValidation.ts` for Population/Area fields
-- Extended `WorldEntityType` enum: 14 new types (Locations, People, Events, History, Lore, Bestiary, Items, Adventures, Geographies, GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion)
-- Icon mapping: Fluent UI icons for Container/regional types in `ENTITY_TYPE_META`
-
-**Documentation**:
-- Spec: `specs/004-entity-type-support/spec.md`
-- Implementation Plan: `specs/004-entity-type-support/plan.md`
-- Quickstart Guide: `specs/004-entity-type-support/quickstart.md`
-- Data Model: `specs/004-entity-type-support/data-model.md`
-- API Contracts: `specs/004-entity-type-support/contracts/API.md`
-
-**Testing Requirements**: All new components require `.test.tsx` files with jest-axe accessibility testing. Follow TDD principles.
-
----
-
 ## Architecture snapshot
 
 - **Frontend**: React 19 + TypeScript app in `libris-maleficarum-app/` (Vite + Vitest, Redux Toolkit state). Entry: `src/main.tsx`, `src/App.tsx`. Store/slice: `src/store/store.ts`.
