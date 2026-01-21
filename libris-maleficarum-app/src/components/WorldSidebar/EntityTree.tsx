@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Plus } from 'lucide-react';
 import { useGetEntitiesByParentQuery } from '@/services/worldEntityApi';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   selectSelectedWorldId,
@@ -213,15 +214,15 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
       return (
         <div className="px-4 py-8 text-center text-muted-foreground">
           <p className="m-0 mb-2 text-sm">No entities yet</p>
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="default"
             onClick={() => dispatch(openEntityFormCreate(null))}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-border bg-background text-foreground cursor-pointer text-sm hover:bg-accent hover:border-accent focus:outline-2 focus:outline-ring focus:outline-offset-2 transition-all"
             aria-label="Add root entity"
           >
             <Plus size={16} aria-hidden="true" />
             Add Root Entity
-          </button>
+          </Button>
         </div>
       );
     }

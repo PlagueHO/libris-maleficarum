@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetWorldsQuery } from '@/services/worldApi';
 import {
@@ -122,28 +123,28 @@ export function WorldSelector() {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button
-                type="button"
+              <Button
+                variant="icon-ghost"
+                size="icon-sm"
                 onClick={handleCreateWorld}
-                className="flex items-center justify-center p-1.5 bg-transparent border-none rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-8 min-h-8"
                 aria-label="Create new world"
               >
                 <Plus size={16} aria-hidden="true" />
-              </button>
+              </Button>
             </TooltipTrigger>
             <TooltipContent>Create new world</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button
-                type="button"
+              <Button
+                variant="icon-ghost"
+                size="icon-sm"
                 onClick={() => selectedWorldId && handleEditWorld(selectedWorldId)}
-                className="flex items-center justify-center p-1.5 bg-transparent border-none rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-8 min-h-8"
                 aria-label="Edit current world"
                 disabled={!selectedWorldId}
               >
                 <Settings size={16} aria-hidden="true" />
-              </button>
+              </Button>
             </TooltipTrigger>
             <TooltipContent>Edit world details</TooltipContent>
           </Tooltip>

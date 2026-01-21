@@ -160,7 +160,9 @@ body {
   body {
     @apply bg-background text-foreground;
   }
-  
+}
+
+@layer utilities {
   /* Shimmer animation for loading skeletons */
   @keyframes shimmer {
     0% {
