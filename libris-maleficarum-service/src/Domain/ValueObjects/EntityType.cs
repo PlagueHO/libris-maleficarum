@@ -82,6 +82,11 @@ public enum EntityType
 
     // Container types - organizational top-level categories
     /// <summary>
+    /// General organizational container for any entity types.
+    /// </summary>
+    Folder,
+
+    /// <summary>
     /// Container for location entities.
     /// </summary>
     Locations,

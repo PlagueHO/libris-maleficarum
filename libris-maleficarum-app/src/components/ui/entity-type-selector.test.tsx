@@ -91,7 +91,7 @@ describe('EntityTypeSelector', () => {
       expect(screen.getByText('Campaign')).toBeInTheDocument();
     });
 
-    it('shows Locations as first Container recommendation', async () => {
+    it('shows Folder as first Container recommendation', async () => {
       const user = userEvent.setup();
       render(
         <EntityTypeSelector
@@ -111,9 +111,9 @@ describe('EntityTypeSelector', () => {
       const recommendedSection = screen.getByText('Recommended').parentElement;
       const typeButtons = recommendedSection?.querySelectorAll('button');
       
-      // Locations should be among the first recommendations
+      // Folder should be the first recommendation (general organizational container)
       const firstButton = typeButtons?.[0];
-      expect(firstButton).toHaveTextContent('Locations');
+      expect(firstButton).toHaveTextContent('Folder');
     });
 
     it('recommends child types under Locations container', async () => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
-import { closeEntityForm, setUnsavedChanges } from '../../store/worldSidebarSlice';
+import { closeEntityForm, setUnsavedChanges, expandNode } from '../../store/worldSidebarSlice';
 import {
   useCreateWorldEntityMutation,
   useUpdateWorldEntityMutation,
@@ -203,6 +203,11 @@ export function EntityDetailForm() {
             properties,
           },
         }).unwrap();
+        
+        // Auto-expand parent node to show newly created entity
+        if (newEntityParentId) {
+          dispatch(expandNode(newEntityParentId));
+        }
       }
       handleClose();
     } catch (error) {

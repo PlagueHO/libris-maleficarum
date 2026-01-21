@@ -106,7 +106,7 @@ describe('ENTITY_TYPE_META', () => {
       const meta = ENTITY_TYPE_META[WorldEntityType.Locations];
       expect(meta.label).toBe('Locations');
       expect(meta.category).toBe('Containers');
-      expect(meta.icon).toBe('Folder');
+      expect(meta.icon).toBe('FolderOpen');
       expect(meta.description).toContain('geographic');
     });
 
