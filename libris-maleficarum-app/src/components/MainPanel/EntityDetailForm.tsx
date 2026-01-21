@@ -123,7 +123,7 @@ export function EntityDetailForm() {
   useEffect(() => {
     if (!entityType) return;
     
-    const propertyTypes = [
+    const propertyTypes: WorldEntityType[] = [
       WorldEntityType.GeographicRegion,
       WorldEntityType.PoliticalRegion,
       WorldEntityType.CulturalRegion,
