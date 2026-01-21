@@ -82,6 +82,7 @@ public class ControllerTests {
 ## Key Patterns
 
 **Accessibility**: WCAG 2.2 Level AA; semantic HTML; ARIA labels; jest-axe in all tests; keyboard nav; contrast ratios 4.5:1/3:1
+**Styling**: TailwindCSS only; use `cn()` utility from `@/lib/utils`; Shadcn/ui components (Dialog, Select, Button, Input, ScrollArea, etc.); responsive with `sm:`, `md:`, `lg:` breakpoints
 **API Client**: Axios + axios-retry; env config; MSW for mocking
 **Data Model**: WorldEntity hierarchy; partition key `/WorldId`; GUID IDs; soft delete with `IsDeleted`
 **Clean Arch**: Api (controllers/DTOs) → Domain (entities/interfaces) ← Infrastructure (EF/repos)

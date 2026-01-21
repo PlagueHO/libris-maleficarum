@@ -32,7 +32,6 @@ import {
 } from '@/store/worldSidebarSlice';
 import { invalidatePattern } from '@/lib/sessionCache';
 import { EmptyState } from './EmptyState';
-import styles from './WorldSelector.module.css';
 
 /**
  * World selector component for switching between worlds
@@ -70,9 +69,9 @@ export function WorldSelector() {
   // Loading state
   if (isLoading) {
     return (
-      <div className={styles.container}>
-        <div className={styles.loading} role="status" aria-label="Loading worlds">
-          <div className={styles.skeleton} />
+      <div className="p-4 border-b border-border">
+        <div className="flex items-center justify-center min-h-10" role="status" aria-label="Loading worlds">
+          <div className="w-full h-9 bg-gradient-to-r from-muted via-muted-foreground to-muted bg-[length:200%_100%] animate-[shimmer_1.5s_infinite] rounded-md opacity-20" />
         </div>
       </div>
     );
@@ -81,9 +80,9 @@ export function WorldSelector() {
   // Error state
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.error}>
-          <p>Failed to load worlds</p>
+      <div className="p-4 border-b border-border">
+        <div className="px-3 py-3 bg-destructive text-destructive-foreground rounded-md text-sm text-center">
+          <p className="m-0">Failed to load worlds</p>
         </div>
       </div>
     );
@@ -99,10 +98,10 @@ export function WorldSelector() {
 
   // Show dropdown with create button
   return (
-    <div className={styles.container}>
-      <div className={styles.selectorRow}>
+    <div className="p-4 border-b border-border">
+      <div className="flex items-center gap-2">
         <Select value={selectedWorldId || ''} onValueChange={handleWorldChange}>
-          <SelectTrigger className={styles.selectTrigger} aria-label="Select world">
+          <SelectTrigger className="flex-1" aria-label="Select world">
             <SelectValue placeholder="Select a world">
               {selectedWorld?.name || 'Select a world'}
             </SelectValue>
@@ -125,7 +124,7 @@ export function WorldSelector() {
               <button
                 type="button"
                 onClick={handleCreateWorld}
-                className={styles.iconButton}
+                className="flex items-center justify-center p-1.5 bg-transparent border-none rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-8 min-h-8"
                 aria-label="Create new world"
               >
                 <Plus size={16} aria-hidden="true" />
@@ -138,7 +137,7 @@ export function WorldSelector() {
               <button
                 type="button"
                 onClick={() => selectedWorldId && handleEditWorld(selectedWorldId)}
-                className={styles.iconButton}
+                className="flex items-center justify-center p-1.5 bg-transparent border-none rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-8 min-h-8"
                 aria-label="Edit current world"
                 disabled={!selectedWorldId}
               >

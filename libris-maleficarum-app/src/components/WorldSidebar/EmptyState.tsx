@@ -8,7 +8,7 @@
  */
 
 import { Globe } from 'lucide-react';
-import styles from './EmptyState.module.css';
+import { Button } from '@/components/ui/button';
 
 export interface EmptyStateProps {
   /** Callback when "Create World" button is clicked */
@@ -23,35 +23,38 @@ export interface EmptyStateProps {
  */
 export function EmptyState({ onCreateWorld }: EmptyStateProps) {
   return (
-    <div className={styles.container} role="region" aria-label="Empty world list">
-      <div className={styles.content}>
+    <div 
+      className="flex items-center justify-center min-h-[300px] px-6 py-8"
+      role="region" 
+      aria-label="Empty world list"
+    >
+      <div className="flex flex-col items-center text-center max-w-xs">
         {/* Decorative icon */}
         <Globe
-          className={styles.icon}
+          className="text-muted-foreground opacity-50 mb-6"
           size={64}
           strokeWidth={1.5}
           aria-hidden="true"
         />
 
         {/* Heading */}
-        <h2 className={styles.heading}>Create Your First World</h2>
+        <h2 className="text-xl font-semibold mb-3">Create Your First World</h2>
 
         {/* Description */}
-        <p className={styles.description}>
+        <p className="text-sm text-muted-foreground leading-normal mb-6">
           Start building your campaign world. Add continents, countries, cities,
           characters, and more to bring your stories to life.
         </p>
 
         {/* Call-to-action button */}
-        <button
-          type="button"
+        <Button
           onClick={onCreateWorld}
-          className={styles.button}
           aria-label="Create World"
+          className="gap-2"
         >
           <Globe size={20} aria-hidden="true" />
           <span>Create World</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

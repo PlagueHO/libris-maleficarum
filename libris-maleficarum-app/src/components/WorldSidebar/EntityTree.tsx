@@ -22,7 +22,6 @@ import {
 import { EntityTreeNode } from './EntityTreeNode';
 import { get as cacheGet, set as cacheSet } from '@/lib/sessionCache';
 import type { WorldEntity } from '@/services/types/worldEntity.types';
-import styles from './EntityTree.module.css';
 
 /**
  * Entity tree component
@@ -134,8 +133,8 @@ export function EntityTree() {
 
   if (!selectedWorldId) {
     return (
-      <div className={styles.empty}>
-        <p>Select a world to view entities</p>
+      <div className="px-4 py-8 text-center text-muted-foreground">
+        <p className="m-0 text-sm">Select a world to view entities</p>
       </div>
     );
   }
@@ -191,8 +190,8 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
   // Loading state
   if (isLoading) {
     return (
-      <div className={styles.loading} role="status" aria-label="Loading entities">
-        <div className={styles.skeleton} />
+      <div className="p-4 flex flex-col gap-2" role="status" aria-label="Loading entities">
+        <div className="w-full h-8 bg-gradient-to-r from-muted via-muted-foreground to-muted bg-[length:200%_100%] animate-[shimmer_1.5s_infinite] rounded-md opacity-20" />
       </div>
     );
   }
@@ -200,8 +199,8 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
   // Error state
   if (error) {
     return (
-      <div className={styles.error}>
-        <p>Failed to load entities</p>
+      <div className="p-4 text-center text-destructive">
+        <p className="m-0 text-sm">Failed to load entities</p>
       </div>
     );
   }
@@ -211,12 +210,12 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
     if (parentId === null) {
       // Root level empty
       return (
-        <div className={styles.empty}>
-          <p>No entities yet</p>
+        <div className="px-4 py-8 text-center text-muted-foreground">
+          <p className="m-0 mb-2 text-sm">No entities yet</p>
           <button
             type="button"
             onClick={() => dispatch(openEntityFormCreate(null))}
-            className={styles.addRootButton}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-border bg-background text-foreground cursor-pointer text-sm hover:bg-accent hover:border-accent focus:outline-2 focus:outline-ring focus:outline-offset-2 transition-all"
             aria-label="Add root entity"
           >
             <Plus size={16} aria-hidden="true" />
@@ -232,7 +231,7 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
   if (level === 0) {
     // Root level - add tree role
     return (
-      <div role="tree" aria-label="Entity hierarchy" className={styles.tree}>
+      <div role="tree" aria-label="Entity hierarchy" className="flex-1 overflow-y-auto p-2">
         {entities.map((entity) => (
           <EntityTreeNode key={entity.id} entity={entity} level={level}>
             {entity.hasChildren && expandedNodeIds.includes(entity.id) && (

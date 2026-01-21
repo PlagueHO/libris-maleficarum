@@ -5,8 +5,8 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 ## Architecture snapshot
 
 - **Frontend**: React 19 + TypeScript app in `libris-maleficarum-app/` (Vite + Vitest, Redux Toolkit state). Entry: `src/main.tsx`, `src/App.tsx`. Store/slice: `src/store/store.ts`.
-  - **UI**: Fluent UI React v9 components in `src/components/*` (example: `TopToolbar/TopToolbar.tsx`, `SidePanel/SidePanel.tsx`). Docs: https://react.fluentui.dev/?path=/docs/concepts-introduction--docs
-  - **Styles**: CSS Modules per component (e.g., `App.module.css`, `MainPanel/MainPanel.module.css`).
+  - **UI**: Shadcn/UI components (Dialog, Select, Button, Input, ScrollArea, FormLayout, etc.) with Radix UI primitives in `src/components/*` (example: `TopToolbar/TopToolbar.tsx`, `WorldSidebar/WorldSidebar.tsx`). Docs: https://ui.shadcn.com/
+  - **Styles**: TailwindCSS v4 with CSS-based configuration in `index.css`. Use `cn()` utility from `@/lib/utils` for conditional classes.
 - **Backend**: Planned .NET 10 + Aspire.NET with EF Core (Cosmos provider), Clean/Hexagonal architecture. Not yet implemented.
   - **Aspire.NET**: AppHost orchestration for local dev inner loop (service discovery, connection management, observability)
   - **AI Framework**: Microsoft Agent Framework for all generative AI interactions (replaces Semantic Kernel)
@@ -57,13 +57,13 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 
 ## Patterns and conventions (enforced)
 
-### React + Fluent UI
+### React + Shadcn/UI
 
-- **Components**: Functional components + hooks; use Fluent v9 primitives and icons (see `TopToolbar.tsx`, `SidePanel.tsx`)
+- **Components**: Functional components + hooks; use Shadcn/UI primitives (Dialog, Select, Button, Input, ScrollArea) from `src/components/ui/*`
 - **Accessibility**: Components use `role`/`aria-label` attributes; all tests assert a11y with jest-axe in `src/__tests__/*`
-- **Styles**: CSS Modules co-located with components (e.g., `SidePanel.module.css`). Import as `import styles from './Component.module.css'`
+- **Styles**: TailwindCSS classes only; use `cn()` utility from `@/lib/utils` for conditional classes; responsive breakpoints `sm:`, `md:`, `lg:`
 - **Testing**: Vitest + Testing Library + jest-dom + jest-axe (see `vitest.setup.ts`)
-  - Wrap components with `<Provider store={store}>` for Redux and `<ThemeProvider>` for Fluent UI
+  - Wrap components with `<Provider store={store}>` for Redux
   - Test pattern: `render(<Component />)`, query with `getByLabelText`/`getByRole`, assert a11y with `await axe(container)`
 
 ### State (Redux Toolkit)
@@ -84,7 +84,7 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 - Components/types: `PascalCase`
 - Variables/functions: `camelCase`
 - Constants: `ALL_CAPS`
-- Files: Match component name (e.g., `SidePanel.tsx`, `SidePanel.module.css`, `SidePanel.test.tsx`)
+- Files: Match component name (e.g., `SidePanel.tsx`, `SidePanel.test.tsx`)
 
 ## Infra specifics (AVM + Bicep)
 
@@ -106,7 +106,7 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 
 ## Where to look first
 
-- **Frontend examples**: `src/components/TopToolbar/TopToolbar.tsx`, `SidePanel/*`, `MainPanel/*`, `ChatWindow/*` for Fluent UI + CSS Module patterns
+- **Frontend examples**: `src/components/TopToolbar/TopToolbar.tsx`, `WorldSidebar/*`, `MainPanel/*`, `ChatWindow/*` for Shadcn/UI + Tailwind patterns
 - **State**: `src/store/store.ts` for slice/store pattern and `RootState`/`AppDispatch` exports
 - **Tests**: `src/__tests__/*` for Vitest + Testing Library + a11y checks
 - **Infra**: `infra/main.bicep` for topology/outputs; `infra/abbreviations.json` for naming; `azure.yaml` for azd wiring

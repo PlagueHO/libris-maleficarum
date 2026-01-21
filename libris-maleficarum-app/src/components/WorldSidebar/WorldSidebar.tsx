@@ -18,7 +18,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { WorldSelector } from './WorldSelector';
 import { EntityTree } from './EntityTree';
-import styles from './WorldSidebar.module.css';
 
 /**
  * World sidebar container component
@@ -34,7 +33,7 @@ export function WorldSidebar() {
   };
 
   return (
-    <aside className={styles.sidebar} role="complementary" aria-label="World navigation">
+    <aside data-testid="world-sidebar" className="flex flex-col w-80 h-screen bg-background border-r border-border overflow-hidden" role="complementary" aria-label="World navigation">
       {/* World Selector */}
       <WorldSelector />
 

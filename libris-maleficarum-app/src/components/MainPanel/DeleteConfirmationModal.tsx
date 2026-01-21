@@ -27,7 +27,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Loader2 } from 'lucide-react';
-import styles from './DeleteConfirmationModal.module.css';
 
 export function DeleteConfirmationModal() {
   const dispatch = useDispatch();
@@ -65,25 +64,29 @@ export function DeleteConfirmationModal() {
 
   return (
     <Dialog open={showDeleteConfirmation} onOpenChange={handleCancel}>
-      <DialogContent className={styles.dialogContent}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className={styles.headerIcon}>
+          <div className="flex mb-2">
             <AlertTriangle className="h-5 w-5 text-destructive" aria-hidden="true" />
           </div>
-          <DialogTitle className={styles.title}>Delete Entity</DialogTitle>
-          <DialogDescription className={styles.description}>
+          <DialogTitle className="text-xl font-semibold mb-1">Delete Entity</DialogTitle>
+          <DialogDescription className="text-[0.95rem] text-muted-foreground leading-normal">
             Are you sure you want to delete{' '}
             <strong>"{entity?.name || 'this entity'}"</strong>?
           </DialogDescription>
         </DialogHeader>
 
-        <div className={styles.warningBox} role="alert" aria-live="polite">
-          <p className={styles.warningText}>
+        <div 
+          className="bg-destructive/10 border border-destructive/30 rounded-md px-4 py-3 my-4"
+          role="alert" 
+          aria-live="polite"
+        >
+          <p className="m-0 text-sm text-foreground">
             This action cannot be undone. The entity and all its child entities will be permanently deleted.
           </p>
         </div>
 
-        <DialogFooter className={styles.footer}>
+        <DialogFooter className="flex gap-3 justify-end pt-4 mt-4 border-t border-border sm:flex-row flex-col-reverse">
           <Button
             variant="outline"
             onClick={handleCancel}
