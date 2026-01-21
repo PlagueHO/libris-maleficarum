@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useGetWorldsQuery } from '@/services/worldApi';
 import {
   Select,
@@ -71,7 +72,7 @@ export function WorldSelector() {
     return (
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-center min-h-10" role="status" aria-label="Loading worlds">
-          <div className="w-full h-9 bg-gradient-to-r from-muted via-muted-foreground to-muted bg-[length:200%_100%] animate-[shimmer_1.5s_infinite] rounded-md opacity-20" />
+          <Skeleton className="w-full h-9" />
         </div>
       </div>
     );

@@ -111,13 +111,13 @@ The application delivers fast load times and minimal CSS bundle size due to Tail
 - **FR-008**: System MUST configure Tailwind content purging to include all component and page files
 - **FR-009**: System MUST use class variance authority (CVA) or similar patterns for managing component variants (sizes, colors, states)
 - **FR-010**: System MUST maintain existing component functionality during migration (no behavioral regressions)
-- **FR-010**: All components MUST be migrated together in a single coordinated change (big-bang approach) before merging to main branch
-- **FR-011**: System MUST document Tailwind patterns and Shadcn/UI usage in component examples or style guide
-- **FR-012**: System MUST configure proper CSS layer ordering for Tailwind base, components, and utilities
-- **FR-013**: System MUST migrate all inline styles and style objects to Tailwind utility classes where appropriate
-- **FR-014**: All components MUST use consistent naming conventions for Tailwind classes (prefer composition over custom class names)
-- **FR-015**: System MUST configure VS Code settings or extensions for Tailwind IntelliSense and linting
-- **FR-016**: Dark mode support is explicitly out of scope for this migration and will be addressed in a future feature
+- **FR-011**: All components MUST be migrated together in a single coordinated change (big-bang approach) before merging to main branch
+- **FR-012**: System MUST document Tailwind patterns and Shadcn/UI usage in component examples or style guide
+- **FR-013**: System MUST configure proper CSS layer ordering for Tailwind base, components, and utilities
+- **FR-014**: System MUST migrate all inline styles and style objects to Tailwind utility classes where appropriate
+- **FR-015**: All components MUST use consistent naming conventions for Tailwind classes (prefer composition over custom class names)
+- **FR-016**: System MUST configure VS Code settings or extensions for Tailwind IntelliSense and linting
+- **FR-017**: Dark mode support is explicitly out of scope for this migration and will be addressed in a future feature
 
 ### Key Entities
 

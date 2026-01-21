@@ -36,6 +36,7 @@ export const WorldEntityType = {
   Session: 'Session',
   
   // Container types - organizational top-level categories
+  Folder: 'Folder',
   Locations: 'Locations',
   People: 'People',
   Events: 'Events',
@@ -300,6 +301,20 @@ export const ENTITY_TYPE_SUGGESTIONS: Record<
     WorldEntityType.Event,
   ],
   // NEW: Container type suggestions
+  [WorldEntityType.Folder]: [
+    WorldEntityType.Folder, // Folders can nest
+    WorldEntityType.Continent,
+    WorldEntityType.Country,
+    WorldEntityType.Region,
+    WorldEntityType.City,
+    WorldEntityType.Location,
+    WorldEntityType.Character,
+    WorldEntityType.Faction,
+    WorldEntityType.Event,
+    WorldEntityType.Quest,
+    WorldEntityType.Campaign,
+    WorldEntityType.Item,
+  ],
   [WorldEntityType.Locations]: [
     WorldEntityType.Continent,
     WorldEntityType.GeographicRegion,
@@ -370,6 +385,7 @@ export function getEntityTypeSuggestions(
   if (!parentType) {
     // Root level suggestions (no parent) - prioritize Container types
     return [
+      WorldEntityType.Folder,
       WorldEntityType.Locations,
       WorldEntityType.People,
       WorldEntityType.Events,
@@ -483,11 +499,17 @@ export const ENTITY_TYPE_META: Record<
     icon: 'Calendar',
   },
   // NEW: Container types
+  [WorldEntityType.Folder]: {
+    label: 'Folder',
+    description: 'General organizational container for any entity types',
+    category: 'Containers',
+    icon: 'Folder',
+  },
   [WorldEntityType.Locations]: {
     label: 'Locations',
     description: 'Container for geographic and spatial entities',
     category: 'Containers',
-    icon: 'Folder',
+    icon: 'FolderOpen',
   },
   [WorldEntityType.People]: {
     label: 'People',

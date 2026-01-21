@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Plus } from 'lucide-react';
 import { useGetEntitiesByParentQuery } from '@/services/worldEntityApi';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   selectSelectedWorldId,
   selectExpandedNodeIds,
@@ -191,7 +192,7 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
   if (isLoading) {
     return (
       <div className="p-4 flex flex-col gap-2" role="status" aria-label="Loading entities">
-        <div className="w-full h-8 bg-gradient-to-r from-muted via-muted-foreground to-muted bg-[length:200%_100%] animate-[shimmer_1.5s_infinite] rounded-md opacity-20" />
+        <Skeleton className="w-full h-8" />
       </div>
     );
   }
