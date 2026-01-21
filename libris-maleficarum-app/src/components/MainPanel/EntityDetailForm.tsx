@@ -119,6 +119,22 @@ export function EntityDetailForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingEntityId, existingEntity?.id]);
 
+  // Clear custom properties when entity type changes to a non-property type
+  useEffect(() => {
+    if (!entityType) return;
+    
+    const propertyTypes = [
+      WorldEntityType.GeographicRegion,
+      WorldEntityType.PoliticalRegion,
+      WorldEntityType.CulturalRegion,
+      WorldEntityType.MilitaryRegion,
+    ];
+    
+    if (!propertyTypes.includes(entityType as WorldEntityType)) {
+      setCustomProperties(null);
+    }
+  }, [entityType]);
+
   // Track unsaved changes
   useEffect(() => {
     const hasChanges = name.trim() !== '' || description.trim() !== '' || entityType !== '';
@@ -161,6 +177,10 @@ export function EntityDetailForm() {
     if (!validate() || !selectedWorldId) return;
 
     try {
+      // Only include properties if there's actual data (not empty object or null)
+      const hasProperties = customProperties && Object.keys(customProperties).length > 0;
+      const properties = hasProperties ? JSON.stringify(customProperties) : undefined;
+
       if (isEditing && editingEntityId) {
         await updateEntity({
           worldId: selectedWorldId,
@@ -168,7 +188,7 @@ export function EntityDetailForm() {
           data: {
             name,
             description,
-            properties: customProperties ? JSON.stringify(customProperties) : undefined,
+            properties,
           },
         }).unwrap();
       } else {
@@ -180,7 +200,7 @@ export function EntityDetailForm() {
             description,
             entityType: entityType as WorldEntityType,
             tags: [],
-            properties: customProperties ? JSON.stringify(customProperties) : undefined,
+            properties,
           },
         }).unwrap();
       }
