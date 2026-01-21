@@ -20,7 +20,7 @@ import {
 import { getEntityIcon } from '@/lib/entityIcons';
 import type { WorldEntity } from '@/services/types/worldEntity.types';
 import { EntityContextMenu } from './EntityContextMenu';
-import styles from './EntityTreeNode.module.css';
+import { cn } from '@/lib/utils';
 
 export interface EntityTreeNodeProps {
   /** Entity data to render */
@@ -80,7 +80,7 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
   const indentStyle = { paddingLeft: `${level * 20}px` };
 
   return (
-    <div className={styles.nodeContainer} data-level={level}>
+    <div className="flex flex-col relative" data-level={level}>
       <EntityContextMenu entity={entity}>
         <div
           role="treeitem"
@@ -88,7 +88,12 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
           aria-selected={isSelected}
           aria-expanded={entity.hasChildren ? isExpanded : undefined}
           tabIndex={isSelected ? 0 : -1}
-          className={`${styles.node} ${isSelected ? styles.selected : ''}`}
+          className={cn(
+            "group flex items-center gap-2 px-2 py-1.5 cursor-pointer rounded transition-colors select-none outline-none relative z-10",
+            "hover:bg-accent",
+            "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
+            isSelected && "bg-accent text-accent-foreground font-medium"
+          )}
           style={indentStyle}
           onClick={handleSelect}
           onKeyDown={handleKeyDown}
@@ -98,7 +103,7 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
           {entity.hasChildren ? (
             <button
               type="button"
-              className={styles.expandButton}
+              className="flex items-center justify-center w-5 h-5 p-0 bg-transparent border-none rounded text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-1 transition-colors shrink-0"
               onClick={handleToggleExpand}
               onKeyDown={handleExpandKeyDown}
               aria-label={isExpanded ? `Collapse ${entity.name}` : `Expand ${entity.name}`}
@@ -112,21 +117,21 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
               )}
             </button>
           ) : (
-            <span className={styles.spacer} />
+            <span className="w-5 shrink-0" />
           )}
 
           {createElement(getEntityIcon(entity.entityType), {
             size: 16,
-            className: styles.icon,
+            className: 'shrink-0 text-muted-foreground',
             'aria-hidden': 'true',
             role: 'img'
           })}
 
-          <span className={styles.name}>{entity.name}</span>
+          <span className="flex-1 text-sm overflow-hidden text-ellipsis whitespace-nowrap">{entity.name}</span>
 
           <button
             type="button"
-            className={styles.quickAddButton}
+            className="flex items-center justify-center w-5 h-5 p-0 bg-transparent border-none rounded text-muted-foreground opacity-0 hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 transition-opacity shrink-0"
             onClick={handleQuickCreate}
             aria-label={`Add child to ${entity.name}`}
             tabIndex={-1} // Skip tab order, accessible via hover or context menu

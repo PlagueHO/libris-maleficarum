@@ -8,7 +8,7 @@ export function TopToolbar() {
   const dispatch = useDispatch();
 
   return (
-    <header className="border-b border-border bg-card">
+    <header data-testid="top-toolbar" className="border-b border-border bg-card">
       <div className="flex h-14 items-center px-4 gap-2">
         <Button
           variant="ghost"

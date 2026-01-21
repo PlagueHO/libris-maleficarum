@@ -37,7 +37,7 @@ export function ChatPanel() {
   };
 
   return (
-    <aside className="w-96 border-l border-border bg-card flex flex-col">
+    <aside data-testid="chat-panel" className="w-96 border-l border-border bg-card flex flex-col">
       <div className="p-4 border-b border-border">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
