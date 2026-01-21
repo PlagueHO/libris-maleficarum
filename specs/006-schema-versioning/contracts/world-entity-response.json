@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WorldEntityResponse",
+  "description": "API response containing a single WorldEntity with schema version",
+  "type": "object",
+  "required": ["data"],
+  "properties": {
+    "data": {
+      "type": "object",
+      "required": [
+        "id", "worldId", "parentId", "entityType", "name", "tags", "path",
+        "depth", "hasChildren", "ownerId", "createdAt", "updatedAt",
+        "isDeleted", "schemaVersion"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier (GUID)",
+          "example": "c3d4e5f6-a7b8-6c7d-0e9f-1a0b9c8d7e6f"
+        },
+        "worldId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Parent world reference (partition key part 1)",
+          "example": "a1b2c3d4-e5f6-4a5b-8c7d-9e8f7a6b5c4d"
+        },
+        "parentId": {
+          "type": ["string", "null"],
+          "format": "uuid",
+          "description": "Parent entity reference (null for root entities)",
+          "example": "b2c3d4e5-f6a7-5b6c-9d8e-0f9a8b7c6d5e"
+        },
+        "entityType": {
+          "type": "string",
+          "description": "Entity classification",
+          "example": "Character"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name (1-200 characters)",
+          "example": "Gandalf the Grey"
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional description (max 5000 characters)",
+          "example": "A wise wizard of Middle-earth"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "User-defined tags for filtering/search",
+          "example": ["wizard", "istari"]
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Array of ancestor IDs from root to parent (for hierarchy queries)",
+          "example": ["a1b2c3d4-e5f6-4a5b-8c7d-9e8f7a6b5c4d"]
+        },
+        "depth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Hierarchy level (0 = root)",
+          "example": 1
+        },
+        "hasChildren": {
+          "type": "boolean",
+          "description": "Optimization flag: skip children query if false",
+          "example": false
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Owner user identifier",
+          "example": "user-12345"
+        },
+        "attributes": {
+          "type": "object",
+          "description": "Optional custom attributes (JSON object) for entity-specific data",
+          "example": {
+            "level": 20,
+            "class": "Wizard"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp",
+          "example": "2025-01-15T10:30:00Z"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp",
+          "example": "2025-01-20T14:45:00Z"
+        },
+        "isDeleted": {
+          "type": "boolean",
+          "description": "Soft delete flag",
+          "example": false
+        },
+        "schemaVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Schema version of this entity (indicates which property schema version was used when created/last migrated)",
+          "example": 1
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique request identifier for tracing",
+          "example": "req-d4e5f6a7-b8c9-7d8e-1f0a-2b1c0d9e8f7a"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Response timestamp",
+          "example": "2025-01-20T14:45:00Z"
+        }
+      }
+    }
+  },
+  "example": {
+    "data": {
+      "id": "c3d4e5f6-a7b8-6c7d-0e9f-1a0b9c8d7e6f",
+      "worldId": "a1b2c3d4-e5f6-4a5b-8c7d-9e8f7a6b5c4d",
+      "parentId": "b2c3d4e5-f6a7-5b6c-9d8e-0f9a8b7c6d5e",
+      "entityType": "Character",
+      "name": "Gandalf the Grey",
+      "description": "A wise wizard of Middle-earth",
+      "tags": ["wizard", "istari"],
+      "path": ["a1b2c3d4-e5f6-4a5b-8c7d-9e8f7a6b5c4d", "b2c3d4e5-f6a7-5b6c-9d8e-0f9a8b7c6d5e"],
+      "depth": 2,
+      "hasChildren": false,
+      "ownerId": "user-12345",
+      "attributes": {
+        "level": 20,
+        "class": "Wizard"
+      },
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-01-20T14:45:00Z",
+      "isDeleted": false,
+      "schemaVersion": 1
+    },
+    "meta": {
+      "requestId": "req-d4e5f6a7-b8c9-7d8e-1f0a-2b1c0d9e8f7a",
+      "timestamp": "2025-01-20T14:45:00Z"
+    }
+  }
+}
