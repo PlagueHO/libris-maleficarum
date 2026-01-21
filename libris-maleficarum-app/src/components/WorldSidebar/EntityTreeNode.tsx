@@ -10,6 +10,7 @@
 import { createElement } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ChevronRight, ChevronDown, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   selectIsNodeExpanded,
   selectSelectedEntityId,
@@ -101,9 +102,9 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
           data-entity-id={entity.id}
         >
           {entity.hasChildren ? (
-            <button
-              type="button"
-              className="flex items-center justify-center w-5 h-5 p-0 bg-transparent border-none rounded text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-1 transition-colors shrink-0"
+            <Button
+              variant="icon-expand"
+              size="icon-xs"
               onClick={handleToggleExpand}
               onKeyDown={handleExpandKeyDown}
               aria-label={isExpanded ? `Collapse ${entity.name}` : `Expand ${entity.name}`}
@@ -115,7 +116,7 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
               ) : (
                 <ChevronRight size={16} aria-hidden="true" />
               )}
-            </button>
+            </Button>
           ) : (
             <span className="w-5 shrink-0" />
           )}
@@ -129,15 +130,16 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
 
           <span className="flex-1 text-sm overflow-hidden text-ellipsis whitespace-nowrap">{entity.name}</span>
 
-          <button
-            type="button"
-            className="flex items-center justify-center w-5 h-5 p-0 bg-transparent border-none rounded text-muted-foreground opacity-0 hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 transition-opacity shrink-0"
+          <Button
+            variant="icon-ghost"
+            size="icon-sm"
             onClick={handleQuickCreate}
             aria-label={`Add child to ${entity.name}`}
-            tabIndex={-1} // Skip tab order, accessible via hover or context menu
+            tabIndex={-1}
+            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity w-5 h-5 hover:bg-muted"
           >
             <Plus size={14} aria-hidden="true" />
-          </button>
+          </Button>
         </div>
       </EntityContextMenu>
 

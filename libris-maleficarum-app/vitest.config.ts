@@ -15,7 +15,7 @@ export default defineConfig({
       '**/cypress/**',
       '**/.{idea,git,cache,output,temp}/**',
       '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*',
-      '**/tests/visual/**', // Exclude Playwright visual regression tests
+      '**/tests/visual/**/*.spec.ts', // Exclude Playwright visual regression tests
     ],
   },
   resolve: {
