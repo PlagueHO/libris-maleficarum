@@ -84,7 +84,7 @@ When developers or architects review the DATA_MODEL.md and API.md design documen
 - **FR-001**: System MUST add a `SchemaVersion` field to the BaseWorldEntity schema, stored as an integer
 - **FR-002**: System MUST default `SchemaVersion` to `1` for all new WorldEntities when no version is explicitly provided
 - **FR-003**: System MUST persist the `SchemaVersion` field to the WorldEntity Cosmos DB container documents when creating or updating entities
-- **FR-004**: System MUST return the `SchemaVersion` field in all API responses that include WorldEntity data (GET, POST, PUT, PATCH)
+- **FR-004**: System MUST return the `SchemaVersion` field in all API responses that include WorldEntity data (GET, POST, PUT)
 - **FR-005**: Backend MUST validate that `SchemaVersion` is a positive integer (≥1) when provided in API requests
 - **FR-005a**: Backend MUST reject requests with a `SchemaVersion` less than the existing entity's current `SchemaVersion` (prevents downgrades) with a 400 Bad Request error
 - **FR-005b**: Backend MUST maintain a configuration of minimum and maximum supported schema versions per entity type (e.g., Character: min=1, max=2, Location: min=1, max=1) and reject requests with `SchemaVersion` values outside these ranges with a 400 Bad Request error

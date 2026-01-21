@@ -12,6 +12,7 @@
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - Include exact file paths in descriptions
+- **Naming**: `SchemaVersion` (C# properties), `schemaVersion` (JSON/TypeScript fields)
 
 ---
 
@@ -140,7 +141,7 @@
 - [ ] T050 [P] [US2] Add schemaVersion: number property to WorldEntity interface in libris-maleficarum-app/src/services/types/worldEntity.types.ts
 - [ ] T051 [P] [US2] Add schemaVersion?: number property to CreateWorldEntityRequest interface in worldEntity.types.ts
 - [ ] T052 [P] [US2] Add schemaVersion?: number property to UpdateWorldEntityRequest interface in worldEntity.types.ts
-- [ ] T053 [US2] Create entitySchemaVersions.ts with ENTITY_SCHEMA_VERSIONS constant and getSchemaVersion() helper in libris-maleficarum-app/src/services/constants/entitySchemaVersions.ts
+- [ ] T053 [US2] Populate entitySchemaVersions.ts (created in T008) with ENTITY_SCHEMA_VERSIONS constant map (all entity types→version 1) and getSchemaVersion() helper function in libris-maleficarum-app/src/services/constants/entitySchemaVersions.ts
 - [ ] T054 [US2] Run type check: `pnpm type-check` in libris-maleficarum-app/
 
 #### Frontend API Client - Tests (Write FIRST)
