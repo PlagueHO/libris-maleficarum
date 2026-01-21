@@ -55,6 +55,7 @@ export type EntityType =
   | 'Campaign'
   | 'Session'
   // Container types
+  | 'Folder'
   | 'Locations'
   | 'People'
   | 'Events'
@@ -101,6 +102,7 @@ export const entityIconMap: Record<EntityType, LucideIcon> = {
   Session: Calendar,
   
   // Container types - organizational folders
+  Folder: Folder,
   Locations: Folder,
   People: Users,
   Events: CalendarDays,
