@@ -1,0 +1,146 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SchemaVersionErrorResponse",
+  "description": "API error response for schema version validation failures",
+  "type": "object",
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "SCHEMA_VERSION_INVALID",
+            "SCHEMA_VERSION_TOO_LOW",
+            "SCHEMA_VERSION_TOO_HIGH",
+            "SCHEMA_DOWNGRADE_NOT_ALLOWED"
+          ],
+          "description": "Machine-readable error code for schema version validation",
+          "example": "SCHEMA_VERSION_TOO_HIGH"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message",
+          "example": "Schema version 5 exceeds maximum supported version 2 for entity type 'Character'"
+        },
+        "details": {
+          "type": "object",
+          "description": "Contextual details to aid debugging",
+          "properties": {
+            "entityType": {
+              "type": "string",
+              "description": "The entity type affected",
+              "example": "Character"
+            },
+            "requestedVersion": {
+              "type": "integer",
+              "description": "The schema version provided in the request",
+              "example": 5
+            },
+            "currentVersion": {
+              "type": "integer",
+              "description": "The entity's current schema version (for update requests)",
+              "example": 1
+            },
+            "minSupportedVersion": {
+              "type": "integer",
+              "description": "Minimum supported schema version for this entity type",
+              "example": 1
+            },
+            "maxSupportedVersion": {
+              "type": "integer",
+              "description": "Maximum supported schema version for this entity type",
+              "example": 2
+            }
+          }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique request identifier for tracing",
+          "example": "req-e5f6a7b8-c9d0-8e9f-2a1b-3c2d1e0f9a8b"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Error timestamp",
+          "example": "2025-01-20T15:00:00Z"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "error": {
+        "code": "SCHEMA_VERSION_TOO_HIGH",
+        "message": "Schema version 5 exceeds maximum supported version 2 for entity type 'Character'",
+        "details": {
+          "entityType": "Character",
+          "requestedVersion": 5,
+          "minSupportedVersion": 1,
+          "maxSupportedVersion": 2
+        }
+      },
+      "meta": {
+        "requestId": "req-e5f6a7b8-c9d0-8e9f-2a1b-3c2d1e0f9a8b",
+        "timestamp": "2025-01-20T15:00:00Z"
+      }
+    },
+    {
+      "error": {
+        "code": "SCHEMA_DOWNGRADE_NOT_ALLOWED",
+        "message": "Cannot downgrade entity from schema version 2 to version 1",
+        "details": {
+          "entityType": "Location",
+          "requestedVersion": 1,
+          "currentVersion": 2,
+          "minSupportedVersion": 1,
+          "maxSupportedVersion": 2
+        }
+      },
+      "meta": {
+        "requestId": "req-f6a7b8c9-d0e1-9f0a-3b2c-4d3e2f1a0b9c",
+        "timestamp": "2025-01-20T15:05:00Z"
+      }
+    },
+    {
+      "error": {
+        "code": "SCHEMA_VERSION_TOO_LOW",
+        "message": "Schema version 0 is below minimum supported version 1 for entity type 'Campaign'",
+        "details": {
+          "entityType": "Campaign",
+          "requestedVersion": 0,
+          "minSupportedVersion": 1,
+          "maxSupportedVersion": 1
+        }
+      },
+      "meta": {
+        "requestId": "req-a7b8c9d0-e1f2-0a1b-4c3d-5e4f3a2b1c0d",
+        "timestamp": "2025-01-20T15:10:00Z"
+      }
+    },
+    {
+      "error": {
+        "code": "SCHEMA_VERSION_INVALID",
+        "message": "Schema version must be a positive integer",
+        "details": {
+          "entityType": "Character",
+          "requestedVersion": -1,
+          "minSupportedVersion": 1,
+          "maxSupportedVersion": 2
+        }
+      },
+      "meta": {
+        "requestId": "req-b8c9d0e1-f2a3-1b2c-5d4e-6f5a4b3c2d1e",
+        "timestamp": "2025-01-20T15:15:00Z"
+      }
+    }
+  ]
+}

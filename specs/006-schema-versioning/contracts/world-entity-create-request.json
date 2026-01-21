@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CreateWorldEntityRequest",
+  "description": "API request to create a new WorldEntity with schema version",
+  "type": "object",
+  "required": ["parentId", "entityType", "name"],
+  "properties": {
+    "parentId": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Parent entity ID (null for root entities)",
+      "example": "a1b2c3d4-e5f6-4a5b-8c7d-9e8f7a6b5c4d"
+    },
+    "entityType": {
+      "type": "string",
+      "enum": [
+        "Continent", "Country", "Region", "City", "Building", "Room", "Location",
+        "Character", "Faction", "Event", "Quest", "Item", "Campaign", "Session",
+        "Folder", "Locations", "People", "Events", "History", "Lore", "Bestiary",
+        "Items", "Adventures", "Geographies", "GeographicRegion", "PoliticalRegion",
+        "CulturalRegion", "MilitaryRegion", "Other"
+      ],
+      "description": "Entity type classification",
+      "example": "Character"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Display name (1-200 characters, required)",
+      "example": "Gandalf the Grey"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 5000,
+      "description": "Optional description (max 5000 characters)",
+      "example": "A wise wizard of Middle-earth"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "maxItems": 20,
+      "description": "Optional tags for categorization (max 20, each max 50 characters)",
+      "example": ["wizard", "istari", "gandalf"]
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Optional custom attributes as dictionary (max 100KB serialized)",
+      "example": {
+        "level": 20,
+        "class": "Wizard",
+        "alignment": "Good"
+      }
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema version for this entity type (defaults to 1 if omitted). Must be >= min and <= max supported version for this entity type.",
+      "example": 1
+    }
+  },
+  "examples": [
+    {
+      "parentId": null,
+      "entityType": "Character",
+      "name": "Gandalf the Grey",
+      "description": "A wise wizard of Middle-earth",
+      "tags": ["wizard", "istari"],
+      "attributes": {
+        "level": 20,
+        "class": "Wizard"
+      },
+      "schemaVersion": 1
+    },
+    {
+      "parentId": "a1b2c3d4-e5f6-4a5b-8c7d-9e8f7a6b5c4d",
+      "entityType": "City",
+      "name": "Gondor",
+      "description": "The great city of men",
+      "schemaVersion": 2
+    }
+  ]
+}

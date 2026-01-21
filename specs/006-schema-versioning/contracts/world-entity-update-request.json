@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UpdateWorldEntityRequest",
+  "description": "API request to update an existing WorldEntity with schema version",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Updated name (1-200 characters)",
+      "example": "Gandalf the White"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 5000,
+      "description": "Updated description (max 5000 characters)",
+      "example": "The White Wizard, returned with greater power"
+    },
+    "entityType": {
+      "type": "string",
+      "enum": [
+        "Continent", "Country", "Region", "City", "Building", "Room", "Location",
+        "Character", "Faction", "Event", "Quest", "Item", "Campaign", "Session",
+        "Folder", "Locations", "People", "Events", "History", "Lore", "Bestiary",
+        "Items", "Adventures", "Geographies", "GeographicRegion", "PoliticalRegion",
+        "CulturalRegion", "MilitaryRegion", "Other"
+      ],
+      "description": "Updated entity type",
+      "example": "Character"
+    },
+    "parentId": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Updated parent entity ID (null to move to root)",
+      "example": "b2c3d4e5-f6a7-5b6c-9d8e-0f9a8b7c6d5e"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "maxItems": 20,
+      "description": "Updated tags (replaces all existing tags, max 20, each max 50 characters)",
+      "example": ["wizard", "istari", "white-council"]
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Updated custom attributes (replaces all existing attributes, max 100KB serialized)",
+      "example": {
+        "level": 25,
+        "class": "Wizard",
+        "title": "The White"
+      }
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema version for this entity type. Must be >= entity's current version (no downgrades) and <= max supported version for this entity type.",
+      "example": 2
+    }
+  },
+  "examples": [
+    {
+      "name": "Gandalf the White",
+      "description": "The White Wizard, returned with greater power",
+      "tags": ["wizard", "istari", "white-council"],
+      "attributes": {
+        "level": 25,
+        "class": "Wizard",
+        "title": "The White"
+      },
+      "schemaVersion": 2
+    },
+    {
+      "name": "Updated City Name",
+      "schemaVersion": 1
+    }
+  ]
+}
