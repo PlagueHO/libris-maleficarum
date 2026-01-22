@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Schema Versioning**: Added `SchemaVersion` field to WorldEntity for lazy migration on save
+  - Entity-level schema versioning with 1-based integers (default: 1)
+  - Backend validation with 4 error codes (INVALID, TOO_LOW, TOO_HIGH, DOWNGRADE_NOT_ALLOWED)
+  - Frontend auto-injection of current schema version during entity creation/update
+  - EF Core value converter for backward compatibility (0 → 1 conversion for pre-versioning documents)
+  - Lazy migration strategy: entities upgrade to current version when saved, enabling gradual world migration
+  - Comprehensive test coverage: 20 backend unit tests + component integration tests
+  - Documentation: DATA_MODEL.md includes schema evolution guidelines, API.md includes validation error examples
 - **Container Entity Types**: Added 10 new container entity types (Locations, People, Events, History, Lore, Bestiary, Items, Adventures, Geographies, Campaigns) to organize world content into logical categories.
 - **Regional Entity Types**: Added 4 new regional entity types (GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion) with custom properties for domain-specific data.
 - **Custom Properties**: Regional entities support custom properties stored in JSON field:

@@ -8,6 +8,7 @@
  */
 
 import { api } from './api';
+import { getSchemaVersion } from './constants/entitySchemaVersions';
 import type {
   WorldEntity,
   WorldEntityListResponse,
@@ -144,7 +145,10 @@ export const worldEntityApi = api.injectEndpoints({
       query: ({ worldId, data }) => ({
         url: `/api/v1/worlds/${worldId}/entities`,
         method: 'POST',
-        data,
+        data: {
+          ...data,
+          schemaVersion: data.schemaVersion ?? getSchemaVersion(data.entityType),
+        },
       }),
       transformResponse: (response: WorldEntityResponse) => response.data,
       invalidatesTags: (_result, _error, { worldId, data }) => {
@@ -189,7 +193,11 @@ export const worldEntityApi = api.injectEndpoints({
       query: ({ worldId, entityId, data }) => ({
         url: `/api/v1/worlds/${worldId}/entities/${entityId}`,
         method: 'PUT',
-        data,
+        data: {
+          ...data,
+          // Note: schemaVersion should be provided by the component calling this mutation
+          // If not provided, the backend will preserve the existing value
+        },
       }),
       transformResponse: (response: WorldEntityResponse) => response.data,
       invalidatesTags: (result, _error, { worldId, entityId }) => [

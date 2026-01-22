@@ -183,6 +183,320 @@ POST   /api/v1/copilotkit                  # AG-UI protocol endpoint (SSE/WebSoc
 - **429 Too Many Requests**: Rate limit exceeded
 - **500 Internal Server Error**: Unexpected server error
 
+## Request/Response Examples
+
+### Create World Entity
+
+Create a new entity within a world.
+
+**Request:**
+
+```http
+POST /api/v1/worlds/550e8400-e29b-41d4-a716-446655440000/entities
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "name": "Aragorn",
+  "entityType": "PlayerCharacter",
+  "schemaId": "dnd5e-character",
+  "schemaVersion": 1,
+  "description": "A ranger from the north, heir to the throne of Gondor",
+  "tags": ["player-character", "ranger", "dnd5e"],
+  "properties": {
+    "level": 5,
+    "class": "Ranger",
+    "ancestry": "Human"
+  },
+  "systemProperties": {
+    "stats": { "STR": 16, "DEX": 18, "CON": 14, "INT": 13, "WIS": 16, "CHA": 10 },
+    "armorClass": 16,
+    "hitPoints": { "current": 45, "max": 52 }
+  }
+}
+```
+
+**Response (201 Created):**
+
+```json
+{
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "worldId": "550e8400-e29b-41d4-a716-446655440000",
+    "parentId": null,
+    "entityType": "PlayerCharacter",
+    "schemaId": "dnd5e-character",
+    "schemaVersion": 1,
+    "path": ["Aragorn"],
+    "depth": 0,
+    "name": "Aragorn",
+    "description": "A ranger from the north, heir to the throne of Gondor",
+    "tags": ["player-character", "ranger", "dnd5e"],
+    "ownerId": "user-123",
+    "createdBy": "user-123",
+    "modifiedBy": "user-123",
+    "createdDate": "2025-01-15T10:30:00Z",
+    "modifiedDate": "2025-01-15T10:30:00Z",
+    "isDeleted": false,
+    "deletedDate": null,
+    "deletedBy": null,
+    "properties": {
+      "level": 5,
+      "class": "Ranger",
+      "ancestry": "Human"
+    },
+    "systemProperties": {
+      "stats": { "STR": 16, "DEX": 18, "CON": 14, "INT": 13, "WIS": 16, "CHA": 10 },
+      "armorClass": 16,
+      "hitPoints": { "current": 45, "max": 52 }
+    }
+  },
+  "meta": {
+    "requestId": "req-abc-123",
+    "timestamp": "2025-01-15T10:30:00Z"
+  }
+}
+```
+
+### Update World Entity
+
+Update an existing entity, automatically upgrading to current schema version.
+
+**Request:**
+
+```http
+PUT /api/v1/worlds/550e8400-e29b-41d4-a716-446655440000/entities/123e4567-e89b-12d3-a456-426614174000
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "worldId": "550e8400-e29b-41d4-a716-446655440000",
+  "parentId": null,
+  "entityType": "PlayerCharacter",
+  "schemaId": "dnd5e-character",
+  "schemaVersion": 2,
+  "path": ["Aragorn"],
+  "depth": 0,
+  "name": "Aragorn (Updated)",
+  "description": "King of Gondor and Arnor",
+  "tags": ["player-character", "ranger", "king", "dnd5e"],
+  "ownerId": "user-123",
+  "createdBy": "user-123",
+  "modifiedBy": "user-123",
+  "createdDate": "2025-01-15T10:30:00Z",
+  "modifiedDate": "2025-01-15T11:45:00Z",
+  "isDeleted": false,
+  "properties": {
+    "level": 10,
+    "class": "Ranger/Fighter",
+    "ancestry": "Human"
+  },
+  "systemProperties": {
+    "stats": { "STR": 18, "DEX": 18, "CON": 16, "INT": 14, "WIS": 17, "CHA": 15 },
+    "armorClass": 18,
+    "hitPoints": { "current": 95, "max": 105 }
+  }
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "worldId": "550e8400-e29b-41d4-a716-446655440000",
+    "parentId": null,
+    "entityType": "PlayerCharacter",
+    "schemaId": "dnd5e-character",
+    "schemaVersion": 2,
+    "path": ["Aragorn (Updated)"],
+    "depth": 0,
+    "name": "Aragorn (Updated)",
+    "description": "King of Gondor and Arnor",
+    "tags": ["player-character", "ranger", "king", "dnd5e"],
+    "ownerId": "user-123",
+    "createdBy": "user-123",
+    "modifiedBy": "user-123",
+    "createdDate": "2025-01-15T10:30:00Z",
+    "modifiedDate": "2025-01-15T11:45:00Z",
+    "isDeleted": false,
+    "deletedDate": null,
+    "deletedBy": null,
+    "properties": {
+      "level": 10,
+      "class": "Ranger/Fighter",
+      "ancestry": "Human"
+    },
+    "systemProperties": {
+      "stats": { "STR": 18, "DEX": 18, "CON": 16, "INT": 14, "WIS": 17, "CHA": 15 },
+      "armorClass": 18,
+      "hitPoints": { "current": 95, "max": 105 }
+    }
+  },
+  "meta": {
+    "requestId": "req-def-456",
+    "timestamp": "2025-01-15T11:45:00Z"
+  }
+}
+```
+
+### Schema Version Validation Errors
+
+#### Invalid Schema Version (Not a Positive Integer)
+
+**Request:**
+
+```http
+POST /api/v1/worlds/550e8400-e29b-41d4-a716-446655440000/entities
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "name": "Test Character",
+  "entityType": "PlayerCharacter",
+  "schemaVersion": -1
+}
+```
+
+**Response (400 Bad Request):**
+
+```json
+{
+  "error": {
+    "code": "SCHEMA_VERSION_INVALID",
+    "message": "Schema version must be a positive integer. Provided: -1",
+    "details": [
+      {
+        "field": "schemaVersion",
+        "reason": "Must be greater than 0"
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req-err-001",
+    "timestamp": "2025-01-15T12:00:00Z"
+  }
+}
+```
+
+#### Schema Version Too Low (Version 0)
+
+**Request:**
+
+```http
+POST /api/v1/worlds/550e8400-e29b-41d4-a716-446655440000/entities
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "name": "Test Character",
+  "entityType": "PlayerCharacter",
+  "schemaVersion": 0
+}
+```
+
+**Response (400 Bad Request):**
+
+```json
+{
+  "error": {
+    "code": "SCHEMA_VERSION_TOO_LOW",
+    "message": "Schema version cannot be 0 (reserved for invalid/test states). Minimum version: 1",
+    "details": [
+      {
+        "field": "schemaVersion",
+        "reason": "Version 0 is reserved"
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req-err-002",
+    "timestamp": "2025-01-15T12:05:00Z"
+  }
+}
+```
+
+#### Schema Version Too High (Exceeds Current Version)
+
+**Request:**
+
+```http
+POST /api/v1/worlds/550e8400-e29b-41d4-a716-446655440000/entities
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "name": "Test Character",
+  "entityType": "PlayerCharacter",
+  "schemaVersion": 99
+}
+```
+
+**Response (400 Bad Request):**
+
+```json
+{
+  "error": {
+    "code": "SCHEMA_VERSION_TOO_HIGH",
+    "message": "Schema version 99 exceeds current version 1 for entity type 'PlayerCharacter'",
+    "details": [
+      {
+        "field": "schemaVersion",
+        "providedVersion": 99,
+        "currentVersion": 1,
+        "entityType": "PlayerCharacter"
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req-err-003",
+    "timestamp": "2025-01-15T12:10:00Z"
+  }
+}
+```
+
+#### Schema Version Downgrade Not Allowed
+
+**Request:**
+
+```http
+PUT /api/v1/worlds/550e8400-e29b-41d4-a716-446655440000/entities/123e4567-e89b-12d3-a456-426614174000
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "name": "Aragorn",
+  "entityType": "PlayerCharacter",
+  "schemaVersion": 1
+}
+```
+
+**Response (400 Bad Request):**
+
+```json
+{
+  "error": {
+    "code": "SCHEMA_VERSION_DOWNGRADE_NOT_ALLOWED",
+    "message": "Cannot downgrade schema version from 2 to 1. Downgrades prevent data loss from removed fields.",
+    "details": [
+      {
+        "field": "schemaVersion",
+        "currentVersion": 2,
+        "attemptedVersion": 1,
+        "reason": "Downgrade prevented to avoid data loss"
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req-err-004",
+    "timestamp": "2025-01-15T12:15:00Z"
+  }
+}
+```
+
 ## Pagination
 
 List endpoints support cursor-based pagination:
