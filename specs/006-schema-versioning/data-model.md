@@ -26,6 +26,7 @@ public int SchemaVersion { get; private set; }
 ```
 
 **Property Characteristics**:
+
 - **Type**: `int` (32-bit signed integer)
 - **Range**: >= 1 (validated by domain logic)
 - **Default**: `1` (when omitted in requests)
@@ -378,6 +379,7 @@ public class SchemaVersionValidator
 ### Backward Compatibility
 
 **Existing entities without SchemaVersion**:
+
 - Treated as version `1` when read (FR-008)
 - When updated, frontend sends current version (auto-migration)
 
@@ -402,10 +404,11 @@ public WorldEntity GetById(Guid id)
 ### Lazy Migration
 
 **Frontend behavior**:
+
 1. Load entity from API (may have old schema version)
-2. User edits entity
-3. Save with current schema version from `ENTITY_SCHEMA_VERSIONS` constant
-4. Backend validates and persists new version
+1. User edits entity
+1. Save with current schema version from `ENTITY_SCHEMA_VERSIONS` constant
+1. Backend validates and persists new version
 
 **No bulk migration required**: Entities upgraded gradually as users interact with them.
 
@@ -414,6 +417,7 @@ public WorldEntity GetById(Guid id)
 ### Indexing
 
 **No index needed on SchemaVersion**:
+
 - Not queried for filtering/sorting
 - Not used in partition key
 - Adds ~10 bytes per document (negligible)
@@ -421,6 +425,7 @@ public WorldEntity GetById(Guid id)
 ### RU Impact
 
 **Negligible RU increase**:
+
 - Point reads: No change (schema version included in document)
 - Writes: +1-2 RUs (slightly larger document)
 - Queries: No change (not filtered by schema version)
@@ -428,6 +433,7 @@ public WorldEntity GetById(Guid id)
 ## Summary
 
 **Key Changes**:
+
 - Add `int SchemaVersion` property to WorldEntity domain model
 - Add validation logic for schema version ranges (min/max per entity type)
 - Add frontend constants file for current schema versions
@@ -435,6 +441,7 @@ public WorldEntity GetById(Guid id)
 - Implement backward compatibility (missing version = 1)
 
 **No Breaking Changes**:
+
 - SchemaVersion is optional in requests (defaults to 1)
 - Existing API clients continue working without modification
 - Existing entities treated as version 1

@@ -6,12 +6,15 @@ using FluentValidation.Results;
 using LibrisMaleficarum.Api.Controllers;
 using LibrisMaleficarum.Api.Models.Requests;
 using LibrisMaleficarum.Api.Models.Responses;
+using LibrisMaleficarum.Api.Validators;
+using LibrisMaleficarum.Domain.Configuration;
 using LibrisMaleficarum.Domain.Entities;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Domain.ValueObjects;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 
 /// <summary>
@@ -45,6 +48,8 @@ public class EntitiesControllerTests
         _userContextService = Substitute.For<IUserContextService>();
         _createValidator = Substitute.For<IValidator<CreateWorldEntityRequest>>();
         _updateValidator = Substitute.For<IValidator<UpdateWorldEntityRequest>>();
+        var config = Options.Create(new EntitySchemaVersionConfig());
+        var schemaVersionValidator = new SchemaVersionValidator(config);
 
         _userContextService.GetCurrentUserIdAsync().Returns(_userId);
 
@@ -54,7 +59,8 @@ public class EntitiesControllerTests
             _worldRepository,
             _userContextService,
             _createValidator,
-            _updateValidator);
+            _updateValidator,
+            schemaVersionValidator);
 
         // Setup controller context for header access
         _controller.ControllerContext = new ControllerContext

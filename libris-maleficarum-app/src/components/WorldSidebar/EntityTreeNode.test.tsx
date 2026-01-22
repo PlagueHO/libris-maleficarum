@@ -37,6 +37,7 @@ const mockEntity: WorldEntity = {
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
   isDeleted: false,
+  schemaVersion: 1,
 };
 
 const mockEntityNoChildren: WorldEntity = {

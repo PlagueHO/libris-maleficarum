@@ -10,6 +10,7 @@
 Add `SchemaVersion` integer field to all WorldEntity documents to enable schema evolution over time. The frontend will automatically upgrade entities to the latest schema version on save ("lazy migration"), while the backend validates version ranges (min/max per entity type) to prevent downgrades and use of unsupported versions. This foundational feature enables future schema migrations without requiring bulk updates.
 
 **Key Technical Decisions**:
+
 - Frontend stores current schema versions in centralized constants file (`ENTITY_SCHEMA_VERSIONS`)
 - Backend maintains min/max supported versions per entity type in configuration
 - Schemas can only be extended (fields added), never contracted (fields removed)
@@ -19,6 +20,7 @@ Add `SchemaVersion` integer field to all WorldEntity documents to enable schema 
 ## Technical Context
 
 **Frontend**:
+
 - **Language/Version**: TypeScript 5.x + React 19 + Vite 6
 - **Primary Dependencies**: Redux Toolkit 2.x, Vitest 2.x, React Testing Library 16.x, jest-axe, TailwindCSS 4, Shadcn/ui
 - **Testing**: Vitest with React Testing Library + jest-axe for accessibility
@@ -26,6 +28,7 @@ Add `SchemaVersion` integer field to all WorldEntity documents to enable schema 
 - **State Management**: Redux Toolkit with typed RootState/AppDispatch
 
 **Backend**:
+
 - **Language/Version**: C# 14 + .NET 10
 - **Primary Dependencies**: ASP.NET Core 10, EF Core 10 (Cosmos DB provider), Aspire.NET 10, MSTest, FluentAssertions
 - **Storage**: Azure Cosmos DB (WorldEntity container with hierarchical partition key `[/WorldId, /id]`)
@@ -34,17 +37,20 @@ Add `SchemaVersion` integer field to all WorldEntity documents to enable schema 
 
 **Project Type**: Web application (React SPA frontend + ASP.NET Core REST API backend)
 
-**Performance Goals**: 
+**Performance Goals**:
+
 - API: <100ms p95 for point reads (WorldEntity by ID), <200ms for entity list queries
 - Frontend: <16ms component render time, <100ms state update latency
 
-**Constraints**: 
+**Constraints**:
+
 - Cosmos DB documents limited to 2MB (not impacted—SchemaVersion adds ~10 bytes)
 - No breaking changes to existing API contracts (additive only)
 - Backward compatibility: existing entities without `SchemaVersion` must work
 - All changes must pass existing lint/test suites
 
-**Scale/Scope**: 
+**Scale/Scope**:
+
 - ~1500 existing WorldEntity documents across test/dev environments
 - 2 entity type constants files (frontend + backend)
 - 4 code projects affected (Domain, Infrastructure, Api backend + frontend app)

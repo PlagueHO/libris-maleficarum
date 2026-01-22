@@ -8,6 +8,7 @@ import {
   useGetWorldEntityByIdQuery,
 } from '../../services/worldEntityApi';
 import { WorldEntityType } from '../../services/types/worldEntity.types';
+import { getSchemaVersion } from '../../services/constants/entitySchemaVersions';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { EntityTypeSelector } from '../ui/entity-type-selector';
@@ -189,6 +190,7 @@ export function EntityDetailForm() {
             name,
             description,
             properties,
+            schemaVersion: getSchemaVersion(entityType as WorldEntityType),
           },
         }).unwrap();
       } else {
@@ -201,6 +203,7 @@ export function EntityDetailForm() {
             entityType: entityType as WorldEntityType,
             tags: [],
             properties,
+            schemaVersion: getSchemaVersion(entityType as WorldEntityType),
           },
         }).unwrap();
         

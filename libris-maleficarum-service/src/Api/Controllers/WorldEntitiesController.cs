@@ -3,6 +3,7 @@ namespace LibrisMaleficarum.Api.Controllers;
 using FluentValidation;
 using LibrisMaleficarum.Api.Models.Requests;
 using LibrisMaleficarum.Api.Models.Responses;
+using LibrisMaleficarum.Api.Validators;
 using LibrisMaleficarum.Domain.Entities;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
@@ -22,6 +23,7 @@ public class WorldEntitiesController : ControllerBase
     private readonly IUserContextService _userContextService;
     private readonly IValidator<CreateWorldEntityRequest> _createValidator;
     private readonly IValidator<UpdateWorldEntityRequest> _updateValidator;
+    private readonly SchemaVersionValidator _schemaVersionValidator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorldEntitiesController"/> class.
@@ -32,12 +34,14 @@ public class WorldEntitiesController : ControllerBase
         IWorldRepository worldRepository,
         IUserContextService userContextService,
         IValidator<CreateWorldEntityRequest> createValidator,
-        IValidator<UpdateWorldEntityRequest> updateValidator)
+        IValidator<UpdateWorldEntityRequest> updateValidator,
+        SchemaVersionValidator schemaVersionValidator)
     {
         _entityRepository = entityRepository;
         _searchService = searchService;
         _worldRepository = worldRepository;
         _userContextService = userContextService;
+        _schemaVersionValidator = schemaVersionValidator;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
     }
@@ -82,6 +86,9 @@ public class WorldEntitiesController : ControllerBase
         var userId = await _userContextService.GetCurrentUserIdAsync();
         var ownerId = userId.ToString();
 
+        // Validate schema version
+        _schemaVersionValidator.ValidateCreate(request.EntityType.ToString(), request.SchemaVersion);
+
         // Create entity
         var entity = WorldEntity.Create(
             worldId,
@@ -91,7 +98,8 @@ public class WorldEntitiesController : ControllerBase
             request.Description,
             request.ParentId,
             request.Tags,
-            request.Attributes);
+            request.Attributes,
+            schemaVersion: request.SchemaVersion ?? 1);
 
         var createdEntity = await _entityRepository.CreateAsync(entity, cancellationToken);
 
@@ -282,6 +290,15 @@ public class WorldEntitiesController : ControllerBase
             });
         }
 
+        // Validate schema version if provided
+        if (request.SchemaVersion.HasValue)
+        {
+            _schemaVersionValidator.ValidateUpdate(
+                request.EntityType.ToString(),
+                entity.SchemaVersion,
+                request.SchemaVersion.Value);
+        }
+
         // Update entity
         entity.Update(
             request.Name,
@@ -289,7 +306,8 @@ public class WorldEntitiesController : ControllerBase
             request.EntityType,
             request.ParentId,
             request.Tags,
-            request.Attributes);
+            request.Attributes,
+            request.SchemaVersion ?? entity.SchemaVersion);
 
         // Get If-Match header for ETag validation
         var ifMatch = Request.Headers["If-Match"].FirstOrDefault();
@@ -358,7 +376,8 @@ public class WorldEntitiesController : ControllerBase
             request.EntityType ?? entity.EntityType,
             request.ParentId ?? entity.ParentId,
             request.Tags ?? entity.Tags,
-            request.Attributes != null ? attributes : entity.GetAttributes());
+            request.Attributes != null ? attributes : entity.GetAttributes(),
+            request.SchemaVersion ?? entity.SchemaVersion);
 
         // Get If-Match header for ETag validation
         var ifMatch = Request.Headers["If-Match"].FirstOrDefault();
@@ -494,7 +513,8 @@ public class WorldEntitiesController : ControllerBase
             OwnerId = entity.OwnerId,
             IsDeleted = entity.IsDeleted,
             CreatedDate = entity.CreatedDate,
-            ModifiedDate = entity.ModifiedDate
+            ModifiedDate = entity.ModifiedDate,
+            SchemaVersion = entity.SchemaVersion
         };
     }
 

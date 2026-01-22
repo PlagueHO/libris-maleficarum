@@ -42,13 +42,15 @@ All checklist items pass validation:
 - ✅ **No Clarifications Needed**: All ambiguities resolved through 5 clarification questions
 
 **Clarification Session (2026-01-21)**:
+
 1. Schema version configuration stored in centralized constants file (frontend) with future migration to data-driven schema files
-2. Backend validates SchemaVersion is >= existing version and within supported range [min, max]
-3. Backend defaults to version `1` only when client completely omits SchemaVersion field
-4. Error responses include specific error codes and contextual details (current, min, max versions)
-5. Backend maintains min/max supported schema versions per entity type for range validation
+1. Backend validates SchemaVersion is >= existing version and within supported range [min, max]
+1. Backend defaults to version `1` only when client completely omits SchemaVersion field
+1. Error responses include specific error codes and contextual details (current, min, max versions)
+1. Backend maintains min/max supported schema versions per entity type for range validation
 
 **Updates**:
+
 - Updated User Story 1 to clarify backend validation logic (no downgrades, range validation)
 - Updated User Story 2 to clarify frontend saves with latest schema version (auto-migration on save)
 - Added FR-005a (prevent downgrades), FR-005b (min/max range validation), FR-005c (detailed error responses)

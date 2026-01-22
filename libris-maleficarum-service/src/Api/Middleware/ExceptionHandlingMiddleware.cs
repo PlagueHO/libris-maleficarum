@@ -44,16 +44,28 @@ public class ExceptionHandlingMiddleware
 
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var (statusCode, errorCode, message) = exception switch
+        var (statusCode, errorCode, message, details) = exception switch
         {
-            WorldNotFoundException => (HttpStatusCode.NotFound, "WORLD_NOT_FOUND", exception.Message),
-            EntityNotFoundException => (HttpStatusCode.NotFound, "ENTITY_NOT_FOUND", exception.Message),
-            UnauthorizedWorldAccessException => (HttpStatusCode.Forbidden, "UNAUTHORIZED_ACCESS", exception.Message),
-            ArgumentException => (HttpStatusCode.BadRequest, "INVALID_ARGUMENT", exception.Message),
-            KeyNotFoundException => (HttpStatusCode.NotFound, "NOT_FOUND", exception.Message),
-            UnauthorizedAccessException => (HttpStatusCode.Forbidden, "FORBIDDEN", exception.Message),
-            InvalidOperationException => (HttpStatusCode.Conflict, "CONFLICT", exception.Message),
-            _ => (HttpStatusCode.InternalServerError, "INTERNAL_ERROR", "An unexpected error occurred")
+            SchemaVersionException sve => (
+                HttpStatusCode.BadRequest,
+                sve.ErrorCode,
+                sve.Message,
+                new Dictionary<string, object?>
+                {
+                    ["entityType"] = sve.EntityType,
+                    ["requestedVersion"] = sve.RequestedVersion,
+                    ["currentVersion"] = sve.CurrentVersion,
+                    ["minSupportedVersion"] = sve.MinSupportedVersion,
+                    ["maxSupportedVersion"] = sve.MaxSupportedVersion
+                }),
+            WorldNotFoundException => (HttpStatusCode.NotFound, "WORLD_NOT_FOUND", exception.Message, null),
+            EntityNotFoundException => (HttpStatusCode.NotFound, "ENTITY_NOT_FOUND", exception.Message, null),
+            UnauthorizedWorldAccessException => (HttpStatusCode.Forbidden, "UNAUTHORIZED_ACCESS", exception.Message, null),
+            ArgumentException => (HttpStatusCode.BadRequest, "INVALID_ARGUMENT", exception.Message, null),
+            KeyNotFoundException => (HttpStatusCode.NotFound, "NOT_FOUND", exception.Message, null),
+            UnauthorizedAccessException => (HttpStatusCode.Forbidden, "FORBIDDEN", exception.Message, null),
+            InvalidOperationException => (HttpStatusCode.Conflict, "CONFLICT", exception.Message, null),
+            _ => (HttpStatusCode.InternalServerError, "INTERNAL_ERROR", "An unexpected error occurred", null)
         };
 
         context.Response.ContentType = "application/json";
@@ -64,7 +76,8 @@ public class ExceptionHandlingMiddleware
             Error = new ErrorDetail
             {
                 Code = errorCode,
-                Message = message
+                Message = message,
+                Details = details
             },
             Meta = new Dictionary<string, object>
             {

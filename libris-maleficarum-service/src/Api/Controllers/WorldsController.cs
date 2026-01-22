@@ -379,7 +379,8 @@ public class WorldsController : ControllerBase
             OwnerId = entity.OwnerId,
             IsDeleted = entity.IsDeleted,
             CreatedDate = entity.CreatedDate,
-            ModifiedDate = entity.ModifiedDate
+            ModifiedDate = entity.ModifiedDate,
+            SchemaVersion = entity.SchemaVersion
         };
     }
 }

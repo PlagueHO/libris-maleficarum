@@ -109,6 +109,9 @@ export interface WorldEntity {
 
   /** Optional custom properties (JSON string) for entity-specific data */
   properties?: string;
+
+  /** Schema version for document compatibility (default: 1) */
+  schemaVersion: number;
 }
 
 /**
@@ -132,6 +135,9 @@ export interface CreateWorldEntityRequest {
 
   /** Optional custom properties (JSON string) for entity-specific data */
   properties?: string;
+
+  /** Schema version for document compatibility (default: current version for entityType) */
+  schemaVersion?: number;
 }
 
 /**
@@ -152,6 +158,9 @@ export interface UpdateWorldEntityRequest {
 
   /** Optional custom properties (JSON string) for entity-specific data */
   properties?: string;
+
+  /** Schema version for document compatibility (must be >= current version) */
+  schemaVersion?: number;
 }
 
 /**

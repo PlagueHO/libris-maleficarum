@@ -28,6 +28,7 @@ export const ENTITY_SCHEMA_VERSIONS: Record<WorldEntityType, number> = {
 ```
 
 **Rationale**:
+
 - Simplicity: Single source of truth for schema versions
 - Type safety: TypeScript ensures all entity types have versions
 - Clear deployment control: Explicit version updates during deployments
@@ -42,10 +43,12 @@ export const ENTITY_SCHEMA_VERSIONS: Record<WorldEntityType, number> = {
 **Finding**: Backend accepts client-provided schema version with validation
 
 **Decision**: Backend always persists the `SchemaVersion` value provided by the client in the request payload, with two validations:
+
 1. `SchemaVersion` must be >= entity's current `SchemaVersion` (prevents downgrades)
-2. `SchemaVersion` must be within [min, max] supported range for that entity type (prevents deprecated/future versions)
+1. `SchemaVersion` must be within [min, max] supported range for that entity type (prevents deprecated/future versions)
 
 **Rationale**:
+
 - Frontend controls migration strategy (lazy migration on save)
 - Backend enforces data integrity constraints (no downgrades, no invalid versions)
 - Keeps backend logic simple (no schema knowledge required beyond min/max versions)
@@ -59,6 +62,7 @@ export const ENTITY_SCHEMA_VERSIONS: Record<WorldEntityType, number> = {
 **Decision**: Backend defaults `SchemaVersion` to `1` only when the client completely omits the field from the request payload.
 
 **Rationale**:
+
 - Provides backward compatibility for API clients that don't send `SchemaVersion`
 - Frontend always sends explicit version (from `ENTITY_SCHEMA_VERSIONS` constant)
 - Aligns with "additive field" approach (existing clients without schema version support continue working)
@@ -70,10 +74,12 @@ export const ENTITY_SCHEMA_VERSIONS: Record<WorldEntityType, number> = {
 **Finding**: Include specific error codes and contextual version details
 
 **Decision**: Error responses include:
+
 - **Error codes**: `SCHEMA_VERSION_INVALID`, `SCHEMA_VERSION_TOO_HIGH`, `SCHEMA_VERSION_TOO_LOW`, `SCHEMA_DOWNGRADE_NOT_ALLOWED`
 - **Contextual details**: `requestedVersion`, `currentVersion` (for updates), `minSupportedVersion`, `maxSupportedVersion`, `entityType`
 
 **Rationale**:
+
 - Actionable debugging information for developers
 - Clear indication of why validation failed
 - Enables frontend to display user-friendly error messages
@@ -88,6 +94,7 @@ export const ENTITY_SCHEMA_VERSIONS: Record<WorldEntityType, number> = {
 **Decision**: Backend maintains configuration of minimum and maximum supported schema versions per entity type (e.g., `Character: { min: 1, max: 2 }`). Incoming `SchemaVersion` values are validated against this range for both create and update operations.
 
 **Rationale**:
+
 - Prevents use of deprecated schema versions (below min)
 - Prevents use of future schema versions not yet supported (above max)
 - Enables gradual deprecation of old schemas (increment min version over time)
@@ -100,6 +107,7 @@ export const ENTITY_SCHEMA_VERSIONS: Record<WorldEntityType, number> = {
 **Pattern Evaluated**: Forward-only schema evolution (extension-only)
 
 **Findings**:
+
 - ✅ **Additive changes only**: New fields can be added in later versions
 - ❌ **No field removal**: Removing fields would cause data loss for entities at older versions
 - ❌ **No field renames**: Renaming is effectively remove + add (data loss)
@@ -107,6 +115,7 @@ export const ENTITY_SCHEMA_VERSIONS: Record<WorldEntityType, number> = {
 - ✅ **Mixed versions supported**: Multiple schema versions can coexist in same database
 
 **References**:
+
 - Cosmos DB schema versioning: [Versioning strategies for Azure Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/database-versioning)
 - Event sourcing patterns: Forward-compatible schema evolution
 
@@ -125,6 +134,7 @@ modelBuilder.Entity<WorldEntity>()
 ```
 
 **Rationale**:
+
 - Standard EF Core property mapping
 - JSON property name matches frontend convention (camelCase)
 - No special handling required for integer properties
@@ -150,6 +160,7 @@ export function getSchemaVersion(entityType: WorldEntityType): number {
 ```
 
 **Benefits**:
+
 - Compile-time verification all entity types have schema versions
 - Single import for all version lookups
 - Easy to update during deployments
@@ -177,16 +188,19 @@ export function getSchemaVersion(entityType: WorldEntityType): number {
 ### Testing Strategy
 
 **Unit Tests**:
+
 - Domain: WorldEntity.Create() with/without schema version
 - Domain: Schema version validation logic (range checks, downgrade prevention)
 - API: Schema version validation in requests
 
 **Integration Tests**:
+
 - Create entity with schema version → persisted to Cosmos DB
 - Update entity with newer version → migration successful
 - Update entity with older version → validation error
 
 **Frontend Tests**:
+
 - API client includes schema version in requests
 - EntityDetailForm uses current schema version from constants
 - Redux state preserves schema version
@@ -200,9 +214,11 @@ export function getSchemaVersion(entityType: WorldEntityType): number {
 ## Dependencies
 
 **Frontend**:
+
 - No new dependencies
 
 **Backend**:
+
 - No new dependencies (uses existing EF Core, ASP.NET Core validation)
 
 ## Open Questions

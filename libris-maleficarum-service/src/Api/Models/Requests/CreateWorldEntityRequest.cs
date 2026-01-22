@@ -36,4 +36,10 @@ public class CreateWorldEntityRequest
     /// Gets or sets the custom attributes as key-value pairs (max 100KB serialized).
     /// </summary>
     public Dictionary<string, object>? Attributes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the schema version for this entity type (defaults to 1 if omitted).
+    /// Must be greater than or equal to minimum supported version and less than or equal to maximum supported version for this entity type.
+    /// </summary>
+    public int? SchemaVersion { get; set; }
 }

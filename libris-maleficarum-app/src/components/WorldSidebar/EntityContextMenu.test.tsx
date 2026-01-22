@@ -36,6 +36,7 @@ describe('EntityContextMenu', () => {
     createdAt: '2023-01-01',
     updatedAt: '2023-01-01',
     isDeleted: false,
+    schemaVersion: 1,
   };
 
   const TestWrapper = () => (

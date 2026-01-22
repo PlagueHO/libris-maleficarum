@@ -104,5 +104,9 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
         builder.Property(e => e.IsDeleted)
             .ToJsonProperty("IsDeleted")
             .IsRequired();
+
+        builder.Property(e => e.SchemaVersion)
+            .ToJsonProperty("schemaVersion")
+            .IsRequired();
     }
 }
