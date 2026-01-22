@@ -115,13 +115,14 @@ public class WorldEntityRepository : IWorldEntityRepository
             query = query.Where(e => e.EntityType == entityType.Value);
         }
 
-        // Apply tags filter (case-insensitive partial match)
+        // Apply tags filter (case-sensitive exact match)
+        // Note: Cosmos DB LINQ provider does not support string case conversion methods like ToLowerInvariant()
+        // For case-insensitive search, tags should be stored in lowercase when saving
         if (tags != null && tags.Any())
         {
             foreach (var tag in tags)
             {
-                var tagLower = tag.ToLowerInvariant();
-                query = query.Where(e => e.Tags.Any(t => t.ToLower().Contains(tagLower)));
+                query = query.Where(e => e.Tags.Any(t => t.Contains(tag)));
             }
         }
 
@@ -351,26 +352,33 @@ public class WorldEntityRepository : IWorldEntityRepository
                 }
             }
 
-            // Soft delete the entity
-            entity.SoftDelete();
-
-            // Update parent's HasChildren flag if this was the last child
+            // Update parent's HasChildren flag if this was the last child (BEFORE soft-deleting this entity)
             if (entity.ParentId.HasValue)
             {
-                var parent = await GetByIdAsync(worldId, entity.ParentId.Value, cancellationToken);
+                // Materialize parent ID as local variable
+                var parentIdValue = entity.ParentId.Value;
+
+                var parent = await GetByIdAsync(worldId, parentIdValue, cancellationToken);
                 if (parent != null)
                 {
-                    // Check if there are any other non-deleted children
-                    var remainingChildrenAny = await _context.WorldEntities
+                    // Load all children and check in-memory to avoid Cosmos DB LINQ translation issues
+                    var siblings = await _context.WorldEntities
                         .WithPartitionKeyIfCosmos(_context, worldId)
-                        .AnyAsync(e => e.ParentId == entity.ParentId.Value && !e.IsDeleted && e.Id != entityId, cancellationToken);
+                        .Where(e => e.ParentId == parentIdValue && !e.IsDeleted)
+                        .ToListAsync(cancellationToken);
 
-                    if (!remainingChildrenAny && parent.HasChildren)
+                    // Check if this is the only remaining child (excluding self)
+                    var remainingChildrenExist = siblings.Any(s => s.Id != entityId);
+
+                    if (!remainingChildrenExist && parent.HasChildren)
                     {
                         parent.SetHasChildren(false);
                     }
                 }
             }
+
+            // Soft delete the entity (AFTER updating parent)
+            entity.SoftDelete();
 
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -403,7 +411,7 @@ public class WorldEntityRepository : IWorldEntityRepository
             visited.Add(currentParentId);
 
             var parent = await _context.WorldEntities
-                .WithPartitionKeyIfCosmos(_context, worldId.ToString())
+                .WithPartitionKeyIfCosmos(_context, worldId)
                 .Where(e => e.Id == currentParentId && !e.IsDeleted)
                 .FirstOrDefaultAsync(cancellationToken);
 
