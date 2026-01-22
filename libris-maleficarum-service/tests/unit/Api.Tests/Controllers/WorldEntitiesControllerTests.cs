@@ -154,6 +154,118 @@ public class EntitiesControllerTests
 
     #endregion
 
+    #region CreateEntity SchemaVersion Tests
+
+    [TestMethod]
+    public async Task CreateEntity_WithSchemaVersion_Returns201WithSchemaVersion()
+    {
+        // Arrange
+        var request = new CreateWorldEntityRequest
+        {
+            EntityType = EntityType.Character,
+            Name = "Test Character",
+            Description = "Test Description",
+            SchemaVersion = 1
+        };
+
+        _createValidator.ValidateAsync(request, Arg.Any<CancellationToken>())
+            .Returns(new ValidationResult());
+
+        _entityRepository.CreateAsync(Arg.Any<WorldEntity>(), Arg.Any<CancellationToken>())
+            .Returns(args => args.Arg<WorldEntity>());
+
+        // Act
+        var result = await _controller.CreateEntity(_worldId, request, CancellationToken.None);
+
+        // Assert
+        var createdResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
+        var response = createdResult.Value.Should().BeOfType<ApiResponse<EntityResponse>>().Subject;
+        response.Data.SchemaVersion.Should().Be(1);
+    }
+
+    [TestMethod]
+    public async Task CreateEntity_WithInvalidSchemaVersion_ThrowsSchemaVersionException()
+    {
+        // Arrange
+        var request = new CreateWorldEntityRequest
+        {
+            EntityType = EntityType.Character,
+            Name = "Test Character",
+            SchemaVersion = 0 // Invalid: must be >= 1
+        };
+
+        _createValidator.ValidateAsync(request, Arg.Any<CancellationToken>())
+            .Returns(new ValidationResult());
+
+        // Act & Assert
+        var act = async () => await _controller.CreateEntity(_worldId, request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<LibrisMaleficarum.Domain.Exceptions.SchemaVersionException>()
+            .Where(ex => ex.ErrorCode == "SCHEMA_VERSION_INVALID" && ex.Message.Contains("Schema version must be"));
+    }
+
+    #endregion
+
+    #region UpdateEntity SchemaVersion Tests
+
+    [TestMethod]
+    public async Task UpdateEntity_WithSchemaDowngrade_ThrowsSchemaVersionException()
+    {
+        // Arrange
+        var existingEntity = WorldEntity.Create(_worldId, EntityType.Character, "Original Name", TestOwnerId, "Description", schemaVersion: 2);
+        var request = new UpdateWorldEntityRequest
+        {
+            Name = "Updated Name",
+            EntityType = EntityType.Character,
+            SchemaVersion = 1 // Downgrade attempt
+        };
+        var etag = "test-etag";
+
+        _updateValidator.ValidateAsync(request, Arg.Any<CancellationToken>())
+            .Returns(new ValidationResult());
+
+        _entityRepository.GetByIdAsync(_worldId, _entityId, Arg.Any<CancellationToken>())
+            .Returns(existingEntity);
+
+        _controller.Request.Headers["If-Match"] = etag;
+
+        // Act & Assert
+        var act = async () => await _controller.UpdateEntity(_worldId, _entityId, request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<LibrisMaleficarum.Domain.Exceptions.SchemaVersionException>()
+            .Where(ex => ex.ErrorCode == "SCHEMA_DOWNGRADE_NOT_ALLOWED" && ex.Message.Contains("Cannot downgrade"));
+    }
+
+    [TestMethod]
+    public async Task UpdateEntity_WithSchemaVersionTooHigh_ThrowsSchemaVersionException()
+    {
+        // Arrange
+        var existingEntity = WorldEntity.Create(_worldId, EntityType.Character, "Original Name", TestOwnerId, "Description");
+        var request = new UpdateWorldEntityRequest
+        {
+            Name = "Updated Name",
+            EntityType = EntityType.Character,
+            SchemaVersion = 999 // Too high
+        };
+        var etag = "test-etag";
+
+        _updateValidator.ValidateAsync(request, Arg.Any<CancellationToken>())
+            .Returns(new ValidationResult());
+
+        _entityRepository.GetByIdAsync(_worldId, _entityId, Arg.Any<CancellationToken>())
+            .Returns(existingEntity);
+
+        _controller.Request.Headers["If-Match"] = etag;
+
+        // Act & Assert
+        var act = async () => await _controller.UpdateEntity(_worldId, _entityId, request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<LibrisMaleficarum.Domain.Exceptions.SchemaVersionException>()
+            .Where(ex => ex.ErrorCode == "SCHEMA_VERSION_TOO_HIGH" && ex.Message.Contains("exceeds maximum supported version"));
+    }
+
+    #endregion
+
     #region GetEntities Tests
 
     [TestMethod]

@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import type { WorldEntity, CreateWorldEntityRequest, UpdateWorldEntityRequest } from './worldEntity.types';
 import {
   WorldEntityType,
   ENTITY_TYPE_META,
@@ -408,5 +409,80 @@ describe('getEntityTypeSuggestions function', () => {
       const suggestions = getEntityTypeSuggestions('UnknownType' as WorldEntityType);
       expect(suggestions).toEqual([]);
     });
+  });
+});
+
+describe('WorldEntity interface schemaVersion', () => {
+  it('WorldEntity interface requires schemaVersion: number', () => {
+    const entity: WorldEntity = {
+      id: '123',
+      worldId: '456',
+      parentId: null,
+      entityType: WorldEntityType.Character,
+      name: 'Test Character',
+      description: 'A test character',
+      tags: [],
+      path: [],
+      depth: 0,
+      hasChildren: false,
+      ownerId: 'user123',
+      schemaVersion: 1,
+      isDeleted: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    expect(entity.schemaVersion).toBe(1);
+    expect(typeof entity.schemaVersion).toBe('number');
+  });
+});
+
+describe('CreateWorldEntityRequest interface schemaVersion', () => {
+  it('CreateWorldEntityRequest has optional schemaVersion', () => {
+    const request: CreateWorldEntityRequest = {
+      parentId: null,
+      entityType: WorldEntityType.Character,
+      name: 'Test Character',
+      description: 'A test character',
+      schemaVersion: 1,
+    };
+
+    expect(request.schemaVersion).toBe(1);
+    expect(typeof request.schemaVersion).toBe('number');
+  });
+
+  it('CreateWorldEntityRequest allows omitting schemaVersion', () => {
+    const request: CreateWorldEntityRequest = {
+      parentId: null,
+      entityType: WorldEntityType.Character,
+      name: 'Test Character',
+      description: 'A test character',
+    };
+
+    expect(request.schemaVersion).toBeUndefined();
+  });
+});
+
+describe('UpdateWorldEntityRequest interface schemaVersion', () => {
+  it('UpdateWorldEntityRequest has optional schemaVersion', () => {
+    const request: UpdateWorldEntityRequest = {
+      entityType: WorldEntityType.Character,
+      name: 'Updated Character',
+      description: 'An updated character',
+      schemaVersion: 2,
+    };
+
+    expect(request.schemaVersion).toBe(2);
+    expect(typeof request.schemaVersion).toBe('number');
+  });
+
+  it('UpdateWorldEntityRequest allows omitting schemaVersion', () => {
+    const request: UpdateWorldEntityRequest = {
+      entityType: WorldEntityType.Character,
+      name: 'Updated Character',
+      description: 'An updated character',
+    };
+
+    expect(request.schemaVersion).toBeUndefined();
   });
 });
