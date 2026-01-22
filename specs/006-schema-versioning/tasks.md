@@ -20,11 +20,11 @@
 
 **Purpose**: Project initialization and validation
 
-- [ ] T001 Verify branch `006-schema-versioning` is checked out and clean
-- [ ] T002 [P] Run backend build to establish baseline: `dotnet build LibrisMaleficarum.slnx` in libris-maleficarum-service/
-- [ ] T003 [P] Run frontend build to establish baseline: `pnpm build` in libris-maleficarum-app/
-- [ ] T004 [P] Run backend tests to establish baseline: `dotnet test LibrisMaleficarum.slnx` in libris-maleficarum-service/
-- [ ] T005 [P] Run frontend tests to establish baseline: `pnpm test` in libris-maleficarum-app/
+- [x] T001 Verify branch `006-schema-versioning` is checked out and clean
+- [x] T002 [P] Run backend build to establish baseline: `dotnet build LibrisMaleficarum.slnx` in libris-maleficarum-service/
+- [x] T003 [P] Run frontend build to establish baseline: `pnpm build` in libris-maleficarum-app/
+- [x] T004 [P] Run backend tests to establish baseline: `dotnet test LibrisMaleficarum.slnx` in libris-maleficarum-service/
+- [x] T005 [P] Run frontend tests to establish baseline: `pnpm test` in libris-maleficarum-app/
 
 ---
 
@@ -34,11 +34,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 [P] Create EntitySchemaVersionConfig.cs in libris-maleficarum-service/src/Domain/Configuration/EntitySchemaVersionConfig.cs
-- [ ] T007 [P] Create SchemaVersionException.cs in libris-maleficarum-service/src/Domain/Exceptions/SchemaVersionException.cs
-- [ ] T008 [P] Create entitySchemaVersions.ts in libris-maleficarum-app/src/services/constants/entitySchemaVersions.ts
-- [ ] T009 Update appsettings.json with EntitySchemaVersions section in libris-maleficarum-service/src/Infrastructure/appsettings.json
-- [ ] T010 Register EntitySchemaVersionConfig in DI container in libris-maleficarum-service/src/Api/Program.cs
+- [x] T006 [P] Create EntitySchemaVersionConfig.cs in libris-maleficarum-service/src/Domain/Configuration/EntitySchemaVersionConfig.cs
+- [x] T007 [P] Create SchemaVersionException.cs in libris-maleficarum-service/src/Domain/Exceptions/SchemaVersionException.cs
+- [x] T008 [P] Create entitySchemaVersions.ts in libris-maleficarum-app/src/services/constants/entitySchemaVersions.ts
+- [x] T009 Update appsettings.json with EntitySchemaVersions section in libris-maleficarum-service/src/Infrastructure/appsettings.json
+- [x] T010 Register EntitySchemaVersionConfig in DI container in libris-maleficarum-service/src/Api/Program.cs
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -54,48 +54,48 @@
 
 #### Backend Domain Layer - Tests (Write FIRST)
 
-- [ ] T011 [P] [US1] **TEST**: Write failing test for SchemaVersion property in WorldEntityTests.cs - verify property exists and is initialized in libris-maleficarum-service/tests/Domain.Tests/Entities/WorldEntityTests.cs
-- [ ] T012 [P] [US1] **TEST**: Write failing test for Create() with schemaVersion parameter - verify default value 1 in WorldEntityTests.cs
-- [ ] T013 [P] [US1] **TEST**: Write failing test for Update() with schemaVersion parameter - verify value is updated in WorldEntityTests.cs
-- [ ] T014 [US1] **TEST**: Write failing test for Validate() rejecting SchemaVersion < 1 in WorldEntityTests.cs
+- [x] T011 [P] [US1] **TEST**: Write failing test for SchemaVersion property in WorldEntityTests.cs - verify property exists and is initialized in libris-maleficarum-service/tests/Domain.Tests/Entities/WorldEntityTests.cs
+- [x] T012 [P] [US1] **TEST**: Write failing test for Create() with schemaVersion parameter - verify default value 1 in WorldEntityTests.cs
+- [x] T013 [P] [US1] **TEST**: Write failing test for Update() with schemaVersion parameter - verify value is updated in WorldEntityTests.cs
+- [x] T014 [US1] **TEST**: Write failing test for Validate() rejecting SchemaVersion < 1 in WorldEntityTests.cs
 
 #### Backend Domain Layer - Implementation (Make Tests PASS)
 
-- [ ] T015 [P] [US1] Add SchemaVersion property to WorldEntity.cs in libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs
-- [ ] T016 [US1] Update WorldEntity.Create() method to accept schemaVersion parameter with default value 1 in WorldEntity.cs
-- [ ] T017 [US1] Update WorldEntity.Update() method to accept schemaVersion parameter in WorldEntity.cs
-- [ ] T018 [US1] Add SchemaVersion validation in WorldEntity.Validate() method (≥1) in WorldEntity.cs
-- [ ] T019 [US1] Run domain tests - verify all 4 tests pass: `dotnet test --filter FullyQualifiedName~WorldEntityTests` in libris-maleficarum-service/
+- [x] T015 [P] [US1] Add SchemaVersion property to WorldEntity.cs in libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs
+- [x] T016 [US1] Update WorldEntity.Create() method to accept schemaVersion parameter with default value 1 in WorldEntity.cs
+- [x] T017 [US1] Update WorldEntity.Update() method to accept schemaVersion parameter in WorldEntity.cs
+- [x] T018 [US1] Add SchemaVersion validation in WorldEntity.Validate() method (≥1) in WorldEntity.cs
+- [x] T019 [US1] Run domain tests - verify all 4 tests pass: `dotnet test --filter FullyQualifiedName~WorldEntityTests` in libris-maleficarum-service/
 
 #### Backend Infrastructure Layer - Tests (Write FIRST)
 
-- [ ] T020 [P] [US1] **TEST**: Write failing integration test for SchemaVersion persistence to Cosmos DB in WorldEntityRepositoryTests.cs - libris-maleficarum-service/tests/Infrastructure.Tests/Data/WorldEntityRepositoryTests.cs
-- [ ] T021 [US1] **TEST**: Write failing test for backward compatibility - missing SchemaVersion treated as version 1 in WorldEntityRepositoryTests.cs
+- [x] T020 [P] [US1] **TEST**: Write failing integration test for SchemaVersion persistence to Cosmos DB in WorldEntityRepositoryTests.cs - libris-maleficarum-service/tests/Infrastructure.Tests/Data/WorldEntityRepositoryTests.cs
+- [x] T021 [US1] **TEST**: Write failing test for backward compatibility - missing SchemaVersion treated as version 1 in WorldEntityRepositoryTests.cs
 
 #### Backend Infrastructure Layer - Implementation (Make Tests PASS)
 
-- [ ] T022 [US1] Update WorldEntityConfiguration.cs to map SchemaVersion property to Cosmos DB with ToJsonProperty("schemaVersion") in libris-maleficarum-service/src/Infrastructure/Data/Configurations/WorldEntityConfiguration.cs
-- [ ] T023 [US1] Add backward compatibility logic in repository read operations - treat missing SchemaVersion as version 1 per FR-008 in libris-maleficarum-service/src/Infrastructure/Data/Repositories/WorldEntityRepository.cs
-- [ ] T024 [US1] Run infrastructure integration tests: `dotnet test --filter TestCategory=Integration` in libris-maleficarum-service/
+- [x] T022 [US1] Update WorldEntityConfiguration.cs to map SchemaVersion property to Cosmos DB with ToJsonProperty("schemaVersion") in libris-maleficarum-service/src/Infrastructure/Data/Configurations/WorldEntityConfiguration.cs
+- [x] T023 [US1] Add backward compatibility logic in repository read operations - treat missing SchemaVersion as version 1 per FR-008 in libris-maleficarum-service/src/Infrastructure/Data/Repositories/WorldEntityRepository.cs
+- [x] T024 [US1] Run infrastructure integration tests: `dotnet test --filter TestCategory=Integration` in libris-maleficarum-service/
 
 #### Backend API Layer - DTOs (No prior tests needed - simple property additions)
 
-- [ ] T025 [P] [US1] Add SchemaVersion property (int?) to CreateWorldEntityRequest.cs in libris-maleficarum-service/src/Api/DTOs/CreateWorldEntityRequest.cs
-- [ ] T026 [P] [US1] Add SchemaVersion property (int?) to UpdateWorldEntityRequest.cs in libris-maleficarum-service/src/Api/DTOs/UpdateWorldEntityRequest.cs
-- [ ] T027 [P] [US1] Add SchemaVersion property (int) to WorldEntityResponse.cs in libris-maleficarum-service/src/Api/DTOs/WorldEntityResponse.cs
+- [x] T025 [P] [US1] Add SchemaVersion property (int?) to CreateWorldEntityRequest.cs in libris-maleficarum-service/src/Api/DTOs/CreateWorldEntityRequest.cs
+- [x] T026 [P] [US1] Add SchemaVersion property (int?) to UpdateWorldEntityRequest.cs in libris-maleficarum-service/src/Api/DTOs/UpdateWorldEntityRequest.cs
+- [x] T027 [P] [US1] Add SchemaVersion property (int) to WorldEntityResponse.cs in libris-maleficarum-service/src/Api/DTOs/WorldEntityResponse.cs
 
 #### Backend API Layer - Validation - Tests (Write FIRST)
 
-- [ ] T028 [P] [US1] **TEST**: Write failing unit test for ValidateCreate() - reject SchemaVersion < 1 (SCHEMA_VERSION_INVALID) in SchemaVersionValidatorTests.cs (new file) - libris-maleficarum-service/tests/Api.Tests/Validators/SchemaVersionValidatorTests.cs
-- [ ] T029 [P] [US1] **TEST**: Write failing unit test for ValidateCreate() - reject SchemaVersion < min supported (SCHEMA_VERSION_TOO_LOW) in SchemaVersionValidatorTests.cs
-- [ ] T030 [P] [US1] **TEST**: Write failing unit test for ValidateCreate() - reject SchemaVersion > max supported (SCHEMA_VERSION_TOO_HIGH) in SchemaVersionValidatorTests.cs
-- [ ] T031 [P] [US1] **TEST**: Write failing unit test for ValidateUpdate() - reject downgrade attempt (SCHEMA_DOWNGRADE_NOT_ALLOWED) in SchemaVersionValidatorTests.cs
+- [x] T028 [P] [US1] **TEST**: Write failing unit test for ValidateCreate() - reject SchemaVersion < 1 (SCHEMA_VERSION_INVALID) in SchemaVersionValidatorTests.cs (new file) - libris-maleficarum-service/tests/Api.Tests/Validators/SchemaVersionValidatorTests.cs
+- [x] T029 [P] [US1] **TEST**: Write failing unit test for ValidateCreate() - reject SchemaVersion < min supported (SCHEMA_VERSION_TOO_LOW) in SchemaVersionValidatorTests.cs
+- [x] T030 [P] [US1] **TEST**: Write failing unit test for ValidateCreate() - reject SchemaVersion > max supported (SCHEMA_VERSION_TOO_HIGH) in SchemaVersionValidatorTests.cs
+- [x] T031 [P] [US1] **TEST**: Write failing unit test for ValidateUpdate() - reject downgrade attempt (SCHEMA_DOWNGRADE_NOT_ALLOWED) in SchemaVersionValidatorTests.cs
 
 #### Backend API Layer - Validation - Implementation (Make Tests PASS)
 
-- [ ] T032 [US1] Create SchemaVersionValidator.cs with ValidateCreate() and ValidateUpdate() methods - implement all 4 error codes in libris-maleficarum-service/src/Api/Validators/SchemaVersionValidator.cs
-- [ ] T033 [US1] Register SchemaVersionValidator in DI container in libris-maleficarum-service/src/Api/Program.cs
-- [ ] T034 [US1] Run validator unit tests - verify all 4 tests pass: `dotnet test --filter FullyQualifiedName~SchemaVersionValidatorTests` in libris-maleficarum-service/
+- [x] T032 [US1] Create SchemaVersionValidator.cs with ValidateCreate() and ValidateUpdate() methods - implement all 4 error codes in libris-maleficarum-service/src/Api/Validators/SchemaVersionValidator.cs
+- [x] T033 [US1] Register SchemaVersionValidator in DI container in libris-maleficarum-service/src/Api/Program.cs
+- [x] T034 [US1] Run validator unit tests - verify all 4 tests pass: `dotnet test --filter FullyQualifiedName~SchemaVersionValidatorTests` in libris-maleficarum-service/
 
 #### Backend API Layer - Controllers - Tests (Write FIRST)
 
@@ -106,14 +106,14 @@
 
 #### Backend API Layer - Controllers - Implementation (Make Tests PASS)
 
-- [ ] T039 [US1] Update WorldEntityController.Create() to validate and pass SchemaVersion to domain entity (default to 1 if null) in libris-maleficarum-service/src/Api/Controllers/WorldEntityController.cs
-- [ ] T040 [US1] Update WorldEntityController.Update() to validate SchemaVersion and prevent downgrades in WorldEntityController.cs
-- [ ] T041 [US1] Add global exception handler for SchemaVersionException → 400 with error details in libris-maleficarum-service/src/Api/Middleware/ExceptionHandlerMiddleware.cs
-- [ ] T042 [US1] Run controller API tests - verify all 4 tests pass: `dotnet test --filter FullyQualifiedName~WorldEntityControllerTests` in libris-maleficarum-service/
+- [x] T039 [US1] Update WorldEntityController.Create() to validate and pass SchemaVersion to domain entity (default to 1 if null) in libris-maleficarum-service/src/Api/Controllers/WorldEntityController.cs
+- [x] T040 [US1] Update WorldEntityController.Update() to validate SchemaVersion and prevent downgrades in WorldEntityController.cs
+- [x] T041 [US1] Add global exception handler for SchemaVersionException → 400 with error details in libris-maleficarum-service/src/Api/Middleware/ExceptionHandlerMiddleware.cs
+- [x] T042 [US1] Run controller API tests - verify all 4 tests pass: `dotnet test --filter FullyQualifiedName~WorldEntityControllerTests` in libris-maleficarum-service/
 
 #### Verification
 
-- [ ] T043 [US1] Run all backend unit tests: `dotnet test --filter TestCategory=Unit` in libris-maleficarum-service/
+- [x] T043 [US1] Run all backend unit tests: `dotnet test --filter TestCategory=Unit` in libris-maleficarum-service/
 - [ ] T044 [US1] Run all backend integration tests: `dotnet test --filter TestCategory=Integration` in libris-maleficarum-service/
 - [ ] T045 [US1] Run backend format check: `dotnet format --verify-no-changes LibrisMaleficarum.slnx` in libris-maleficarum-service/
 - [ ] T046 [US1] Start Aspire AppHost and manually test entity creation with schemaVersion via API: `dotnet run --project src/Orchestration/AppHost` in libris-maleficarum-service/
@@ -138,17 +138,18 @@
 
 #### Frontend Types - Implementation (Make Tests PASS)
 
-- [ ] T050 [P] [US2] Add schemaVersion: number property to WorldEntity interface in libris-maleficarum-app/src/services/types/worldEntity.types.ts
-- [ ] T051 [P] [US2] Add schemaVersion?: number property to CreateWorldEntityRequest interface in worldEntity.types.ts
-- [ ] T052 [P] [US2] Add schemaVersion?: number property to UpdateWorldEntityRequest interface in worldEntity.types.ts
-- [ ] T053 [US2] Populate entitySchemaVersions.ts (created in T008) with ENTITY_SCHEMA_VERSIONS constant map (all entity types→version 1) and getSchemaVersion() helper function in libris-maleficarum-app/src/services/constants/entitySchemaVersions.ts
+- [x] T050 [P] [US2] Add schemaVersion: number property to WorldEntity interface in libris-maleficarum-app/src/services/types/worldEntity.types.ts
+- [x] T051 [P] [US2] Add schemaVersion?: number property to CreateWorldEntityRequest interface in worldEntity.types.ts
+- [x] T052 [P] [US2] Add schemaVersion?: number property to UpdateWorldEntityRequest interface in worldEntity.types.ts
+- [x] T053 [US2] Populate entitySchemaVersions.ts (created in T008) with ENTITY_SCHEMA_VERSIONS constant map (all entity types→version 1) and getSchemaVersion() helper function in libris-maleficarum-app/src/services/constants/entitySchemaVersions.ts
 - [ ] T054 [US2] Run type check: `pnpm type-check` in libris-maleficarum-app/
 
 #### Frontend API Client - Tests (Write FIRST)
 
 - [ ] T055 [P] [US2] **TEST**: Write failing test for createWorldEntity() - verify request includes schemaVersion from ENTITY_SCHEMA_VERSIONS in worldEntityApi.test.ts - libris-maleficarum-app/src/**tests**/services/worldEntityApi.test.ts
+-
 - [ ] T056 [P] [US2] **TEST**: Write failing test for updateWorldEntity() - verify request includes current schemaVersion (not original) in worldEntityApi.test.ts
-- [ ] T057 [US2] Update MSW mocks to include schemaVersion: 1 in responses in libris-maleficarum-app/src/**mocks**/handlers.ts
+- [x] T057 [US2] Update MSW mocks to include schemaVersion: 1 in responses in libris-maleficarum-app/src/**mocks**/handlers.ts
 
 #### Frontend API Client - Implementation (Make Tests PASS)
 

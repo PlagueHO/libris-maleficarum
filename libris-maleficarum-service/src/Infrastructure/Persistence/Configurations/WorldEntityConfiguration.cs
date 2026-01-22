@@ -107,6 +107,11 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
 
         builder.Property(e => e.SchemaVersion)
             .ToJsonProperty("schemaVersion")
+            .HasConversion(
+                // To database: store as-is
+                v => v,
+                // From database: treat missing/0 as version 1 for backward compatibility (FR-008)
+                v => v == 0 ? 1 : v)
             .IsRequired();
     }
 }

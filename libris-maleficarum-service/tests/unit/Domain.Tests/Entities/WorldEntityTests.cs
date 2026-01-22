@@ -243,4 +243,105 @@ public class WorldEntityTests
         retrievedAttributes.Should().ContainKey("dexterity");
         retrievedAttributes.Should().ContainKey("constitution");
     }
+
+    // T011 [US1] TEST: SchemaVersion property exists and is initialized
+    [TestMethod]
+    public void SchemaVersion_ShouldBeInitializedToOne()
+    {
+        // Arrange
+        var worldId = Guid.NewGuid();
+        var entityType = EntityType.Character;
+        var name = "Elrond";
+
+        // Act
+        var entity = WorldEntity.Create(worldId, entityType, name, TestOwnerId);
+
+        // Assert
+        entity.SchemaVersion.Should().Be(1);
+    }
+
+    // T012 [US1] TEST: Create() with schemaVersion parameter - verify default value 1
+    [TestMethod]
+    public void Create_WithSchemaVersionParameter_ShouldSetSchemaVersion()
+    {
+        // Arrange
+        var worldId = Guid.NewGuid();
+        var entityType = EntityType.Location;
+        var name = "Isengard";
+        var schemaVersion = 2;
+
+        // Act
+        var entity = WorldEntity.Create(worldId, entityType, name, TestOwnerId, schemaVersion: schemaVersion);
+
+        // Assert
+        entity.SchemaVersion.Should().Be(schemaVersion);
+    }
+
+    // T012 [US1] TEST: Create() without schemaVersion parameter defaults to 1
+    [TestMethod]
+    public void Create_WithoutSchemaVersionParameter_ShouldDefaultToOne()
+    {
+        // Arrange
+        var worldId = Guid.NewGuid();
+        var entityType = EntityType.Character;
+        var name = "Galadriel";
+
+        // Act
+        var entity = WorldEntity.Create(worldId, entityType, name, TestOwnerId);
+
+        // Assert
+        entity.SchemaVersion.Should().Be(1);
+    }
+
+    // T013 [US1] TEST: Update() with schemaVersion parameter - verify value is updated
+    [TestMethod]
+    public void Update_WithSchemaVersionParameter_ShouldUpdateSchemaVersion()
+    {
+        // Arrange
+        var worldId = Guid.NewGuid();
+        var entity = WorldEntity.Create(worldId, EntityType.Character, "Saruman", TestOwnerId, schemaVersion: 1);
+        var newSchemaVersion = 2;
+
+        // Act
+        entity.Update("Saruman the White", "Wizard of Isengard", EntityType.Character, null, null, null, newSchemaVersion);
+
+        // Assert
+        entity.SchemaVersion.Should().Be(newSchemaVersion);
+    }
+
+    // T014 [US1] TEST: Validate() rejecting SchemaVersion < 1
+    [TestMethod]
+    public void Create_WithSchemaVersionLessThanOne_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var worldId = Guid.NewGuid();
+        var entityType = EntityType.Character;
+        var name = "Sauron";
+        var invalidSchemaVersion = 0;
+
+        // Act
+        var action = () => WorldEntity.Create(worldId, entityType, name, TestOwnerId, schemaVersion: invalidSchemaVersion);
+
+        // Assert
+        action.Should().Throw<ArgumentException>()
+            .WithMessage("Schema version must be at least 1.");
+    }
+
+    // T014 [US1] TEST: Validate() rejecting SchemaVersion < 1 (negative)
+    [TestMethod]
+    public void Create_WithNegativeSchemaVersion_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var worldId = Guid.NewGuid();
+        var entityType = EntityType.Character;
+        var name = "Nazgul";
+        var invalidSchemaVersion = -1;
+
+        // Act
+        var action = () => WorldEntity.Create(worldId, entityType, name, TestOwnerId, schemaVersion: invalidSchemaVersion);
+
+        // Assert
+        action.Should().Throw<ArgumentException>()
+            .WithMessage("Schema version must be at least 1.");
+    }
 }
