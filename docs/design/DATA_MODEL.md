@@ -182,6 +182,10 @@ public record BaseWorldEntity
     public required DateTime CreatedDate { get; init; }   // ISO 8601 timestamp
     public required DateTime ModifiedDate { get; init; }  // ISO 8601 timestamp
     
+    // === Schema Versioning (REQUIRED) ===
+    public required int SchemaVersion { get; init; }   // Entity schema version (1-based integer, default: 1)
+                                                       // Enables lazy migration: entities are upgraded to current version on save
+    
     // === Soft Delete (REQUIRED) ===
     public required bool IsDeleted { get; init; }      // Soft delete flag (default: false)
     public DateTime? DeletedDate { get; init; }        // ISO 8601 timestamp when deleted
@@ -265,6 +269,121 @@ public record CampaignEntity : BaseWorldEntity
     // - HouseRules: { "CriticalHits": "maximize damage" }
 }
 ```
+
+### Schema Evolution Guidelines
+
+The `SchemaVersion` field enables lazy migration of entity schemas without requiring database-wide migrations. Entities are upgraded to the current schema version when saved, allowing gradual migration of the entire world as users interact with their data.
+
+#### Version Strategy
+
+- **Version Numbers**: 1-based integers (initial version: 1)
+- **Current Version**: Defined per entity type in `EntitySchemaVersionConfig` (backend) and `ENTITY_SCHEMA_VERSIONS` map (frontend)
+- **Lazy Migration**: Entities retain their schema version until saved; on save, they upgrade to the current version
+- **Validation Rules**:
+  - `schemaVersion` must be a positive integer
+  - `schemaVersion` cannot be 0 (reserved for testing/invalid states)
+  - `schemaVersion` cannot exceed the current version for that entity type
+  - `schemaVersion` cannot be downgraded (prevents data loss from removed fields)
+
+#### Backend Implementation
+
+**Domain Layer** (`WorldEntity.cs`):
+
+```csharp
+public int SchemaVersion { get; private set; }
+
+public void UpdateSchemaVersion(int schemaVersion)
+{
+    var currentVersion = EntitySchemaVersionConfig.GetSchemaVersion(EntityType);
+    SchemaVersionValidator.Validate(schemaVersion, currentVersion);
+    SchemaVersion = schemaVersion;
+}
+```
+
+**Infrastructure Layer** (`WorldEntityConfiguration.cs`):
+
+```csharp
+// EF Core value converter ensures backward compatibility with existing documents
+builder.Property(e => e.SchemaVersion)
+    .HasConversion(
+        v => v,                    // To DB: store as-is
+        v => v == 0 ? 1 : v)       // From DB: convert 0 to 1 for pre-versioning documents
+    .IsRequired();
+```
+
+**Validation** (`SchemaVersionValidator.cs`):
+
+- Throws `SchemaVersionException` for validation errors
+- Error codes: `SCHEMA_VERSION_INVALID`, `SCHEMA_VERSION_TOO_LOW`, `SCHEMA_VERSION_TOO_HIGH`, `SCHEMA_VERSION_DOWNGRADE_NOT_ALLOWED`
+
+#### Frontend Implementation
+
+**Type Definitions** (`worldEntity.types.ts`):
+
+```typescript
+export interface BaseWorldEntity {
+  id: string;
+  worldId: string;
+  schemaVersion: number;  // Required field for all entities
+  // ... other fields
+}
+```
+
+**API Client** (`worldEntityApi.ts`):
+
+```typescript
+import { getSchemaVersion } from './constants/entitySchemaVersions';
+
+// Auto-inject current schema version on create
+createWorldEntity: builder.mutation({
+  query: (data) => ({
+    method: 'POST',
+    body: {
+      ...data,
+      schemaVersion: data.schemaVersion ?? getSchemaVersion(data.entityType),
+    },
+  }),
+}),
+```
+
+**Component Layer** (`EntityDetailForm.tsx`):
+
+```typescript
+const handleSubmit = async (data: FormData) => {
+  const payload = {
+    ...data,
+    schemaVersion: getSchemaVersion(entityType as WorldEntityType),
+  };
+  await createWorldEntity(payload);
+};
+```
+
+#### Version Increment Strategy
+
+When to increment schema versions:
+
+1. **Breaking Changes** (REQUIRED):
+   - Field renames (e.g., `level` → `characterLevel`)
+   - Field type changes (e.g., `hitPoints: number` → `hitPoints: { current: number, max: number }`)
+   - Required field additions (e.g., new `alignment` required field)
+   - Field removals (e.g., deprecated `legacyField` removed)
+
+1. **Non-Breaking Changes** (OPTIONAL):
+   - Optional field additions (e.g., new `proficiencyBonus` optional field)
+   - Value constraint changes (e.g., `level` max increased from 20 to 30)
+   - Validation rule changes (e.g., new spell slot calculation logic)
+
+1. **Migration Implementation**:
+   - Add migration logic to handle conversion from old version to new version
+   - Test migration with representative data samples
+   - Update unit tests to cover both old and new schema versions
+   - Document migration steps in CHANGELOG.md
+
+#### Backward Compatibility
+
+- **Pre-Versioning Documents**: Documents without `SchemaVersion` field (created before versioning feature) default to version 1 via EF Core converter
+- **Version 0 Handling**: Reserved for invalid/test states; EF Core converts 0 to 1 when reading from database
+- **Client-Server Sync**: Frontend always sends current version; backend validates and upgrades on save
 
 ### Property Schema Templates
 
