@@ -69,6 +69,7 @@ function seedMockData(): void {
     createdAt: '2026-01-13T12:00:00Z',
     updatedAt: '2026-01-13T12:00:00Z',
     isDeleted: false,
+    schemaVersion: 1,
   });
 
   // Country under Continent
@@ -88,6 +89,7 @@ function seedMockData(): void {
     createdAt: '2026-01-13T12:01:00Z',
     updatedAt: '2026-01-13T12:01:00Z',
     isDeleted: false,
+    schemaVersion: 1,
   });
 
   // City under Country
@@ -107,6 +109,7 @@ function seedMockData(): void {
     createdAt: '2026-01-13T12:02:00Z',
     updatedAt: '2026-01-13T12:02:00Z',
     isDeleted: false,
+    schemaVersion: 1,
   });
 
   // Character entity
@@ -126,6 +129,7 @@ function seedMockData(): void {
     createdAt: '2026-01-13T12:03:00Z',
     updatedAt: '2026-01-13T12:03:00Z',
     isDeleted: false,
+    schemaVersion: 1,
   });
 
   // Seed second world for world-switching tests
@@ -150,6 +154,7 @@ function seedMockData(): void {
     createdAt: '2026-01-13T13:01:00Z',
     updatedAt: '2026-01-13T13:01:00Z',
     isDeleted: false,
+    schemaVersion: 1,
   });
 }
 
@@ -470,6 +475,7 @@ export const worldEntityHandlers = [
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       isDeleted: false,
+      schemaVersion: body.schemaVersion ?? 1,
     };
 
     mockEntities.set(newEntityId, newEntity);

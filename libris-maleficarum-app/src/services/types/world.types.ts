@@ -228,4 +228,9 @@ export interface WorldEntity {
    * Soft delete flag
    */
   isDeleted: boolean;
+
+  /**
+   * Schema version for document compatibility
+   */
+  schemaVersion: number;
 }

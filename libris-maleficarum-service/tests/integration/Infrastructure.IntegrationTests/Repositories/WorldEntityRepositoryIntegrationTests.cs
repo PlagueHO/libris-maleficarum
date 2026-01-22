@@ -592,7 +592,7 @@ public class WorldEntityRepositoryIntegrationTests
         context.Entry(entity).State = EntityState.Detached;
 
         // Modify the entity
-        entity.Update("Updated Name", "Updated Description", EntityType.Character, null, null, null);
+        entity.Update("Updated Name", "Updated Description", EntityType.Character, null, null, null, 1);
 
         // Act
         var updatedEntity = await repository.UpdateAsync(entity);
@@ -637,7 +637,7 @@ public class WorldEntityRepositoryIntegrationTests
 
         // Detach and modify
         context.Entry(entity).State = EntityState.Detached;
-        entity.Update("Updated Name", null, EntityType.Character, null, null, null);
+        entity.Update("Updated Name", null, EntityType.Character, null, null, null, 1);
 
         // Act & Assert
         var act = async () => await repository.UpdateAsync(entity);

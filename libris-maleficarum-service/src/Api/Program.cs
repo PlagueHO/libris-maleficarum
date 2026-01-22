@@ -1,6 +1,8 @@
 using FluentValidation;
 using LibrisMaleficarum.Api.Filters;
 using LibrisMaleficarum.Api.Middleware;
+using LibrisMaleficarum.Api.Validators;
+using LibrisMaleficarum.Domain.Configuration;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Infrastructure.Persistence;
@@ -20,6 +22,10 @@ builder.AddServiceDefaults();
 // Add custom application telemetry (meters, activity sources, and counters)
 // Must be called after AddServiceDefaults to ensure OpenTelemetry is configured
 builder.AddApplicationTelemetry();
+
+// Configure entity schema versioning
+builder.Services.Configure<EntitySchemaVersionConfig>(
+    builder.Configuration.GetSection("EntitySchemaVersions"));
 
 // Configure DbContext with Cosmos DB provider
 var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb")
@@ -57,6 +63,9 @@ builder.Services.AddScoped<IWorldRepository, WorldRepository>();
 builder.Services.AddScoped<IWorldEntityRepository, WorldEntityRepository>();
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<ISearchService, SearchService>();
+
+// Register validators
+builder.Services.AddScoped<SchemaVersionValidator>();
 
 // Add Azure Blob Storage client (uses connection named "blobs" from AppHost)
 // This will use Azurite emulator locally and Azure Blob Storage in production

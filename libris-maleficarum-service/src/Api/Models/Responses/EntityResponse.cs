@@ -81,4 +81,10 @@ public class EntityResponse
     /// Gets or sets a value indicating whether this entity has been soft-deleted.
     /// </summary>
     public required bool IsDeleted { get; set; }
+
+    /// <summary>
+    /// Gets or sets the schema version of this entity.
+    /// Indicates which version of the entity type's schema was used when created/last migrated.
+    /// </summary>
+    public required int SchemaVersion { get; set; }
 }

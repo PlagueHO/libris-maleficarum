@@ -46,6 +46,7 @@ const world2Handler = http.get('http://localhost:5000/api/v1/worlds/world-2/enti
       createdAt: '2026-01-14T00:00:00Z',
       updatedAt: '2026-01-14T00:00:00Z',
       isDeleted: false,
+      schemaVersion: 1,
     },
   ];
   
@@ -729,6 +730,7 @@ describe('EntityTree', () => {
                 createdAt: '2026-01-14T00:00:00Z',
                 updatedAt: '2026-01-14T00:00:00Z',
                 isDeleted: false,
+                schemaVersion: 1,
               },
             ],
             meta: { count: 1, nextCursor: null },
@@ -755,6 +757,7 @@ describe('EntityTree', () => {
                 createdAt: '2026-01-14T00:00:00Z',
                 updatedAt: '2026-01-14T00:00:00Z',
                 isDeleted: false,
+                schemaVersion: 1,
               },
             ],
             meta: { count: 1, nextCursor: null },
@@ -781,6 +784,7 @@ describe('EntityTree', () => {
                 createdAt: '2026-01-14T00:00:00Z',
                 updatedAt: '2026-01-14T00:00:00Z',
                 isDeleted: false,
+                schemaVersion: 1,
               },
             ],
             meta: { count: 1, nextCursor: null },
@@ -807,6 +811,7 @@ describe('EntityTree', () => {
                 createdAt: '2026-01-14T00:00:00Z',
                 updatedAt: '2026-01-14T00:00:00Z',
                 isDeleted: false,
+                schemaVersion: 1,
               },
             ],
             meta: { count: 1, nextCursor: null },
@@ -833,6 +838,7 @@ describe('EntityTree', () => {
                 createdAt: '2026-01-14T00:00:00Z',
                 updatedAt: '2026-01-14T00:00:00Z',
                 isDeleted: false,
+                schemaVersion: 1,
               },
             ],
             meta: { count: 1, nextCursor: null },
@@ -901,3 +907,4 @@ describe('EntityTree', () => {
     });
   });
 });
+

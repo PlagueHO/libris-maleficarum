@@ -384,7 +384,7 @@ public class WorldEntityRepositoryTests
     {
         // Arrange
         var entity = await CreateEntityInDatabase("Original Name");
-        entity.Update("Updated Name", "Updated Description", EntityType.Location, null, null, null);
+        entity.Update("Updated Name", "Updated Description", EntityType.Location, null, null, null, 1);
 
         // Act
         var result = await _repository.UpdateAsync(entity);
@@ -416,7 +416,7 @@ public class WorldEntityRepositoryTests
         var child = await CreateEntityInDatabase("Child", EntityType.Location, parent.Id);
 
         // Try to make parent a child of child (circular reference)
-        parent.Update(parent.Name, parent.Description, parent.EntityType, child.Id, null, null);
+        parent.Update(parent.Name, parent.Description, parent.EntityType, child.Id, null, null, 1);
 
         // Act & Assert
         var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
@@ -431,7 +431,7 @@ public class WorldEntityRepositoryTests
         // Arrange
         var newParent = await CreateEntityInDatabase("New Parent");
         var entity = await CreateEntityInDatabase("Entity");
-        entity.Update(entity.Name, entity.Description, entity.EntityType, newParent.Id, null, null);
+        entity.Update(entity.Name, entity.Description, entity.EntityType, newParent.Id, null, null, 1);
 
         // Act
         var result = await _repository.UpdateAsync(entity);

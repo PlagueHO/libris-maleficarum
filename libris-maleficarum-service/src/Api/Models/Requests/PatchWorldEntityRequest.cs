@@ -38,4 +38,10 @@ public class PatchWorldEntityRequest
     /// If provided, merges with existing attributes.
     /// </summary>
     public Dictionary<string, object>? Attributes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the schema version for this entity type.
+    /// Must be greater than or equal to entity's current schema version (no downgrades) and less than or equal to maximum supported version.
+    /// </summary>
+    public int? SchemaVersion { get; set; }
 }

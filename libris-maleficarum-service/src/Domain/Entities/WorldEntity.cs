@@ -85,6 +85,13 @@ public class WorldEntity
     public bool IsDeleted { get; private set; }
 
     /// <summary>
+    /// Gets the schema version for this entity type's property structure.
+    /// Indicates which version of the entity type's schema was used when created/last migrated.
+    /// Enables forward schema evolution without requiring bulk updates.
+    /// </summary>
+    public int SchemaVersion { get; private set; }
+
+    /// <summary>
     /// Private constructor for EF Core.
     /// </summary>
     private WorldEntity()
@@ -109,6 +116,7 @@ public class WorldEntity
     /// <param name="attributes">Optional custom attributes as dictionary (serialized to JSON, max 100KB).</param>
     /// <param name="parentPath">Optional parent's path (for calculating this entity's path).</param>
     /// <param name="parentDepth">Optional parent's depth (for calculating this entity's depth).</param>
+    /// <param name="schemaVersion">The schema version for this entity type (defaults to 1).</param>
     /// <returns>A new WorldEntity instance.</returns>
     public static WorldEntity Create(
         Guid worldId,
@@ -120,7 +128,8 @@ public class WorldEntity
         List<string>? tags = null,
         Dictionary<string, object>? attributes = null,
         List<Guid>? parentPath = null,
-        int parentDepth = -1)
+        int parentDepth = -1,
+        int schemaVersion = 1)
     {
         // Calculate path and depth
         var path = new List<Guid>();
@@ -154,7 +163,8 @@ public class WorldEntity
             Attributes = attributes != null ? JsonSerializer.Serialize(attributes) : "{}",
             CreatedDate = DateTime.UtcNow,
             ModifiedDate = DateTime.UtcNow,
-            IsDeleted = false
+            IsDeleted = false,
+            SchemaVersion = schemaVersion
         };
 
         entity.Validate();
@@ -170,13 +180,15 @@ public class WorldEntity
     /// <param name="parentId">The new parent ID (null for root-level).</param>
     /// <param name="tags">The new tags list (max 20, each max 50 characters).</param>
     /// <param name="attributes">The new attributes dictionary (max 100KB serialized).</param>
+    /// <param name="schemaVersion">The schema version for this entity type.</param>
     public void Update(
         string name,
         string? description,
         EntityType entityType,
         Guid? parentId,
         List<string>? tags,
-        Dictionary<string, object>? attributes)
+        Dictionary<string, object>? attributes,
+        int schemaVersion)
     {
         Name = name;
         Description = description;
@@ -184,6 +196,7 @@ public class WorldEntity
         ParentId = parentId;
         Tags = tags ?? [];
         Attributes = attributes != null ? JsonSerializer.Serialize(attributes) : "{}";
+        SchemaVersion = schemaVersion;
         ModifiedDate = DateTime.UtcNow;
 
         Validate();
@@ -278,6 +291,11 @@ public class WorldEntity
         if (Depth < 0 || Depth > 10)
         {
             throw new ArgumentException("Hierarchy depth must be between 0 and 10.");
+        }
+
+        if (SchemaVersion < 1)
+        {
+            throw new ArgumentException("Schema version must be at least 1.");
         }
 
         // Validate Attributes JSON size (max 100KB)

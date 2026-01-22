@@ -161,7 +161,7 @@ public class WorldEntityTests
         var newAttributes = new Dictionary<string, object> { ["title"] = "King" };
 
         // Act
-        entity.Update(newName, newDescription, EntityType.Character, null, newTags, newAttributes);
+        entity.Update(newName, newDescription, EntityType.Character, null, newTags, newAttributes, 1);
 
         // Assert
         entity.Name.Should().Be(newName);
@@ -179,7 +179,7 @@ public class WorldEntityTests
         var entity = WorldEntity.Create(worldId, EntityType.Character, "Frodo", TestOwnerId);
 
         // Act
-        var action = () => entity.Update(string.Empty, null, EntityType.Character, null, null, null);
+        var action = () => entity.Update(string.Empty, null, EntityType.Character, null, null, null, 1);
 
         // Assert
         action.Should().Throw<ArgumentException>()

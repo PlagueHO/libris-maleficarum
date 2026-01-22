@@ -21,6 +21,7 @@ This quickstart guide provides step-by-step instructions for implementing schema
 **Goal**: Add `SchemaVersion` property to WorldEntity domain model with validation.
 
 **Files to modify**:
+
 1. `libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs`
 
 **Steps**:
@@ -34,7 +35,7 @@ This quickstart guide provides step-by-step instructions for implementing schema
 public int SchemaVersion { get; private set; }
 ```
 
-2. **Update Create method** - add `schemaVersion` parameter with default `1`:
+1. **Update Create method** - add `schemaVersion` parameter with default `1`:
 
 ```csharp
 public static WorldEntity Create(
@@ -46,7 +47,7 @@ public static WorldEntity Create(
 }
 ```
 
-3. **Update Update method** - add `schemaVersion` parameter:
+1. **Update Update method** - add `schemaVersion` parameter:
 
 ```csharp
 public void Update(
@@ -58,7 +59,7 @@ public void Update(
 }
 ```
 
-4. **Add validation** in `Validate()` method:
+1. **Add validation** in `Validate()` method:
 
 ```csharp
 if (SchemaVersion < 1)
@@ -83,10 +84,12 @@ dotnet test --filter TestCategory=Unit --filter FullyQualifiedName~WorldEntityTe
 **Goal**: Add schema version range configuration per entity type.
 
 **Files to create**:
+
 1. `libris-maleficarum-service/src/Domain/Configuration/EntitySchemaVersionConfig.cs`
-2. `libris-maleficarum-service/src/Domain/Exceptions/SchemaVersionException.cs`
+1. `libris-maleficarum-service/src/Domain/Exceptions/SchemaVersionException.cs`
 
 **Files to modify**:
+
 1. `libris-maleficarum-service/src/Infrastructure/appsettings.json`
 
 **Steps**:
@@ -115,7 +118,7 @@ public class SchemaVersionRange
 }
 ```
 
-2. **Create SchemaVersionException.cs**:
+1. **Create SchemaVersionException.cs**:
 
 ```csharp
 namespace LibrisMaleficarum.Domain.Exceptions;
@@ -137,7 +140,7 @@ public class SchemaVersionException : Exception
 }
 ```
 
-3. **Update appsettings.json** - add configuration section:
+1. **Update appsettings.json** - add configuration section:
 
 ```json
 {
@@ -164,8 +167,9 @@ dotnet build
 **Goal**: Map SchemaVersion to Cosmos DB and handle backward compatibility.
 
 **Files to modify**:
+
 1. `libris-maleficarum-service/src/Infrastructure/Data/Configurations/WorldEntityConfiguration.cs`
-2. Repository classes (if SchemaVersion defaulting needed)
+1. Repository classes (if SchemaVersion defaulting needed)
 
 **Steps**:
 
@@ -177,7 +181,7 @@ builder.Property(e => e.SchemaVersion)
     .IsRequired();
 ```
 
-2. **Backward compatibility** - in repository read operations, treat missing/zero schema version as 1:
+1. **Backward compatibility** - in repository read operations, treat missing/zero schema version as 1:
 
 ```csharp
 // After fetching from database
@@ -203,12 +207,14 @@ dotnet test --filter TestCategory=Integration
 **Goal**: Add schema version validation in API controllers and update DTOs.
 
 **Files to modify**:
+
 1. `libris-maleficarum-service/src/Api/DTOs/CreateWorldEntityRequest.cs`
-2. `libris-maleficarum-service/src/Api/DTOs/UpdateWorldEntityRequest.cs`
-3. `libris-maleficarum-service/src/Api/DTOs/WorldEntityResponse.cs`
-4. `libris-maleficarum-service/src/Api/Controllers/WorldEntityController.cs`
+1. `libris-maleficarum-service/src/Api/DTOs/UpdateWorldEntityRequest.cs`
+1. `libris-maleficarum-service/src/Api/DTOs/WorldEntityResponse.cs`
+1. `libris-maleficarum-service/src/Api/Controllers/WorldEntityController.cs`
 
 **Files to create**:
+
 1. `libris-maleficarum-service/src/Api/Validators/SchemaVersionValidator.cs`
 
 **Steps**:
@@ -219,19 +225,19 @@ dotnet test --filter TestCategory=Integration
 public int? SchemaVersion { get; set; }
 ```
 
-2. **Update UpdateWorldEntityRequest.cs**:
+1. **Update UpdateWorldEntityRequest.cs**:
 
 ```csharp
 public int? SchemaVersion { get; set; }
 ```
 
-3. **Update WorldEntityResponse.cs**:
+1. **Update WorldEntityResponse.cs**:
 
 ```csharp
 public int SchemaVersion { get; set; }
 ```
 
-4. **Create SchemaVersionValidator.cs**:
+1. **Create SchemaVersionValidator.cs**:
 
 ```csharp
 public class SchemaVersionValidator
@@ -304,7 +310,7 @@ public class SchemaVersionValidator
 }
 ```
 
-5. **Update WorldEntityController.cs**:
+1. **Update WorldEntityController.cs**:
 
 ```csharp
 // Inject validator
@@ -349,7 +355,7 @@ public async Task<IActionResult> Update(Guid id, [FromBody] UpdateWorldEntityReq
 }
 ```
 
-6. **Add global exception handler** for SchemaVersionException → 400 with error details:
+1. **Add global exception handler** for SchemaVersionException → 400 with error details:
 
 ```csharp
 // In exception middleware
@@ -390,9 +396,11 @@ dotnet test --filter TestCategory=Unit --filter FullyQualifiedName~WorldEntityCo
 **Goal**: Add `schemaVersion` to TypeScript interfaces and create constants file.
 
 **Files to modify**:
+
 1. `libris-maleficarum-app/src/services/types/worldEntity.types.ts`
 
 **Files to create**:
+
 1. `libris-maleficarum-app/src/services/constants/entitySchemaVersions.ts`
 
 **Steps**:
@@ -416,7 +424,7 @@ export interface UpdateWorldEntityRequest {
 }
 ```
 
-2. **Create entitySchemaVersions.ts**:
+1. **Create entitySchemaVersions.ts**:
 
 ```typescript
 import { WorldEntityType } from '../types/worldEntity.types';
@@ -474,6 +482,7 @@ pnpm type-check
 **Goal**: Include schema version in API requests using constants.
 
 **Files to modify**:
+
 1. `libris-maleficarum-app/src/services/worldEntityApi.ts`
 
 **Steps**:
@@ -484,7 +493,7 @@ pnpm type-check
 import { getSchemaVersion } from './constants/entitySchemaVersions';
 ```
 
-2. **Update create request** - include schema version:
+1. **Update create request** - include schema version:
 
 ```typescript
 export async function createWorldEntity(
@@ -499,7 +508,7 @@ export async function createWorldEntity(
 }
 ```
 
-3. **Update update request** - include current schema version:
+1. **Update update request** - include current schema version:
 
 ```typescript
 export async function updateWorldEntity(
@@ -535,8 +544,9 @@ pnpm test src/services/worldEntityApi.test.ts
 **Goal**: Verify Redux state preserves schema version and forms use current version.
 
 **Files to modify**:
+
 1. `libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx`
-2. `libris-maleficarum-app/src/components/MainPanel/__tests__/EntityDetailForm.test.tsx`
+1. `libris-maleficarum-app/src/components/MainPanel/__tests__/EntityDetailForm.test.tsx`
 
 **Steps**:
 
@@ -555,7 +565,7 @@ const request: UpdateWorldEntityRequest = {
 };
 ```
 
-2. **Update tests** - verify schema version in requests:
+1. **Update tests** - verify schema version in requests:
 
 ```typescript
 it('includes schema version in create request', async () => {
@@ -587,8 +597,9 @@ pnpm test EntityDetailForm.test.tsx
 **Goal**: Update design documentation with schema versioning details.
 
 **Files to modify**:
+
 1. `docs/design/DATA_MODEL.md`
-2. `docs/design/API.md`
+1. `docs/design/API.md`
 
 **Steps**:
 
@@ -605,7 +616,7 @@ public record BaseWorldEntity
 }
 ```
 
-2. **Update API.md** - add `schemaVersion` to example payloads:
+1. **Update API.md** - add `schemaVersion` to example payloads:
 
 ```markdown
 ### Example: Create Entity Request
@@ -654,14 +665,14 @@ cd libris-maleficarum-service
 dotnet run --project src/Orchestration/AppHost
 ```
 
-2. **Start frontend dev server**:
+1. **Start frontend dev server**:
 
 ```bash
 cd libris-maleficarum-app
 pnpm dev
 ```
 
-3. **Test scenarios**:
+1. **Test scenarios**:
    - Create new entity → verify `schemaVersion: 1` in response
    - Update entity → verify schema version preserved
    - Try invalid version (e.g., -1) → verify 400 error with details
@@ -681,8 +692,9 @@ pnpm dev
 ## Next Steps
 
 After implementation:
+
 1. Create PR for review
-2. Run full CI pipeline
-3. Update CHANGELOG.md
-4. Deploy to test environment
-5. Verify schema versioning in production-like scenario
+1. Run full CI pipeline
+1. Update CHANGELOG.md
+1. Deploy to test environment
+1. Verify schema versioning in production-like scenario

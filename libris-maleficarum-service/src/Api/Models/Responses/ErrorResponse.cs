@@ -35,4 +35,9 @@ public class ErrorDetail
     /// Gets or sets field-level validation errors (for validation failures).
     /// </summary>
     public List<ValidationError>? ValidationErrors { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional contextual details about the error.
+    /// </summary>
+    public Dictionary<string, object?>? Details { get; set; }
 }

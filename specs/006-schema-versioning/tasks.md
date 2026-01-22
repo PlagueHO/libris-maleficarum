@@ -146,9 +146,9 @@
 
 #### Frontend API Client - Tests (Write FIRST)
 
-- [ ] T055 [P] [US2] **TEST**: Write failing test for createWorldEntity() - verify request includes schemaVersion from ENTITY_SCHEMA_VERSIONS in worldEntityApi.test.ts - libris-maleficarum-app/src/__tests__/services/worldEntityApi.test.ts
+- [ ] T055 [P] [US2] **TEST**: Write failing test for createWorldEntity() - verify request includes schemaVersion from ENTITY_SCHEMA_VERSIONS in worldEntityApi.test.ts - libris-maleficarum-app/src/**tests**/services/worldEntityApi.test.ts
 - [ ] T056 [P] [US2] **TEST**: Write failing test for updateWorldEntity() - verify request includes current schemaVersion (not original) in worldEntityApi.test.ts
-- [ ] T057 [US2] Update MSW mocks to include schemaVersion: 1 in responses in libris-maleficarum-app/src/__mocks__/handlers.ts
+- [ ] T057 [US2] Update MSW mocks to include schemaVersion: 1 in responses in libris-maleficarum-app/src/**mocks**/handlers.ts
 
 #### Frontend API Client - Implementation (Make Tests PASS)
 
@@ -158,7 +158,7 @@
 
 #### Frontend Components - Tests (Write FIRST)
 
-- [ ] T061 [P] [US2] **TEST**: Write failing component test - EntityDetailForm create includes schemaVersion in request in EntityDetailForm.test.tsx - libris-maleficarum-app/src/components/MainPanel/__tests__/EntityDetailForm.test.tsx
+- [ ] T061 [P] [US2] **TEST**: Write failing component test - EntityDetailForm create includes schemaVersion in request in EntityDetailForm.test.tsx - libris-maleficarum-app/src/components/MainPanel/**tests**/EntityDetailForm.test.tsx
 - [ ] T062 [P] [US2] **TEST**: Write failing component test - EntityDetailForm update includes current schemaVersion (auto-upgrade behavior) in EntityDetailForm.test.tsx
 - [ ] T063 [P] [US2] **TEST**: Write failing accessibility test - EntityDetailForm has no a11y violations with jest-axe in EntityDetailForm.test.tsx
 
@@ -364,6 +364,7 @@ With multiple developers:
 - **Constitution**: All changes follow Clean Architecture and TDD principle
 
 **Implementation Notes**:
+
 - **TDD ENFORCED**: All tasks marked **TEST** must be written first and fail before implementation
 - Backend tests include unit tests (entities, validators) and integration tests (repositories)
 - Frontend tests include type tests, API client tests, component tests with jest-axe for accessibility
