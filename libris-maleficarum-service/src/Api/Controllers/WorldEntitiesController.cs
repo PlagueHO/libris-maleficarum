@@ -297,7 +297,7 @@ public class WorldEntitiesController : ControllerBase
         // Note: Even if request.SchemaVersion is null (using existing version), we validate
         // to ensure consistency and catch any data integrity issues
         _schemaVersionValidator.ValidateUpdate(
-            request.EntityType?.ToString() ?? entity.EntityType.ToString(),
+            request.EntityType.ToString(),
             entity.SchemaVersion,
             finalSchemaVersion);
 
