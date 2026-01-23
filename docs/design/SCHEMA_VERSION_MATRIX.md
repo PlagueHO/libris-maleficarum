@@ -136,7 +136,7 @@ private static readonly Dictionary<string, (int Min, int Max)> SchemaVersionRang
 
 **Architecture**:
 
-```
+```text
 Schema Config Service (Azure Storage Table / Cosmos DB)
     ↓
 Frontend reads on app load → caches in memory
@@ -178,7 +178,7 @@ Backend reads on startup → validates against
 
 **Architecture**:
 
-```
+```text
 Frontend → GET /api/v1/schema/versions → Backend returns supported versions
 Frontend uses MAX version for that entity type
 ```
@@ -230,7 +230,7 @@ Frontend uses MAX version for that entity type
 
 **Recommendation**: Require explicit type conversion API endpoint with confirmation:
 
-```
+```text
 POST /api/v1/worlds/{worldId}/entities/{entityId}/convert
 {
   "targetType": "Character",
