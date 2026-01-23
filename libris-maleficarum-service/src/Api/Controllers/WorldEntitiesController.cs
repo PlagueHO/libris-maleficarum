@@ -290,14 +290,16 @@ public class WorldEntitiesController : ControllerBase
             });
         }
 
-        // Validate schema version if provided
-        if (request.SchemaVersion.HasValue)
-        {
-            _schemaVersionValidator.ValidateUpdate(
-                request.EntityType.ToString(),
-                entity.SchemaVersion,
-                request.SchemaVersion.Value);
-        }
+        // Compute the final schema version that will be used
+        var finalSchemaVersion = request.SchemaVersion ?? entity.SchemaVersion;
+
+        // Validate the schema version that will actually be applied
+        // Note: Even if request.SchemaVersion is null (using existing version), we validate
+        // to ensure consistency and catch any data integrity issues
+        _schemaVersionValidator.ValidateUpdate(
+            request.EntityType?.ToString() ?? entity.EntityType.ToString(),
+            entity.SchemaVersion,
+            finalSchemaVersion);
 
         // Update entity
         entity.Update(
@@ -307,7 +309,7 @@ public class WorldEntitiesController : ControllerBase
             request.ParentId,
             request.Tags,
             request.Attributes,
-            request.SchemaVersion ?? entity.SchemaVersion);
+            finalSchemaVersion);
 
         // Get If-Match header for ETag validation
         var ifMatch = Request.Headers["If-Match"].FirstOrDefault();

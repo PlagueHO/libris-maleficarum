@@ -105,6 +105,13 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
             .ToJsonProperty("IsDeleted")
             .IsRequired();
 
+        // SchemaVersion property with backward compatibility conversion (FR-008)
+        // Converts 0 to 1 when reading from database to handle pre-versioning documents.
+        // Pre-versioning documents (created before schema versioning was implemented) either:
+        // 1. Have no "schemaVersion" field (EF Core defaults to 0)
+        // 2. Have "schemaVersion": 0 (Cosmos DB default for missing numeric fields)
+        // Converting 0->1 treats these legacy documents as v1, ensuring consistent behavior
+        // across the application without requiring a data migration.
         builder.Property(e => e.SchemaVersion)
             .ToJsonProperty("schemaVersion")
             .HasConversion(

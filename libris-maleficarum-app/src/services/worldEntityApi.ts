@@ -195,8 +195,10 @@ export const worldEntityApi = api.injectEndpoints({
         method: 'PUT',
         data: {
           ...data,
-          // Note: schemaVersion should be provided by the component calling this mutation
-          // If not provided, the backend will preserve the existing value
+          // Note: schemaVersion should be provided by the component calling this mutation.
+          // For updates, we only include schemaVersion if explicitly provided since
+          // entityType is optional and may not be available.
+          ...(data.schemaVersion !== undefined && { schemaVersion: data.schemaVersion }),
         },
       }),
       transformResponse: (response: WorldEntityResponse) => response.data,

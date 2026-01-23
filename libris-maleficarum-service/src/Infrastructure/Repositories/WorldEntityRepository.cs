@@ -115,7 +115,7 @@ public class WorldEntityRepository : IWorldEntityRepository
             query = query.Where(e => e.EntityType == entityType.Value);
         }
 
-        // Apply tags filter (case-sensitive exact match)
+        // Apply tags filter (case-sensitive partial match)
         // Note: Cosmos DB LINQ provider does not support string case conversion methods like ToLowerInvariant()
         // For case-insensitive search, tags should be stored in lowercase when saving
         if (tags != null && tags.Any())
