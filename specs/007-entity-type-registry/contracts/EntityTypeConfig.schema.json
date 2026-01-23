@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/PlagueHO/libris-maleficarum/specs/007-entity-type-registry/contracts/EntityTypeConfig.schema.json",
+  "title": "EntityTypeConfig",
+  "description": "Configuration schema for a world entity type in Libris Maleficarum",
+  "type": "object",
+  "required": [
+    "type",
+    "label",
+    "description",
+    "category",
+    "icon",
+    "schemaVersion",
+    "suggestedChildren"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "pattern": "^[A-Z][a-zA-Z]+$",
+      "minLength": 1,
+      "description": "Unique identifier matching WorldEntityType values (PascalCase)",
+      "examples": ["Continent", "Character", "Campaign"]
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable display name",
+      "examples": ["Continent", "Character", "Campaign"]
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Descriptive text for UI hints",
+      "examples": [
+        "A large continental landmass",
+        "A person, NPC, or creature",
+        "A campaign, story arc, or adventure series"
+      ]
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Geography",
+        "Characters & Factions",
+        "Events & Quests",
+        "Items",
+        "Campaigns",
+        "Containers",
+        "Other"
+      ],
+      "description": "Category for grouping entity types in selectors"
+    },
+    "icon": {
+      "type": "string",
+      "pattern": "^[A-Z][a-zA-Z]+$",
+      "description": "Lucide icon component name (PascalCase)",
+      "examples": ["Globe", "User", "Scroll", "Package"]
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Current schema version for the properties field (must be >= 1)"
+    },
+    "suggestedChildren": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][a-zA-Z]+$"
+      },
+      "description": "Array of entity type identifiers suggested as children for this type",
+      "examples": [
+        ["Country", "Region", "Faction"],
+        ["Item", "Quest"],
+        []
+      ]
+    },
+    "canBeRoot": {
+      "type": "boolean",
+      "description": "Whether this entity type can exist without a parent (default: false)",
+      "default": false
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "type": "Continent",
+      "label": "Continent",
+      "description": "A large continental landmass",
+      "category": "Geography",
+      "icon": "Globe",
+      "schemaVersion": 1,
+      "suggestedChildren": [
+        "GeographicRegion",
+        "PoliticalRegion",
+        "Country",
+        "Region",
+        "Faction",
+        "Event"
+      ],
+      "canBeRoot": true
+    },
+    {
+      "type": "Character",
+      "label": "Character",
+      "description": "A person, NPC, or creature",
+      "category": "Characters & Factions",
+      "icon": "User",
+      "schemaVersion": 1,
+      "suggestedChildren": ["Item", "Quest"]
+    },
+    {
+      "type": "Campaign",
+      "label": "Campaign",
+      "description": "A campaign, story arc, or adventure series",
+      "category": "Campaigns",
+      "icon": "Scroll",
+      "schemaVersion": 1,
+      "suggestedChildren": [
+        "Session",
+        "Quest",
+        "Event",
+        "Character",
+        "Location",
+        "Faction"
+      ],
+      "canBeRoot": true
+    }
+  ]
+}

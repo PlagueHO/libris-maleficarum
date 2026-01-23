@@ -19,7 +19,7 @@ import {
   openEntityFormCreate,
 } from '@/store/worldSidebarSlice';
 import { getEntityIcon } from '@/lib/entityIcons';
-import type { WorldEntity } from '@/services/types/worldEntity.types';
+import type { WorldEntity, EntityType } from '@/services/types/worldEntity.types';
 import { EntityContextMenu } from './EntityContextMenu';
 import { cn } from '@/lib/utils';
 
@@ -121,7 +121,7 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
             <span className="w-5 shrink-0" />
           )}
 
-          {createElement(getEntityIcon(entity.entityType), {
+          {createElement(getEntityIcon(entity.entityType as EntityType), {
             size: 16,
             className: 'shrink-0 text-muted-foreground',
             'aria-hidden': 'true',

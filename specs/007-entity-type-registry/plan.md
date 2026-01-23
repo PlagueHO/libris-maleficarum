@@ -183,10 +183,10 @@ Create `quickstart.md` with developer instructions:
 **Adding a New Entity Type**:
 
 1. Open `src/services/config/entityTypeRegistry.ts`
-2. Add entry to `ENTITY_TYPE_REGISTRY` array with all required properties
-3. All derived constants update automatically
-4. Run tests: `pnpm test entityTypeRegistry`
-5. TypeScript will catch any missing/invalid references
+1. Add entry to `ENTITY_TYPE_REGISTRY` array with all required properties
+1. All derived constants update automatically
+1. Run tests: `pnpm test entityTypeRegistry`
+1. TypeScript will catch any missing/invalid references
 
 **Using Entity Type Metadata**:
 
@@ -235,7 +235,7 @@ Entity type metadata is defined in a single registry:
 **Implementation**:
 
 1. Define `EntityTypeConfig` interface with JSDoc comments
-2. Create `ENTITY_TYPE_REGISTRY` array with all 35 entity types:
+1. Create `ENTITY_TYPE_REGISTRY` array with all 35 entity types:
    - **Geographic (7)**: Continent, Country, Region, City, Building, Room, Location
    - **Characters & Factions (2)**: Character, Faction
    - **Events & Quests (2)**: Event, Quest
@@ -245,8 +245,8 @@ Entity type metadata is defined in a single registry:
    - **Regional (4)**: GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion
    - **Other (1)**: Other
    - **Note**: Verify container types during implementation (Events/Event, Items/Item naming collision)
-3. Mark array as `as const` for type inference
-4. Export as `readonly EntityTypeConfig[]`
+1. Mark array as `as const` for type inference
+1. Export as `readonly EntityTypeConfig[]`
 
 **Acceptance Criteria**:
 
@@ -265,32 +265,40 @@ Entity type metadata is defined in a single registry:
 **Implementation**:
 
 1. Import `ENTITY_TYPE_REGISTRY` from `../config/entityTypeRegistry`
-2. Replace existing `WorldEntityType` const with derived version:
+1. Replace existing `WorldEntityType` const with derived version:
+
    ```typescript
    export const WorldEntityType = Object.fromEntries(
      ENTITY_TYPE_REGISTRY.map(c => [c.type, c.type])
    ) as const;
    ```
-3. Keep existing type derivation: `export type WorldEntityType = typeof WorldEntityType[keyof typeof WorldEntityType];`
-4. Derive `ENTITY_SCHEMA_VERSIONS`:
+
+1. Keep existing type derivation: `export type WorldEntityType = typeof WorldEntityType[keyof typeof WorldEntityType];`
+1. Derive `ENTITY_SCHEMA_VERSIONS`:
+
    ```typescript
    export const ENTITY_SCHEMA_VERSIONS: Record<WorldEntityType, number> = Object.fromEntries(
      ENTITY_TYPE_REGISTRY.map(c => [c.type, c.schemaVersion])
    );
    ```
-5. Derive `ENTITY_TYPE_META`:
+
+1. Derive `ENTITY_TYPE_META`:
+
    ```typescript
    export const ENTITY_TYPE_META: Record<WorldEntityType, EntityTypeMeta> = Object.fromEntries(
      ENTITY_TYPE_REGISTRY.map(c => [c.type, { label: c.label, description: c.description, category: c.category, icon: c.icon }])
    );
    ```
-6. Derive `ENTITY_TYPE_SUGGESTIONS`:
+
+1. Derive `ENTITY_TYPE_SUGGESTIONS`:
+
    ```typescript
    export const ENTITY_TYPE_SUGGESTIONS: Record<WorldEntityType, WorldEntityType[]> = Object.fromEntries(
      ENTITY_TYPE_REGISTRY.map(c => [c.type, c.suggestedChildren as WorldEntityType[]])
    );
    ```
-7. Keep existing helper functions `getEntityTypeSuggestions()` and `getEntityTypeMeta()` (no changes)
+
+1. Keep existing helper functions `getEntityTypeSuggestions()` and `getEntityTypeMeta()` (no changes)
 
 **Acceptance Criteria**:
 
@@ -309,12 +317,15 @@ Entity type metadata is defined in a single registry:
 **Implementation**:
 
 1. Add `getEntityTypeConfig()` function:
+
    ```typescript
    export function getEntityTypeConfig(type: WorldEntityType): EntityTypeConfig | undefined {
      return ENTITY_TYPE_REGISTRY.find(c => c.type === type);
    }
    ```
-2. Add `getRootEntityTypes()` function:
+
+1. Add `getRootEntityTypes()` function:
+
    ```typescript
    export function getRootEntityTypes(): WorldEntityType[] {
      return ENTITY_TYPE_REGISTRY
@@ -322,13 +333,16 @@ Entity type metadata is defined in a single registry:
        .map(c => c.type as WorldEntityType);
    }
    ```
-3. Add `getAllEntityTypes()` function:
+
+1. Add `getAllEntityTypes()` function:
+
    ```typescript
    export function getAllEntityTypes(): readonly EntityTypeConfig[] {
      return ENTITY_TYPE_REGISTRY;
    }
    ```
-4. Export all functions with JSDoc comments
+
+1. Export all functions with JSDoc comments
 
 **Acceptance Criteria**:
 
@@ -346,13 +360,16 @@ Entity type metadata is defined in a single registry:
 **Implementation**:
 
 1. Test registry uniqueness:
+
    ```typescript
    it('should have unique type identifiers', () => {
      const types = ENTITY_TYPE_REGISTRY.map(c => c.type);
      expect(new Set(types).size).toBe(types.length);
    });
    ```
-2. Test schema versions >= 1:
+
+1. Test schema versions >= 1:
+
    ```typescript
    it('should have valid schema versions', () => {
      ENTITY_TYPE_REGISTRY.forEach(config => {
@@ -360,7 +377,9 @@ Entity type metadata is defined in a single registry:
      });
    });
    ```
-3. Test icon name format (PascalCase):
+
+1. Test icon name format (PascalCase):
+
    ```typescript
    it('should have valid icon names', () => {
      ENTITY_TYPE_REGISTRY.forEach(config => {
@@ -368,7 +387,9 @@ Entity type metadata is defined in a single registry:
      });
    });
    ```
-4. Test completeness (all 35 types present):
+
+1. Test completeness (all 35 types present):
+
    ```typescript
    it('should contain all 35 entity types', () => {
      expect(ENTITY_TYPE_REGISTRY).toHaveLength(35);
@@ -377,7 +398,9 @@ Entity type metadata is defined in a single registry:
      expect(actualTypes.sort()).toEqual(expectedTypes.sort());
    });
    ```
-5. Test no circular suggestions:
+
+1. Test no circular suggestions:
+
    ```typescript
    it('should not have circular suggestions', () => {
      ENTITY_TYPE_REGISTRY.forEach(config => {
@@ -402,6 +425,7 @@ Entity type metadata is defined in a single registry:
 **Implementation**:
 
 1. Test `getEntityTypeConfig()`:
+
    ```typescript
    it('should return config for valid type', () => {
      const config = getEntityTypeConfig(WorldEntityType.Continent);
@@ -415,7 +439,9 @@ Entity type metadata is defined in a single registry:
      expect(config).toBeUndefined();
    });
    ```
-2. Test `getRootEntityTypes()`:
+
+1. Test `getRootEntityTypes()`:
+
    ```typescript
    it('should return only types with canBeRoot true', () => {
      const rootTypes = getRootEntityTypes();
@@ -425,7 +451,9 @@ Entity type metadata is defined in a single registry:
      });
    });
    ```
-3. Test `getAllEntityTypes()`:
+
+1. Test `getAllEntityTypes()`:
+
    ```typescript
    it('should return complete registry', () => {
      const all = getAllEntityTypes();
@@ -445,23 +473,25 @@ Entity type metadata is defined in a single registry:
 
 ### Task 2.6: Update Import References
 
-**Files**: 
+**Files**:
+
 - `src/services/worldEntityApi.ts` (MODIFY)
 - `src/components/MainPanel/EntityDetailForm.tsx` (MODIFY)
 
 **Implementation**:
 
 1. Find all imports: `grep -r "from.*entitySchemaVersions" src/`
-2. Replace imports:
+1. Replace imports:
    - FROM: `import { getSchemaVersion } from './constants/entitySchemaVersions';`
    - TO: `import { ENTITY_SCHEMA_VERSIONS } from './types/worldEntity.types';` or `import { getEntityTypeConfig } from './config/entityTypeRegistry';`
-3. Update usage:
+1. Update usage:
    - FROM: `getSchemaVersion(entityType)`
    - TO: `ENTITY_SCHEMA_VERSIONS[entityType]` or `getEntityTypeConfig(entityType)?.schemaVersion ?? 1`
-4. Verify TypeScript compilation succeeds
-5. Run affected tests to confirm backward compatibility
+1. Verify TypeScript compilation succeeds
+1. Run affected tests to confirm backward compatibility
 
 **Files to Update** (from grep results):
+
 - `src/services/worldEntityApi.ts` (line 11)
 - `src/components/MainPanel/EntityDetailForm.tsx` (line 11)
 
@@ -481,10 +511,11 @@ Entity type metadata is defined in a single registry:
 **Implementation**:
 
 1. Verify zero references remain (Task 2.6 complete)
-2. Delete file: `rm src/services/constants/entitySchemaVersions.ts`
-3. Run full test suite to confirm no breakage
-4. Verify TypeScript compilation succeeds
-5. Add test to prevent accidental recreation:
+1. Delete file: `rm src/services/constants/entitySchemaVersions.ts`
+1. Run full test suite to confirm no breakage
+1. Verify TypeScript compilation succeeds
+1. Add test to prevent accidental recreation:
+
    ```typescript
    it('should not have entitySchemaVersions.ts file', () => {
      expect(() => require('../services/constants/entitySchemaVersions')).toThrow();
@@ -507,11 +538,11 @@ Entity type metadata is defined in a single registry:
 **Validation**:
 
 1. All existing tests pass (100% backward compatibility - SC-004)
-2. New validation tests pass (100% - SC-006)
-3. Helper function tests pass (100% - SC-009)
-4. TypeScript compilation succeeds (zero errors - SC-003)
-5. ESLint passes (zero warnings - SC-005)
-6. Coverage maintains or improves current levels
+1. New validation tests pass (100% - SC-006)
+1. Helper function tests pass (100% - SC-009)
+1. TypeScript compilation succeeds (zero errors - SC-003)
+1. ESLint passes (zero warnings - SC-005)
+1. Coverage maintains or improves current levels
 
 **Acceptance Criteria**:
 
@@ -567,13 +598,13 @@ All constitutional principles remain satisfied (same as initial check). No new v
 **Rollout Plan**:
 
 1. **Merge to feature branch** (`007-entity-type-registry`)
-2. **Run CI pipeline**: Verify tests pass in clean environment
-3. **Create Pull Request** to `main`
-4. **Code Review**: Verify all checklist items complete
-5. **Merge to main**: After approval
-6. **Monitor**: No user-facing changes, but verify app loads correctly
+1. **Run CI pipeline**: Verify tests pass in clean environment
+1. **Create Pull Request** to `main`
+1. **Code Review**: Verify all checklist items complete
+1. **Merge to main**: After approval
+1. **Monitor**: No user-facing changes, but verify app loads correctly
 
-**Rollback Plan**: 
+**Rollback Plan**:
 
 If issues discovered post-merge, revert commit. Registry pattern is self-contained; reverting restores original scattered constants without data loss.
 
@@ -588,17 +619,20 @@ If issues discovered post-merge, revert commit. Registry pattern is self-contain
 ## Metrics & Monitoring
 
 **Build Metrics**:
+
 - TypeScript compilation time (should be <1 second increase)
 - Test suite execution time (should be <5 second increase)
 - Bundle size (should be negligible change, derivation is compact)
 
 **Post-Deployment Validation**:
+
 - App loads successfully in browser
 - Entity creation/editing works (uses ENTITY_SCHEMA_VERSIONS)
 - Entity type selector shows all 29 types (uses ENTITY_TYPE_META)
 - No console errors related to entity types
 
 **Success Indicators**:
+
 - All FR and SC checkboxes complete
 - CI pipeline green
 - Code review approval
@@ -626,14 +660,15 @@ If issues discovered post-merge, revert commit. Registry pattern is self-contain
 ## Next Steps
 
 1. ✅ Spec created and validated
-2. ✅ Plan created (this document)
-3. ⬜ Execute Phase 1 (data-model.md, contracts/, quickstart.md)
-4. ⬜ Execute Phase 2 (implementation tasks 2.1-2.8)
-5. ⬜ Execute Phase 3 (verification checklist)
-6. ⬜ Create PR and request review
-7. ⬜ Merge to main after approval
+1. ✅ Plan created (this document)
+1. ⬜ Execute Phase 1 (data-model.md, contracts/, quickstart.md)
+1. ⬜ Execute Phase 2 (implementation tasks 2.1-2.8)
+1. ⬜ Execute Phase 3 (verification checklist)
+1. ⬜ Create PR and request review
+1. ⬜ Merge to main after approval
 
 **Command to Start Implementation**:
+
 ```bash
 # Checkout feature branch (already on 007-entity-type-registry)
 git status

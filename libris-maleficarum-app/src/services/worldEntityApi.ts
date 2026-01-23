@@ -8,7 +8,6 @@
  */
 
 import { api } from './api';
-import { getSchemaVersion } from './constants/entitySchemaVersions';
 import type {
   WorldEntity,
   WorldEntityListResponse,
@@ -19,6 +18,7 @@ import type {
   GetWorldEntitiesQueryParams,
   WorldEntityType,
 } from './types/worldEntity.types';
+import { ENTITY_SCHEMA_VERSIONS } from './types/worldEntity.types';
 
 /**
  * WorldEntity API endpoints injected into base API slice
@@ -148,7 +148,7 @@ export const worldEntityApi = api.injectEndpoints({
         method: 'POST',
         data: {
           ...data,
-          schemaVersion: data.schemaVersion ?? getSchemaVersion(data.entityType),
+          schemaVersion: data.schemaVersion ?? ENTITY_SCHEMA_VERSIONS[data.entityType],
         },
       }),
       transformResponse: (response: WorldEntityResponse) => response.data,
@@ -204,7 +204,7 @@ export const worldEntityApi = api.injectEndpoints({
           ...data,
           // FR-007: Frontend MUST include schemaVersion in all update requests using current version from config
           schemaVersion:
-            data.schemaVersion ?? getSchemaVersion(data.entityType ?? currentEntityType),
+            data.schemaVersion ?? ENTITY_SCHEMA_VERSIONS[data.entityType ?? currentEntityType],
         },
       }),
       transformResponse: (response: WorldEntityResponse) => response.data,

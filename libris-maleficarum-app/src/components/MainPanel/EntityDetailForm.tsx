@@ -7,8 +7,10 @@ import {
   useUpdateWorldEntityMutation,
   useGetWorldEntityByIdQuery,
 } from '../../services/worldEntityApi';
-import { WorldEntityType } from '../../services/types/worldEntity.types';
-import { getSchemaVersion } from '../../services/constants/entitySchemaVersions';
+import {
+  WorldEntityType,
+  ENTITY_SCHEMA_VERSIONS,
+} from '../../services/types/worldEntity.types';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { EntityTypeSelector } from '../ui/entity-type-selector';
@@ -193,7 +195,7 @@ export function EntityDetailForm() {
             name,
             description,
             properties,
-            schemaVersion: getSchemaVersion(typedEntityType),
+            schemaVersion: ENTITY_SCHEMA_VERSIONS[typedEntityType],
           },
           currentEntityType: existingEntity?.entityType || typedEntityType,
         }).unwrap();
@@ -207,7 +209,7 @@ export function EntityDetailForm() {
             entityType: typedEntityType,
             tags: [],
             properties,
-            schemaVersion: getSchemaVersion(typedEntityType),
+            schemaVersion: ENTITY_SCHEMA_VERSIONS[typedEntityType],
           },
         }).unwrap();
         
