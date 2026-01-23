@@ -28,7 +28,7 @@ All paths relative to `libris-maleficarum-app/` directory (React frontend).
 - [ ] T001 [P] Create data-model.md documenting EntityTypeConfig interface in specs/007-entity-type-registry/data-model.md
 - [ ] T002 [P] Create contracts/EntityTypeConfig.schema.json with JSON schema in specs/007-entity-type-registry/contracts/EntityTypeConfig.schema.json
 - [ ] T003 [P] Create quickstart.md developer guide in specs/007-entity-type-registry/quickstart.md
-- [ ] T004 Update Copilot agent context with registry patterns via .specify/scripts/powershell/update-agent-context.ps1
+- [ ] T004 Update Copilot agent context with registry patterns per plan.md §1.4 via .specify/scripts/powershell/update-agent-context.ps1
 
 **Checkpoint**: Documentation complete - implementation can begin
 
@@ -36,18 +36,18 @@ All paths relative to `libris-maleficarum-app/` directory (React frontend).
 
 ## Phase 2: User Story 1 - Single Source Definition (Priority: P1) 🎯 MVP
 
-**Goal**: Consolidate all 29 entity type definitions into single ENTITY_TYPE_REGISTRY array
+**Goal**: Consolidate all 35 entity type definitions into single ENTITY_TYPE_REGISTRY array
 
 **Independent Test**: Add new entity type "Kingdom" to registry and verify all derived constants automatically include it without manual updates elsewhere
 
 ### Implementation for User Story 1
 
 - [ ] T005 [US1] Create EntityTypeConfig interface in src/services/config/entityTypeRegistry.ts
-- [ ] T006 [US1] Create ENTITY_TYPE_REGISTRY array with all 29 entity types in src/services/config/entityTypeRegistry.ts
+- [ ] T006 [US1] Create ENTITY_TYPE_REGISTRY array with all 35 entity types in src/services/config/entityTypeRegistry.ts
 - [ ] T007 [US1] Export registry as readonly array with const assertion in src/services/config/entityTypeRegistry.ts
 - [ ] T008 [US1] Verify TypeScript compilation succeeds with new registry file
 
-**Checkpoint**: Registry exists with complete metadata for all 29 entity types
+**Checkpoint**: Registry exists with complete metadata for all 35 entity types
 
 ---
 
@@ -104,7 +104,7 @@ All paths relative to `libris-maleficarum-app/` directory (React frontend).
 - [ ] T023 [P] [US4] Create validation test for unique type identifiers in src/__tests__/services/entityTypeRegistry.test.ts
 - [ ] T024 [P] [US4] Create validation test for schema versions >= 1 in src/__tests__/services/entityTypeRegistry.test.ts
 - [ ] T025 [P] [US4] Create validation test for valid icon names (PascalCase) in src/__tests__/services/entityTypeRegistry.test.ts
-- [ ] T026 [P] [US4] Create validation test for completeness (all 29 types present) in src/__tests__/services/entityTypeRegistry.test.ts
+- [ ] T026 [P] [US4] Create validation test for completeness (all 35 types present) in src/__tests__/services/entityTypeRegistry.test.ts
 - [ ] T027 [P] [US4] Create validation test for no circular suggestions in src/__tests__/services/entityTypeRegistry.test.ts
 
 ### Implementation for User Story 4
@@ -310,7 +310,7 @@ Total: ~6-7 hours for implementation (excluding Phase 1 docs)
 After completing all tasks, verify these from spec.md:
 
 - [ ] **SC-001**: Can add entity type with one registry entry
-- [ ] **SC-002**: All 29 entity types in registry
+- [ ] **SC-002**: All 35 entity types in registry
 - [ ] **SC-003**: TypeScript zero errors
 - [ ] **SC-004**: 100% existing test pass rate
 - [ ] **SC-005**: ESLint zero warnings
