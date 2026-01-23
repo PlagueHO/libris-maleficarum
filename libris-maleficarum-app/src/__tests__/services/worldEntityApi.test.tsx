@@ -30,6 +30,9 @@ import type {
 } from '@/services/types/worldEntity.types';
 import { WorldEntityType } from '@/services/types/worldEntity.types';
 
+// Test configuration
+const API_BASE_URL = 'http://localhost:5000';
+
 // Mock data
 const mockWorldEntity: WorldEntity = {
   id: '123e4567-e89b-12d3-a456-426614174000',
@@ -56,7 +59,7 @@ let lastUpdateRequest: UpdateWorldEntityRequest | null = null;
 // MSW server setup
 const server = setupServer(
   // POST /api/v1/worlds/:worldId/entities
-  http.post('http://localhost:5000/api/v1/worlds/:worldId/entities', async ({ request }) => {
+  http.post(`${API_BASE_URL}/api/v1/worlds/:worldId/entities`, async ({ request }) => {
     lastCreateRequest = (await request.json()) as CreateWorldEntityRequest;
     const response: WorldEntityResponse = {
       data: {
@@ -70,7 +73,7 @@ const server = setupServer(
   }),
 
   // PUT /api/v1/worlds/:worldId/entities/:id
-  http.put('http://localhost:5000/api/v1/worlds/:worldId/entities/:id', async ({ request }) => {
+  http.put(`${API_BASE_URL}/api/v1/worlds/:worldId/entities/:id`, async ({ request }) => {
     lastUpdateRequest = (await request.json()) as UpdateWorldEntityRequest;
     const response: WorldEntityResponse = {
       data: {

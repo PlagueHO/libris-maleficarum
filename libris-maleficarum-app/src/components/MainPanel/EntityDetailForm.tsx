@@ -178,6 +178,9 @@ export function EntityDetailForm() {
     if (!validate() || !selectedWorldId) return;
 
     try {
+      // Type assertion done once for reuse
+      const typedEntityType = entityType as WorldEntityType;
+      
       // Only include properties if there's actual data (not empty object or null)
       const hasProperties = customProperties && Object.keys(customProperties).length > 0;
       const properties = hasProperties ? JSON.stringify(customProperties) : undefined;
@@ -190,7 +193,7 @@ export function EntityDetailForm() {
             name,
             description,
             properties,
-            schemaVersion: getSchemaVersion(entityType as WorldEntityType),
+            schemaVersion: getSchemaVersion(typedEntityType),
           },
         }).unwrap();
       } else {
@@ -200,10 +203,10 @@ export function EntityDetailForm() {
             parentId: newEntityParentId,
             name,
             description,
-            entityType: entityType as WorldEntityType,
+            entityType: typedEntityType,
             tags: [],
             properties,
-            schemaVersion: getSchemaVersion(entityType as WorldEntityType),
+            schemaVersion: getSchemaVersion(typedEntityType),
           },
         }).unwrap();
         
