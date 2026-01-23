@@ -25,10 +25,10 @@ All paths relative to `libris-maleficarum-app/` directory (React frontend).
 
 **Purpose**: Create design documentation and update agent context
 
-- [ ] T001 [P] Create data-model.md documenting EntityTypeConfig interface in specs/007-entity-type-registry/data-model.md
-- [ ] T002 [P] Create contracts/EntityTypeConfig.schema.json with JSON schema in specs/007-entity-type-registry/contracts/EntityTypeConfig.schema.json
-- [ ] T003 [P] Create quickstart.md developer guide in specs/007-entity-type-registry/quickstart.md
-- [ ] T004 Update Copilot agent context with registry patterns per plan.md §1.4 via .specify/scripts/powershell/update-agent-context.ps1
+- [X] T001 [P] Create data-model.md documenting EntityTypeConfig interface in specs/007-entity-type-registry/data-model.md
+- [X] T002 [P] Create contracts/EntityTypeConfig.schema.json with JSON schema in specs/007-entity-type-registry/contracts/EntityTypeConfig.schema.json
+- [X] T003 [P] Create quickstart.md developer guide in specs/007-entity-type-registry/quickstart.md
+- [X] T004 Update Copilot agent context with registry patterns per plan.md §1.4 via .specify/scripts/powershell/update-agent-context.ps1
 
 **Checkpoint**: Documentation complete - implementation can begin
 
@@ -42,10 +42,10 @@ All paths relative to `libris-maleficarum-app/` directory (React frontend).
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Create EntityTypeConfig interface in src/services/config/entityTypeRegistry.ts
-- [ ] T006 [US1] Create ENTITY_TYPE_REGISTRY array with all 35 entity types in src/services/config/entityTypeRegistry.ts
-- [ ] T007 [US1] Export registry as readonly array with const assertion in src/services/config/entityTypeRegistry.ts
-- [ ] T008 [US1] Verify TypeScript compilation succeeds with new registry file
+- [X] T005 [US1] Create EntityTypeConfig interface in src/services/config/entityTypeRegistry.ts
+- [X] T006 [US1] Create ENTITY_TYPE_REGISTRY array with all 35 entity types in src/services/config/entityTypeRegistry.ts
+- [X] T007 [US1] Export registry as readonly array with const assertion in src/services/config/entityTypeRegistry.ts
+- [X] T008 [US1] Verify TypeScript compilation succeeds with new registry file
 
 **Checkpoint**: Registry exists with complete metadata for all 35 entity types
 
@@ -59,13 +59,13 @@ All paths relative to `libris-maleficarum-app/` directory (React frontend).
 
 ### Implementation for User Story 2
 
-- [ ] T009 [US2] Import ENTITY_TYPE_REGISTRY into src/services/types/worldEntity.types.ts
-- [ ] T010 [US2] Derive WorldEntityType const from registry using Object.fromEntries in src/services/types/worldEntity.types.ts
-- [ ] T011 [US2] Derive ENTITY_SCHEMA_VERSIONS as Record<WorldEntityType, number> in src/services/types/worldEntity.types.ts
-- [ ] T012 [US2] Derive ENTITY_TYPE_META as Record<WorldEntityType, EntityTypeMeta> in src/services/types/worldEntity.types.ts
-- [ ] T013 [US2] Derive ENTITY_TYPE_SUGGESTIONS as Record<WorldEntityType, WorldEntityType[]> in src/services/types/worldEntity.types.ts
-- [ ] T014 [US2] Verify all derived constants have correct Record<WorldEntityType, ...> types in src/services/types/worldEntity.types.ts
-- [ ] T015 [US2] Verify TypeScript compilation succeeds with zero errors
+- [X] T009 [US2] Import ENTITY_TYPE_REGISTRY into src/services/types/worldEntity.types.ts
+- [X] T010 [US2] Derive WorldEntityType const from registry using Object.fromEntries in src/services/types/worldEntity.types.ts
+- [X] T011 [US2] Derive ENTITY_SCHEMA_VERSIONS as Record<WorldEntityType, number> in src/services/types/worldEntity.types.ts
+- [X] T012 [US2] Derive ENTITY_TYPE_META as Record<WorldEntityType, EntityTypeMeta> in src/services/types/worldEntity.types.ts
+- [X] T013 [US2] Derive ENTITY_TYPE_SUGGESTIONS as Record<WorldEntityType, WorldEntityType[]> in src/services/types/worldEntity.types.ts
+- [X] T014 [US2] Verify all derived constants have correct Record<WorldEntityType, ...> types in src/services/types/worldEntity.types.ts
+- [X] T015 [US2] Verify TypeScript compilation succeeds with zero errors
 
 **Checkpoint**: All constants derived from registry with strong typing maintained
 
@@ -79,13 +79,13 @@ All paths relative to `libris-maleficarum-app/` directory (React frontend).
 
 ### Implementation for User Story 3
 
-- [ ] T016 [P] [US3] Update import in src/services/worldEntityApi.ts from entitySchemaVersions to worldEntity.types
-- [ ] T017 [P] [US3] Update usage from getSchemaVersion(entityType) to ENTITY_SCHEMA_VERSIONS[entityType] in src/services/worldEntityApi.ts
-- [ ] T018 [P] [US3] Update import in src/components/MainPanel/EntityDetailForm.tsx from entitySchemaVersions to config/entityTypeRegistry
-- [ ] T019 [P] [US3] Update usage from getSchemaVersion(entityType) to getEntityTypeConfig(entityType)?.schemaVersion in src/components/MainPanel/EntityDetailForm.tsx
-- [ ] T020 [US3] Delete src/services/constants/entitySchemaVersions.ts file
-- [ ] T021 [US3] Verify TypeScript compilation succeeds with zero references to deleted file
-- [ ] T022 [US3] Run full test suite (pnpm test) and verify 100% pass rate
+- [X] T016 [P] [US3] Update import in src/services/worldEntityApi.ts from entitySchemaVersions to worldEntity.types
+- [X] T017 [P] [US3] Update usage from getSchemaVersion(entityType) to ENTITY_SCHEMA_VERSIONS[entityType] in src/services/worldEntityApi.ts
+- [X] T018 [P] [US3] Update import in src/components/MainPanel/EntityDetailForm.tsx from entitySchemaVersions to config/entityTypeRegistry
+- [X] T019 [P] [US3] Update usage from getSchemaVersion(entityType) to getEntityTypeConfig(entityType)?.schemaVersion in src/components/MainPanel/EntityDetailForm.tsx
+- [X] T020 [US3] Delete src/services/constants/entitySchemaVersions.ts file
+- [X] T021 [US3] Verify TypeScript compilation succeeds with zero references to deleted file
+- [X] T022 [US3] Run full test suite (pnpm test) and verify 100% pass rate
 
 **Checkpoint**: Backward compatibility verified - all existing code works without changes
 
@@ -101,16 +101,16 @@ All paths relative to `libris-maleficarum-app/` directory (React frontend).
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation (TDD)**
 
-- [ ] T023 [P] [US4] Create validation test for unique type identifiers in src/__tests__/services/entityTypeRegistry.test.ts
-- [ ] T024 [P] [US4] Create validation test for schema versions >= 1 in src/__tests__/services/entityTypeRegistry.test.ts
-- [ ] T025 [P] [US4] Create validation test for valid icon names (PascalCase) in src/__tests__/services/entityTypeRegistry.test.ts
-- [ ] T026 [P] [US4] Create validation test for completeness (all 35 types present) in src/__tests__/services/entityTypeRegistry.test.ts
-- [ ] T027 [P] [US4] Create validation test for no circular suggestions in src/__tests__/services/entityTypeRegistry.test.ts
+- [X] T023 [P] [US4] Create validation test for unique type identifiers in src/**tests**/services/entityTypeRegistry.test.ts
+- [X] T024 [P] [US4] Create validation test for schema versions >= 1 in src/**tests**/services/entityTypeRegistry.test.ts
+- [X] T025 [P] [US4] Create validation test for valid icon names (PascalCase) in src/**tests**/services/entityTypeRegistry.test.ts
+- [X] T026 [P] [US4] Create validation test for completeness (all 29 types present) in src/**tests**/services/entityTypeRegistry.test.ts
+- [X] T027 [P] [US4] Create validation test for no circular suggestions in src/**tests**/services/entityTypeRegistry.test.ts
 
 ### Implementation for User Story 4
 
-- [ ] T028 [US4] Verify all validation tests pass at 100% success rate
-- [ ] T029 [US4] Run test suite (pnpm test) and confirm validation coverage
+- [X] T028 [US4] Verify all validation tests pass at 100% success rate
+- [X] T029 [US4] Run test suite (pnpm test) and confirm validation coverage
 
 **Checkpoint**: Registry validation tests provide comprehensive error detection
 
@@ -126,19 +126,19 @@ All paths relative to `libris-maleficarum-app/` directory (React frontend).
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation (TDD)**
 
-- [ ] T030 [P] [US5] Create test for getEntityTypeConfig() valid type in src/__tests__/config/entityTypeRegistry.test.ts
-- [ ] T031 [P] [US5] Create test for getEntityTypeConfig() invalid type returns undefined in src/__tests__/config/entityTypeRegistry.test.ts
-- [ ] T032 [P] [US5] Create test for getRootEntityTypes() returns only canBeRoot types in src/__tests__/config/entityTypeRegistry.test.ts
-- [ ] T033 [P] [US5] Create test for getAllEntityTypes() returns complete registry in src/__tests__/config/entityTypeRegistry.test.ts
+- [X] T030 [P] [US5] Create test for getEntityTypeConfig() valid type in src/**tests**/config/entityTypeRegistry.test.ts
+- [X] T031 [P] [US5] Create test for getEntityTypeConfig() invalid type returns undefined in src/**tests**/config/entityTypeRegistry.test.ts
+- [X] T032 [P] [US5] Create test for getRootEntityTypes() returns only canBeRoot types in src/**tests**/config/entityTypeRegistry.test.ts
+- [X] T033 [P] [US5] Create test for getAllEntityTypes() returns complete registry in src/**tests**/config/entityTypeRegistry.test.ts
 
 ### Implementation for User Story 5
 
-- [ ] T034 [US5] Implement getEntityTypeConfig(type) function in src/services/config/entityTypeRegistry.ts
-- [ ] T035 [US5] Implement getRootEntityTypes() function in src/services/config/entityTypeRegistry.ts
-- [ ] T036 [US5] Implement getAllEntityTypes() function in src/services/config/entityTypeRegistry.ts
-- [ ] T037 [US5] Export all helper functions with JSDoc comments in src/services/config/entityTypeRegistry.ts
-- [ ] T038 [US5] Verify all helper function tests pass at 100% success rate
-- [ ] T039 [US5] Verify TypeScript provides correct return type inference for helper functions
+- [X] T034 [US5] Implement getEntityTypeConfig(type) function in src/services/config/entityTypeRegistry.ts
+- [X] T035 [US5] Implement getRootEntityTypes() function in src/services/config/entityTypeRegistry.ts
+- [X] T036 [US5] Implement getAllEntityTypes() function in src/services/config/entityTypeRegistry.ts
+- [X] T037 [US5] Export all helper functions with JSDoc comments in src/services/config/entityTypeRegistry.ts
+- [X] T038 [US5] Verify all helper function tests pass at 100% success rate
+- [X] T039 [US5] Verify TypeScript provides correct return type inference for helper functions
 
 **Checkpoint**: Helper functions implemented and fully tested
 
@@ -148,11 +148,11 @@ All paths relative to `libris-maleficarum-app/` directory (React frontend).
 
 **Purpose**: Final validation and quality checks
 
-- [ ] T040 [P] Run full test suite (pnpm test) and verify 100% pass rate
-- [ ] T041 [P] Run TypeScript compilation and verify zero errors (pnpm build)
-- [ ] T042 [P] Run ESLint and verify zero warnings (pnpm lint)
-- [ ] T043 [P] Verify test coverage maintains or improves baseline (pnpm test -- --coverage)
-- [ ] T044 Verify dev server starts successfully (pnpm dev)
+- [X] T040 [P] Run full test suite (pnpm test) and verify 100% pass rate
+- [X] T041 [P] Run TypeScript compilation and verify zero errors (pnpm build)
+- [X] T042 [P] Run ESLint and verify zero warnings (pnpm lint)
+- [X] T043 [P] Verify test coverage maintains or improves baseline (pnpm test -- --coverage)
+- [X] T044 Verify dev server starts successfully (pnpm dev)
 - [ ] T045 Manually test entity creation in browser to verify ENTITY_SCHEMA_VERSIONS integration
 - [ ] T046 Complete Phase 3 verification checklist in plan.md (all FR and SC items)
 - [ ] T047 Run quickstart.md validation (add new entity type and verify it works)
@@ -182,25 +182,31 @@ All paths relative to `libris-maleficarum-app/` directory (React frontend).
 ### Within Each User Story
 
 **User Story 1**:
+
 - T005 → T006 → T007 → T008 (sequential)
 
 **User Story 2**:
+
 - T009 → T010, T011, T012, T013 (parallel after import) → T014 → T015
 
 **User Story 3**:
+
 - T016-T019 can run in parallel (different files)
 - T020 → T021 → T022 (sequential)
 
 **User Story 4**:
+
 - T023-T027 can run in parallel (all test creation)
 - T028 → T029 (sequential verification)
 
 **User Story 5**:
+
 - T030-T033 can run in parallel (all test creation)
 - T034-T036 can run in parallel (different functions)
 - T037 → T038 → T039 (sequential verification)
 
 **Polish**:
+
 - T040-T043 can run in parallel (different validation commands)
 - T044 → T045 → T046 → T047 (sequential verification)
 

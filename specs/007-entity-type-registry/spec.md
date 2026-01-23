@@ -20,8 +20,8 @@ As a **developer**, when I need to add a new entity type, I want to define all m
 **Acceptance Scenarios**:
 
 1. **Given** I need to add a new entity type "Kingdom", **When** I add one entry to `ENTITY_TYPE_REGISTRY` with all metadata (label, description, category, icon, schemaVersion, suggestedChildren), **Then** all exported constants automatically include "Kingdom" without additional changes
-2. **Given** the registry contains 29 entity types, **When** I run the test suite, **Then** all tests pass confirming completeness and validity of all derived constants
-3. **Given** I update the schema version for "Continent" from 1 to 2 in the registry, **When** I access `ENTITY_SCHEMA_VERSIONS[WorldEntityType.Continent]`, **Then** it returns 2 without changing any other files
+1. **Given** the registry contains 29 entity types, **When** I run the test suite, **Then** all tests pass confirming completeness and validity of all derived constants
+1. **Given** I update the schema version for "Continent" from 1 to 2 in the registry, **When** I access `ENTITY_SCHEMA_VERSIONS[WorldEntityType.Continent]`, **Then** it returns 2 without changing any other files
 
 ---
 
@@ -36,8 +36,8 @@ As a **developer**, when I access entity type metadata, I want TypeScript to pro
 **Acceptance Scenarios**:
 
 1. **Given** I'm writing code that uses `WorldEntityType`, **When** I type `WorldEntityType.`, **Then** IDE autocompletes with all 29 entity types
-2. **Given** I try to access `ENTITY_SCHEMA_VERSIONS["InvalidType"]`, **When** TypeScript compiles, **Then** it produces a type error
-3. **Given** the registry defines all entity types, **When** I try to access `ENTITY_TYPE_META[WorldEntityType.Continent]`, **Then** TypeScript knows the return type includes label, description, category, and icon properties
+1. **Given** I try to access `ENTITY_SCHEMA_VERSIONS["InvalidType"]`, **When** TypeScript compiles, **Then** it produces a type error
+1. **Given** the registry defines all entity types, **When** I try to access `ENTITY_TYPE_META[WorldEntityType.Continent]`, **Then** TypeScript knows the return type includes label, description, category, and icon properties
 
 ---
 
@@ -52,8 +52,8 @@ As a **developer maintaining existing code**, when this refactor is deployed, I 
 **Acceptance Scenarios**:
 
 1. **Given** existing code uses `import { WorldEntityType } from '@/services/types/worldEntity.types'`, **When** the refactor is complete, **Then** the import continues to work and provides the same type
-2. **Given** existing code accesses `ENTITY_TYPE_META[WorldEntityType.Character]`, **When** the refactor is complete, **Then** it returns the same structure with label, description, category, and icon
-3. **Given** existing code calls `getEntityTypeSuggestions(WorldEntityType.City)`, **When** the refactor is complete, **Then** it returns the same array of suggested child types
+1. **Given** existing code accesses `ENTITY_TYPE_META[WorldEntityType.Character]`, **When** the refactor is complete, **Then** it returns the same structure with label, description, category, and icon
+1. **Given** existing code calls `getEntityTypeSuggestions(WorldEntityType.City)`, **When** the refactor is complete, **Then** it returns the same array of suggested child types
 
 ---
 
@@ -68,9 +68,9 @@ As a **developer**, when I make changes to the entity type registry, I want auto
 **Acceptance Scenarios**:
 
 1. **Given** I accidentally define two entity types with the same `type` value, **When** tests run, **Then** a uniqueness validation test fails
-2. **Given** I define an entity type with `schemaVersion: 0`, **When** tests run, **Then** a validation test fails requiring schema version >= 1
-3. **Given** an entity type suggests itself as a child (circular reference), **When** tests run, **Then** a validation test flags the circular dependency
-4. **Given** all 29 entity types are in the registry, **When** tests run, **Then** coverage tests confirm all expected types are present
+1. **Given** I define an entity type with `schemaVersion: 0`, **When** tests run, **Then** a validation test fails requiring schema version >= 1
+1. **Given** an entity type suggests itself as a child (circular reference), **When** tests run, **Then** a validation test flags the circular dependency
+1. **Given** all 29 entity types are in the registry, **When** tests run, **Then** coverage tests confirm all expected types are present
 
 ---
 
@@ -85,8 +85,8 @@ As a **developer**, when I need to work with entity types programmatically, I wa
 **Acceptance Scenarios**:
 
 1. **Given** I need entity type details, **When** I call `getEntityTypeConfig(WorldEntityType.Continent)`, **Then** it returns the full configuration object with all metadata
-2. **Given** I need to display root-level entity type options, **When** I call `getRootEntityTypes()`, **Then** it returns only entity types with `canBeRoot: true`
-3. **Given** I need to iterate all entity types, **When** I call `getAllEntityTypes()`, **Then** it returns the complete readonly registry array
+1. **Given** I need to display root-level entity type options, **When** I call `getRootEntityTypes()`, **Then** it returns only entity types with `canBeRoot: true`
+1. **Given** I need to iterate all entity types, **When** I call `getAllEntityTypes()`, **Then** it returns the complete readonly registry array
 
 ---
 
@@ -101,8 +101,8 @@ As a **platform administrator**, when entity type management is added in the fut
 **Acceptance Scenarios**:
 
 1. **Given** the registry is defined as an array of `EntityTypeConfig` objects, **When** I serialize it to JSON, **Then** it produces valid JSON matching a potential API response schema
-2. **Given** I want to replace the static registry, **When** I fetch data from an API endpoint, **Then** the returned structure can be assigned directly to `ENTITY_TYPE_REGISTRY` type
-3. **Given** future admin UI requirements, **When** reviewing the registry structure, **Then** all properties are simple types (string, number, boolean, array) suitable for form editing
+1. **Given** I want to replace the static registry, **When** I fetch data from an API endpoint, **Then** the returned structure can be assigned directly to `ENTITY_TYPE_REGISTRY` type
+1. **Given** future admin UI requirements, **When** reviewing the registry structure, **Then** all properties are simple types (string, number, boolean, array) suitable for form editing
 
 ---
 
@@ -132,7 +132,7 @@ As a **platform administrator**, when entity type management is added in the fut
   - **Containers (10)**: Folder, Locations, People, Events, History, Lore, Bestiary, Items, Adventures, Geographies
   - **Regional (4)**: GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion
   - **Other (1)**: Other
-  - **Deprecated (6)**: _(Note: These are marked as containers in existing code but named identically to singular types - Events/Event, Items/Item. Verification needed during implementation.)_
+  - **Deprecated (6)**: *(Note: These are marked as containers in existing code but named identically to singular types - Events/Event, Items/Item. Verification needed during implementation.)*
 - **FR-007**: System MUST maintain backward compatibility with all existing imports and usages of entity type constants
 - **FR-008**: System MUST provide `getEntityTypeConfig(type)` helper function to retrieve full configuration for a specific entity type
 - **FR-009**: System MUST provide `getRootEntityTypes()` helper function to retrieve entity types that can be created at root level
@@ -207,12 +207,15 @@ As a **platform administrator**, when entity type management is added in the fut
 ### File Organization
 
 **New File**:
+
 - `src/services/config/entityTypeRegistry.ts` - Contains `EntityTypeConfig` interface and `ENTITY_TYPE_REGISTRY` array
 
 **Modified Files**:
+
 - `src/services/types/worldEntity.types.ts` - Imports registry, derives constants, re-exports for backward compatibility
 
 **Deleted Files**:
+
 - `src/services/constants/entitySchemaVersions.ts` - Replaced by registry
 
 ### Implementation Strategy
@@ -222,22 +225,22 @@ As a **platform administrator**, when entity type management is added in the fut
    - Create `ENTITY_TYPE_REGISTRY` with all 29 types
    - Export as readonly array with const assertion
 
-2. **Phase 2**: Derive constants
+1. **Phase 2**: Derive constants
    - Implement derivation logic using `Object.fromEntries()` and `map()`
    - Add type assertions to ensure correct typing
    - Validate output types match existing patterns
 
-3. **Phase 3**: Add helper functions
+1. **Phase 3**: Add helper functions
    - Implement `getEntityTypeConfig()` with undefined handling
    - Implement `getRootEntityTypes()` with filtering
    - Implement `getAllEntityTypes()` returning readonly registry
 
-4. **Phase 4**: Update imports
+1. **Phase 4**: Update imports
    - Find all imports from `entitySchemaVersions.ts`
    - Update to import from `worldEntity.types.ts`
    - Remove `entitySchemaVersions.ts` file
 
-5. **Phase 5**: Add validation tests
+1. **Phase 5**: Add validation tests
    - Test registry uniqueness
    - Test schema version >= 1
    - Test icon name format
@@ -267,6 +270,7 @@ export const ENTITY_SCHEMA_VERSIONS: Record<WorldEntityType, number> = ...;
 ### Migration Checklist
 
 Files importing `entitySchemaVersions.ts` (to be updated):
+
 - Search for: `from '@/services/constants/entitySchemaVersions'`
 - Replace with: `from '@/services/types/worldEntity.types'` or `from '@/services/config/entityTypeRegistry'`
 - Verify: No remaining references to deleted file
@@ -277,7 +281,8 @@ Files importing `entitySchemaVersions.ts` (to be updated):
 
 **Impact**: Medium - Could break existing functionality if derivation logic is incorrect
 
-**Mitigation**: 
+**Mitigation**:
+
 - Maintain all existing exports with exact same types
 - Run full test suite before and after migration
 - Compare derived constant outputs with original definitions
@@ -288,6 +293,7 @@ Files importing `entitySchemaVersions.ts` (to be updated):
 **Impact**: Low - Deriving constants at module load could add initialization time
 
 **Mitigation**:
+
 - Registry is small (29 entries), derivation is O(n)
 - Derivation happens once at module load, not per usage
 - Modern JavaScript engines optimize array operations
@@ -298,6 +304,7 @@ Files importing `entitySchemaVersions.ts` (to be updated):
 **Impact**: Medium - Missing import updates could cause runtime errors
 
 **Mitigation**:
+
 - Use IDE's "Find All References" to locate all usages
 - Run `grep` search across codebase
 - Rely on TypeScript compilation errors to catch missing imports
@@ -308,6 +315,7 @@ Files importing `entitySchemaVersions.ts` (to be updated):
 **Impact**: Low - Invalid registry entries could slip through
 
 **Mitigation**:
+
 - Test uniqueness of type identifiers
 - Test all required properties are present
 - Test schema versions are positive integers
