@@ -195,6 +195,7 @@ export function EntityDetailForm() {
             properties,
             schemaVersion: getSchemaVersion(typedEntityType),
           },
+          currentEntityType: existingEntity?.entityType || typedEntityType,
         }).unwrap();
       } else {
         await createEntity({

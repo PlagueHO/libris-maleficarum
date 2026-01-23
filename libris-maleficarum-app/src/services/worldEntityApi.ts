@@ -17,6 +17,7 @@ import type {
   UpdateWorldEntityRequest,
   MoveWorldEntityRequest,
   GetWorldEntitiesQueryParams,
+  WorldEntityType,
 } from './types/worldEntity.types';
 
 /**
@@ -185,20 +186,25 @@ export const worldEntityApi = api.injectEndpoints({
      * @param worldId - Parent world ID
      * @param entityId - Entity ID
      * @param data - Entity update request
+     * @param currentEntityType - Current entity type (required if entityType not in data for schema version lookup)
      */
     updateWorldEntity: builder.mutation<
       WorldEntity,
-      { worldId: string; entityId: string; data: UpdateWorldEntityRequest }
+      {
+        worldId: string;
+        entityId: string;
+        data: UpdateWorldEntityRequest;
+        currentEntityType: WorldEntityType;
+      }
     >({
-      query: ({ worldId, entityId, data }) => ({
+      query: ({ worldId, entityId, data, currentEntityType }) => ({
         url: `/api/v1/worlds/${worldId}/entities/${entityId}`,
         method: 'PUT',
         data: {
           ...data,
-          // Note: schemaVersion should be provided by the component calling this mutation.
-          // For updates, we only include schemaVersion if explicitly provided since
-          // entityType is optional and may not be available.
-          ...(data.schemaVersion !== undefined && { schemaVersion: data.schemaVersion }),
+          // FR-007: Frontend MUST include schemaVersion in all update requests using current version from config
+          schemaVersion:
+            data.schemaVersion ?? getSchemaVersion(data.entityType ?? currentEntityType),
         },
       }),
       transformResponse: (response: WorldEntityResponse) => response.data,

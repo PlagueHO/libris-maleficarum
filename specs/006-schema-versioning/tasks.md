@@ -146,7 +146,7 @@
 
 #### Frontend API Client - Tests (Write FIRST)
 
-- [x] T055 [P] [US2] - **TEST**: Write failing test for createWorldEntity() - verify request includes schemaVersion from ENTITY_SCHEMA_VERSIONS in worldEntityApi.test.ts - libris-maleficarum-app/src/__tests__/services/worldEntityApi.test.ts
+- [x] T055 [P] [US2] - **TEST**: Write failing test for createWorldEntity() - verify request includes schemaVersion from ENTITY_SCHEMA_VERSIONS in worldEntityApi.test.ts - libris-maleficarum-app/src/**tests**/services/worldEntityApi.test.ts
 - [x] T056 [P] [US2] - **TEST**: Write failing test for updateWorldEntity() - verify request includes current schemaVersion (not original) in worldEntityApi.test.ts
 - [x] T057 [US2] Update MSW mocks to include schemaVersion: 1 in responses in libris-maleficarum-app/src/**mocks**/handlers.ts
 

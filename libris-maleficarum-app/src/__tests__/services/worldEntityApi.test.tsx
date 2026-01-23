@@ -188,6 +188,7 @@ describe('WorldEntity API - Schema Versioning', () => {
         worldId: '550e8400-e29b-41d4-a716-446655440000',
         entityId: '123e4567-e89b-12d3-a456-426614174000',
         data: requestData,
+        currentEntityType: WorldEntityType.Continent,
       }).unwrap();
 
       await waitFor(() => {
@@ -198,7 +199,7 @@ describe('WorldEntity API - Schema Versioning', () => {
       expect(lastUpdateRequest!.schemaVersion).toBe(1);
     });
 
-    it('should allow update without schemaVersion (backend preserves existing)', async () => {
+    it('should include current schemaVersion when not provided (FR-007 compliance)', async () => {
       const { result } = renderHook(() => useUpdateWorldEntityMutation(), {
         wrapper: createWrapper(),
       });
@@ -207,21 +208,22 @@ describe('WorldEntity API - Schema Versioning', () => {
 
       const requestData: UpdateWorldEntityRequest = {
         name: 'Updated Continent',
-        // schemaVersion omitted - backend will preserve existing value
+        // schemaVersion omitted - API client will use current version from config
       };
 
       await updateEntity({
         worldId: '550e8400-e29b-41d4-a716-446655440000',
         entityId: '123e4567-e89b-12d3-a456-426614174000',
         data: requestData,
+        currentEntityType: WorldEntityType.Continent,
       }).unwrap();
 
       await waitFor(() => {
         expect(lastUpdateRequest).toBeDefined();
       });
 
-      // Verify schemaVersion is undefined in the request
-      expect(lastUpdateRequest!.schemaVersion).toBeUndefined();
+      // FR-007: Verify schemaVersion is always included using current version from config
+      expect(lastUpdateRequest!.schemaVersion).toBe(1); // Current version for Continent from config
     });
   });
 });
