@@ -18,8 +18,8 @@ import {
   setSelectedEntity,
   openEntityFormCreate,
 } from '@/store/worldSidebarSlice';
-import { getEntityIcon } from '@/lib/entityIcons';
-import type { WorldEntity, EntityType } from '@/services/types/worldEntity.types';
+import { getEntityIcon, type EntityType } from '@/lib/entityIcons';
+import type { WorldEntity } from '@/services/types/worldEntity.types';
 import { EntityContextMenu } from './EntityContextMenu';
 import { cn } from '@/lib/utils';
 
