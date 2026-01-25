@@ -17,6 +17,13 @@ Instructions for building high-quality ReactJS applications with modern patterns
 
 ## Development Standards
 
+### File Naming
+- **Components**: PascalCase (e.g., `WorldEntityForm.tsx`, `EntityTreeNode.tsx`)
+- **Utilities/helpers**: camelCase (e.g., `apiClient.ts`, `testUtils.ts`)
+- **Type files**: camelCase (e.g., `worldEntity.types.ts`)
+- **Test files**: Match source file name with `.test` suffix (e.g., `WorldEntityForm.test.tsx`)
+- **CSS/style files**: Match component name (e.g., `WorldEntityForm.module.css`)
+
 ### Architecture
 - Use functional components with hooks as the primary pattern
 - Implement component composition over inheritance

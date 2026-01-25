@@ -20,7 +20,7 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-describe('EntityDetailForm - Custom Properties Integration', () => {
+describe('WorldEntityForm - Custom Properties Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

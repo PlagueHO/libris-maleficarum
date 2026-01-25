@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterAll, beforeAll } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders } from '../utils/test-utils';
+import { renderWithProviders } from '../utils/testUtils';
 import { server } from '../mocks/server';
 import { http, HttpResponse } from 'msw';
 import { WorldSidebar } from '../../components/WorldSidebar/WorldSidebar';

@@ -24,7 +24,7 @@ applyTo: '**/*.ts'
 ## Project Organization
 
 - Follow the repository's folder and responsibility layout for new code.
-- Use kebab-case filenames (e.g., `user-session.ts`, `data-service.ts`) unless told otherwise.
+- **File naming**: Use PascalCase for React components (e.g., `UserProfile.tsx`); camelCase for utilities, services, and types (e.g., `userSession.ts`, `dataService.ts`).
 - Keep tests, types, and helpers near their implementation when it aids discovery.
 - Reuse or extend shared utilities before adding new ones.
 

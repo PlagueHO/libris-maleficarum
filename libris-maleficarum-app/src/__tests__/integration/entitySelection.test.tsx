@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterAll, beforeAll } from 'vitest';
 import { screen, waitFor, fireEvent } from '@testing-library/react';
-import { renderWithProviders } from '../utils/test-utils';
+import { renderWithProviders } from '../utils/testUtils';
 import { server } from '../mocks/server';
 import { http, HttpResponse } from 'msw';
 import { MainPanel } from '../../components/MainPanel/MainPanel';

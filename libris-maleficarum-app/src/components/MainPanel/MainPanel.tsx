@@ -1,14 +1,15 @@
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { selectSelectedEntityId, selectSelectedWorldId, selectMainPanelMode, selectEditingWorldId } from '@/store/worldSidebarSlice';
+import { selectSelectedEntityId, selectSelectedWorldId, selectMainPanelMode, selectEditingWorldId, openEntityFormEdit } from '@/store/worldSidebarSlice';
 import { useGetWorldEntityByIdQuery } from '@/services/worldEntityApi';
 import { useGetWorldByIdQuery } from '@/services/worldApi';
 import { WorldDetailForm } from './WorldDetailForm';
-import { EntityDetailForm } from './EntityDetailForm';
+import { EntityDetailForm as WorldEntityForm } from './WorldEntityForm';
+import { EntityDetailReadOnlyView } from './EntityDetailReadOnlyView';
 import { Loader2 } from 'lucide-react';
 
 export function MainPanel() {
+  const dispatch = useDispatch();
   const selectedWorldId = useSelector(selectSelectedWorldId);
   const selectedEntityId = useSelector(selectSelectedEntityId);
   const mainPanelMode = useSelector(selectMainPanelMode);
@@ -24,6 +25,12 @@ export function MainPanel() {
     { skip: !selectedWorldId || !selectedEntityId }
   );
 
+  const handleEditClick = () => {
+    if (selectedEntityId) {
+      dispatch(openEntityFormEdit(selectedEntityId));
+    }
+  };
+
   // Creating World Mode
   if (mainPanelMode === 'creating_world') {
     return <WorldDetailForm mode="create" world={undefined} />;
@@ -36,12 +43,12 @@ export function MainPanel() {
 
   // Creating Entity Mode
   if (mainPanelMode === 'creating_entity') {
-    return <EntityDetailForm />;
+    return <WorldEntityForm />;
   }
 
   // Editing Entity Mode
   if (mainPanelMode === 'editing_entity') {
-    return <EntityDetailForm />;
+    return <WorldEntityForm />;
   }
 
   // Initial Welcome State (No Entity Selected)
@@ -110,37 +117,10 @@ export function MainPanel() {
     );
   }
 
-  // Entity Details View
+  // Entity Details View (mainPanelMode === 'viewing_entity')
   return (
     <main className="flex-1 p-6 overflow-auto">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <Card>
-          <CardHeader className="space-y-4">
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <CardTitle className="text-3xl font-bold" role="heading" aria-level={1}>{entity.name}</CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">{entity.entityType}</Badge>
-                  {entity.tags.map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {entity.description ? (
-              <div className="prose dark:prose-invert max-w-none">
-                 <p className="whitespace-pre-wrap">{entity.description}</p>
-              </div>
-            ) : (
-                <p className="text-muted-foreground italic">No description available.</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <EntityDetailReadOnlyView entity={entity} onEditClick={handleEditClick} />
     </main>
   );
 }
