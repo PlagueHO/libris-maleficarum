@@ -161,29 +161,16 @@ describe('Entity Type Registry - Validation', () => {
   });
 
   /**
-   * T027: Validation test for no circular suggestions
-   * Ensures no entity type suggests itself as a child (self-referencing is allowed for hierarchical types)
-   * NOTE: Self-referencing is ALLOWED for hierarchical container types like Folder, GeographicRegion, etc.
+   * T027: Validation test for circular suggestions
+   * Ensures entity types do not suggest themselves as children, except for explicitly
+   * allowed hierarchical container types (e.g., Folder, GeographicRegion, PoliticalRegion,
+   * CulturalRegion, MilitaryRegion). For all non-hierarchical types, self-referencing is
+   * NOT allowed and should be treated as an invalid configuration.
+   * 
+   * Note: Self-referencing is PERMITTED (but not required) for hierarchical types.
+   * This test only enforces that non-hierarchical types do NOT self-reference.
    */
-  describe('T027: No Circular Suggestions', () => {
-    it('should allow self-referencing for hierarchical types (Folder, Regional types)', () => {
-      const hierarchicalTypes = [
-        'Folder',
-        'GeographicRegion',
-        'PoliticalRegion',
-        'CulturalRegion',
-        'MilitaryRegion',
-      ];
-
-      hierarchicalTypes.forEach((typeName) => {
-        const config = ENTITY_TYPE_REGISTRY.find((c) => c.type === typeName);
-        if (config) {
-          // Self-referencing is allowed for these types
-          expect(config.suggestedChildren).toContain(typeName);
-        }
-      });
-    });
-
+  describe('T027: No Circular Suggestions (except allowed hierarchical types)', () => {
     it('should NOT allow self-referencing for non-hierarchical types', () => {
       const hierarchicalTypes = new Set([
         'Folder',
@@ -265,9 +252,8 @@ describe('Entity Type Registry - Validation', () => {
 
       geographicKeywords.forEach((keyword) => {
         const config = ENTITY_TYPE_REGISTRY.find((c) => c.type === keyword);
-        if (config) {
-          expect(config.category).toBe('Geography');
-        }
+        expect(config).toBeDefined();
+        expect(config?.category).toBe('Geography');
       });
     });
 
@@ -276,19 +262,19 @@ describe('Entity Type Registry - Validation', () => {
         'Folder',
         'Locations',
         'People',
-        'Factions',
-        'Items',
         'Events',
-        'Quests',
+        'History',
+        'Lore',
+        'Bestiary',
+        'Items',
         'Adventures',
         'Geographies',
       ];
 
       containerKeywords.forEach((keyword) => {
         const config = ENTITY_TYPE_REGISTRY.find((c) => c.type === keyword);
-        if (config) {
-          expect(config.category).toBe('Containers');
-        }
+        expect(config).toBeDefined();
+        expect(config?.category).toBe('Containers');
       });
     });
   });
