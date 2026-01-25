@@ -13,14 +13,35 @@
 import { ENTITY_TYPE_REGISTRY } from '../config/entityTypeRegistry';
 
 /**
- * Entity type classification (derived from registry)
+ * Entity type literal union (derived from registry)
+ * 
+ * String literal union of all valid entity types: "Continent" | "Country" | "Region" | ...
+ * This preserves autocomplete and exhaustiveness checking in TypeScript.
  */
-export const WorldEntityType = Object.fromEntries(
-  ENTITY_TYPE_REGISTRY.map((c) => [c.type, c.type]),
-) as Record<string, string>;
+export type WorldEntityTypeLiteral =
+  (typeof ENTITY_TYPE_REGISTRY)[number]['type'];
 
-export type WorldEntityType =
-  (typeof WorldEntityType)[keyof typeof WorldEntityType];
+/**
+ * Entity type classification const object (derived from registry)
+ * 
+ * Provides named constants for entity types while preserving literal types.
+ * Usage: WorldEntityType.Continent, WorldEntityType.Character, etc.
+ */
+export const WorldEntityType = ENTITY_TYPE_REGISTRY.reduce(
+  (acc, config) => {
+    (acc as Record<string, string>)[config.type] = config.type;
+    return acc;
+  },
+  {} as { readonly [K in WorldEntityTypeLiteral]: K },
+);
+
+/**
+ * Entity type string literal union
+ * 
+ * Use this type for function parameters, interface properties, etc.
+ * Provides full autocomplete and type safety.
+ */
+export type WorldEntityType = WorldEntityTypeLiteral;
 
 /**
  * Hierarchical entity within a World

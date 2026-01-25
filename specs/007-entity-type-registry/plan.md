@@ -5,7 +5,7 @@
 
 ## Summary
 
-Refactor scattered entity type metadata (WorldEntityType, ENTITY_TYPE_META, ENTITY_TYPE_SUGGESTIONS, ENTITY_SCHEMA_VERSIONS) into a single `ENTITY_TYPE_REGISTRY` array that serves as the source of truth for all 35 entity types. Derive all existing constants from this registry to maintain backward compatibility while enabling future data-driven entity type management.
+Refactor scattered entity type metadata (WorldEntityType, ENTITY_TYPE_META, ENTITY_TYPE_SUGGESTIONS, ENTITY_SCHEMA_VERSIONS) into a single `ENTITY_TYPE_REGISTRY` array that serves as the source of truth for all 29 entity types. Derive all existing constants from this registry to maintain backward compatibility while enabling future data-driven entity type management.
 
 **Core Goal**: Single-point-of-maintenance for entity type metadata without breaking existing code.
 
@@ -19,7 +19,7 @@ Refactor scattered entity type metadata (WorldEntityType, ENTITY_TYPE_META, ENTI
 **Project Type**: Web application (frontend-only refactor)  
 **Performance Goals**: Negligible impact (<1ms overhead at module load from derivation)  
 **Constraints**: 100% backward compatibility, zero breaking changes  
-**Scale/Scope**: 35 entity types, 2 files to update, 1 file to create, 1 file to delete
+**Scale/Scope**: 29 entity types, 2 files to update, 1 file to create, 1 file to delete
 
 ## Constitution Check
 
@@ -235,7 +235,7 @@ Entity type metadata is defined in a single registry:
 **Implementation**:
 
 1. Define `EntityTypeConfig` interface with JSDoc comments
-1. Create `ENTITY_TYPE_REGISTRY` array with all 35 entity types:
+1. Create `ENTITY_TYPE_REGISTRY` array with all 29 entity types:
    - **Geographic (7)**: Continent, Country, Region, City, Building, Room, Location
    - **Characters & Factions (2)**: Character, Faction
    - **Events & Quests (2)**: Event, Quest
@@ -251,7 +251,7 @@ Entity type metadata is defined in a single registry:
 **Acceptance Criteria**:
 
 - [ ] EntityTypeConfig interface matches spec (8 properties)
-- [ ] All 35 entity types from FR-006 present in registry
+- [ ] All 29 entity types from FR-006 present in registry
 - [ ] Each entry has complete metadata (no optional fields except canBeRoot)
 - [ ] TypeScript compilation succeeds with strict mode
 - [ ] File has module-level JSDoc comment
@@ -388,12 +388,12 @@ Entity type metadata is defined in a single registry:
    });
    ```
 
-1. Test completeness (all 35 types present):
+1. Test completeness (all 29 types present):
 
    ```typescript
-   it('should contain all 35 entity types', () => {
-     expect(ENTITY_TYPE_REGISTRY).toHaveLength(35);
-     const expectedTypes = ['Continent', 'Country', /* ... all 35 */];
+   it('should contain all 29 entity types', () => {
+     expect(ENTITY_TYPE_REGISTRY).toHaveLength(29);
+     const expectedTypes = ['Continent', 'Country', /* ... all 29 */];
      const actualTypes = ENTITY_TYPE_REGISTRY.map(c => c.type);
      expect(actualTypes.sort()).toEqual(expectedTypes.sort());
    });
@@ -457,7 +457,7 @@ Entity type metadata is defined in a single registry:
    ```typescript
    it('should return complete registry', () => {
      const all = getAllEntityTypes();
-     expect(all).toHaveLength(35);
+     expect(all).toHaveLength(29);
      expect(all).toBe(ENTITY_TYPE_REGISTRY); // Same reference
    });
    ```
@@ -562,7 +562,7 @@ Entity type metadata is defined in a single registry:
 - [ ] **FR-003**: `ENTITY_SCHEMA_VERSIONS` as `Record<WorldEntityType, number>` derived
 - [ ] **FR-004**: `ENTITY_TYPE_META` as `Record<WorldEntityType, EntityTypeMeta>` derived
 - [ ] **FR-005**: `ENTITY_TYPE_SUGGESTIONS` as `Record<WorldEntityType, WorldEntityType[]>` derived
-- [ ] **FR-006**: All 35 entity types present in registry
+- [ ] **FR-006**: All 29 entity types present in registry
 - [ ] **FR-007**: Backward compatibility maintained (all existing imports work)
 - [ ] **FR-008**: `getEntityTypeConfig(type)` implemented and tested
 - [ ] **FR-009**: `getRootEntityTypes()` implemented and tested
@@ -575,7 +575,7 @@ Entity type metadata is defined in a single registry:
 ### Success Criteria Verification
 
 - [ ] **SC-001**: Can add entity type with one registry entry
-- [ ] **SC-002**: 100% coverage of 35 entity types
+- [ ] **SC-002**: 100% coverage of 29 entity types
 - [ ] **SC-003**: TypeScript compilation zero errors
 - [ ] **SC-004**: 100% existing test pass rate
 - [ ] **SC-005**: ESLint zero warnings
