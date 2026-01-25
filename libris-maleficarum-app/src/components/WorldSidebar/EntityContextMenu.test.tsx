@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { EntityContextMenu } from './EntityContextMenu';
-import { renderWithProviders } from '@/__tests__/utils/test-utils';
+import { renderWithProviders } from '@/__tests__/utils/testUtils';
 import {
   openEntityFormCreate,
   openEntityFormEdit,

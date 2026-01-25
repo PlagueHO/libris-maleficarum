@@ -592,4 +592,190 @@ describe('EntityTreeNode', () => {
       expect(expandButton).toHaveFocus();
     });
   });
+
+  describe('Edit Icon Integration (T011 - User Story 1)', () => {
+    it('should render edit icon button next to entity', () => {
+      // Arrange
+      const store = createMockStore();
+
+      // Act
+      render(
+        <Provider store={store}>
+          <EntityTreeNode entity={mockEntity} level={0} />
+        </Provider>,
+      );
+
+      // Assert - edit icon button should be present
+      const editButton = screen.getByRole('button', { name: /edit faerûn/i });
+      expect(editButton).toBeInTheDocument();
+    });
+
+    it('should have proper ARIA label for edit icon button', () => {
+      // Arrange
+      const store = createMockStore();
+
+      // Act
+      render(
+        <Provider store={store}>
+          <EntityTreeNode entity={mockEntity} level={0} />
+        </Provider>,
+      );
+
+      // Assert - ARIA label should include entity name
+      const editButton = screen.getByRole('button', { name: 'Edit Faerûn' });
+      expect(editButton).toHaveAttribute('aria-label', 'Edit Faerûn');
+    });
+
+    it('should dispatch openEntityFormEdit when edit icon clicked', async () => {
+      // Arrange
+      const user = userEvent.setup();
+      const store = createMockStore();
+      const dispatchSpy = vi.spyOn(store, 'dispatch');
+
+      // Act
+      render(
+        <Provider store={store}>
+          <EntityTreeNode entity={mockEntity} level={0} />
+        </Provider>,
+      );
+
+      const editButton = screen.getByRole('button', { name: /edit faerûn/i });
+      await user.click(editButton);
+
+      // Assert - openEntityFormEdit action should be dispatched with entity ID
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'worldSidebar/openEntityFormEdit',
+          payload: 'entity-1',
+        }),
+      );
+    });
+
+    it('should activate edit icon with Enter key', async () => {
+      // Arrange
+      const user = userEvent.setup();
+      const store = createMockStore();
+      const dispatchSpy = vi.spyOn(store, 'dispatch');
+
+      // Act
+      render(
+        <Provider store={store}>
+          <EntityTreeNode entity={mockEntity} level={0} />
+        </Provider>,
+      );
+
+      const editButton = screen.getByRole('button', { name: /edit faerûn/i });
+      editButton.focus();
+      await user.keyboard('{Enter}');
+
+      // Assert - action should be dispatched
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'worldSidebar/openEntityFormEdit',
+        }),
+      );
+    });
+
+    it('should activate edit icon with Space key', async () => {
+      // Arrange
+      const user = userEvent.setup();
+      const store = createMockStore();
+      const dispatchSpy = vi.spyOn(store, 'dispatch');
+
+      // Act
+      render(
+        <Provider store={store}>
+          <EntityTreeNode entity={mockEntity} level={0} />
+        </Provider>,
+      );
+
+      const editButton = screen.getByRole('button', { name: /edit faerûn/i });
+      editButton.focus();
+      await user.keyboard(' ');
+
+      // Assert - action should be dispatched
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'worldSidebar/openEntityFormEdit',
+        }),
+      );
+    });
+
+    it('should make edit icon visible on node hover', async () => {
+      // Arrange
+      const user = userEvent.setup();
+      const store = createMockStore();
+
+      // Act
+      render(
+        <Provider store={store}>
+          <EntityTreeNode entity={mockEntity} level={0} />
+        </Provider>,
+      );
+
+      const editButton = screen.getByRole('button', { name: /edit faerûn/i });
+
+      // Assert - edit button should be in the document (visibility controlled by CSS)
+      expect(editButton).toBeInTheDocument();
+
+      // Hover over entity
+      const entityName = screen.getByText('Faerûn');
+      await user.hover(entityName);
+
+      // Button should still be present (CSS transition handled by component)
+      expect(editButton).toBeInTheDocument();
+    });
+
+    it('should make edit icon visible on node focus', () => {
+      // Arrange
+      const store = createMockStore();
+
+      // Act
+      render(
+        <Provider store={store}>
+          <EntityTreeNode entity={mockEntity} level={0} />
+        </Provider>,
+      );
+
+      const editButton = screen.getByRole('button', { name: /edit faerûn/i });
+      
+      // Focus edit button itself
+      editButton.focus();
+
+      // Assert - button should be present and focused
+      expect(editButton).toBeInTheDocument();
+      expect(editButton).toHaveFocus();
+    });
+
+    it('should not interfere with entity selection when clicking edit icon', async () => {
+      // Arrange
+      const user = userEvent.setup();
+      const store = createMockStore();
+      const dispatchSpy = vi.spyOn(store, 'dispatch');
+
+      // Act
+      render(
+        <Provider store={store}>
+          <EntityTreeNode entity={mockEntity} level={0} />
+        </Provider>,
+      );
+
+      const editButton = screen.getByRole('button', { name: /edit faerûn/i });
+      await user.click(editButton);
+
+      // Assert - openEntityFormEdit should be dispatched, setSelectedEntity should NOT
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'worldSidebar/openEntityFormEdit',
+          payload: 'entity-1',
+        }),
+      );
+
+      // Verify setSelectedEntity was NOT called
+      const setSelectedCalls = dispatchSpy.mock.calls.filter(
+        (call) => (call[0] as { type: string }).type === 'worldSidebar/setSelectedEntity'
+      );
+      expect(setSelectedCalls).toHaveLength(0);
+    });
+  });
 });

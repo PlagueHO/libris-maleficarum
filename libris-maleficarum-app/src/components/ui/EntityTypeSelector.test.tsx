@@ -8,7 +8,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { EntityTypeSelector } from './entity-type-selector';
+import { EntityTypeSelector } from './EntityTypeSelector';
 import { WorldEntityType } from '@/services/types/worldEntity.types';
 
 expect.extend(toHaveNoViolations);

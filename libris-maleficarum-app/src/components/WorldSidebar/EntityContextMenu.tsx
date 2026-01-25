@@ -19,7 +19,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
-} from '@/components/ui/context-menu';
+} from '@/components/ui/ContextMenu';
 import {
   openEntityFormCreate,
   openEntityFormEdit,

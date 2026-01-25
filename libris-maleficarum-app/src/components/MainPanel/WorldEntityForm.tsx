@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
-import { closeEntityForm, setUnsavedChanges, expandNode } from '../../store/worldSidebarSlice';
+import { closeEntityForm, setUnsavedChanges, expandNode, setSelectedEntity } from '../../store/worldSidebarSlice';
 import {
   useCreateWorldEntityMutation,
   useUpdateWorldEntityMutation,
@@ -13,10 +13,12 @@ import {
 } from '../../services/types/worldEntity.types';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
-import { EntityTypeSelector } from '../ui/entity-type-selector';
-import { FormActions } from '../ui/form-actions';
-import { FormLayout } from '../ui/form-layout';
+import { EntityTypeSelector } from '../ui/EntityTypeSelector';
+import { FormActions } from '../ui/FormActions';
+import { FormLayout } from '../ui/FormLayout';
+import { UnsavedChangesDialog } from '../shared/UnsavedChangesDialog';
 import { Loader2 } from 'lucide-react';
+import { validateWorldEntityForm, clearFieldError } from '../../services/validators/worldEntityValidator';
 import {
   GeographicRegionProperties,
   type GeographicRegionPropertiesData,
@@ -64,7 +66,8 @@ export function EntityDetailForm() {
     | Record<string, unknown>
     | null
   >(null);
-  const [errors, setErrors] = useState<{ name?: string; type?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; type?: string; description?: string }>({});
+  const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
 
   const isEditing = !!editingEntityId;
 
@@ -140,12 +143,27 @@ export function EntityDetailForm() {
 
   // Track unsaved changes
   useEffect(() => {
-    const hasChanges = name.trim() !== '' || description.trim() !== '' || entityType !== '';
+    let hasChanges = false;
+    
+    if (isEditing && existingEntity) {
+      // Compare with original values
+      const originalName = existingEntity.name || '';
+      const originalDescription = existingEntity.description || '';
+      const originalType = existingEntity.entityType || '';
+      
+      hasChanges = name !== originalName || 
+                   description !== originalDescription || 
+                   entityType !== originalType;
+    } else {
+      // Check if potentially dirty (for Create mode)
+      hasChanges = name.trim() !== '' || description.trim() !== '' || entityType !== '';
+    }
+
     dispatch(setUnsavedChanges(hasChanges));
     return () => {
       dispatch(setUnsavedChanges(false));
     };
-  }, [name, description, entityType, dispatch]);
+  }, [name, description, entityType, dispatch, isEditing, existingEntity]);
 
   // beforeunload handler for unsaved changes
   useEffect(() => {
@@ -164,15 +182,84 @@ export function EntityDetailForm() {
   if (!selectedWorldId) return null;
 
   const validate = () => {
-    const newErrors: { name?: string; type?: string } = {};
-    if (!name.trim()) newErrors.name = 'Name is required';
-    if (!entityType) newErrors.type = 'Type is required';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const result = validateWorldEntityForm(
+      {
+        name,
+        description,
+        entityType,
+        customProperties: customProperties as Record<string, unknown> | null,
+      },
+      isEditing
+    );
+    setErrors(result.errors);
+    return result.isValid;
   };
 
   const handleClose = () => {
+    if (hasUnsavedChanges) {
+      setShowUnsavedChangesDialog(true);
+    } else {
+      dispatch(closeEntityForm());
+    }
+  };
+
+  const handleDialogSave = async () => {
+    // Trigger form submission logic
+    if (!validate() || !selectedWorldId) {
+      setShowUnsavedChangesDialog(false);
+      return;
+    }
+
+    try {
+      const typedEntityType = entityType as WorldEntityType;
+      const hasProperties = customProperties && Object.keys(customProperties).length > 0;
+      const properties = hasProperties ? JSON.stringify(customProperties) : undefined;
+
+      if (isEditing && editingEntityId) {
+        await updateEntity({
+          worldId: selectedWorldId,
+          entityId: editingEntityId,
+          data: {
+            name,
+            description,
+            properties,
+            schemaVersion: ENTITY_SCHEMA_VERSIONS[typedEntityType],
+          },
+          currentEntityType: existingEntity?.entityType || typedEntityType,
+        }).unwrap();
+      } else if (newEntityParentId) {
+        await createEntity({
+          worldId: selectedWorldId,
+          data: {
+            name,
+            description,
+            entityType: typedEntityType,
+            parentId: newEntityParentId,
+            properties,
+            schemaVersion: ENTITY_SCHEMA_VERSIONS[typedEntityType],
+          },
+        }).unwrap();
+        dispatch(expandNode(newEntityParentId));
+      }
+
+      dispatch(setUnsavedChanges(false));
+      setShowUnsavedChangesDialog(false);
+      dispatch(closeEntityForm());
+    } catch (error) {
+      // Error handled by parent component (toast notification)
+      setShowUnsavedChangesDialog(false);
+      throw error;
+    }
+  };
+
+  const handleDialogDiscard = () => {
+    dispatch(setUnsavedChanges(false));
+    setShowUnsavedChangesDialog(false);
     dispatch(closeEntityForm());
+  };
+
+  const handleDialogCancel = () => {
+    setShowUnsavedChangesDialog(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -199,6 +286,11 @@ export function EntityDetailForm() {
           },
           currentEntityType: existingEntity?.entityType || typedEntityType,
         }).unwrap();
+        
+        // T029: After successful edit save, return to read-only view
+        dispatch(setUnsavedChanges(false));
+        dispatch(closeEntityForm());
+        dispatch(setSelectedEntity(editingEntityId));
       } else {
         await createEntity({
           worldId: selectedWorldId,
@@ -217,8 +309,9 @@ export function EntityDetailForm() {
         if (newEntityParentId) {
           dispatch(expandNode(newEntityParentId));
         }
+        
+        handleClose();
       }
-      handleClose();
     } catch (error) {
       console.error('Failed to save entity', error);
     }
@@ -313,14 +406,22 @@ export function EntityDetailForm() {
             <Input
               id="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) {
+                  setErrors((prev) => clearFieldError(prev, 'name'));
+                }
+              }}
               placeholder="Entity name"
               aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? 'name-error' : undefined}
               disabled={isSubmitting}
               maxLength={100}
             />
             {errors.name && (
-              <span className="text-xs text-destructive block mt-1">{errors.name}</span>
+              <span id="name-error" className="text-xs text-destructive block mt-1">
+                {errors.name}
+              </span>
             )}
           </div>
 
@@ -330,16 +431,24 @@ export function EntityDetailForm() {
             </label>
             <EntityTypeSelector
               value={entityType}
-              onValueChange={(val) => setEntityType(val)}
+              onValueChange={(val) => {
+                setEntityType(val);
+                if (errors.type) {
+                  setErrors((prev) => clearFieldError(prev, 'type'));
+                }
+              }}
               parentType={parentEntity?.entityType || null}
               allowAllTypes={false}
-              disabled={isSubmitting}
+              disabled={isEditing || isSubmitting}
               placeholder="Select entity type"
               aria-label="Entity type"
               aria-invalid={!!errors.type}
+              aria-describedby={errors.type ? 'type-error' : undefined}
             />
             {errors.type && (
-              <span className="text-xs text-destructive block mt-1">{errors.type}</span>
+              <span id="type-error" className="text-xs text-destructive block mt-1">
+                {errors.type}
+              </span>
             )}
           </div>
 
@@ -350,13 +459,25 @@ export function EntityDetailForm() {
             <Textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (errors.description) {
+                  setErrors((prev) => clearFieldError(prev, 'description'));
+                }
+              }}
               placeholder="Brief description..."
+              aria-invalid={!!errors.description}
+              aria-describedby={errors.description ? 'description-error' : 'description-hint'}
               disabled={isSubmitting}
               maxLength={500}
               className="min-h-32"
             />
-            <div className="text-xs text-muted-foreground mt-2">
+            {errors.description && (
+              <span id="description-error" className="text-xs text-destructive block mt-1">
+                {errors.description}
+              </span>
+            )}
+            <div id="description-hint" className="text-xs text-muted-foreground mt-2">
               {description.length}/500 characters
             </div>
           </div>
@@ -367,10 +488,18 @@ export function EntityDetailForm() {
             submitLabel={isEditing ? 'Save Changes' : 'Create'}
             cancelLabel="Cancel"
             isLoading={isSubmitting}
+            isSubmitDisabled={Object.keys(errors).length > 0}
             onCancel={handleClose}
           />
         </form>
         )}
+
+      <UnsavedChangesDialog
+        open={showUnsavedChangesDialog}
+        onSave={handleDialogSave}
+        onDiscard={handleDialogDiscard}
+        onCancel={handleDialogCancel}
+      />
     </FormLayout>
   );
 }

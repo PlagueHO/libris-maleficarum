@@ -14,9 +14,9 @@
 
 **Purpose**: Project initialization and component structure preparation
 
-- [ ] T001 Create feature branch `008-edit-world-entity` from main
-- [ ] T002 [P] Review contracts in specs/008-edit-world-entity/contracts/ for component interfaces
-- [ ] T003 [P] Review quickstart.md in specs/008-edit-world-entity/ for implementation guidance
+- [X] T001 Create feature branch `008-edit-world-entity` from main
+- [X] T002 [P] Review contracts in specs/008-edit-world-entity/contracts/ for component interfaces
+- [X] T003 [P] Review quickstart.md in specs/008-edit-world-entity/ for implementation guidance
 
 ---
 
@@ -28,20 +28,20 @@
 
 ### Component Refactoring
 
-- [ ] T004 Rename libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx to WorldEntityForm.tsx
-- [ ] T005 Rename libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx to WorldEntityForm.test.tsx
-- [ ] T006 Update all imports of EntityDetailForm to WorldEntityForm across codebase (MainPanel.tsx, etc.)
-- [ ] T007 Update component name references in WorldEntityForm.test.tsx
+- [X] T004 Rename libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.tsx to WorldEntityForm.tsx
+- [X] T005 Rename libris-maleficarum-app/src/components/MainPanel/EntityDetailForm.test.tsx to WorldEntityForm.test.tsx
+- [X] T006 Update all imports of EntityDetailForm to WorldEntityForm across codebase (MainPanel.tsx, etc.)
+- [X] T007 Update component name references in WorldEntityForm.test.tsx
 
 ### State Management Foundation
 
-- [ ] T008 Verify worldSidebarSlice actions exist: openEntityFormEdit, closeEntityForm, setUnsavedChanges in libris-maleficarum-app/src/store/worldSidebarSlice.ts
-- [ ] T009 Verify Redux state supports editingEntityId and hasUnsavedChanges in libris-maleficarum-app/src/store/worldSidebarSlice.ts
+- [X] T008 Verify worldSidebarSlice actions exist: openEntityFormEdit, closeEntityForm, setUnsavedChanges in libris-maleficarum-app/src/store/worldSidebarSlice.ts
+- [X] T009 Verify Redux state supports editingEntityId and hasUnsavedChanges in libris-maleficarum-app/src/store/worldSidebarSlice.ts
 
 ### API Foundation
 
-- [ ] T010 Verify useUpdateWorldEntityMutation exists in libris-maleficarum-app/src/services/worldEntityApi.ts
-- [ ] T010a Verify WorldEntityForm has save and cancel actions (buttons/handlers) in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
+- [X] T010 Verify useUpdateWorldEntityMutation exists in libris-maleficarum-app/src/services/worldEntityApi.ts
+- [X] T010a Verify WorldEntityForm has save and cancel actions (buttons/handlers) in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -57,21 +57,21 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T011 [P] [US1] Create EntityTreeNode edit icon test in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.test.tsx
-- [ ] T012 [P] [US1] Create UnsavedChangesDialog test in libris-maleficarum-app/src/components/MainPanel/UnsavedChangesDialog.test.tsx
-- [ ] T013 [P] [US1] Create integration test for hierarchy edit flow in libris-maleficarum-app/src/__tests__/integration/entityEdit.test.tsx
+- [X] T011 [P] [US1] Create EntityTreeNode edit icon test in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.test.tsx
+- [X] T012 [P] [US1] Create UnsavedChangesDialog test in libris-maleficarum-app/src/components/MainPanel/UnsavedChangesDialog.test.tsx
+- [X] T013 [P] [US1] Create integration test for hierarchy edit flow in libris-maleficarum-app/src/__tests__/integration/worldEntityEditing.integration.test.tsx
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Create UnsavedChangesDialog component in libris-maleficarum-app/src/components/MainPanel/UnsavedChangesDialog.tsx
-- [ ] T015 [US1] Add hover state and edit icon (Pencil) to EntityTreeNode in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.tsx
-- [ ] T016 [US1] Add edit icon click handler to dispatch openEntityFormEdit(entityId) in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.tsx
-- [ ] T017 [US1] Add disabled={isEditing} prop to EntityTypeSelector when isEditing=true in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
-- [ ] T018 [US1] Integrate UnsavedChangesDialog with navigation interception logic in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
-- [ ] T019 [US1] Update MainPanel to render WorldEntityForm when mainPanelMode='editing_entity' in libris-maleficarum-app/src/components/MainPanel/MainPanel.tsx
-- [ ] T020 [US1] Add aria-labels to edit icon for accessibility in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.tsx
-- [ ] T021 [US1] Verify all tests pass for User Story 1 (run pnpm test)
-- [ ] T021a [US1] Verify hierarchy refreshes after save (RTK Query cache invalidation triggers re-render)
+- [X] T014 [P] [US1] Create UnsavedChangesDialog component in libris-maleficarum-app/src/components/MainPanel/UnsavedChangesDialog.tsx
+- [X] T015 [US1] Add hover state and edit icon (Pencil) to EntityTreeNode in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.tsx
+- [X] T016 [US1] Add edit icon click handler to dispatch openEntityFormEdit(entityId) in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.tsx
+- [X] T017 [US1] Add disabled={isEditing} prop to EntityTypeSelector when isEditing=true in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
+- [X] T018 [US1] Integrate UnsavedChangesDialog with navigation interception logic in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
+- [X] T019 [US1] Update MainPanel to render WorldEntityForm when mainPanelMode='editing_entity' in libris-maleficarum-app/src/components/MainPanel/MainPanel.tsx
+- [X] T020 [US1] Add aria-labels to edit icon for accessibility in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.tsx
+- [X] T021 [US1] Verify all tests pass for User Story 1 (run pnpm test)
+- [X] T021a [US1] Verify hierarchy refreshes after save (RTK Query cache invalidation triggers re-render)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -85,19 +85,19 @@
 
 ### Tests for User Story 2
 
-- [ ] T022 [P] [US2] Create EntityDetailReadOnlyView test in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.test.tsx
-- [ ] T023 [P] [US2] Create integration test for detail view edit flow in libris-maleficarum-app/src/__tests__/integration/entityEdit.test.tsx
+- [X] T022 [P] [US2] Create EntityDetailReadOnlyView test in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.test.tsx
+- [X] T023 [P] [US2] Create integration test for detail view edit flow in libris-maleficarum-app/src/__tests__/integration/worldEntityEditing.integration.test.tsx
 
 ### Implementation for User Story 2
 
-- [ ] T024 [P] [US2] Create EntityDetailReadOnlyView component in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.tsx
-- [ ] T025 [US2] Add Edit button in top-right corner to EntityDetailReadOnlyView in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.tsx
-- [ ] T026 [US2] Add Edit button click handler to dispatch openEntityFormEdit(entityId) in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.tsx
-- [ ] T027 [US2] Update MainPanel to render EntityDetailReadOnlyView when mainPanelMode='viewing_entity' in libris-maleficarum-app/src/components/MainPanel/MainPanel.tsx
-- [ ] T028 [US2] Add custom properties display using Object.entries() per EntityDetailReadOnlyView.contract.ts in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.tsx
-- [ ] T029 [US2] Add transition logic: after successful save, return to EntityDetailReadOnlyView in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
-- [ ] T030 [US2] Add aria-label to Edit button for accessibility in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.tsx
-- [ ] T031 [US2] Verify all tests pass for User Story 2 (run pnpm test)
+- [X] T024 [P] [US2] Create EntityDetailReadOnlyView component in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.tsx
+- [X] T025 [US2] Add Edit button in top-right corner to EntityDetailReadOnlyView in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.tsx
+- [X] T026 [US2] Add Edit button click handler to dispatch openEntityFormEdit(entityId) in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.tsx
+- [X] T027 [US2] Update MainPanel to render EntityDetailReadOnlyView when mainPanelMode='viewing_entity' in libris-maleficarum-app/src/components/MainPanel/MainPanel.tsx
+- [X] T028 [US2] Add custom properties display using Object.entries() per EntityDetailReadOnlyView.contract.ts in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.tsx
+- [X] T029 [US2] Add transition logic: after successful save, return to EntityDetailReadOnlyView in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
+- [X] T030 [US2] Add aria-label to Edit button for accessibility in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.tsx
+- [X] T031 [US2] Verify all tests pass for User Story 2 (run pnpm test)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -111,18 +111,18 @@
 
 ### Tests for User Story 3
 
-- [ ] T032 [P] [US3] Create validation test for required fields in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.test.tsx
-- [ ] T033 [P] [US3] Create validation test for schema rules in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.test.tsx
-- [ ] T034 [P] [US3] Create integration test for validation error flow in libris-maleficarum-app/src/__tests__/integration/entityEdit.test.tsx
+- [X] T032 [P] [US3] Create validation test for required fields in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.test.tsx
+- [X] T033 [P] [US3] Create validation test for schema rules in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.test.tsx
+- [X] T034 [P] [US3] Create integration test for validation error flow in libris-maleficarum-app/src/__tests__/integration/worldEntityEditing.integration.test.tsx
 
 ### Implementation for User Story 3
 
-- [ ] T035 [P] [US3] Create schema-based validation function in libris-maleficarum-app/src/services/validators/worldEntityValidator.ts using entity type registry
-- [ ] T036 [US3] Add inline error message display for invalid fields in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
-- [ ] T037 [US3] Add aria-invalid and aria-describedby to invalid inputs in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
-- [ ] T038 [US3] Disable Save button when validation errors exist in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
-- [ ] T039 [US3] Add validation error clearing on field correction in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
-- [ ] T040 [US3] Verify all tests pass for User Story 3 (run pnpm test)
+- [X] T035 [P] [US3] Create schema-based validation function inibris-maleficarum-app/src/services/validators/worldEntityValidator.ts using entity type registry
+- [X] T036 [US3] Add inline error message display for invalid fields in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
+- [X] T037 [US3] Add aria-invalid and aria-describedby to invalid inputs in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
+- [X] T038 [US3] Disable Save button when validation errors exist in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
+- [X] T039 [US3] Add validation error clearing on field correction in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
+- [X] T040 [US3] Verify all tests pass for User Story 3 (run pnpm test)
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -132,16 +132,16 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T041 [P] Add accessibility tests (jest-axe) for UnsavedChangesDialog in libris-maleficarum-app/src/components/MainPanel/UnsavedChangesDialog.test.tsx
-- [ ] T042 [P] Add accessibility tests (jest-axe) for EntityDetailReadOnlyView in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.test.tsx
-- [ ] T043 [P] Add accessibility tests (jest-axe) for edit icon in EntityTreeNode in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.test.tsx
+- [X] T041 [P] Add accessibility tests (jest-axe) for UnsavedChangesDialog in libris-maleficarum-app/src/components/MainPanel/UnsavedChangesDialog.test.tsx
+- [X] T042 [P] Add accessibility tests (jest-axe) for EntityDetailReadOnlyView in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.test.tsx
+- [X] T043 [P] Add accessibility tests (jest-axe) for edit icon in EntityTreeNode in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.test.tsx
 - [ ] T044 [P] Verify keyboard navigation works for all edit interactions (Tab, Enter, Escape)
-- [ ] T045 [P] Add performance optimization: React.memo() for EntityTreeNode in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.tsx
+- [X] T045 [P] Add performance optimization: React.memo() for EntityTreeNode in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.tsx
 - [ ] T046 [P] Verify color contrast ratios meet WCAG 2.2 Level AA (4.5:1 text, 3:1 controls)
 - [ ] T047 [P] Verify minimum touch targets meet 44x44px requirement
 - [ ] T048 Run full test suite to verify all stories work independently (pnpm test)
 - [ ] T049 Run quickstart.md validation checklist
-- [ ] T050 Update CHANGELOG.md with feature details
+- [X] T050 Update CHANGELOG.md with feature details
 
 ---
 

@@ -95,7 +95,6 @@ export const worldSidebarSlice = createSlice({
      * @param action - Payload with world ID (null to clear selection)
      */
     setSelectedWorld: (state, action: PayloadAction<string | null>) => {
-      console.log('REDUCER: setSelectedWorld', action.payload);
       state.selectedWorldId = action.payload;
       // Clear entity selection when world changes
       state.selectedEntityId = null;

@@ -7,9 +7,9 @@
  * @module components/WorldSidebar/EntityTreeNode
  */
 
-import { createElement } from 'react';
+import { createElement, memo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ChevronRight, ChevronDown, Plus } from 'lucide-react';
+import { ChevronRight, ChevronDown, Plus, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   selectIsNodeExpanded,
@@ -17,6 +17,7 @@ import {
   toggleNodeExpanded,
   setSelectedEntity,
   openEntityFormCreate,
+  openEntityFormEdit,
 } from '@/store/worldSidebarSlice';
 import { getEntityIcon, type EntityType } from '@/lib/entityIcons';
 import type { WorldEntity } from '@/services/types/worldEntity.types';
@@ -40,7 +41,7 @@ export interface EntityTreeNodeProps {
  * @param props - Component props
  * @returns Tree node UI
  */
-export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps) {
+const EntityTreeNodeComponent = memo(function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps) {
   const dispatch = useDispatch();
   const isExpanded = useSelector(selectIsNodeExpanded(entity.id));
   const selectedEntityId = useSelector(selectSelectedEntityId);
@@ -60,6 +61,11 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Ignore keyboard events from interactive children (buttons)
+    if ((e.target as HTMLElement).tagName === 'BUTTON') {
+      return;
+    }
+
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleSelect();
@@ -76,6 +82,12 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
     e.stopPropagation();
     e.preventDefault();
     dispatch(openEntityFormCreate(entity.id));
+  };
+
+  const handleEdit = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    dispatch(openEntityFormEdit(entity.id));
   };
 
   const indentStyle = { paddingLeft: `${level * 20}px` };
@@ -133,6 +145,17 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
           <Button
             variant="icon-ghost"
             size="icon-sm"
+            onClick={handleEdit}
+            aria-label={`Edit ${entity.name}`}
+            tabIndex={-1}
+            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity w-5 h-5 hover:bg-muted"
+          >
+            <Pencil size={14} aria-hidden="true" />
+          </Button>
+
+          <Button
+            variant="icon-ghost"
+            size="icon-sm"
             onClick={handleQuickCreate}
             aria-label={`Add child to ${entity.name}`}
             tabIndex={-1}
@@ -146,4 +169,11 @@ export function EntityTreeNode({ entity, level, children }: EntityTreeNodeProps)
       {entity.hasChildren && isExpanded && children}
     </div>
   );
-}
+});
+
+/**
+ * Export memoized component as both named and default export for backward compatibility.
+ * Memo prevents unnecessary re-renders when parent components update.
+ */
+export { EntityTreeNodeComponent as EntityTreeNode };
+export default EntityTreeNodeComponent;
