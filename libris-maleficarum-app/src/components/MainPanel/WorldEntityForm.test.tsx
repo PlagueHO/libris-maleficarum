@@ -541,4 +541,71 @@ describe('WorldEntityForm - Validation (T032)', () => {
       }
     });
   });
+
+  describe('Unsaved Changes Dialog', () => {
+    it('should NOT show unsaved changes dialog after successfully creating entity', async () => {
+      const user = userEvent.setup();
+
+      // Mock successful entity creation
+      server.use(
+        http.post('http://localhost:5000/api/v1/worlds/:worldId/entities', () => {
+          return HttpResponse.json({
+            data: {
+              id: 'new-entity-1',
+              worldId: 'world-1',
+              parentId: 'parent-1',
+              name: 'New Test Entity',
+              description: 'Test description',
+              entityType: WorldEntityType.GeographicRegion,
+              tags: [],
+              properties: undefined,
+              schemaVersion: 1,
+              path: ['/Parent Entity', '/New Test Entity'],
+              depth: 1,
+              hasChildren: false,
+              ownerId: 'user-1',
+              isDeleted: false,
+              createdAt: '2026-01-26T00:00:00Z',
+              updatedAt: '2026-01-26T00:00:00Z',
+            },
+          });
+        }),
+      );
+
+      render(
+        <Provider store={store}>
+          <WorldEntityForm />
+        </Provider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+      });
+
+      // Fill in required fields
+      const nameInput = screen.getByLabelText(/name/i);
+      await user.type(nameInput, 'New Test Entity');
+
+      const typeSelector = screen.getByLabelText(/type/i);
+      await user.click(typeSelector);
+      const option = await screen.findByRole('option', { name: /geographic region/i });
+      await user.click(option);
+
+      const descriptionInput = screen.getByLabelText(/description/i);
+      await user.type(descriptionInput, 'Test description');
+
+      // Submit the form
+      const createButton = screen.getByRole('button', { name: /create/i });
+      await user.click(createButton);
+
+      // Wait a moment for async operations
+      await waitFor(() => {
+        // We don't expect the dialog to be visible
+        expect(screen.queryByText(/unsaved changes/i)).not.toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      // Additionally verify dialog role is not present
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
 });

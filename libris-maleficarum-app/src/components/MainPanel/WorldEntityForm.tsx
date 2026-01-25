@@ -310,7 +310,8 @@ export function EntityDetailForm() {
           dispatch(expandNode(newEntityParentId));
         }
         
-        handleClose();
+        dispatch(setUnsavedChanges(false));
+        dispatch(closeEntityForm());
       }
     } catch (error) {
       console.error('Failed to save entity', error);
