@@ -124,7 +124,7 @@ As a **platform administrator**, when entity type management is added in the fut
 - **FR-003**: System MUST derive `ENTITY_SCHEMA_VERSIONS` as `Record<WorldEntityType, number>` from the registry
 - **FR-004**: System MUST derive `ENTITY_TYPE_META` as `Record<WorldEntityType, EntityTypeMeta>` from the registry
 - **FR-005**: System MUST derive `ENTITY_TYPE_SUGGESTIONS` as `Record<WorldEntityType, WorldEntityType[]>` from the registry
-- **FR-006**: System MUST include all 35 existing entity types in the registry:
+- **FR-006**: System MUST include all 29 existing entity types in the registry:
   - **Geographic (7)**: Continent, Country, Region, City, Building, Room, Location
   - **Characters & Factions (2)**: Character, Faction
   - **Events & Quests (2)**: Event, Quest
@@ -166,7 +166,7 @@ As a **platform administrator**, when entity type management is added in the fut
 ### Measurable Outcomes
 
 - **SC-001**: Developer can add a new entity type by adding exactly one entry to the registry, with all derived constants updating automatically
-- **SC-002**: All 35 existing entity types are defined in the registry with complete metadata (100% coverage)
+- **SC-002**: All 29 existing entity types are defined in the registry with complete metadata (100% coverage)
 - **SC-003**: TypeScript compilation succeeds with zero errors and all derived constants have correct types
 - **SC-004**: All existing unit tests pass without modification (100% backward compatibility)
 - **SC-005**: ESLint passes with zero warnings across all modified files
