@@ -54,7 +54,7 @@ Validation tests will verify:
 - ✅ Unique type identifier
 - ✅ Schema version >= 1
 - ✅ Valid icon name format
-- ✅ No circular suggestions
+- ✅ No circular suggestions (except hierarchical container types)
 - ✅ Complete registry coverage
 
 ## Using Entity Type Data
@@ -62,7 +62,9 @@ Validation tests will verify:
 ### Get Full Configuration
 
 ```typescript
-import { getEntityTypeConfig, WorldEntityType } from '@/services/config/entityTypeRegistry';
+import { getEntityTypeConfig } from '@/services/config/entityTypeRegistry';
+import { WorldEntityType } from '@/services/types/worldEntity.types
+import { WorldEntityType } from '@/services/types/worldEntity.types';
 
 const config = getEntityTypeConfig(WorldEntityType.Continent);
 if (config) {
@@ -258,7 +260,7 @@ pnpm test entityTypeRegistry
 - Unique type identifiers (no duplicates)
 - Schema versions are >= 1
 - Icon names match PascalCase format
-- No circular suggestions (type suggesting itself)
+- No circular suggestions (type suggesting itself), except for hierarchical container types (Folder, GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion)
 - All expected types present
 
 ### Integration Tests

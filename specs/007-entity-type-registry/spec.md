@@ -63,13 +63,14 @@ As a **developer**, when I make changes to the entity type registry, I want auto
 
 **Why this priority**: Validation prevents configuration errors and ensures data quality, but the registry can function without these tests initially.
 
-**Independent Test**: Can be fully tested by adding registry validation tests that check for: unique types, positive schema versions, valid icon names, no circular suggestions, and complete coverage of all entity categories.
+**Independent Test**: Can be fully tested by adding registry validation tests that check for: unique types, positive schema versions, valid icon names, no circular suggestions (except allowed hierarchical types), and complete coverage of all entity categories.
 
 **Acceptance Scenarios**:
 
 1. **Given** I accidentally define two entity types with the same `type` value, **When** tests run, **Then** a uniqueness validation test fails
 1. **Given** I define an entity type with `schemaVersion: 0`, **When** tests run, **Then** a validation test fails requiring schema version >= 1
-1. **Given** an entity type suggests itself as a child (circular reference), **When** tests run, **Then** a validation test flags the circular dependency
+1. **Given** a non-hierarchical entity type suggests itself as a child (circular reference), **When** tests run, **Then** a validation test flags the circular dependency
+1. **Given** a hierarchical container type (Folder, GeographicRegion, etc.) suggests itself as a child, **When** tests run, **Then** the validation test passes (self-referencing is allowed for nested hierarchies)
 1. **Given** all 29 entity types are in the registry, **When** tests run, **Then** coverage tests confirm all expected types are present
 
 ---

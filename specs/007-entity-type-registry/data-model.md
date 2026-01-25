@@ -144,7 +144,7 @@ The registry MUST satisfy these constraints:
 1. **Uniqueness**: Each `type` value must be unique across all entries
 1. **Schema Version**: `schemaVersion` must be an integer >= 1
 1. **Icon Format**: `icon` must be a valid Lucide icon name (PascalCase)
-1. **No Circular References**: `suggestedChildren` must not include the same type as `type`
+1. **No Circular References**: `suggestedChildren` must not include the same type as `type`, **except** for hierarchical container types (`Folder`, `GeographicRegion`, `PoliticalRegion`, `CulturalRegion`, `MilitaryRegion`) which are explicitly allowed to suggest themselves for nested hierarchies
 1. **Valid References**: All entries in `suggestedChildren` should reference valid types in the registry
 1. **Completeness**: All 35 expected entity types must be present
 
