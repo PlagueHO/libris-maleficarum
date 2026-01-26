@@ -52,6 +52,13 @@ export interface DynamicPropertyFieldProps {
   onChange: (value: unknown) => void;
 
   /**
+   * Callback fired when validation state changes
+   * @optional
+   * @param hasError - True if field has validation error
+   */
+  onValidationChange?: (hasError: boolean) => void;
+
+  /**
    * Whether the field is disabled
    * @optional
    * @default false
@@ -98,12 +105,26 @@ export function DynamicPropertyField({
   schema,
   value,
   onChange,
+  onValidationChange,
   disabled = false,
   readOnly = false,
 }: DynamicPropertyFieldProps) {
   // Local state for text input values (to support formatting on blur for numerics)
   const [localValue, setLocalValue] = React.useState<string>('');
   const [error, setError] = React.useState<string | undefined>();
+
+  // Store callback in ref to avoid dependency cycles
+  const onValidationChangeRef = React.useRef(onValidationChange);
+  React.useEffect(() => {
+    onValidationChangeRef.current = onValidationChange;
+  });
+
+  // Notify parent when validation state changes
+  React.useEffect(() => {
+    if (onValidationChangeRef.current) {
+      onValidationChangeRef.current(!!error);
+    }
+  }, [error]);
 
   // Initialize local value from prop
   React.useEffect(() => {

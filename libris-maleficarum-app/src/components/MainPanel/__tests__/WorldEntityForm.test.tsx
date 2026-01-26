@@ -41,7 +41,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
   describe('T054: GeographicRegion Custom Properties Rendering', () => {
     // TODO: These full-App integration tests are too complex and fragile.
     // They should be refactored to use renderWithProviders with preloadedState.
-    it.skip('should render GeographicRegionProperties when entityType is GeographicRegion', async () => {
+    it('should render DynamicPropertiesForm when entityType is GeographicRegion', async () => {
       const user = userEvent.setup();
       render(
         <Provider store={store}>
@@ -62,17 +62,18 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       const geoRegionOption = await screen.findByRole('option', { name: /geographic region/i });
       await user.click(geoRegionOption);
 
-      // Verify GeographicRegionProperties fields appear
+      // Verify DynamicPropertiesForm section header and fields appear
       await waitFor(() => {
-        expect(screen.getByLabelText(/climate/i)).toBeInTheDocument();
+        expect(screen.getByText('Geographic Region Properties')).toBeInTheDocument();
       });
+      expect(screen.getByLabelText(/climate/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/terrain/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/population/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/area/i)).toBeInTheDocument();
     });
 
-    // TODO: These full-App integration tests are too complex and fragile.
-    // They should be refactored to use renderWithProviders with preloadedState.
+    // TODO: This full-App integration test is fragile due to timing issues with numeric field onChange/onBlur events.
+    // The test should be refactored to use renderWithProviders with preloadedState and mock the form submission.
     it.skip('should update custom properties when fields change', async () => {
       const user = userEvent.setup();
       render(
@@ -94,7 +95,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       const geoRegionOption = await screen.findByRole('option', { name: /geographic region/i });
       await user.click(geoRegionOption);
 
-      // Fill in custom properties
+      // Wait for DynamicPropertiesForm fields to appear
       await waitFor(() => {
         expect(screen.getByLabelText(/climate/i)).toBeInTheDocument();
       });
@@ -106,16 +107,15 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await user.type(terrainInput, 'Dense jungle with rivers');
 
       const populationInput = screen.getByLabelText(/population/i);
-      await user.type(populationInput, '250000');
-
       const areaInput = screen.getByLabelText(/area/i);
-      await user.type(areaInput, '1500.5');
       
-      // Trigger blur on both numeric fields explicitly
-      await user.click(populationInput);
-      await user.tab();
-      await user.click(areaInput);
-      await user.tab();
+      await user.clear(populationInput);
+      await user.type(populationInput, '250000');
+      await user.click(document.body); // Blur to trigger formatting
+      
+      await user.clear(areaInput);
+      await user.type(areaInput, '1500.5');
+      await user.click(document.body); // Blur to trigger formatting
 
       // Wait for blur formatting to complete
       await waitFor(() => {
@@ -123,7 +123,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       });
       
       await waitFor(() => {
-        expect(areaInput).toHaveValue('1,500.5');
+        expect(areaInput).toHaveValue('1,500.50');
       });
 
       // Verify all fields contain the entered values
@@ -133,7 +133,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
   });
 
   describe('T055: PoliticalRegion Custom Properties Rendering', () => {
-    it('should render PoliticalRegionProperties when entityType is PoliticalRegion', async () => {
+    it('should render DynamicPropertiesForm when entityType is PoliticalRegion', async () => {
       const user = userEvent.setup();
       render(
         <Provider store={store}>
@@ -154,10 +154,11 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       const polRegionOption = await screen.findByRole('option', { name: /political region/i });
       await user.click(polRegionOption);
 
-      // Verify PoliticalRegionProperties fields appear
+      // Verify DynamicPropertiesForm section header and fields appear
       await waitFor(() => {
-        expect(screen.getByLabelText(/government type/i)).toBeInTheDocument();
+        expect(screen.getByText('Political Region Properties')).toBeInTheDocument();
       });
+      expect(screen.getByLabelText(/government type/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/member states/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/established date/i)).toBeInTheDocument();
     });

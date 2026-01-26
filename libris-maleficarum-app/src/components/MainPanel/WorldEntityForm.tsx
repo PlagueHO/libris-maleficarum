@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { closeEntityForm, setUnsavedChanges, expandNode, setSelectedEntity } from '../../store/worldSidebarSlice';
@@ -19,16 +19,7 @@ import { FormLayout } from '../ui/FormLayout';
 import { UnsavedChangesDialog } from '../shared/UnsavedChangesDialog';
 import { Loader2 } from 'lucide-react';
 import { validateWorldEntityForm, clearFieldError } from '../../services/validators/worldEntityValidator';
-import {
-  GeographicRegionProperties,
-  type GeographicRegionPropertiesData,
-  PoliticalRegionProperties,
-  type PoliticalRegionPropertiesData,
-  CulturalRegionProperties,
-  type CulturalRegionPropertiesData,
-  MilitaryRegionProperties,
-  type MilitaryRegionPropertiesData,
-} from './customProperties';
+import { DynamicPropertiesForm } from './DynamicPropertiesForm';
 
 /**
  * EntityDetailForm Component
@@ -58,14 +49,7 @@ export function EntityDetailForm() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [entityType, setEntityType] = useState<WorldEntityType | ''>('');
-  const [customProperties, setCustomProperties] = useState<
-    | GeographicRegionPropertiesData
-    | PoliticalRegionPropertiesData
-    | CulturalRegionPropertiesData
-    | MilitaryRegionPropertiesData
-    | Record<string, unknown>
-    | null
-  >(null);
+  const [customProperties, setCustomProperties] = useState<Record<string, unknown> | null>(null);
   const [errors, setErrors] = useState<{ name?: string; type?: string; description?: string }>({});
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
 
@@ -142,6 +126,8 @@ export function EntityDetailForm() {
   }, [entityType]);
 
   // Track unsaved changes
+  const hasChangesPrevRef = useRef(false);
+  
   useEffect(() => {
     let hasChanges = false;
     
@@ -159,11 +145,19 @@ export function EntityDetailForm() {
       hasChanges = name.trim() !== '' || description.trim() !== '' || entityType !== '';
     }
 
-    dispatch(setUnsavedChanges(hasChanges));
+    // Only dispatch if value actually changed
+    if (hasChanges !== hasChangesPrevRef.current) {
+      dispatch(setUnsavedChanges(hasChanges));
+      hasChangesPrevRef.current = hasChanges;
+    }
+  }, [name, description, entityType, dispatch, isEditing, existingEntity?.id, existingEntity?.name, existingEntity?.description, existingEntity?.entityType]);
+
+  // Cleanup: reset unsaved changes when component unmounts
+  useEffect(() => {
     return () => {
       dispatch(setUnsavedChanges(false));
     };
-  }, [name, description, entityType, dispatch, isEditing, existingEntity]);
+  }, [dispatch]);
 
   // beforeunload handler for unsaved changes
   useEffect(() => {
@@ -320,62 +314,6 @@ export function EntityDetailForm() {
 
   const isLoading = (isLoadingEntity && isEditing) || (isLoadingParent && !isEditing && newEntityParentId);
 
-  /**
-   * Renders custom property fields based on the selected entity type
-   */
-  const renderCustomProperties = () => {
-    if (!entityType) return null;
-
-    switch (entityType) {
-      case WorldEntityType.GeographicRegion:
-        return (
-          <div className="border-t pt-6 mt-6">
-            <GeographicRegionProperties
-              value={(customProperties as GeographicRegionPropertiesData) || {}}
-              onChange={(props) => setCustomProperties(props)}
-              disabled={isSubmitting}
-            />
-          </div>
-        );
-
-      case WorldEntityType.PoliticalRegion:
-        return (
-          <div className="border-t pt-6 mt-6">
-            <PoliticalRegionProperties
-              value={(customProperties as PoliticalRegionPropertiesData) || {}}
-              onChange={(props) => setCustomProperties(props)}
-              disabled={isSubmitting}
-            />
-          </div>
-        );
-
-      case WorldEntityType.CulturalRegion:
-        return (
-          <div className="border-t pt-6 mt-6">
-            <CulturalRegionProperties
-              value={(customProperties as CulturalRegionPropertiesData) || {}}
-              onChange={(props) => setCustomProperties(props)}
-              disabled={isSubmitting}
-            />
-          </div>
-        );
-
-      case WorldEntityType.MilitaryRegion:
-        return (
-          <div className="border-t pt-6 mt-6">
-            <MilitaryRegionProperties
-              value={(customProperties as MilitaryRegionPropertiesData) || {}}
-              onChange={(props) => setCustomProperties(props)}
-              disabled={isSubmitting}
-            />
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
   return (
     <FormLayout onBack={handleClose}>
       <div className="mb-8">
@@ -483,7 +421,14 @@ export function EntityDetailForm() {
             </div>
           </div>
 
-          {renderCustomProperties()}
+          {entityType && (
+            <DynamicPropertiesForm
+              entityType={entityType as WorldEntityType}
+              value={customProperties}
+              onChange={setCustomProperties}
+              disabled={isSubmitting}
+            />
+          )}
 
           <FormActions
             submitLabel={isEditing ? 'Save Changes' : 'Create'}
