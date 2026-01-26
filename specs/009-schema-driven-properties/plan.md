@@ -39,7 +39,7 @@ Input/Textarea/TagInput components
 
 ## Implementation Phases
 
-### Phase 0: Schema Foundation (Priority: Critical)
+### Phase 1: Schema Foundation (Priority: Critical)
 
 Define the schema type system and add schemas to existing Regional types.
 
@@ -349,10 +349,10 @@ type PropertyValues = Record<string, unknown> | null;
 
 ## Rollout Strategy
 
-1. **Phase 0-1**: Build foundation (schema + field renderer) without breaking changes
+1. **Phase 1**: Build foundation (schema + field renderer) without breaking changes
 2. **Phase 2-3**: Integrate into forms (can coexist with old components during development)
-3. **Phase 4**: Validate with comprehensive tests
-4. **Phase 5**: Remove old components once validation complete
+3. **Phase 4-5**: Validate with comprehensive tests and validation enhancements
+4. **Final Phase**: Remove old components once validation complete
 
 ## Risk Mitigation
 
