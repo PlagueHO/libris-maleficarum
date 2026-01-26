@@ -9,7 +9,7 @@
 
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Settings, Plus } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -126,6 +126,20 @@ export function WorldSelector() {
               <Button
                 variant="icon-ghost"
                 size="icon-sm"
+                onClick={() => selectedWorldId && handleEditWorld(selectedWorldId)}
+                aria-label="Edit current world"
+                disabled={!selectedWorldId}
+              >
+                <Pencil size={16} aria-hidden="true" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Edit world details</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="icon-ghost"
+                size="icon-sm"
                 onClick={handleCreateWorld}
                 aria-label="Create new world"
               >
@@ -133,20 +147,6 @@ export function WorldSelector() {
               </Button>
             </TooltipTrigger>
             <TooltipContent>Create new world</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="icon-ghost"
-                size="icon-sm"
-                onClick={() => selectedWorldId && handleEditWorld(selectedWorldId)}
-                aria-label="Edit current world"
-                disabled={!selectedWorldId}
-              >
-                <Settings size={16} aria-hidden="true" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Edit world details</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>

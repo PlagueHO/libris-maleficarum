@@ -10,6 +10,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Pencil, Plus } from 'lucide-react';
 import { useCreateWorldMutation, useUpdateWorldMutation } from '@/services/worldApi';
 import { closeWorldForm, setUnsavedChanges, selectHasUnsavedChanges } from '@/store/worldSidebarSlice';
 import { Input } from '@/components/ui/input';
@@ -233,6 +234,7 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
 
         <FormActions
           submitLabel={mode === 'create' ? 'Create World' : 'Save World'}
+          submitIcon={mode === 'create' ? Plus : Pencil}
           cancelLabel="Cancel"
           isLoading={isLoading}
           onCancel={handleCancel}
