@@ -22,7 +22,7 @@ This is Phase 1 of a multi-phase initiative toward fully user-configurable entit
 
 - Q: When an entity has properties data but the schema definition was removed from the registry, what should the fallback renderer display? → A: Display all properties as key-value pairs using generic Object.entries() renderer (like current EntityDetailReadOnlyView)
 - Q: When stored property data has a type mismatch with the schema (e.g., schema expects integer but data contains "123" as a string), how should the system handle it? → A: Attempt automatic type coercion on load; show validation error only if coercion fails (e.g., "123" → 123 works, "abc" → shows error)
-- Q: When a user attempts to add a duplicate tag to a tagArray field, what should happen? → A: Prevent duplicate on input with visual feedback (e.g., briefly highlight existing tag or show toast message)
+- Q: When a user attempts to add a duplicate tag to a tagArray field, what should happen? → A: Prevent duplicate on input with visual feedback (highlight existing tag for 500ms using Tailwind animation, or show toast message)
 - Q: How granular should validation rules be in the schema? → A: Support common rules: required (boolean), min/max (for numbers), pattern (regex for text fields)
 - Q: Where should the PropertyFieldSchema TypeScript interface be defined? → A: In entityTypeRegistry.ts alongside EntityTypeConfig (co-located with usage)
 
@@ -111,7 +111,7 @@ A world builder edits a Character entity (which has no custom property schema de
 - What happens when an entity has properties data but the schema field was removed? Display all properties as key-value pairs using the generic Object.entries() renderer (same as current EntityDetailReadOnlyView behavior).
 - What happens when schema defines a field but the stored data is missing that property? Display the field as empty/default.
 - What happens when stored property data has a type mismatch with schema (e.g., string instead of number)? Attempt automatic type coercion on load (e.g., "123" string → 123 number). Show validation error only if coercion fails (e.g., "abc" cannot coerce to number).
-- What happens when a tag array field has duplicate entries? In edit mode, prevent duplicates on input with visual feedback (e.g., briefly highlight existing tag or show toast message). In read-only mode, display existing duplicates without error (data preserved as-is).
+- What happens when a tag array field has duplicate entries? In edit mode, prevent duplicates on input with visual feedback (briefly highlight existing tag for 500ms using Tailwind animation, or show toast message). In read-only mode, display existing duplicates without error (data preserved as-is).
 - What happens when the entity type changes during editing (currently blocked)? Continue to block entity type changes on existing entities.
 
 ## Requirements *(mandatory)*
@@ -123,7 +123,7 @@ A world builder edits a Character entity (which has no custom property schema de
 - **FR-001**: Each entity type configuration MUST support an optional `propertySchema` field containing an ordered array of property field definitions.
 - **FR-002**: Each property field definition MUST include: key (unique identifier), label (display text), and type (field type).
 - **FR-003**: Supported field types MUST include: `text` (single-line input), `textarea` (multi-line input), `integer` (whole numbers), `decimal` (floating-point numbers), `tagArray` (list of string tags).
-- **FR-004**: Property field definitions MUST support optional attributes: placeholder, description (help text), maxLength. Validation rules MUST support: required (boolean), min/max (for numeric fields), and pattern (regex for text fields).
+- **FR-004**: Property field definitions MUST support optional attributes: placeholder, description (help text), maxLength. An optional validation sub-object MAY define rules including: required (boolean), min/max (for numeric fields), and pattern (regex for text fields). Fields without validation rules use only type-based validation.
 - **FR-005**: The property schema MUST be the single source of truth for rendering property fields in both edit and read-only modes.
 
 #### Dynamic Property Rendering
@@ -154,7 +154,7 @@ A world builder edits a Character entity (which has no custom property schema de
 
 ### Key Entities
 
-- **PropertyFieldSchema**: Defines a single custom property field with key, label, type, and optional attributes (placeholder, description, maxLength). Validation sub-object supports: required (boolean), min/max (for numeric fields), pattern (regex for text fields). Defined in entityTypeRegistry.ts alongside EntityTypeConfig.
+- **PropertyFieldSchema**: Defines a single custom property field with key, label, type, and optional attributes (placeholder, description, maxLength). Optional PropertyFieldValidation sub-object supports: required (boolean), min/max (for numeric fields), pattern (regex for text fields). Defined in entityTypeRegistry.ts alongside EntityTypeConfig.
 - **EntityTypeConfig**: Extended with optional `propertySchema` array containing PropertyFieldSchema definitions. Central metadata for each WorldEntity type.
 - **WorldEntity.properties**: JSON string field storing the actual property values for an entity instance.
 

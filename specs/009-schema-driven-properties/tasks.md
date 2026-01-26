@@ -29,6 +29,7 @@
 - [ ] T015 [P] Implement decimal field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
 - [ ] T016 [P] Implement tagArray field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
 - [ ] T017 Add duplicate tag prevention with visual feedback to TagInput in libris-maleficarum-app/src/components/shared/TagInput/TagInput.tsx
+- [ ] T017a [P] Create test for duplicate tag prevention with 500ms highlight in TagInput in libris-maleficarum-app/src/components/shared/TagInput/TagInput.test.tsx
 
 ---
 
@@ -47,7 +48,7 @@
 
 - [ ] T020 [US1] Create DynamicPropertiesForm component in libris-maleficarum-app/src/components/MainPanel/DynamicPropertiesForm.tsx
 - [ ] T021 [US1] Implement schema field iteration in DynamicPropertiesForm in libris-maleficarum-app/src/components/MainPanel/DynamicPropertiesForm.tsx
-- [ ] T022 [US1] Add section header rendering based on entity type in DynamicPropertiesForm in libris-maleficarum-app/src/components/MainPanel/DynamicPropertiesForm.tsx
+- [ ] T022 [US1] Add section header rendering based on entity type in DynamicPropertiesForm (format: entity type label + ' Properties', e.g., 'Geographic Properties') in libris-maleficarum-app/src/components/MainPanel/DynamicPropertiesForm.tsx
 - [ ] T023 [US1] Update WorldEntityForm to use DynamicPropertiesForm in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
 - [ ] T024 [US1] Remove renderCustomProperties switch statement from WorldEntityForm in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
 - [ ] T025 [US1] Remove custom property component imports from WorldEntityForm in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
@@ -141,6 +142,7 @@
 - [ ] T055 Verify existing PoliticalRegion entities display correctly after migration
 - [ ] T056 Verify existing CulturalRegion entities display correctly after migration  
 - [ ] T057 Verify existing MilitaryRegion entities display correctly after migration
+- [ ] T057a Verify SC-002: Attempt to add new entity type with custom properties using only registry configuration (no new component files) in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
 - [ ] T058 Delete GeographicRegionProperties component and test from libris-maleficarum-app/src/components/MainPanel/customProperties/
 - [ ] T059 Delete PoliticalRegionProperties component and test from libris-maleficarum-app/src/components/MainPanel/customProperties/
 - [ ] T060 Delete CulturalRegionProperties component and test from libris-maleficarum-app/src/components/MainPanel/customProperties/
@@ -193,15 +195,15 @@
 
 ---
 
-**Total Tasks**: 66  
+**Total Tasks**: 68  
 **By Phase**:
-- Phase 1 (Setup): 17 tasks
+- Phase 1 (Setup): 18 tasks
 - Phase 2 (US1): 12 tasks
 - Phase 3 (US2): 9 tasks
 - Phase 4 (US3): 2 tasks
 - Phase 5 (US4): 10 tasks
 - Phase 6 (US5): 3 tasks
-- Final Phase: 13 tasks
+- Final Phase: 14 tasks
 
 **By Priority**:
 - P1 (US1 + US2): 21 tasks
