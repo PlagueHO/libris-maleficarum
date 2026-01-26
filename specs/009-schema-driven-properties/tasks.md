@@ -12,23 +12,23 @@
 
 ### Tasks
 
-- [ ] T001 [P] Define PropertyFieldSchema interface in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
-- [ ] T002 [P] Define PropertyFieldValidation interface in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
-- [ ] T003 Extend EntityTypeConfig interface with optional propertySchema array in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
-- [ ] T004 [P] Add propertySchema to GeographicRegion type in ENTITY_TYPE_REGISTRY in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
-- [ ] T005 [P] Add propertySchema to PoliticalRegion type in ENTITY_TYPE_REGISTRY in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
-- [ ] T006 [P] Add propertySchema to CulturalRegion type in ENTITY_TYPE_REGISTRY in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
-- [ ] T007 [P] Add propertySchema to MilitaryRegion type in ENTITY_TYPE_REGISTRY in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
-- [ ] T008 [P] Create propertyValidation utility with validateField function in libris-maleficarum-app/src/lib/validators/propertyValidation.ts
-- [ ] T009 [P] Add type coercion logic for integer fields to propertyValidation in libris-maleficarum-app/src/lib/validators/propertyValidation.ts
-- [ ] T010 [P] Add type coercion logic for decimal fields to propertyValidation in libris-maleficarum-app/src/lib/validators/propertyValidation.ts
-- [ ] T011 Create DynamicPropertyField component skeleton in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
-- [ ] T012 [P] Implement text field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
-- [ ] T013 [P] Implement textarea field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
-- [ ] T014 [P] Implement integer field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
-- [ ] T015 [P] Implement decimal field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
-- [ ] T016 [P] Implement tagArray field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
-- [ ] T017 Add duplicate tag prevention with visual feedback to TagInput in libris-maleficarum-app/src/components/shared/TagInput/TagInput.tsx
+- [X] T001 [P] Define PropertyFieldSchema interface in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
+- [X] T002 [P] Define PropertyFieldValidation interface in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
+- [X] T003 Extend EntityTypeConfig interface with optional propertySchema array in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
+- [X] T004 [P] Add propertySchema to GeographicRegion type in ENTITY_TYPE_REGISTRY in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
+- [X] T005 [P] Add propertySchema to PoliticalRegion type in ENTITY_TYPE_REGISTRY in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
+- [X] T006 [P] Add propertySchema to CulturalRegion type in ENTITY_TYPE_REGISTRY in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
+- [X] T007 [P] Add propertySchema to MilitaryRegion type in ENTITY_TYPE_REGISTRY in libris-maleficarum-app/src/services/config/entityTypeRegistry.ts
+- [X] T008 [P] Create propertyValidation utility with validateField function in libris-maleficarum-app/src/lib/validators/propertyValidation.ts
+- [X] T009 [P] Add type coercion logic for integer fields to propertyValidation in libris-maleficarum-app/src/lib/validators/propertyValidation.ts
+- [X] T010 [P] Add type coercion logic for decimal fields to propertyValidation in libris-maleficarum-app/src/lib/validators/propertyValidation.ts
+- [X] T011 Create DynamicPropertyField component skeleton in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
+- [X] T012 [P] Implement text field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
+- [X] T013 [P] Implement textarea field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
+- [X] T014 [P] Implement integer field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
+- [X] T015 [P] Implement decimal field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
+- [X] T016 [P] Implement tagArray field type rendering in DynamicPropertyField in libris-maleficarum-app/src/components/MainPanel/DynamicPropertyField.tsx
+- [X] T017 Add duplicate tag prevention with visual feedback to TagInput in libris-maleficarum-app/src/components/shared/TagInput/TagInput.tsx
 - [ ] T017a [P] Create test for duplicate tag prevention with 500ms highlight in TagInput in libris-maleficarum-app/src/components/shared/TagInput/TagInput.test.tsx
 
 ---

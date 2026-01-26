@@ -15,11 +15,8 @@ export {
   type NumericValidationResult,
 } from './numericValidation';
 
-// Property validation (common text field patterns)
+// Schema-based property validation (dynamic field rendering)
 export {
-  validateTextField,
-  validateArrayField,
-  shouldPersistValue,
-  shouldPersistArray,
-  type TextValidationResult,
+  validateField,
+  type PropertyValidationResult,
 } from './propertyValidation';

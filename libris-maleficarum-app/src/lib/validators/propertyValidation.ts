@@ -1,152 +1,261 @@
 /**
- * Shared validation utilities for custom property components
+ * Schema-based property validation for dynamic custom properties
  *
- * Provides common patterns for text field validation, length checking,
- * and error state management used across property components.
+ * Provides validation for all property field types based on PropertyFieldSchema.
+ * Includes type coercion for numeric fields to handle string-to-number conversion.
  *
  * @module lib/validators/propertyValidation
  */
 
+import type {
+  PropertyFieldSchema,
+  PropertyFieldValidation,
+} from '@/services/config/entityTypeRegistry';
+import {
+  validateInteger,
+  validateDecimal,
+  type NumericValidationResult,
+} from './numericValidation';
+
 /**
- * Validation result for text field validation
+ * Result object returned by property field validation
  *
  * @public
  */
-export interface TextValidationResult {
+export interface PropertyValidationResult {
   /**
    * Whether validation passed
+   * - `true`: Input is valid (or empty for optional fields)
+   * - `false`: Input has validation errors
    */
   valid: boolean;
 
   /**
-   * Error message if validation failed
+   * Human-readable error message if validation failed
+   * - `undefined`: Validation passed
+   * - `string`: Description of what's wrong
    */
   error?: string;
 
   /**
-   * Trimmed and validated text value
+   * Coerced/normalized value if validation passed
+   * - For numeric fields: Converted from string to number
+   * - For other types: Returns input value as-is
+   * - `undefined`: Input was empty (valid but no value)
    */
-  value?: string;
+  coercedValue?: unknown;
 }
 
 /**
- * Validate text field with max length constraint
+ * Validate required field constraint
  *
- * Common pattern for validating text inputs in custom property forms.
- * Trims whitespace and checks against maximum character limit.
- *
- * @param input - User input string
- * @param maxLength - Maximum allowed length (default: 200)
- * @param fieldName - Name of field for error messages (default: "Field")
- * @returns Validation result with error or trimmed value
- *
- * @example
- * validateTextField("  Hello  ", 10, "Climate")
- * // { valid: true, value: "Hello" }
- *
- * validateTextField("Very long text...", 5, "Terrain")
- * // { valid: false, error: "Terrain must be 5 characters or less" }
- *
- * validateTextField("", 100)
- * // { valid: true, value: "" } (empty is valid)
- *
- * @public
+ * @param value - Field value to check
+ * @param validation - Validation rules from schema
+ * @returns Error message if required field is empty, undefined otherwise
  */
-export function validateTextField(
-  input: string,
-  maxLength: number = 200,
-  fieldName: string = 'Field'
-): TextValidationResult {
-  const trimmed = input.trim();
-
-  if (trimmed.length > maxLength) {
-    return {
-      valid: false,
-      error: `${fieldName} must be ${maxLength} characters or less`,
-    };
+function validateRequired(
+  value: unknown,
+  validation?: PropertyFieldValidation,
+): string | undefined {
+  if (!validation?.required) {
+    return undefined;
   }
 
-  return { valid: true, value: trimmed };
-}
-
-/**
- * Validate array of strings (tags/lists) with individual item length limits
- *
- * Common pattern for validating tag inputs in custom property forms.
- *
- * @param items - Array of string values
- * @param maxItemLength - Maximum length per individual item (default: 50)
- * @param fieldName - Name of field for error messages (default: "Item")
- * @returns Validation result with error or trimmed values
- *
- * @example
- * validateArrayField(["English", "Spanish"], 20, "Language")
- * // { valid: true, value: ["English", "Spanish"] }
- *
- * validateArrayField(["Very long language name..."], 10, "Language")
- * // { valid: false, error: "Language must be 10 characters or less" }
- *
- * validateArrayField([], 50)
- * // { valid: true, value: [] } (empty is valid)
- *
- * @public
- */
-export function validateArrayField(
-  items: string[],
-  maxItemLength: number = 50,
-  fieldName: string = 'Item'
-): { valid: boolean; error?: string; value?: string[] } {
-  const trimmedItems = items.map((item) => item.trim());
-
-  // Check each item length
-  const tooLongItem = trimmedItems.find((item) => item.length > maxItemLength);
-  if (tooLongItem) {
-    return {
-      valid: false,
-      error: `${fieldName} must be ${maxItemLength} characters or less`,
-    };
+  // Check for empty values
+  if (value === undefined || value === null || value === '') {
+    return 'This field is required';
   }
 
-  return { valid: true, value: trimmedItems };
+  // For arrays (tagArray type)
+  if (Array.isArray(value) && value.length === 0) {
+    return 'This field is required';
+  }
+
+  return undefined;
 }
 
 /**
- * Check if a value has changed and is non-empty
+ * Validate pattern constraint for text fields
  *
- * Helper for determining when to update parent state.
- * Returns true if value should be sent to parent (non-empty after trimming).
- *
- * @param value - Current value
- * @returns True if value should be persisted (non-empty)
- *
- * @example
- * shouldPersistValue("  ") // false (whitespace only)
- * shouldPersistValue("") // false (empty)
- * shouldPersistValue("Hello") // true
- * shouldPersistValue(undefined) // false
- *
- * @public
+ * @param value - String value to validate
+ * @param validation - Validation rules from schema
+ * @returns Error message if pattern doesn't match, undefined otherwise
  */
-export function shouldPersistValue(value: string | undefined): boolean {
-  return !!value && value.trim().length > 0;
+function validatePattern(
+  value: string,
+  validation?: PropertyFieldValidation,
+): string | undefined {
+  if (!validation?.pattern || !value) {
+    return undefined;
+  }
+
+  try {
+    const regex = new RegExp(validation.pattern);
+    if (!regex.test(value)) {
+      return 'Invalid format';
+    }
+  } catch (error) {
+    // Invalid regex pattern in schema - fail validation
+    console.error('Invalid regex pattern in schema:', validation.pattern, error);
+    return 'Invalid format';
+  }
+
+  return undefined;
 }
 
 /**
- * Check if an array has changed and has items
+ * Validate min/max constraint for numeric fields
  *
- * Helper for determining when to update parent state with array values.
- * Returns true if array should be sent to parent (has items).
+ * @param value - Numeric value to validate
+ * @param validation - Validation rules from schema
+ * @returns Error message if value is out of range, undefined otherwise
+ */
+function validateNumericRange(
+  value: number,
+  validation?: PropertyFieldValidation,
+): string | undefined {
+  if (validation?.min !== undefined && value < validation.min) {
+    return `Must be at least ${validation.min}`;
+  }
+
+  if (validation?.max !== undefined && value > validation.max) {
+    return `Must be at most ${validation.max}`;
+  }
+
+  return undefined;
+}
+
+/**
+ * Validate a single property field based on its schema definition
  *
- * @param items - Array to check
- * @returns True if array should be persisted (has items)
+ * Handles type-specific validation and type coercion for numeric fields.
+ * Applies schema validation rules (required, min/max, pattern).
+ *
+ * **Field Type Support:**
+ * - `text`: String validation with optional pattern matching
+ * - `textarea`: String validation with optional pattern matching
+ * - `integer`: Validates as whole number, coerces string → number
+ * - `decimal`: Validates as decimal number, coerces string → number
+ * - `tagArray`: Validates as array of strings
+ *
+ * **Type Coercion:**
+ * - Integer/Decimal fields: Attempts to parse string input (e.g., "123" → 123)
+ * - Shows validation error if coercion fails (e.g., "abc" → error)
+ *
+ * @param schema - Property field schema definition
+ * @param value - Current field value (can be any type)
+ * @returns Validation result with error message or coerced value
  *
  * @example
- * shouldPersistArray([]) // false
- * shouldPersistArray(["item"]) // true
- * shouldPersistArray(undefined) // false
+ * ```typescript
+ * const schema: PropertyFieldSchema = {
+ *   key: 'Population',
+ *   label: 'Population',
+ *   type: 'integer',
+ *   validation: { required: true, min: 0 }
+ * };
+ *
+ * validateField(schema, "1000") // { valid: true, coercedValue: 1000 }
+ * validateField(schema, "abc") // { valid: false, error: "Must be a valid number" }
+ * validateField(schema, "") // { valid: false, error: "This field is required" }
+ * ```
  *
  * @public
  */
-export function shouldPersistArray(items: string[] | undefined): boolean {
-  return !!items && items.length > 0;
+export function validateField(
+  schema: PropertyFieldSchema,
+  value: unknown,
+): PropertyValidationResult {
+  // Check required constraint first
+  const requiredError = validateRequired(value, schema.validation);
+  if (requiredError) {
+    return { valid: false, error: requiredError };
+  }
+
+  // Empty non-required fields are valid
+  if (
+    value === undefined ||
+    value === null ||
+    value === '' ||
+    (Array.isArray(value) && value.length === 0)
+  ) {
+    return { valid: true };
+  }
+
+  // Type-specific validation and coercion
+  switch (schema.type) {
+    case 'integer': {
+      // T009: Type coercion for integer fields
+      const stringValue = typeof value === 'string' ? value : String(value);
+      const result: NumericValidationResult = validateInteger(stringValue);
+
+      if (!result.valid) {
+        return { valid: false, error: result.error };
+      }
+
+      // Check min/max constraints if value exists
+      if (result.value !== undefined) {
+        const rangeError = validateNumericRange(result.value, schema.validation);
+        if (rangeError) {
+          return { valid: false, error: rangeError };
+        }
+      }
+
+      return { valid: true, coercedValue: result.value };
+    }
+
+    case 'decimal': {
+      // T010: Type coercion for decimal fields
+      const stringValue = typeof value === 'string' ? value : String(value);
+      const result: NumericValidationResult = validateDecimal(stringValue);
+
+      if (!result.valid) {
+        return { valid: false, error: result.error };
+      }
+
+      // Check min/max constraints if value exists
+      if (result.value !== undefined) {
+        const rangeError = validateNumericRange(result.value, schema.validation);
+        if (rangeError) {
+          return { valid: false, error: rangeError };
+        }
+      }
+
+      return { valid: true, coercedValue: result.value };
+    }
+
+    case 'text':
+    case 'textarea': {
+      const stringValue = typeof value === 'string' ? value : String(value);
+
+      // Check pattern constraint
+      const patternError = validatePattern(stringValue, schema.validation);
+      if (patternError) {
+        return { valid: false, error: patternError };
+      }
+
+      return { valid: true, coercedValue: stringValue };
+    }
+
+    case 'tagArray': {
+      // Validate array type
+      if (!Array.isArray(value)) {
+        return { valid: false, error: 'Must be an array' };
+      }
+
+      // Validate all items are strings
+      if (!value.every((item) => typeof item === 'string')) {
+        return { valid: false, error: 'All tags must be strings' };
+      }
+
+      return { valid: true, coercedValue: value };
+    }
+
+    default: {
+      // Unknown field type - fail validation
+      const unknownType = (schema as PropertyFieldSchema).type;
+      console.error('Unknown field type in schema:', unknownType);
+      return { valid: false, error: 'Unknown field type' };
+    }
+  }
 }
