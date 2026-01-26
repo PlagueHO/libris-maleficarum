@@ -59,7 +59,7 @@
 
 - [X] T011 [P] [US1] Create EntityTreeNode edit icon test in libris-maleficarum-app/src/components/WorldSidebar/EntityTreeNode.test.tsx
 - [X] T012 [P] [US1] Create UnsavedChangesDialog test in libris-maleficarum-app/src/components/MainPanel/UnsavedChangesDialog.test.tsx
-- [X] T013 [P] [US1] Create integration test for hierarchy edit flow in libris-maleficarum-app/src/__tests__/integration/worldEntityEditing.integration.test.tsx
+- [X] T013 [P] [US1] Create integration test for hierarchy edit flow in libris-maleficarum-app/src/**tests**/integration/worldEntityEditing.integration.test.tsx
 
 ### Implementation for User Story 1
 
@@ -86,7 +86,7 @@
 ### Tests for User Story 2
 
 - [X] T022 [P] [US2] Create EntityDetailReadOnlyView test in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.test.tsx
-- [X] T023 [P] [US2] Create integration test for detail view edit flow in libris-maleficarum-app/src/__tests__/integration/worldEntityEditing.integration.test.tsx
+- [X] T023 [P] [US2] Create integration test for detail view edit flow in libris-maleficarum-app/src/**tests**/integration/worldEntityEditing.integration.test.tsx
 
 ### Implementation for User Story 2
 
@@ -113,7 +113,7 @@
 
 - [X] T032 [P] [US3] Create validation test for required fields in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.test.tsx
 - [X] T033 [P] [US3] Create validation test for schema rules in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.test.tsx
-- [X] T034 [P] [US3] Create integration test for validation error flow in libris-maleficarum-app/src/__tests__/integration/worldEntityEditing.integration.test.tsx
+- [X] T034 [P] [US3] Create integration test for validation error flow in libris-maleficarum-app/src/**tests**/integration/worldEntityEditing.integration.test.tsx
 
 ### Implementation for User Story 3
 

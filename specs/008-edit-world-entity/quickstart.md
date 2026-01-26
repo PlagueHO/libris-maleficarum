@@ -7,7 +7,7 @@ Developer guide for implementing the world entity editing feature in Libris Male
 This feature adds the ability to edit existing World entities through two entry points:
 
 1. **Edit button** in the top-right corner of the entity detail view (MainPanel)
-2. **Edit icon** (pen) displayed on hover next to entity name in the world hierarchy (WorldSidebar)
+1. **Edit icon** (pen) displayed on hover next to entity name in the world hierarchy (WorldSidebar)
 
 Both entry points open the same unified form component (`WorldEntityForm`) in edit mode.
 
@@ -16,7 +16,7 @@ Both entry points open the same unified form component (`WorldEntityForm`) in ed
 - Node.js 20.x (enforced by `run` script)
 - pnpm package manager
 - Dependencies installed: `pnpm install` (in `libris-maleficarum-app/`)
-- Dev server running: `pnpm dev` (starts on https://127.0.0.1:4000)
+- Dev server running: `pnpm dev` (starts on <https://127.0.0.1:4000>)
 
 ## Feature Architecture
 
@@ -28,19 +28,19 @@ Both entry points open the same unified form component (`WorldEntityForm`) in ed
    - Controlled by `isEditing` flag (derived from `editingEntityId`)
    - Disables entity type selector during edit
 
-2. **EntityDetailReadOnlyView** (new component)
+1. **EntityDetailReadOnlyView** (new component)
    - Read-only display with Edit button
    - Location: `src/components/MainPanel/EntityDetailReadOnlyView.tsx`
    - Replaces current entity detail display logic
    - Shows Edit button in top-right corner
 
-3. **UnsavedChangesDialog** (new component)
+1. **UnsavedChangesDialog** (new component)
    - Confirmation dialog for unsaved changes
    - Location: `src/components/MainPanel/UnsavedChangesDialog.tsx`
    - Provides Save/Don't Save/Cancel options
    - Integrates with WorldEntityForm navigation logic
 
-4. **EntityTreeNode** (modify existing)
+1. **EntityTreeNode** (modify existing)
    - Add hover-triggered Edit icon
    - Location: `src/components/WorldSidebar/EntityTreeNode.tsx`
    - Dispatch `openEntityFormEdit(entityId)` on edit icon click
@@ -73,17 +73,17 @@ Redux slice: `worldSidebarSlice.ts`
    - User clicks Edit icon → `dispatch(openEntityFormEdit(entityId))`
    - WorldSidebar renders WorldEntityForm with `isEditing=true`, `editingEntityId={id}`
 
-2. **Edit initiated from detail view**:
+1. **Edit initiated from detail view**:
    - MainPanel shows EntityDetailReadOnlyView
    - User clicks Edit button → `dispatch(openEntityFormEdit(entityId))`
    - MainPanel re-renders WorldEntityForm with `isEditing=true`
 
-3. **Save flow**:
+1. **Save flow**:
    - User modifies fields → `dispatch(setUnsavedChanges(true))`
    - User clicks Save → `updateWorldEntityMutation.mutate()`
    - On success → toast notification, `dispatch(closeEntityForm())`, return to read-only view
 
-4. **Navigation with unsaved changes**:
+1. **Navigation with unsaved changes**:
    - User clicks different entity/close → UnsavedChangesDialog opens
    - User chooses Save/Don't Save/Cancel
    - Save: async save → proceed navigation | Don't Save: discard → proceed | Cancel: abort navigation
@@ -107,7 +107,7 @@ See `contracts/` folder for detailed TypeScript interfaces:
    mv EntityDetailForm.tsx WorldEntityForm.tsx
    ```
 
-2. **Update WorldEntityForm**:
+1. **Update WorldEntityForm**:
    - Disable EntityTypeSelector when `isEditing=true`:
 
      ```typescript
@@ -120,7 +120,7 @@ See `contracts/` folder for detailed TypeScript interfaces:
 
    - Update imports in `MainPanel.tsx`
 
-3. **Create EntityDetailReadOnlyView**:
+1. **Create EntityDetailReadOnlyView**:
    - Copy current read-only display logic from MainPanel
    - Add Edit button in top-right corner:
 
@@ -135,7 +135,7 @@ See `contracts/` folder for detailed TypeScript interfaces:
      </Button>
      ```
 
-4. **Update MainPanel logic**:
+1. **Update MainPanel logic**:
 
    ```typescript
    // MainPanel.tsx
@@ -186,7 +186,7 @@ See `contracts/` folder for detailed TypeScript interfaces:
    - Three buttons: Cancel (outline), Don't Save (secondary), Save (primary)
    - Handle async save with loading state
 
-2. **Integrate with WorldEntityForm**:
+1. **Integrate with WorldEntityForm**:
 
    ```typescript
    const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
@@ -208,7 +208,7 @@ See `contracts/` folder for detailed TypeScript interfaces:
    };
    ```
 
-3. **Intercept navigation events**:
+1. **Intercept navigation events**:
    - Close button click
    - Edit icon click for different entity
    - Entity selection in hierarchy
@@ -236,7 +236,7 @@ See `contracts/` folder for detailed TypeScript interfaces:
    };
    ```
 
-2. **Display validation errors**:
+1. **Display validation errors**:
    - Show inline error message below field
    - Use `aria-describedby` to associate with input
    - Disable Save button when form has errors
@@ -413,18 +413,18 @@ pnpm test:accessibility
    - Logical tab order: form fields → Save → Cancel
    - Escape key closes unsaved changes dialog
 
-2. **Screen Reader Support**:
+1. **Screen Reader Support**:
    - All buttons have accessible labels (aria-label or visible text)
    - Form inputs associated with labels (htmlFor/id)
    - Validation errors announced (aria-describedby)
    - Loading states announced (aria-busy)
 
-3. **Visual Accessibility**:
+1. **Visual Accessibility**:
    - Text contrast 4.5:1 (body text), 3:1 (large text/controls)
    - Focus indicators clearly visible
    - Minimum touch targets 44x44px
 
-4. **Error Handling**:
+1. **Error Handling**:
    - Validation errors visible and announced
    - Error messages describe how to fix
    - Failed save shows user-friendly error toast
@@ -454,12 +454,12 @@ pnpm test:accessibility
    - Shadcn/ui Dialog for UnsavedChangesDialog
    - Existing Button, Input, Textarea components
 
-2. **Avoid code smells**:
+1. **Avoid code smells**:
    - No code duplication between create/edit modes
    - Single source of truth for form validation
    - Unified navigation logic (intercept pattern for unsaved changes)
 
-3. **Component composition**:
+1. **Component composition**:
    - EntityDetailReadOnlyView delegates to WorldEntityForm (edit mode)
    - UnsavedChangesDialog decoupled from form logic (accepts callbacks)
    - EntityTreeNode triggers Redux actions, doesn't manage state
@@ -469,7 +469,7 @@ pnpm test:accessibility
 ### Redux DevTools
 
 1. Open Redux DevTools in browser
-2. Monitor state changes:
+1. Monitor state changes:
    - `mainPanelMode` transitions: `viewing_entity` → `editing_entity`
    - `editingEntityId` set when edit icon clicked
    - `hasUnsavedChanges` toggles as fields modified
@@ -477,16 +477,16 @@ pnpm test:accessibility
 ### Network Tab
 
 1. Filter for API calls: `worldentities` endpoint
-2. Check `PUT /worldentities/{id}` on save
-3. Inspect request payload matches entity schema
-4. Verify 200 response on success
+1. Check `PUT /worldentities/{id}` on save
+1. Inspect request payload matches entity schema
+1. Verify 200 response on success
 
 ### React DevTools
 
 1. Inspect WorldEntityForm component state
-2. Check props: `isEditing`, `editingEntityId`, `parentId`
-3. Verify field values update as user types
-4. Check validation error state
+1. Check props: `isEditing`, `editingEntityId`, `parentId`
+1. Verify field values update as user types
+1. Check validation error state
 
 ## Common Issues and Solutions
 

@@ -34,11 +34,13 @@ export type MainPanelMode =
 ```
 
 **Existing Actions to Reuse**:
+
 - `openEntityFormEdit(entityId: string)` - Sets `mainPanelMode = 'editing_entity'`, `editingEntityId = entityId`
 - `closeEntityForm()` - Resets edit state
 - `setUnsavedChanges(hasChanges: boolean)` - Tracks form dirty state
 
 **Optional Enhancement** (for unsaved changes dialog):
+
 ```typescript
 // If dialog state needs to be in Redux (alternative: component-local state)
 export interface WorldSidebarState {
@@ -81,6 +83,7 @@ interface WorldEntityFormState {
 ```
 
 **Change Detection Logic**:
+
 ```typescript
 const isDirty = useMemo(() => {
   if (!isEditing || !existingEntity) return false;
@@ -106,6 +109,7 @@ interface UnsavedChangesDialogState {
 ```
 
 **Dialog Trigger Conditions**:
+
 ```typescript
 const shouldShowDialog = (
   hasUnsavedChanges: boolean,
@@ -174,6 +178,7 @@ interface UpdateWorldEntityRequest {
 **Response**: Updated `WorldEntity` object
 
 **Error Responses**:
+
 - 400 Bad Request: Validation errors (name empty, invalid schema)
 - 404 Not Found: Entity or World doesn't exist
 - 409 Conflict: Concurrent modification detected (future)
@@ -183,7 +188,7 @@ interface UpdateWorldEntityRequest {
 
 ## State Flow Diagram
 
-```
+```text
 User clicks Edit icon/button
          ↓
    [openEntityFormEdit(entityId)] action dispatched
@@ -241,18 +246,21 @@ const entityValidationRules: Record<WorldEntityType, ValidationRule[]> = {
 ## Data Integrity Constraints
 
 ### Client-Side (Form Validation)
+
 - Name: Required, 1-100 characters, non-empty after trim
 - Description: Optional, 0-500 characters
 - Entity Type: Read-only in edit mode (cannot change)
 - Custom Properties: Must be valid JSON structure
 
 ### Server-Side (API)
+
 - Unique entity ID (enforced by Cosmos DB)
 - Parent-child relationships must be valid (parent exists)
 - Schema version must match entity type
 - Partition key consistency (worldId)
 
 ### Optimistic Updates
+
 - Update hierarchy immediately after save (before API confirmation)
 - Revalidate on error (RTK Query automatic refetch)
 - Rollback on API error (show previous state + error toast)
@@ -262,11 +270,13 @@ const entityValidationRules: Record<WorldEntityType, ValidationRule[]> = {
 ## Performance Considerations
 
 ### State Updates
+
 - Debounce form field onChange (300ms) to reduce re-renders
 - Memoize isDirty calculation (useMemo)
 - Avoid unnecessary Redux dispatches (check prev value before setUnsavedChanges)
 
 ### API Calls
+
 - Cancel in-flight query if user navigates away (RTK Query abort controller)
 - Cache entity data for 60 seconds (RTK Query keepUnusedDataFor)
 - Invalidate cache on successful update (providesTags/invalidatesTags)
