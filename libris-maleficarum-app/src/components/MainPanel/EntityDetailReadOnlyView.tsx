@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { WorldEntity } from '@/services/types/worldEntity.types';
 import { formatEntityType } from '@/lib/entityTypeHelpers';
+import { DynamicPropertiesView } from './DynamicPropertiesView';
 
 export interface EntityDetailReadOnlyViewProps {
   /** Entity to display in read-only mode */
@@ -103,26 +104,12 @@ export function EntityDetailReadOnlyView({
             )}
           </div>
 
-          {/* Custom Properties (T028: Display using Object.entries()) */}
+          {/* T035: Custom Properties using DynamicPropertiesView */}
           {hasCustomProperties && customProperties && (
-            <div>
-              <h2 className="text-lg font-semibold mb-3">Custom Properties</h2>
-              <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                {Object.entries(customProperties).map(([key, value]) => (
-                    <div key={key} className="flex flex-col">
-                      <dt className="text-sm font-medium text-muted-foreground capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').trim()}
-                      </dt>
-                      <dd className="text-sm mt-1">
-                        {typeof value === 'object' && value !== null
-                          ? JSON.stringify(value, null, 2)
-                          : String(value)}
-                      </dd>
-                    </div>
-                  ),
-                )}
-              </dl>
-            </div>
+            <DynamicPropertiesView
+              entityType={entity.entityType}
+              value={customProperties}
+            />
           )}
         </CardContent>
       </Card>
