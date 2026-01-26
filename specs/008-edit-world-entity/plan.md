@@ -5,10 +5,12 @@
 ## Summary
 
 Enable users to edit existing world entities through two primary pathways:
+
 1. **Quick edit from hierarchy** (P1): Click edit icon next to entity in WorldSidebar hierarchy → edit form displays in MainPanel
-2. **Edit from detail view** (P2): Click Edit button when viewing entity → form fields become editable in MainPanel
+1. **Edit from detail view** (P2): Click Edit button when viewing entity → form fields become editable in MainPanel
 
 **Key Behaviors**:
+
 - Edit form displays in MainPanel, replacing existing content
 - Unsaved changes trigger Yes/No/Cancel dialog before navigation
 - Entity type is read-only during edit (future enhancement planned)
@@ -26,14 +28,15 @@ Enable users to edit existing world entities through two primary pathways:
 **Testing**: Vitest + Testing Library + jest-axe (frontend accessibility testing)  
 **Target Platform**: Modern web browsers (Chrome/Edge/Firefox/Safari latest 2 versions)  
 **Project Type**: Web application (React SPA frontend only - this feature is frontend-only)  
-**Performance Goals**: 
-  - Edit initiation < 2 seconds from hierarchy, < 1 second from detail view
-  - Validation feedback < 500ms
-  - Hierarchy update < 1 second after save
-**Constraints**: 
-  - WCAG 2.2 Level AA compliance required
-  - Zero data loss on cancel/error
-  - Single-user application (no concurrent edit handling)
+**Performance Goals**:
+
+- Edit initiation < 2 seconds from hierarchy, < 1 second from detail view
+- Validation feedback < 500ms
+- Hierarchy update < 1 second after save
+**Constraints**:
+- WCAG 2.2 Level AA compliance required
+- Zero data loss on cancel/error
+- Single-user application (no concurrent edit handling)
 **Scale/Scope**: ~8 components (new/modified), ~12 test files, 1 UI dialog, 3 Redux action creators (potentially)
 
 ## Constitution Check
@@ -41,46 +44,59 @@ Enable users to edit existing world entities through two primary pathways:
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 ### Principle I: Cloud-Native Architecture
+
 ✅ **PASS** - Frontend-only feature, no infrastructure changes. Existing Azure Cosmos DB API used.
 
 ### Principle II: Clean Architecture & Separation of Concerns
+
 ✅ **PASS** - Maintains clear separation:
-  - UI Components (WorldEntityForm, EntityDetailReadOnlyView, UnsavedChangesDialog)
-  - State Management (worldSidebarSlice actions/selectors)
-  - Business Logic (validation via entity type registry)
-  - Data Access (existing RTK Query hooks: useUpdateWorldEntityMutation)
+
+- UI Components (WorldEntityForm, EntityDetailReadOnlyView, UnsavedChangesDialog)
+- State Management (worldSidebarSlice actions/selectors)
+- Business Logic (validation via entity type registry)
+- Data Access (existing RTK Query hooks: useUpdateWorldEntityMutation)
 
 ### Principle III: Test-Driven Development (NON-NEGOTIABLE)
+
 ✅ **PASS** - Plan includes TDD workflow:
-  - Write tests BEFORE implementation for each component
-  - jest-axe accessibility tests for all interactive elements (Edit button, dialog, icons)
-  - AAA pattern (Arrange-Act-Assert)
-  - Test coverage monitored in CI
+
+- Write tests BEFORE implementation for each component
+- jest-axe accessibility tests for all interactive elements (Edit button, dialog, icons)
+- AAA pattern (Arrange-Act-Assert)
+- Test coverage monitored in CI
 
 ### Principle IV: Framework & Technology Standards
+
 ✅ **PASS** - Uses mandated stack:
-  - React 19 with TypeScript ✓
-  - Shadcn/ui (Dialog, Button components) ✓
-  - Redux Toolkit for state ✓
-  - Vitest for testing ✓
+
+- React 19 with TypeScript ✓
+- Shadcn/ui (Dialog, Button components) ✓
+- Redux Toolkit for state ✓
+- Vitest for testing ✓
 
 ### Principle V: Developer Experience & Inner Loop
+
 ✅ **PASS** - Frontend development workflow:
-  - Hot reload via Vite (existing)
-  - Component dev in isolation via Vitest UI
-  - Single command: `pnpm dev`
+
+- Hot reload via Vite (existing)
+- Component dev in isolation via Vitest UI
+- Single command: `pnpm dev`
 
 ### Principle VI: Security & Privacy by Default
+
 ✅ **PASS** - No new security concerns:
-  - Uses existing authenticated API calls
-  - No new secrets or credentials
-  - Inherits existing auth model (Azure Entra ID)
+
+- Uses existing authenticated API calls
+- No new secrets or credentials
+- Inherits existing auth model (Azure Entra ID)
 
 ### Principle VII: Semantic Versioning & Breaking Changes
+
 ✅ **PASS** - Non-breaking feature addition:
-  - MINOR version bump (new feature, backward compatible)
-  - Existing create/view flows unchanged
-  - Component rename (EntityDetailForm → WorldEntityForm) is internal refactor
+
+- MINOR version bump (new feature, backward compatible)
+- Existing create/view flows unchanged
+- Component rename (EntityDetailForm → WorldEntityForm) is internal refactor
 
 **GATE RESULT**: ✅ **ALL CHECKS PASSED** - Proceed to Phase 0
 
@@ -88,7 +104,7 @@ Enable users to edit existing world entities through two primary pathways:
 
 ### Documentation (this feature)
 
-```
+```text
 specs/008-edit-world-entity/
 ├── spec.md                # Feature specification (completed)
 ├── plan.md                # This file  
@@ -106,7 +122,8 @@ specs/008-edit-world-entity/
 ### Source Code (repository root)
 
 **Frontend (React SPA)**:
-```
+
+```text
 libris-maleficarum-app/src/
 ├── components/
 │   ├── MainPanel/
@@ -140,7 +157,8 @@ libris-maleficarum-app/src/
 ```
 
 **Tests**:
-```
+
+```text
 libris-maleficarum-app/src/
 ├── __tests__/
 │   └── integration/
@@ -148,7 +166,7 @@ libris-maleficarum-app/src/
 │       └── unsavedChangesFlow.test.tsx            # NEW: Integration test for unsaved changes dialog
 ```
 
-**Structure Decision**: 
+**Structure Decision**:
 This is a **web application (Option 2 - frontend only)** feature. All changes are in the `libris-maleficarum-app/` React SPA. No backend changes required—existing Cosmos DB API (`useUpdateWorldEntityMutation`) handles persistence. Component co-location pattern: each component has corresponding `.test.tsx` file in the same directory.
 
 ## Complexity Tracking
@@ -170,28 +188,30 @@ This is a **web application (Option 2 - frontend only)** feature. All changes ar
    - **Current State**: `EntityDetailForm` already distinguishes create/edit via `editingEntityId` prop and loads existing data in edit mode
    - **Decision Needed**: Confirm no significant refactor needed; just add read-only mode for entity type field
 
-2. **Unsaved Changes Detection Pattern**
+1. **Unsaved Changes Detection Pattern**
    - **Question**: What's the best practice for detecting form changes in React + Redux Toolkit context?
    - **Current State**: `hasUnsavedChanges` flag already exists in `worldSidebarSlice`
    - **Decision Needed**: Research deep-equal comparison vs dirty field tracking for form state
 
-3. **Edit Icon UX Pattern**
+1. **Edit Icon UX Pattern**
    - **Question**: Should edit icon be always visible, on hover only, or on selection?
    - **Current Patterns**: EntityTreeNode already has hover-triggered "Plus" icon for quick create
    - **Decision Needed**: Align with existing pattern (hover-triggered) for consistency
 
-4. **Dialog Confirmation Best Practices**
+1. **Dialog Confirmation Best Practices**
    - **Question**: How to handle dialog confirmation with async save operations?
    - **Standards**: Shadcn/ui Dialog with controlled open state + async handlers
    - **Decision Needed**: Define loading states and error handling in dialog
 
-5. **Schema Validation Strategy**
+1. **Schema Validation Strategy**
    - **Question**: How does entity type registry provide validation rules?
    - **Current State**: Entity type registry exists (feature 007), schema versions tracked
    - **Decision Needed**: Clarify validation API surface (e.g., `getValidationSchema(entityType)`)
 
 ### Output: `research.md`
+
 Document decisions for each topic with:
+
 - **Decision**: What was chosen
 - **Rationale**: Why it was chosen
 - **Alternatives Considered**: What else was evaluated
@@ -221,6 +241,7 @@ export interface WorldSidebarState {
 ```
 
 **Entity Edit Session** (component-local state, not Redux):
+
 ```typescript
 interface EditSessionState {
   originalValues: Partial<WorldEntity>;  // For change detection
@@ -233,6 +254,7 @@ interface EditSessionState {
 ### API Contracts (`contracts/`)
 
 #### `WorldEntityForm.contract.ts`
+
 ```typescript
 /**
  * WorldEntityForm Component Contract
@@ -269,6 +291,7 @@ export interface WorldEntityFormState {
 ```
 
 #### `EntityDetailReadOnlyView.contract.ts`
+
 ```typescript
 /**
  * EntityDetailReadOnlyView Component Contract
@@ -290,6 +313,7 @@ export interface EntityDetailReadOnlyViewProps {
 ```
 
 #### `UnsavedChangesDialog.contract.ts`
+
 ```typescript
 /**
  * UnsavedChangesDialog Component Contract
@@ -331,9 +355,11 @@ export interface UnsavedChangesDialogProps {
 cd libris-maleficarum-app
 pnpm dev
 ```
-Access at https://127.0.0.1:4000
+
+Access at <https://127.0.0.1:4000>
 
 ## Running Tests
+
 ```bash
 # All tests
 pnpm test
@@ -351,29 +377,35 @@ pnpm test -- --grep "accessibility"
 ## Component Overview
 
 ### WorldEntityForm
+
 Location: `src/components/MainPanel/WorldEntityForm.tsx`
 Purpose: Unified form for create/edit modes
 Mode Toggle: Via `editingEntityId` in Redux state
-Entry Points: 
+Entry Points:
+
 - Create: `openEntityFormCreate(parentId)` action
 - Edit: `openEntityFormEdit(entityId)` action
 
 ### EntityDetailReadOnlyView
+
 Location: `src/components/MainPanel/EntityDetailReadOnlyView.tsx`
 Purpose: Read-only entity display with Edit button (top-right)
 Trigger: MainPanel when `mainPanelMode === 'viewing_entity'`
 
 ### UnsavedChangesDialog
+
 Location: `src/components/MainPanel/UnsavedChangesDialog.tsx`
 Purpose: Confirm navigation away from unsaved changes
 Trigger: User clicks edit icon/button while MainPanel has `hasUnsavedChanges: true`
 
 ## Key Redux Actions
+
 - `openEntityFormEdit(entityId)` - Open entity in edit mode
 - `setUnsavedChanges(boolean)` - Track form dirty state
 - `closeEntityForm()` - Exit edit mode
 
 ## Testing Checklist
+
 - [ ] Edit icon appears on hover in hierarchy
 - [ ] Edit button appears in top-right of read-only detail view
 - [ ] Clicking edit icon/button displays form in MainPanel
@@ -383,7 +415,8 @@ Trigger: User clicks edit icon/button while MainPanel has `hasUnsavedChanges: tr
 - [ ] Hierarchy updates after save
 - [ ] All interactive elements keyboard-accessible
 - [ ] jest-axe passes for all components
-```
+
+```markdown
 
 ---
 
@@ -392,11 +425,13 @@ Trigger: User clicks edit icon/button while MainPanel has `hasUnsavedChanges: tr
 *This phase is handled by `/speckit.tasks` command - NOT part of `/speckit.plan` output.*
 
 After this plan is reviewed and research.md/data-model.md/quickstart.md/contracts/ are generated, run:
-```
+
+```bash
 /speckit.tasks
 ```
 
 This will break down the implementation into granular, testable tasks organized by:
+
 - Setup & Infrastructure
 - Frontend Components
 - State Management
@@ -414,18 +449,18 @@ This will break down the implementation into granular, testable tasks organized 
    - Update test file names
    - Rationale: Better semantic clarity (distinguishes from potential other entity forms)
 
-2. **Extract Read-Only View**
+1. **Extract Read-Only View**
    - Current `MainPanel.tsx` has inline entity display JSX
    - Extract to `EntityDetailReadOnlyView.tsx` component
    - Rationale: Separation of concerns (read-only vs edit), reusability, testability
 
-3. **Reuse Existing Patterns**
+1. **Reuse Existing Patterns**
    - `hasUnsavedChanges` tracking (already in slice)
    - Hover-triggered action icons (like Plus icon in EntityTreeNode)
    - Shadcn/ui Dialog component (consistent with DeleteConfirmationModal)
    - Validation error display (follow WorldEntityForm pattern)
 
-4. **Avoid Duplication**
+1. **Avoid Duplication**
    - Entity type selector component (reuse existing `EntityTypeSelector`)
    - Form layout component (reuse existing `FormLayout`)
    - Form action buttons (reuse existing `FormActions`)
