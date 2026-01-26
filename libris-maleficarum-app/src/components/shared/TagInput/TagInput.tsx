@@ -138,6 +138,7 @@ export function TagInput({
 }: TagInputProps) {
   const [inputValue, setInputValue] = React.useState('');
   const [localError, setLocalError] = React.useState<string>();
+  const [highlightedTag, setHighlightedTag] = React.useState<string | null>(null);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && inputValue.trim()) {
@@ -151,6 +152,9 @@ export function TagInput({
       }
 
       if (value.includes(trimmed)) {
+        // T017: Visual feedback for duplicate tag (500ms highlight)
+        setHighlightedTag(trimmed);
+        setTimeout(() => setHighlightedTag(null), 500);
         setLocalError('Tag already exists');
         return;
       }
@@ -200,7 +204,10 @@ export function TagInput({
             <Badge
               key={tag}
               variant="secondary"
-              className="gap-1 pr-1.5"
+              className={cn(
+                'gap-1 pr-1.5 transition-all',
+                highlightedTag === tag && 'ring-2 ring-primary animate-pulse'
+              )}
               role="listitem"
             >
               <span>{tag}</span>

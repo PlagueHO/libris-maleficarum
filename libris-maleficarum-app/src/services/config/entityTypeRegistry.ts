@@ -11,6 +11,49 @@
 import type { WorldEntityType } from '../types/worldEntity.types';
 
 /**
+ * Validation rules for a property field
+ */
+export interface PropertyFieldValidation {
+  /** Field is required (cannot be empty) */
+  required?: boolean;
+
+  /** Minimum value (for integer/decimal fields) */
+  min?: number;
+
+  /** Maximum value (for integer/decimal fields) */
+  max?: number;
+
+  /** Regex pattern (for text/textarea fields) */
+  pattern?: string;
+}
+
+/**
+ * Schema definition for a single custom property field
+ */
+export interface PropertyFieldSchema {
+  /** Unique identifier for this property (used as object key) */
+  key: string;
+
+  /** Human-readable label for display */
+  label: string;
+
+  /** Field type determines input control and validation */
+  type: 'text' | 'textarea' | 'integer' | 'decimal' | 'tagArray';
+
+  /** Optional placeholder text for input fields */
+  placeholder?: string;
+
+  /** Optional help text or description */
+  description?: string;
+
+  /** Maximum character length (for text/textarea fields) */
+  maxLength?: number;
+
+  /** Optional validation rules */
+  validation?: PropertyFieldValidation;
+}
+
+/**
  * Configuration for a world entity type
  */
 export interface EntityTypeConfig {
@@ -44,6 +87,9 @@ export interface EntityTypeConfig {
 
   /** Can this type exist without a parent? (default: false) */
   readonly canBeRoot?: boolean;
+
+  /** Optional schema for custom properties (dynamic field rendering) */
+  readonly propertySchema?: readonly PropertyFieldSchema[];
 }
 
 /**
@@ -345,6 +391,36 @@ export const ENTITY_TYPE_REGISTRY = [
     icon: 'Globe',
     schemaVersion: 1,
     suggestedChildren: ['Country', 'Region', 'GeographicRegion'],
+    propertySchema: [
+      {
+        key: 'Climate',
+        label: 'Climate',
+        type: 'textarea',
+        placeholder: 'Describe the climate (e.g., temperate, tropical, arid)...',
+        maxLength: 200,
+      },
+      {
+        key: 'Terrain',
+        label: 'Terrain',
+        type: 'textarea',
+        placeholder: 'Describe the terrain (e.g., mountainous, coastal, plains)...',
+        maxLength: 200,
+      },
+      {
+        key: 'Population',
+        label: 'Population',
+        type: 'integer',
+        placeholder: 'e.g., 1,000,000',
+        description: 'Whole number only',
+      },
+      {
+        key: 'Area',
+        label: 'Area (sq km)',
+        type: 'decimal',
+        placeholder: 'e.g., 150,000.50',
+        description: 'Decimal values allowed',
+      },
+    ],
   },
   {
     type: 'PoliticalRegion',
@@ -354,6 +430,31 @@ export const ENTITY_TYPE_REGISTRY = [
     icon: 'Shield',
     schemaVersion: 1,
     suggestedChildren: ['Country', 'PoliticalRegion'],
+    propertySchema: [
+      {
+        key: 'GovernmentType',
+        label: 'Government Type',
+        type: 'textarea',
+        placeholder: 'e.g., Democracy, Monarchy, Federation, Empire...',
+        maxLength: 200,
+      },
+      {
+        key: 'MemberStates',
+        label: 'Member States',
+        type: 'tagArray',
+        placeholder: 'Add a member state...',
+        description: 'States, provinces, or territories within this political region',
+        maxLength: 50,
+      },
+      {
+        key: 'EstablishedDate',
+        label: 'Established Date',
+        type: 'text',
+        placeholder: 'e.g., Year 1456, 3rd Age, Spring 2024...',
+        description: 'Free-form date (supports fantasy calendars)',
+        maxLength: 100,
+      },
+    ],
   },
   {
     type: 'CulturalRegion',
@@ -363,6 +464,31 @@ export const ENTITY_TYPE_REGISTRY = [
     icon: 'Users',
     schemaVersion: 1,
     suggestedChildren: ['Country', 'CulturalRegion'],
+    propertySchema: [
+      {
+        key: 'Languages',
+        label: 'Languages',
+        type: 'tagArray',
+        placeholder: 'Add a language...',
+        description: 'Spoken or written languages in this cultural region',
+        maxLength: 50,
+      },
+      {
+        key: 'Religions',
+        label: 'Religions',
+        type: 'tagArray',
+        placeholder: 'Add a religion...',
+        description: 'Religious beliefs and practices in this region',
+        maxLength: 50,
+      },
+      {
+        key: 'CulturalTraits',
+        label: 'Cultural Traits',
+        type: 'textarea',
+        placeholder: 'Describe unique cultural characteristics, customs, traditions, arts...',
+        maxLength: 500,
+      },
+    ],
   },
   {
     type: 'MilitaryRegion',
@@ -372,6 +498,30 @@ export const ENTITY_TYPE_REGISTRY = [
     icon: 'Shield',
     schemaVersion: 1,
     suggestedChildren: ['MilitaryRegion'],
+    propertySchema: [
+      {
+        key: 'CommandStructure',
+        label: 'Command Structure',
+        type: 'textarea',
+        placeholder: 'Describe the military hierarchy and leadership (e.g., General → Colonel → Captain)...',
+        maxLength: 300,
+      },
+      {
+        key: 'StrategicImportance',
+        label: 'Strategic Importance',
+        type: 'textarea',
+        placeholder: 'Explain why this region is strategically important (e.g., border defense, resource control)...',
+        maxLength: 300,
+      },
+      {
+        key: 'MilitaryAssets',
+        label: 'Military Assets',
+        type: 'tagArray',
+        placeholder: 'Add a military asset...',
+        description: 'Fortifications, bases, units, equipment, or other military resources',
+        maxLength: 50,
+      },
+    ],
   },
 
   // ===== Other (1) =====
