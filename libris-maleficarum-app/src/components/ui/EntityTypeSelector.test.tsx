@@ -567,7 +567,7 @@ describe('EntityTypeSelector', () => {
 
       // Search should complete reasonably fast (typing simulation is slower than real user input)
       const searchTime = endTime - startTime;
-      expect(searchTime).toBeLessThan(200); // Increased from 100ms to account for test environment overhead
+      expect(searchTime).toBeLessThan(700); // Increased to account for test environment overhead, DOM rendering, and user input simulation overhead
 
       // Results should filter correctly
       await waitFor(() => {

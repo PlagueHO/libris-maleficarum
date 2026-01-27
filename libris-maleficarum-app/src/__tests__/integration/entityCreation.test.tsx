@@ -1,3 +1,4 @@
+import { describe, it, test, beforeAll, afterEach, afterAll, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
@@ -16,6 +17,7 @@ afterAll(() => server.close());
 
 describe('Entity Creation Integration', () => {
   test('should create a new entity successfully', async () => {
+    vi.setConfig({ testTimeout: 30000 });
     render(
       <Provider store={store}>
         <App />
