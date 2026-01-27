@@ -67,8 +67,8 @@ function renderFormattedValue(
   fieldValue: unknown,
   fieldType: string
 ): React.ReactNode {
-  // Handle null/undefined
-  if (fieldValue === null || fieldValue === undefined) {
+  // Handle null (undefined is filtered by caller)
+  if (fieldValue === null) {
     return <span className="text-muted-foreground italic">Not set</span>;
   }
 
