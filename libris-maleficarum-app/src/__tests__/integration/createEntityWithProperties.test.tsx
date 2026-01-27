@@ -166,7 +166,11 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     const typeSelect = screen.getByRole('combobox', { name: /type/i });
     await user.click(typeSelect);
 
-    const militaryRegionOption = await screen.findByRole('option', { name: /military region/i });
+    // Wait for options to render with extended timeout
+    const militaryRegionOption = await waitFor(
+      () => screen.getByRole('option', { name: /military region/i }),
+      { timeout: 5000 }
+    );
     await user.click(militaryRegionOption);
 
     const descInput = screen.getByPlaceholderText(/brief description/i);
@@ -182,9 +186,26 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     await user.clear(strategicImportanceInput);
     await user.type(strategicImportanceInput, '85');
 
-    // MilitaryAssets (tagArray field)
+    // MilitaryAssets (tagArray field) - add tags with proper delays for DOM updates
     const militaryAssetsInput = await screen.findByLabelText(/military assets/i);
-    await user.type(militaryAssetsInput, 'Fortress{Enter}Cavalry{Enter}Archers');
+    await user.type(militaryAssetsInput, 'Fortress', { delay: 50 });
+    await user.keyboard('{Enter}');
+    
+    await user.type(militaryAssetsInput, 'Cavalry', { delay: 50 });
+    await user.keyboard('{Enter}');
+    
+    await user.type(militaryAssetsInput, 'Archers', { delay: 50 });
+    await user.keyboard('{Enter}');
+    
+    // Wait for all tags to render (check that tags appear as text in the DOM)
+    await waitFor(
+      () => {
+        expect(screen.getByText('Fortress')).toBeInTheDocument();
+        expect(screen.getByText('Cavalry')).toBeInTheDocument();
+        expect(screen.getByText('Archers')).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
 
     // 6. Submit the form
     const submitBtn = await screen.findByRole('button', { name: /^create$/i });
@@ -309,7 +330,11 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     const typeSelect = screen.getByRole('combobox', { name: /type/i });
     await user.click(typeSelect);
 
-    const militaryRegionOption = await screen.findByRole('option', { name: /military region/i });
+    // Wait for options to render with extended timeout
+    const militaryRegionOption = await waitFor(
+      () => screen.getByRole('option', { name: /military region/i }),
+      { timeout: 5000 }
+    );
     await user.click(militaryRegionOption);
 
     // Leave custom property fields empty
