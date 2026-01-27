@@ -111,9 +111,11 @@ export const ENTITY_TYPE_REGISTRY = [
     suggestedChildren: [
       'GeographicRegion',
       'PoliticalRegion',
+      'MilitaryRegion',
       'Country',
       'Region',
       'Faction',
+      'Character',
       'Event',
     ],
     canBeRoot: true,
@@ -390,7 +392,7 @@ export const ENTITY_TYPE_REGISTRY = [
     category: 'Geography',
     icon: 'Globe',
     schemaVersion: 1,
-    suggestedChildren: ['Country', 'Region', 'GeographicRegion'],
+    suggestedChildren: ['Country', 'Region', 'GeographicRegion', 'MilitaryRegion', 'Character'],
     propertySchema: [
       {
         key: 'Climate',

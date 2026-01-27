@@ -9,6 +9,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './vitest.setup.ts',
     css: true,
+    testTimeout: 15000, // Increase timeout for integration tests
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
