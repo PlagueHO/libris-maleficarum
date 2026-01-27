@@ -10,11 +10,8 @@ export default defineConfig({
     setupFiles: './vitest.setup.ts',
     css: true,
     testTimeout: 30000, // Increased to support longer integration tests with dropdown rendering delays
-    poolOptions: {
-      forks: {
-        singleFork: true, // Run tests serially to prevent memory exhaustion with heavy integration tests
-      },
-    },
+    pool: 'threads',
+    singleThread: true, // Run all tests in single thread to prevent memory exhaustion
     exclude: [
       '**/node_modules/**',
       '**/dist/**',

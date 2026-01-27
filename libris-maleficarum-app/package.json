@@ -8,9 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "node --max-old-space-size=8192 ./node_modules/vitest/vitest.mjs run",
-    "test:watch": "node --max-old-space-size=8192 ./node_modules/vitest/vitest.mjs",
-    "test:ui": "node --max-old-space-size=8192 ./node_modules/vitest/vitest.mjs --ui"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@radix-ui/react-context-menu": "^2.2.16",
