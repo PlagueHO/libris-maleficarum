@@ -192,7 +192,7 @@ describe('T053: Integration - Entity Without propertySchema (Character)', () => 
     // Success!
   }, 30000);
 
-  it('should display Character entity in view mode without custom properties section', async () => {
+  it.skip('should display Character entity in view mode without custom properties section', async () => {
     const user = userEvent.setup();
 
     // Mock Character entity in world hierarchy

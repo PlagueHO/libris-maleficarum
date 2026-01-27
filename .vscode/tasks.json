@@ -34,7 +34,10 @@
       "command": "pnpm",
       "args": ["test"],
       "options": {
-        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+        "cwd": "${workspaceFolder}/libris-maleficarum-app",
+        "env": {
+          "NODE_OPTIONS": "--max-old-space-size=16384"
+        }
       },
       "group": "test",
       "icon": {
@@ -48,7 +51,10 @@
       "command": "pnpm",
       "args": ["test:watch"],
       "options": {
-        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+        "cwd": "${workspaceFolder}/libris-maleficarum-app",
+        "env": {
+          "NODE_OPTIONS": "--max-old-space-size=16384"
+        }
       },
       "isBackground": true,
       "group": "test",
@@ -63,7 +69,10 @@
       "command": "pnpm",
       "args": ["test:ui"],
       "options": {
-        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+        "cwd": "${workspaceFolder}/libris-maleficarum-app",
+        "env": {
+          "NODE_OPTIONS": "--max-old-space-size=16384"
+        }
       },
       "isBackground": true,
       "group": "test",
@@ -78,7 +87,10 @@
       "command": "pnpm",
       "args": ["test", "-t", "accessibility"],
       "options": {
-        "cwd": "${workspaceFolder}/libris-maleficarum-app"
+        "cwd": "${workspaceFolder}/libris-maleficarum-app",
+        "env": {
+          "NODE_OPTIONS": "--max-old-space-size=16384"
+        }
       },
       "group": "test",
       "icon": {
