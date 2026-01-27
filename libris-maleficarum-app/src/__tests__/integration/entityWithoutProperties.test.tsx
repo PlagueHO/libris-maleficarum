@@ -8,7 +8,7 @@
  * @module __tests__/integration/entityWithoutProperties
  */
 
-import { describe, it, expect, beforeAll, afterEach, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
@@ -63,21 +63,15 @@ describe('T053: Integration - Entity Without propertySchema (Character)', () => 
       name: 'Faerûn',
       description: 'The primary continent of the Forgotten Realms',
       tags: ['continent', 'fantasy'],
-      properties: {
-        Climate: 'Varied',
-        Terrain: 'Diverse',
-      },
+      properties: undefined,
       path: [],
       depth: 0,
       hasChildren: true,
       ownerId: 'test-user@example.com',
       isDeleted: false,
-      schemaVersion: 'v1.0',
+      schemaVersion: 1,
       createdAt: new Date().toISOString(),
-      createdBy: 'test-user@example.com',
-      modifiedAt: new Date().toISOString(),
-      modifiedBy: 'test-user@example.com',
-      version: 1,
+      updatedAt: new Date().toISOString(),
     };
 
     // Mock GET entity by ID (for parent entity lookup)
@@ -105,18 +99,15 @@ describe('T053: Integration - Entity Without propertySchema (Character)', () => 
           name: body.name,
           description: body.description || '',
           tags: body.tags || [],
-          properties: null, // Character has no custom properties
+          properties: undefined, // Character has no custom properties
           path: body.parentId ? ['continent-faerun'] : [],
           depth: body.parentId ? 1 : 0,
           hasChildren: false,
           ownerId: 'test-user@example.com',
           isDeleted: false,
-          schemaVersion: 'v1.0',
+          schemaVersion: 1,
           createdAt: new Date().toISOString(),
-          createdBy: 'test-user@example.com',
-          modifiedAt: new Date().toISOString(),
-          modifiedBy: 'test-user@example.com',
-          version: 1,
+          updatedAt: new Date().toISOString(),
         };
 
         return HttpResponse.json(newEntity, { status: 201 });
@@ -204,18 +195,15 @@ describe('T053: Integration - Entity Without propertySchema (Character)', () => 
       name: 'Elminster Aumar',
       description: 'A legendary wizard and sage of the Forgotten Realms',
       tags: ['wizard', 'sage', 'harpers'],
-      properties: null, // No custom properties
+      properties: undefined, // No custom properties
       path: ['continent-faerun'],
       depth: 1,
       hasChildren: false,
       ownerId: 'test-user@example.com',
       isDeleted: false,
-      schemaVersion: 'v1.0',
+      schemaVersion: 1,
       createdAt: new Date().toISOString(),
-      createdBy: 'test-user@example.com',
-      modifiedAt: new Date().toISOString(),
-      modifiedBy: 'test-user@example.com',
-      version: 1,
+      updatedAt: new Date().toISOString(),
     };
 
     // Override GET entities to include Character
@@ -231,18 +219,13 @@ describe('T053: Integration - Entity Without propertySchema (Character)', () => 
             name: 'Faerûn',
             description: 'The primary continent of the Forgotten Realms',
             tags: ['continent', 'fantasy'],
-            properties: {
-              Climate: 'Varied - from arctic tundra to tropical jungles',
-              Terrain: 'Diverse landscapes including mountains, forests, deserts, and plains',
-              Population: 66000000,
-              Area: 9000000,
-            },
+            properties: undefined,
             path: [],
             depth: 0,
             hasChildren: true,
             ownerId: 'test-user@example.com',
             isDeleted: false,
-            schemaVersion: 'v1.0',
+            schemaVersion: 1,
             createdAt: new Date().toISOString(),
             createdBy: 'test-user@example.com',
             modifiedAt: new Date().toISOString(),

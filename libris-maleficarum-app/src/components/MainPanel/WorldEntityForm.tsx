@@ -150,7 +150,7 @@ export function EntityDetailForm() {
       dispatch(setUnsavedChanges(hasChanges));
       hasChangesPrevRef.current = hasChanges;
     }
-  }, [name, description, entityType, dispatch, isEditing, existingEntity?.id, existingEntity?.name, existingEntity?.description, existingEntity?.entityType]);
+  }, [name, description, entityType, dispatch, isEditing, existingEntity]);
 
   // Cleanup: reset unsaved changes when component unmounts
   useEffect(() => {
