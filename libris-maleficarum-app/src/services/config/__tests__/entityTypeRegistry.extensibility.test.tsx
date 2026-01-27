@@ -19,6 +19,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { DynamicPropertiesForm } from '@/components/MainPanel/DynamicPropertiesForm';
 import { DynamicPropertiesView } from '@/components/MainPanel/DynamicPropertiesView';
 import type { EntityTypeConfig } from '../entityTypeRegistry';
+import type { WorldEntityType } from '@/services/types/worldEntity.types';
 import * as entityTypeRegistry from '../entityTypeRegistry';
 
 expect.extend(toHaveNoViolations);
@@ -76,14 +77,17 @@ const MOCK_ECONOMIC_REGION_CONFIG: EntityTypeConfig = {
 };
 
 describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
+  // Store original function before mocking
+  const originalGetEntityTypeConfig = entityTypeRegistry.getEntityTypeConfig;
+
   beforeEach(() => {
     // Mock getEntityTypeConfig to return mock config for EconomicRegion
     vi.spyOn(entityTypeRegistry, 'getEntityTypeConfig').mockImplementation((type) => {
-      if (type === 'EconomicRegion') {
+      if (type === ('EconomicRegion' as unknown as WorldEntityType)) {
         return MOCK_ECONOMIC_REGION_CONFIG;
       }
       // Fall through to actual implementation for other types
-      return vi.requireActual('../entityTypeRegistry').getEntityTypeConfig(type);
+      return originalGetEntityTypeConfig(type);
     });
   });
 
@@ -100,7 +104,7 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
 
       render(
         <DynamicPropertiesForm
-          entityType="EconomicRegion"
+          entityType={'EconomicRegion' as unknown as WorldEntityType}
           value={{}}
           onChange={onChange}
         />
@@ -129,7 +133,7 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
 
       const { rerender } = render(
         <DynamicPropertiesForm
-          entityType="EconomicRegion"
+          entityType={'EconomicRegion' as unknown as WorldEntityType}
           value={currentValue}
           onChange={handleChange}
         />
@@ -142,7 +146,7 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
       // Rerender with updated value to maintain state
       rerender(
         <DynamicPropertiesForm
-          entityType="EconomicRegion"
+          entityType={'EconomicRegion' as unknown as WorldEntityType}
           value={currentValue}
           onChange={handleChange}
         />
@@ -162,7 +166,7 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
       // Rerender with updated value
       rerender(
         <DynamicPropertiesForm
-          entityType="EconomicRegion"
+          entityType={'EconomicRegion' as unknown as WorldEntityType}
           value={currentValue}
           onChange={handleChange}
         />
@@ -181,7 +185,7 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
       const onChange = vi.fn();
       const { container } = render(
         <DynamicPropertiesForm
-          entityType="EconomicRegion"
+          entityType={'EconomicRegion' as unknown as WorldEntityType}
           value={{}}
           onChange={onChange}
         />
@@ -203,7 +207,7 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
 
       render(
         <DynamicPropertiesView
-          entityType="EconomicRegion"
+          entityType={'EconomicRegion' as unknown as WorldEntityType}
           value={properties}
         />
       );
@@ -237,7 +241,7 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
 
       const { container } = render(
         <DynamicPropertiesView
-          entityType="EconomicRegion"
+          entityType={'EconomicRegion' as unknown as WorldEntityType}
           value={properties}
         />
       );

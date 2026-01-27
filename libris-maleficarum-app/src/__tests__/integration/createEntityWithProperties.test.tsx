@@ -69,7 +69,7 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
       name: 'Faerûn',
       description: 'The primary continent',
       tags: [],
-      properties: {},
+      properties: undefined,
       path: [],
       depth: 0,
       hasChildren: true,
@@ -188,13 +188,13 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
 
     // MilitaryAssets (tagArray field) - add tags with proper delays for DOM updates
     const militaryAssetsInput = await screen.findByLabelText(/military assets/i);
-    await user.type(militaryAssetsInput, 'Fortress', { delay: 50 });
+    await user.type(militaryAssetsInput, 'Fortress');
     await user.keyboard('{Enter}');
-    
-    await user.type(militaryAssetsInput, 'Cavalry', { delay: 50 });
+
+    await user.type(militaryAssetsInput, 'Cavalry');
     await user.keyboard('{Enter}');
-    
-    await user.type(militaryAssetsInput, 'Archers', { delay: 50 });
+
+    await user.type(militaryAssetsInput, 'Archers');
     await user.keyboard('{Enter}');
     
     // Wait for all tags to render (check that tags appear as text in the DOM)
@@ -235,7 +235,7 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
       name: 'Faerûn',
       description: 'The primary continent',
       tags: [],
-      properties: {},
+      properties: undefined,
       path: [],
       depth: 0,
       hasChildren: true,
@@ -369,7 +369,7 @@ describe('T040: DynamicPropertiesForm - Empty Fields for New Entities', () => {
       name: 'Faerûn',
       description: 'The primary continent',
       tags: [],
-      properties: {},
+      properties: undefined,
       path: [],
       depth: 0,
       hasChildren: true,
