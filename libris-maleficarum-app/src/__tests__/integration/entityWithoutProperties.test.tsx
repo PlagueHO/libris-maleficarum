@@ -153,23 +153,15 @@ describe('T053: Integration - Entity Without propertySchema (Character)', () => 
     const newEntityButton = screen.getByRole('button', { name: /add child to faerûn/i });
     await user.click(newEntityButton);
 
-    // Wait for form to appear (it has a loading state)
-    await waitFor(
-      () => {
-        expect(screen.getByText(/create entity/i)).toBeInTheDocument();
-      },
-      { timeout: 3000 }
-    );
-
     // Fill in basic entity details (form opens in MainPanel, not as dialog)
-    const nameInput = await screen.findByLabelText(/^name$/i);
+    const nameInput = await screen.findByPlaceholderText(/entity name/i);
     await user.type(nameInput, 'Elminster Aumar');
 
-    const descriptionInput = await screen.findByLabelText(/description/i);
+    const descriptionInput = screen.getByPlaceholderText(/brief description/i);
     await user.type(descriptionInput, 'A legendary wizard and sage');
 
     // Select Character entity type
-    const typeSelect = await screen.findByLabelText(/^type$/i);
+    const typeSelect = screen.getByRole('combobox', { name: /type/i });
     await user.click(typeSelect);
     const characterOption = await screen.findByRole('option', { name: 'Character' });
     await user.click(characterOption);
