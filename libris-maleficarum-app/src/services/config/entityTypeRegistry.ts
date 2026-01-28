@@ -38,7 +38,7 @@ export interface PropertyFieldSchema {
   label: string;
 
   /** Field type determines input control and validation */
-  type: 'text' | 'textarea' | 'integer' | 'decimal' | 'tagArray';
+  type: 'text' | 'textarea' | 'integer' | 'decimal' | 'tagArray' | 'date' | 'datetime' | 'time';
 
   /** Optional placeholder text for input fields */
   placeholder?: string;
@@ -993,11 +993,10 @@ export const ENTITY_TYPE_REGISTRY = [
         description: 'Sequential session number',
       },
       {
-        key: 'Date',
-        label: 'Date',
-        type: 'text',
-        placeholder: 'e.g., January 28, 2026',
-        maxLength: 100,
+        key: 'StartDateTime',
+        label: 'Session Start Date/Time',
+        type: 'datetime',
+        description: 'When the session started',
       },
       {
         key: 'Duration',

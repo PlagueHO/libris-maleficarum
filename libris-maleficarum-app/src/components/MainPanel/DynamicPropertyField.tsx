@@ -10,14 +10,21 @@
  * - integer: Numeric input with whole number validation
  * - decimal: Numeric input with decimal validation
  * - tagArray: Tag/chip input for string arrays
+ * - date: Date picker with calendar popover
+ * - datetime: Date and time picker combined
+ * - time: Time picker (HH:mm format)
  *
  * @module components/MainPanel/DynamicPropertyField
  */
 
 import * as React from 'react';
+import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { TagInput } from '@/components/shared/TagInput';
+import { DatePicker } from '@/components/ui/date-picker';
+import { DateTimePicker } from '@/components/ui/datetime-picker';
+import { TimePicker } from '@/components/ui/time-picker';
 import type { PropertyFieldSchema } from '@/services/config/entityTypeRegistry';
 import { validateField } from '@/lib/validators/propertyValidation';
 import {
@@ -139,6 +146,18 @@ export function DynamicPropertyField({
     } else if (schema.type === 'text' || schema.type === 'textarea') {
       setLocalValue((value as string) || '');
     }
+  }, [value, schema.type]);
+
+  // Parse date value for 'date' and 'datetime' field types
+  const dateValue = React.useMemo(() => {
+    if (schema.type !== 'date' && schema.type !== 'datetime') return undefined;
+    if (!value) return undefined;
+    if (value instanceof Date) return value;
+    if (typeof value === 'string') {
+      const parsed = new Date(value);
+      return isNaN(parsed.getTime()) ? undefined : parsed;
+    }
+    return undefined;
   }, [value, schema.type]);
 
   // T012: Text field type rendering
@@ -467,6 +486,177 @@ export function DynamicPropertyField({
         required={schema.validation?.required}
         maxLength={schema.maxLength || 50}
       />
+    );
+  }
+
+  // T017: Date field type rendering
+  if (schema.type === 'date') {
+    const handleChange = (newDate: Date | undefined) => {
+      // Store as ISO string for JSON serialization
+      onChange(newDate ? newDate.toISOString() : undefined);
+    };
+
+    if (readOnly) {
+      return (
+        <div>
+          <div className="text-sm font-medium text-muted-foreground mb-1">
+            {schema.label}
+          </div>
+          <div className="text-sm">
+            {dateValue ? format(dateValue, 'PPP') : '-'}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <label
+          htmlFor={`field-${schema.key}`}
+          className="block text-sm font-medium mb-3"
+        >
+          {schema.label}
+          {schema.validation?.required && (
+            <span className="text-destructive ml-1">*</span>
+          )}
+        </label>
+        <DatePicker
+          id={`field-${schema.key}`}
+          value={dateValue}
+          onChange={handleChange}
+          placeholder={schema.placeholder || 'Pick a date'}
+          disabled={disabled}
+          aria-label={schema.label}
+        />
+        {error && (
+          <span
+            id={`${schema.key}-error`}
+            className="text-xs text-destructive block mt-1"
+            role="alert"
+          >
+            {error}
+          </span>
+        )}
+        {schema.description && !error && (
+          <div className="text-xs text-muted-foreground mt-2">
+            {schema.description}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // T018: DateTime field type rendering
+  if (schema.type === 'datetime') {
+    const handleChange = (newDateTime: Date | undefined) => {
+      // Store as ISO string for JSON serialization
+      onChange(newDateTime ? newDateTime.toISOString() : undefined);
+    };
+
+    if (readOnly) {
+      return (
+        <div>
+          <div className="text-sm font-medium text-muted-foreground mb-1">
+            {schema.label}
+          </div>
+          <div className="text-sm">
+            {dateValue ? format(dateValue, 'PPP p') : '-'}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <label
+          htmlFor={`field-${schema.key}`}
+          className="block text-sm font-medium mb-3"
+        >
+          {schema.label}
+          {schema.validation?.required && (
+            <span className="text-destructive ml-1">*</span>
+          )}
+        </label>
+        <DateTimePicker
+          id={`field-${schema.key}`}
+          value={dateValue}
+          onChange={handleChange}
+          placeholder={schema.placeholder || 'Pick date and time'}
+          disabled={disabled}
+          aria-label={schema.label}
+        />
+        {error && (
+          <span
+            id={`${schema.key}-error`}
+            className="text-xs text-destructive block mt-1"
+            role="alert"
+          >
+            {error}
+          </span>
+        )}
+        {schema.description && !error && (
+          <div className="text-xs text-muted-foreground mt-2">
+            {schema.description}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // T019: Time field type rendering
+  if (schema.type === 'time') {
+    // Time is stored as "HH:mm" string
+    const timeValue = typeof value === 'string' ? value : '';
+
+    const handleChange = (newTime: string | undefined) => {
+      onChange(newTime || undefined);
+    };
+
+    if (readOnly) {
+      return (
+        <div>
+          <div className="text-sm font-medium text-muted-foreground mb-1">
+            {schema.label}
+          </div>
+          <div className="text-sm">{timeValue || '-'}</div>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <label
+          htmlFor={`field-${schema.key}`}
+          className="block text-sm font-medium mb-3"
+        >
+          {schema.label}
+          {schema.validation?.required && (
+            <span className="text-destructive ml-1">*</span>
+          )}
+        </label>
+        <TimePicker
+          id={`field-${schema.key}`}
+          value={timeValue}
+          onChange={handleChange}
+          placeholder={schema.placeholder || 'Pick a time'}
+          disabled={disabled}
+          aria-label={schema.label}
+        />
+        {error && (
+          <span
+            id={`${schema.key}-error`}
+            className="text-xs text-destructive block mt-1"
+            role="alert"
+          >
+            {error}
+          </span>
+        )}
+        {schema.description && !error && (
+          <div className="text-xs text-muted-foreground mt-2">
+            {schema.description}
+          </div>
+        )}
+      </div>
     );
   }
 

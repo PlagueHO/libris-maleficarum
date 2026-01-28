@@ -146,6 +146,19 @@ describe('World Editing Integration', () => {
                     data: [],
                     meta: { count: 0, nextCursor: null },
                 });
+            }),
+
+            http.put(`http://localhost:5000/api/v1/worlds/test-world-123`, async ({ request }) => {
+                const body = await request.json() as { name: string; description: string };
+                return HttpResponse.json({
+                    data: {
+                        ...initialWorld,
+                        name: body.name,
+                        description: body.description,
+                        updatedAt: new Date().toISOString()
+                    },
+                    meta: { requestId: '3', timestamp: '' }
+                });
             })
         );
 

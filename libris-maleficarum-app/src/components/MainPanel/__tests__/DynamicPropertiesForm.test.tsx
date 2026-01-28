@@ -96,7 +96,7 @@ describe('DynamicPropertiesForm', () => {
       const onChange = vi.fn();
       const { container } = render(
         <DynamicPropertiesForm
-          entityType="Character"
+          entityType="Folder"
           value={{}}
           onChange={onChange}
         />

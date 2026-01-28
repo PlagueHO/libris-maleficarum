@@ -199,13 +199,13 @@ describe('T032: DynamicPropertiesView - Fallback to Object.entries()', () => {
 
     render(
       <DynamicPropertiesView
-        entityType={WorldEntityType.Character} // No schema
+        entityType={WorldEntityType.Folder} // No schema
         value={properties}
       />
     );
 
     // Should still render section header with "Custom Properties"
-    expect(screen.getByText('Character Properties')).toBeInTheDocument();
+    expect(screen.getByText('Folder Properties')).toBeInTheDocument();
 
     // Generic Object.entries() keys (capitalized with spaces)
     expect(screen.getByText('Custom Field1')).toBeInTheDocument();

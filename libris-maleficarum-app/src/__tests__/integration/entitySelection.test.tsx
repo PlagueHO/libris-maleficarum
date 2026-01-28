@@ -27,7 +27,7 @@ describe('Entity Selection Integration', () => {
         // Setup initial state with a selected world
         const preloadedState = {
             worldSidebar: {
-                selectedWorldId: 'world-1',
+                selectedWorldId: 'test-world-123',
                 selectedEntityId: null,
                 expandedNodeIds: [],
                 mainPanelMode: 'empty' as const,
@@ -46,7 +46,7 @@ describe('Entity Selection Integration', () => {
         // Mock API responses
         server.use(
             // 1. Get Root Entities for Sidebar
-            http.get(`${BASE_URL}/api/v1/worlds/world-1/entities`, ({ request }) => {
+            http.get(`${BASE_URL}/api/v1/worlds/test-world-123/entities`, ({ request }) => {
                 const url = new URL(request.url);
                 const parentId = url.searchParams.get('parentId');
                 
@@ -55,17 +55,19 @@ describe('Entity Selection Integration', () => {
                     return HttpResponse.json({
                         data: [
                             {
-                                id: 'continent-1',
-                                name: 'Test Continent',
+                                id: 'continent-faerun',
+                                name: 'Faerûn',
+                                description: 'A continent in the world of Toril',
                                 entityType: WorldEntityType.Continent,
-                                worldId: 'world-1',
+                                worldId: 'test-world-123',
                                 parentId: null,
-                                hasChildren: false,
+                                hasChildren: true,
                                 depth: 0,
-                                path: ['root'],
-                                tags: [],
-                                ownerId: 'u1',
-                                createdAt: '2024-01-01', updatedAt: '2024-01-01', isDeleted: false
+                                path: [],
+                                tags: ['forgotten-realms', 'primary-setting'],
+                                ownerId: 'test-user@example.com',
+                                createdAt: '2026-01-13T12:00:00Z', updatedAt: '2026-01-13T12:00:00Z', isDeleted: false,
+                                schemaVersion: 1
                             }
                         ],
                         meta: {
@@ -85,21 +87,22 @@ describe('Entity Selection Integration', () => {
             }),
 
             // 2. Get Entity Details for MainPanel
-            http.get(`${BASE_URL}/api/v1/worlds/world-1/entities/continent-1`, () => {
+            http.get(`${BASE_URL}/api/v1/worlds/test-world-123/entities/continent-faerun`, () => {
                 return HttpResponse.json({
                     data: {
-                        id: 'continent-1',
-                        name: 'Test Continent',
-                        description: 'A vast land of testing.',
+                        id: 'continent-faerun',
+                        name: 'Faerûn',
+                        description: 'A continent in the world of Toril',
                         entityType: WorldEntityType.Continent,
-                        worldId: 'world-1',
+                        worldId: 'test-world-123',
                         parentId: null,
-                        hasChildren: false,
+                        hasChildren: true,
                         depth: 0,
-                        path: ['root'],
-                        tags: ['fantasy', 'test'],
-                        ownerId: 'u1',
-                        createdAt: '2024-01-01', updatedAt: '2024-01-01', isDeleted: false
+                        path: [],
+                        tags: ['forgotten-realms', 'primary-setting'],
+                        ownerId: 'test-user@example.com',
+                        createdAt: '2026-01-13T12:00:00Z', updatedAt: '2026-01-13T12:00:00Z', isDeleted: false,
+                        schemaVersion: 1
                     },
                 });
             })
@@ -119,13 +122,13 @@ describe('Entity Selection Integration', () => {
         expect(screen.getByText('Welcome to Libris Maleficarum')).toBeInTheDocument();
 
         // 2. Find entity in sidebar
-        const entityNode = await screen.findByText('Test Continent');
+        const entityNode = await screen.findByText('Faerûn');
         
         // 3. Click entity
         fireEvent.click(entityNode);
 
         // 4. Verify Redux state update
-        expect(store.getState().worldSidebar.selectedEntityId).toBe('continent-1');
+        expect(store.getState().worldSidebar.selectedEntityId).toBe('continent-faerun');
 
         // 5. Verify MainPanel updates (Welcome message gone, Entity Details shown)
         await waitFor(() => {
@@ -134,15 +137,15 @@ describe('Entity Selection Integration', () => {
         });
         
         // Use findByRole to wait for loading to finish and content to appear
-        expect(await screen.findByRole('heading', { name: 'Test Continent' })).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'Faerûn' })).toBeInTheDocument();
         expect(screen.getByText('Continent')).toBeInTheDocument(); // Type badge
-        expect(screen.getByText('A vast land of testing.')).toBeInTheDocument(); // Description
+        expect(screen.getByText('A continent in the world of Toril')).toBeInTheDocument(); // Description
     });
 
     it('should show loading state in MainPanel when selecting a new entity', async () => {
         const preloadedState = {
             worldSidebar: {
-                selectedWorldId: 'world-1',
+                selectedWorldId: 'test-world-123',
                 selectedEntityId: null,
                 expandedNodeIds: [],
                 mainPanelMode: 'empty' as const,
@@ -159,18 +162,34 @@ describe('Entity Selection Integration', () => {
         };
 
         server.use(
+            // Add handler for worlds list
+            http.get(`${BASE_URL}/api/v1/worlds`, () => {
+                return HttpResponse.json({
+                    data: [{
+                        id: 'test-world-123',
+                        name: 'Test World',
+                        description: 'A test world',
+                        ownerId: 'u1',
+                        createdAt: '2026-01-13T12:00:00Z',
+                        updatedAt: '2026-01-13T12:00:00Z',
+                        isDeleted: false
+                    }],
+                    meta: { requestId: '1', timestamp: '' }
+                });
+            }),
             // Sidebar Entities
-             http.get(`${BASE_URL}/api/v1/worlds/world-1/entities`, ({ request }) => {
+             http.get(`${BASE_URL}/api/v1/worlds/test-world-123/entities`, ({ request }) => {
                 const url = new URL(request.url);
                 const parentId = url.searchParams.get('parentId');
                 if (!parentId || parentId === 'null' || parentId === 'undefined') {
                     return HttpResponse.json({
                         data: [
                             {
-                                id: 'e1', name: 'E1', entityType: WorldEntityType.Location,
-                                worldId: 'world-1', parentId: null, hasChildren: false,
+                                id: 'e1', name: 'E1', description: 'Test location', entityType: WorldEntityType.Location,
+                                worldId: 'test-world-123', parentId: null, hasChildren: false,
                                 depth: 0, path: [], tags: [], ownerId: 'u1',
-                                createdAt: '', updatedAt: '', isDeleted: false
+                                createdAt: '2026-01-13T12:00:00Z', updatedAt: '2026-01-13T12:00:00Z', isDeleted: false,
+                                schemaVersion: 1
                             }
                         ],
                         meta: {
@@ -188,14 +207,15 @@ describe('Entity Selection Integration', () => {
                 });
             }),
             // Entity Details with delay
-            http.get(`${BASE_URL}/api/v1/worlds/world-1/entities/e1`, async () => {
+            http.get(`${BASE_URL}/api/v1/worlds/test-world-123/entities/e1`, async () => {
                 await new Promise(resolve => setTimeout(resolve, 100));
                 return HttpResponse.json({
                     data: {
-                        id: 'e1', name: 'E1', entityType: WorldEntityType.Location,
-                        worldId: 'world-1', parentId: null, hasChildren: false,
+                        id: 'e1', name: 'E1', description: 'Test location', entityType: WorldEntityType.Location,
+                        worldId: 'test-world-123', parentId: null, hasChildren: false,
                         depth: 0, path: [], tags: [], ownerId: 'u1',
-                        createdAt: '', updatedAt: '', isDeleted: false
+                        createdAt: '2026-01-13T12:00:00Z', updatedAt: '2026-01-13T12:00:00Z', isDeleted: false,
+                        schemaVersion: 1
                     },
                 });
             })

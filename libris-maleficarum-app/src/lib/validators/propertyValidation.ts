@@ -251,6 +251,79 @@ export function validateField(
       return { valid: true, coercedValue: value };
     }
 
+    case 'date': {
+      // Validate and coerce date values
+      // Accept Date objects, ISO strings, or timestamp numbers
+      if (value instanceof Date) {
+        if (isNaN(value.getTime())) {
+          return { valid: false, error: 'Invalid date' };
+        }
+        return { valid: true, coercedValue: value.toISOString() };
+      }
+
+      if (typeof value === 'string') {
+        const parsed = new Date(value);
+        if (isNaN(parsed.getTime())) {
+          return { valid: false, error: 'Invalid date format' };
+        }
+        return { valid: true, coercedValue: parsed.toISOString() };
+      }
+
+      if (typeof value === 'number') {
+        const parsed = new Date(value);
+        if (isNaN(parsed.getTime())) {
+          return { valid: false, error: 'Invalid date' };
+        }
+        return { valid: true, coercedValue: parsed.toISOString() };
+      }
+
+      return { valid: false, error: 'Must be a valid date' };
+    }
+
+    case 'datetime': {
+      // Validate and coerce datetime values (same as date but semantically includes time)
+      // Accept Date objects, ISO strings, or timestamp numbers
+      if (value instanceof Date) {
+        if (isNaN(value.getTime())) {
+          return { valid: false, error: 'Invalid datetime' };
+        }
+        return { valid: true, coercedValue: value.toISOString() };
+      }
+
+      if (typeof value === 'string') {
+        const parsed = new Date(value);
+        if (isNaN(parsed.getTime())) {
+          return { valid: false, error: 'Invalid datetime format' };
+        }
+        return { valid: true, coercedValue: parsed.toISOString() };
+      }
+
+      if (typeof value === 'number') {
+        const parsed = new Date(value);
+        if (isNaN(parsed.getTime())) {
+          return { valid: false, error: 'Invalid datetime' };
+        }
+        return { valid: true, coercedValue: parsed.toISOString() };
+      }
+
+      return { valid: false, error: 'Must be a valid datetime' };
+    }
+
+    case 'time': {
+      // Validate time values in "HH:mm" format
+      if (typeof value !== 'string') {
+        return { valid: false, error: 'Must be a valid time string' };
+      }
+
+      // Validate HH:mm format
+      const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+      if (!timeRegex.test(value)) {
+        return { valid: false, error: 'Invalid time format (expected HH:mm)' };
+      }
+
+      return { valid: true, coercedValue: value };
+    }
+
     default: {
       // Unknown field type - fail validation
       const unknownType = (schema as PropertyFieldSchema).type;
