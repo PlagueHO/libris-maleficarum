@@ -10,7 +10,7 @@ import { setupServer } from 'msw/node';
 import { handlers } from '../mocks/handlers';
 import { http, HttpResponse } from 'msw';
 import type { World } from '../../services/types/world.types';
-import { WorldEntityType } from '../../services/types/worldEntity.types';
+import { WorldEntityType, type WorldEntity } from '../../services/types/worldEntity.types';
 
 const BASE_URL = 'http://localhost:5000';
 
@@ -35,7 +35,7 @@ describe('Entity Creation Integration', () => {
     };
 
     // Use a Map like the default handlers
-    const createdEntities = new Map<string, any>();
+    const createdEntities = new Map<string, WorldEntity>();
 
     // Add necessary MSW handlers
     server.use(
@@ -51,13 +51,13 @@ describe('Entity Creation Integration', () => {
         
         // Filter by parentId (null for root)
         let entities = Array.from(createdEntities.values()).filter(
-          (entity: any) => entity.worldId === 'world-789'
+          (entity: WorldEntity) => entity.worldId === 'world-789'
         );
         
         if (!parentId || parentId === 'null') {
-          entities = entities.filter((e: any) => e.parentId === null);
+          entities = entities.filter((e: WorldEntity) => e.parentId === null);
         } else {
-          entities = entities.filter((e: any) => e.parentId === parentId);
+          entities = entities.filter((e: WorldEntity) => e.parentId === parentId);
         }
 
         return HttpResponse.json({ 
