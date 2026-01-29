@@ -110,9 +110,9 @@
 
 ### Tests
 
-- [X] T048 [US4] Create validation test for integer field rejecting invalid input in libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertyField.validation.test.tsx
-- [X] T049 [US4] Create validation test for maxLength constraint in libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertyField.validation.test.tsx
-- [X] T050 [US4] Create validation test for error clearing on valid input in libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertyField.validation.test.tsx
+- [X] T048 [US4] Create validation test for integer field rejecting invalid input in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertyField.validation.test.tsx
+- [X] T049 [US4] Create validation test for maxLength constraint in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertyField.validation.test.tsx
+- [X] T050 [US4] Create validation test for error clearing on valid input in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertyField.validation.test.tsx
 
 ---
 
@@ -124,9 +124,9 @@
 
 ### Tests
 
-- [X] T051 [US5] Create test for entity without propertySchema in edit mode in libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertiesForm.test.tsx
-- [X] T052 [US5] Create test for entity without propertySchema in view mode in libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertiesView.test.tsx
-- [X] T053 [US5] Create integration test for Character entity without custom properties in libris-maleficarum-app/src/__tests__/integration/entityWithoutProperties.test.tsx
+- [X] T051 [US5] Create test for entity without propertySchema in edit mode in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertiesForm.test.tsx
+- [X] T052 [US5] Create test for entity without propertySchema in view mode in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertiesView.test.tsx
+- [X] T053 [US5] Create integration test for Character entity without custom properties in libris-maleficarum-app/src/**tests**/integration/entityWithoutProperties.test.tsx
 
 ---
 
@@ -142,7 +142,7 @@
 - [X] T055 Verify existing PoliticalRegion entities display correctly after migration
 - [X] T056 Verify existing CulturalRegion entities display correctly after migration  
 - [X] T057 Verify existing MilitaryRegion entities display correctly after migration
-- [X] T057a Verify SC-002: Attempt to add new entity type with custom properties using only registry configuration (no new component files) in libris-maleficarum-app/src/services/config/__tests__/entityTypeRegistry.extensibility.test.tsx
+- [X] T057a Verify SC-002: Attempt to add new entity type with custom properties using only registry configuration (no new component files) in libris-maleficarum-app/src/services/config/**tests**/entityTypeRegistry.extensibility.test.tsx
 - [X] T058 Delete GeographicRegionProperties component and test from libris-maleficarum-app/src/components/MainPanel/customProperties/
 - [X] T059 Delete PoliticalRegionProperties component and test from libris-maleficarum-app/src/components/MainPanel/customProperties/
 - [X] T060 Delete CulturalRegionProperties component and test from libris-maleficarum-app/src/components/MainPanel/customProperties/

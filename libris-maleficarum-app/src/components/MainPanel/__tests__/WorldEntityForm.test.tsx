@@ -56,7 +56,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await user.click(typeButton);
       
       // Search for Geographic Region
-      const searchInput = await screen.findByPlaceholderText(/search entity types/i);
+      const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'geographic');
       
       const geoRegionOption = await screen.findByRole('option', { name: /geographic region/i });
@@ -89,7 +89,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await user.click(typeButton);
       
       // Search for Geographic Region
-      const searchInput = await screen.findByPlaceholderText(/search entity types/i);
+      const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'geographic');
       
       const geoRegionOption = await screen.findByRole('option', { name: /geographic region/i });
@@ -148,7 +148,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await user.click(typeButton);
       
       // Search for Political Region
-      const searchInput = await screen.findByPlaceholderText(/search entity types/i);
+      const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'political');
       
       const polRegionOption = await screen.findByRole('option', { name: /political region/i });
@@ -178,7 +178,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await user.click(typeButton);
       
       // Search for Political Region
-      const searchInput = await screen.findByPlaceholderText(/search entity types/i);
+      const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'political');
       
       const polRegionOption = await screen.findByRole('option', { name: /political region/i });
@@ -216,7 +216,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await user.click(typeButton);
       
       // Search for Political Region
-      const searchInput = await screen.findByPlaceholderText(/search entity types/i);
+      const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'political');
       
       const polRegionOption = await screen.findByRole('option', { name: /political region/i });
@@ -285,7 +285,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await user.click(typeButton);
       
       // Search for Geographic Region
-      const searchInput = await screen.findByPlaceholderText(/search entity types/i);
+      const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'geographic');
       
       const geoRegionOption = await screen.findByRole('option', { name: /geographic region/i });
@@ -665,7 +665,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await user.click(typeButton);
       
       // Search for Character (may not be in recommended types for root level)
-      const searchInput = screen.getByPlaceholderText(/search/i);
+      const searchInput = screen.getByPlaceholderText(/filter/i);
       await user.type(searchInput, 'Character');
       
       // Use getAllByRole and select the exact match (first one will be Character entity, not People container)
@@ -710,7 +710,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await user.click(typeButton);
       
       // Search for Quest - it should be available regardless of parent
-      const searchInput = screen.getByPlaceholderText(/search/i);
+      const searchInput = screen.getByPlaceholderText(/filter/i);
       await user.type(searchInput, 'Quest');
       
       // Quest should appear in search results (proving it's not filtered out)

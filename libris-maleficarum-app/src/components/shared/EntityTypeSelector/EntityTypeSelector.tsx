@@ -1,5 +1,32 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronRight, Search, X } from 'lucide-react';
+import {
+  ChevronRight,
+  Search,
+  X,
+  Star,
+  Globe,
+  Map,
+  MapPin,
+  Building,
+  Home,
+  User,
+  Users,
+  Calendar,
+  Scroll,
+  Package,
+  FolderOpen,
+  Folder,
+  CalendarDays,
+  BookOpen,
+  BookMarked,
+  Bug,
+  Box,
+  Compass,
+  Mountain,
+  Shield,
+  HelpCircle,
+  type LucideIcon,
+} from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -7,11 +34,47 @@ import {
 } from '../../ui/popover';
 import { Input } from '../../ui/input';
 import { Button } from '../../ui/button';
+import { Separator } from '../../ui/separator';
 import {
   WorldEntityType,
   getEntityTypeSuggestions,
   getEntityTypeMeta,
 } from '@/services/types/worldEntity.types';
+
+/**
+ * Icon mapping for entity types
+ * Maps icon string names from entityTypeRegistry to Lucide icon components
+ */
+const iconMap: Record<string, LucideIcon> = {
+  Globe,
+  Map,
+  MapPin,
+  Building,
+  Home,
+  User,
+  Users,
+  Calendar,
+  Scroll,
+  Package,
+  Folder,
+  FolderOpen,
+  CalendarDays,
+  BookOpen,
+  BookMarked,
+  Bug,
+  Box,
+  Compass,
+  Mountain,
+  Shield,
+  HelpCircle,
+};
+
+/**
+ * Get the icon component for an entity type
+ */
+function getEntityIcon(iconName: string): LucideIcon | null {
+  return iconMap[iconName] || null;
+}
 
 export interface EntityTypeSelectorProps {
   /** Currently selected entity type */
@@ -75,7 +138,7 @@ export function EntityTypeSelector({
   }, []);
 
   // Filter and organize types
-  const { recommendedFiltered, otherFiltered, categorized } = useMemo(() => {
+  const { recommendedFiltered, otherFiltered } = useMemo(() => {
     const searchLower = search.toLowerCase();
 
     // Filter recommended types
@@ -98,29 +161,23 @@ export function EntityTypeSelector({
 
     // Filter other types (only shown when searching or no recommended types available)
     const otherFiltered = !showOnlyRecommendedMode
-      ? otherTypes.filter((type) => {
-          const meta = getEntityTypeMeta(type);
-          return (
-            meta.label.toLowerCase().includes(searchLower) ||
-            meta.description.toLowerCase().includes(searchLower)
-          );
-        })
+      ? otherTypes
+          .filter((type) => {
+            const meta = getEntityTypeMeta(type);
+            return (
+              meta.label.toLowerCase().includes(searchLower) ||
+              meta.description.toLowerCase().includes(searchLower)
+            );
+          })
+          .sort((a, b) => {
+            // Sort alphabetically by label
+            const metaA = getEntityTypeMeta(a);
+            const metaB = getEntityTypeMeta(b);
+            return metaA.label.localeCompare(metaB.label);
+          })
       : [];
 
-    // Categorize the "other" types for better organization
-    const categorized = otherFiltered.reduce(
-      (acc, type) => {
-        const meta = getEntityTypeMeta(type);
-        if (!acc[meta.category]) {
-          acc[meta.category] = [];
-        }
-        acc[meta.category].push(type);
-        return acc;
-      },
-      {} as Record<string, WorldEntityType[]>
-    );
-
-    return { recommendedFiltered, otherFiltered, categorized };
+    return { recommendedFiltered, otherFiltered };
   }, [search, recommendedTypes, allTypes]);
 
   const selectedMeta = value ? getEntityTypeMeta(value as WorldEntityType) : null;
@@ -176,7 +233,7 @@ export function EntityTypeSelector({
           <div className="relative">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search entity types..."
+              placeholder="Filter..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-8"
@@ -190,30 +247,20 @@ export function EntityTypeSelector({
             {recommendedFiltered.length > 0 && (
               <div className="mb-4 pb-4 border-b border-border bg-accent/5 -mx-1 px-1">
                 <div className="px-2 py-1.5 text-xs font-semibold text-primary uppercase tracking-wide flex items-center gap-1.5">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 16 16"
-                    fill="currentColor"
-                    className="w-3.5 h-3.5"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M8 1.75a.75.75 0 0 1 .692.462l1.41 3.393 3.664.293a.75.75 0 0 1 .428 1.317l-2.791 2.39.853 3.575a.75.75 0 0 1-1.12.814L7.998 12.08l-3.135 1.915a.75.75 0 0 1-1.12-.814l.852-3.574-2.79-2.39a.75.75 0 0 1 .427-1.318l3.663-.293 1.41-3.393A.75.75 0 0 1 8 1.75Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <Star className="w-3.5 h-3.5" aria-hidden="true" />
                   Recommended
                 </div>
                 <div className="space-y-1">
                   {recommendedFiltered.map((type) => {
                     const meta = getEntityTypeMeta(type);
                     const isSelected = value === type;
+                    const IconComponent = getEntityIcon(meta.icon);
+                    
                     return (
                       <button
                         key={type}
                         onClick={() => handleSelect(type)}
-                        className={`w-full text-left px-3 py-2.5 rounded-md text-sm transition-colors ${
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-start gap-2 ${
                           isSelected
                             ? 'bg-primary text-primary-foreground font-medium'
                             : 'hover:bg-accent text-foreground'
@@ -221,15 +268,20 @@ export function EntityTypeSelector({
                         role="option"
                         aria-selected={isSelected}
                       >
-                        <div className="font-medium">{meta.label}</div>
-                        <div
-                          className={`text-xs ${
-                            isSelected
-                              ? 'opacity-90'
-                              : 'text-muted-foreground'
-                          }`}
-                        >
-                          {meta.description}
+                        {IconComponent && (
+                          <IconComponent className="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                        )}
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{meta.label}</div>
+                          <div
+                            className={`text-xs leading-tight ${
+                              isSelected
+                                ? 'opacity-90'
+                                : 'text-muted-foreground'
+                            }`}
+                          >
+                            {meta.description}
+                          </div>
                         </div>
                       </button>
                     );
@@ -238,49 +290,57 @@ export function EntityTypeSelector({
               </div>
             )}
 
-            {/* Other Types by Category */}
+            {/* Other Types (Alphabetically Sorted) */}
             {otherFiltered.length > 0 && (
-              <div className="space-y-4">
-                {Object.entries(categorized)
-                  .sort(([catA], [catB]) => catA.localeCompare(catB))
-                  .map(([category, types]) => (
-                    <div key={category}>
-                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {category}
-                      </div>
-                      <div className="space-y-1">
-                        {types.map((type) => {
-                          const meta = getEntityTypeMeta(type);
-                          const isSelected = value === type;
-                          return (
-                            <button
-                              key={type}
-                              onClick={() => handleSelect(type)}
-                              className={`w-full text-left px-3 py-2.5 rounded-md text-sm transition-colors ${
+              <>
+                {/* Separator between Recommended and Other */}
+                {recommendedFiltered.length > 0 && (
+                  <Separator className="my-2" decorative={false} />
+                )}
+                
+                <div>
+                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Other
+                  </div>
+                  <div className="space-y-1">
+                    {otherFiltered.map((type) => {
+                      const meta = getEntityTypeMeta(type);
+                      const isSelected = value === type;
+                      const IconComponent = getEntityIcon(meta.icon);
+                      
+                      return (
+                        <button
+                          key={type}
+                          onClick={() => handleSelect(type)}
+                          className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-start gap-2 ${
+                            isSelected
+                              ? 'bg-primary text-primary-foreground font-medium'
+                              : 'hover:bg-accent text-foreground'
+                          }`}
+                          role="option"
+                          aria-selected={isSelected}
+                        >
+                          {IconComponent && (
+                            <IconComponent className="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                          )}
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">{meta.label}</div>
+                            <div
+                              className={`text-xs leading-tight ${
                                 isSelected
-                                  ? 'bg-primary text-primary-foreground font-medium'
-                                  : 'hover:bg-accent text-foreground'
+                                  ? 'opacity-90'
+                                  : 'text-muted-foreground'
                               }`}
-                              role="option"
-                              aria-selected={isSelected}
                             >
-                              <div className="font-medium">{meta.label}</div>
-                              <div
-                                className={`text-xs ${
-                                  isSelected
-                                    ? 'opacity-90'
-                                    : 'text-muted-foreground'
-                                }`}
-                              >
-                                {meta.description}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-              </div>
+                              {meta.description}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
             )}
 
             {/* No Results */}
