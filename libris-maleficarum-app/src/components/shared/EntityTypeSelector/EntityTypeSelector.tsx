@@ -150,32 +150,26 @@ export function EntityTypeSelector({
       );
     });
 
-    // If there are recommended types and no search, only show recommended
-    // If searching, show both recommended and other matching types
-    const showOnlyRecommendedMode = recommendedTypes.length > 0 && !search;
-
-    // Get all other types (not in recommended)
+    // Get all other types (not in recommended) and always show them
     const otherTypes = allTypes.filter(
       (type) => !recommendedTypes.includes(type)
     );
 
-    // Filter other types (only shown when searching or no recommended types available)
-    const otherFiltered = !showOnlyRecommendedMode
-      ? otherTypes
-          .filter((type) => {
-            const meta = getEntityTypeMeta(type);
-            return (
-              meta.label.toLowerCase().includes(searchLower) ||
-              meta.description.toLowerCase().includes(searchLower)
-            );
-          })
-          .sort((a, b) => {
-            // Sort alphabetically by label
-            const metaA = getEntityTypeMeta(a);
-            const metaB = getEntityTypeMeta(b);
-            return metaA.label.localeCompare(metaB.label);
-          })
-      : [];
+    // Filter other types (always shown, filtered by search if present)
+    const otherFiltered = otherTypes
+      .filter((type) => {
+        const meta = getEntityTypeMeta(type);
+        return (
+          meta.label.toLowerCase().includes(searchLower) ||
+          meta.description.toLowerCase().includes(searchLower)
+        );
+      })
+      .sort((a, b) => {
+        // Sort alphabetically by label
+        const metaA = getEntityTypeMeta(a);
+        const metaB = getEntityTypeMeta(b);
+        return metaA.label.localeCompare(metaB.label);
+      });
 
     return { recommendedFiltered, otherFiltered };
   }, [search, recommendedTypes, allTypes]);
@@ -245,12 +239,12 @@ export function EntityTypeSelector({
           <div className="max-h-96 overflow-y-auto">
             {/* Recommended Section */}
             {recommendedFiltered.length > 0 && (
-              <div className="mb-4 pb-4 border-b border-border bg-accent/5 -mx-1 px-1">
+              <div className="mb-2 bg-accent/5 -mx-1 px-1">
                 <div className="px-2 py-1.5 text-xs font-semibold text-primary uppercase tracking-wide flex items-center gap-1.5">
                   <Star className="w-3.5 h-3.5" aria-hidden="true" />
                   Recommended
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 pb-2">
                   {recommendedFiltered.map((type) => {
                     const meta = getEntityTypeMeta(type);
                     const isSelected = value === type;
