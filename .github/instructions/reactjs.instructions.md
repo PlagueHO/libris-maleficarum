@@ -23,6 +23,14 @@ Instructions for building high-quality ReactJS applications with modern patterns
 - **Type files**: camelCase (e.g., `worldEntity.types.ts`)
 - **Test files**: Match source file name with `.test` suffix (e.g., `WorldEntityForm.test.tsx`)
 - **CSS/style files**: Match component name (e.g., `WorldEntityForm.module.css`)
+- **Shadcn/UI components**: kebab-case in `/components/ui/` (e.g., `button.tsx`, `dialog.tsx`, `scroll-area.tsx`)
+  - These are third-party UI primitives from https://ui.shadcn.com/
+  - kebab-case naming matches Shadcn CLI defaults for easier updates
+  - Store in flat structure within `/components/ui/` folder
+- **Shared custom components**: PascalCase folders in `/components/shared/` (e.g., `EntityTypeSelector/`, `TagInput/`)
+  - Domain-specific reusable components unique to the project
+  - Use folder structure: `ComponentName/ComponentName.tsx`, `ComponentName/ComponentName.test.tsx`, `ComponentName/index.ts`
+  - Include barrel export (`index.ts`) for clean imports
 
 ### Architecture
 - Use functional components with hooks as the primary pattern
@@ -31,6 +39,21 @@ Instructions for building high-quality ReactJS applications with modern patterns
 - Separate presentational and container components clearly
 - Use custom hooks for reusable stateful logic
 - Implement proper component hierarchies with clear data flow
+
+#### Component Organization
+The project uses a structured component organization:
+- **`/components/ui/`**: Shadcn/UI primitives (third-party design system components)
+  - Generic, framework-level components like buttons, dialogs, inputs
+  - Files use kebab-case naming (e.g., `button.tsx`, `select.tsx`)
+  - Do NOT place domain-specific components here
+- **`/components/shared/`**: Custom reusable components
+  - Domain-specific components used across multiple features
+  - Use PascalCase folder structure (e.g., `EntityTypeSelector/`, `TagInput/`)
+  - Include tests and barrel exports for each component
+- **`/components/[Feature]/`**: Feature-specific components
+  - Components specific to a single feature/domain area
+  - Examples: `MainPanel/`, `WorldSidebar/`, `TopToolbar/`
+  - Use PascalCase naming for component files
 
 ### TypeScript Integration
 - Use TypeScript interfaces for props, state, and component definitions

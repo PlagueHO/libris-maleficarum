@@ -15,8 +15,8 @@ import { useCreateWorldMutation, useUpdateWorldMutation } from '@/services/world
 import { closeWorldForm, setUnsavedChanges, selectHasUnsavedChanges } from '@/store/worldSidebarSlice';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { FormActions } from '@/components/ui/FormActions';
-import { FormLayout } from '@/components/ui/FormLayout';
+import { FormActions } from '@/components/ui/form-actions';
+import { FormLayout } from '@/components/ui/form-layout';
 import type { World } from '@/services/types/world.types';
 
 export interface WorldDetailFormProps {

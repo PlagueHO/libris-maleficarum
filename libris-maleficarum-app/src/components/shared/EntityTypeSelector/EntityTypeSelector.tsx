@@ -4,9 +4,9 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from './popover';
-import { Input } from './input';
-import { Button } from './button';
+} from '../../ui/popover';
+import { Input } from '../../ui/input';
+import { Button } from '../../ui/button';
 import {
   WorldEntityType,
   getEntityTypeSuggestions,

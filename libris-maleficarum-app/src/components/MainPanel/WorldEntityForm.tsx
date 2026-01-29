@@ -13,9 +13,9 @@ import {
 } from '../../services/types/worldEntity.types';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
-import { EntityTypeSelector } from '../ui/EntityTypeSelector';
-import { FormActions } from '../ui/FormActions';
-import { FormLayout } from '../ui/FormLayout';
+import { EntityTypeSelector } from '../shared/EntityTypeSelector';
+import { FormActions } from '../ui/form-actions';
+import { FormLayout } from '../ui/form-layout';
 import { UnsavedChangesDialog } from '../shared/UnsavedChangesDialog';
 import { Loader2 } from 'lucide-react';
 import { validateWorldEntityForm, clearFieldError } from '../../services/validators/worldEntityValidator';

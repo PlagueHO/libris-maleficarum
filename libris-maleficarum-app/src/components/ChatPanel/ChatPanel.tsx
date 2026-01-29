@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Send, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/ScrollArea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Message {
   id: string;
