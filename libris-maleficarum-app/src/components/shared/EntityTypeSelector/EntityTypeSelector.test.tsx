@@ -638,7 +638,7 @@ describe('EntityTypeSelector', () => {
       });
     });
 
-    describe('T010-T014: Simplified Grouping (US4)', () => {
+    describe('T010-T017: Simplified Grouping (US4)', () => {
       it('T010: displays Recommended section with star icon', async () => {
         const user = userEvent.setup();
         render(
@@ -676,17 +676,14 @@ describe('EntityTypeSelector', () => {
 
         await waitFor(() => {
           expect(screen.getByText('Recommended')).toBeInTheDocument();
+          // Check for the Other heading (uppercase tracking-wide styling distinguishes it from entity type)
+          const headings = screen.getAllByText('Other');
+          expect(headings.length).toBeGreaterThan(0);
         });
 
-        // Type to reveal Other section
-        const searchInput = screen.getByPlaceholderText('Filter...');
-        await user.type(searchInput, 'a'); // Broad search to show Other types
-
-        await waitFor(() => {
-          // Separator should exist between sections
-          const separator = screen.getByRole('separator');
-          expect(separator).toBeInTheDocument();
-        });
+        // Separator should exist between sections (always displayed now)
+        const separator = screen.getByRole('separator');
+        expect(separator).toBeInTheDocument();
       });
 
       it('T012: displays Other section with alphabetical sorting', async () => {
@@ -703,18 +700,21 @@ describe('EntityTypeSelector', () => {
 
         await waitFor(() => {
           expect(screen.getByText('Recommended')).toBeInTheDocument();
+          // Verify Other section exists (may match both heading and entity type)
+          const otherTexts = screen.getAllByText('Other');
+          expect(otherTexts.length).toBeGreaterThan(0);
         });
 
-        // Search to reveal Other types
-        const searchInput = screen.getByPlaceholderText('Filter...');
-        await user.type(searchInput, 'a');
-
-        await waitFor(() => {
-          // Just verify that there are options displayed (alphabetical sorting is implemented)
-          // The sorting logic is already tested by the implementation
-          const options = screen.getAllByRole('option');
-          expect(options.length).toBeGreaterThan(0);
-        });
+        // Other section is now always displayed with alphabetical sorting
+        const options = screen.getAllByRole('option');
+        expect(options.length).toBeGreaterThan(0);
+        
+        // Verify there are types in both sections
+        const recommendedOptions = options.filter(opt => 
+          opt.textContent?.includes('Geographic Region') || 
+          opt.textContent?.includes('Political Region')
+        );
+        expect(recommendedOptions.length).toBeGreaterThan(0);
       });
 
       it('T013: no sections when no recommendations (flat list)', async () => {
@@ -758,6 +758,65 @@ describe('EntityTypeSelector', () => {
         await waitFor(() => {
           //Message should include the search term
           expect(screen.getByText(/No entity types match "xyz123nonexistent"/)).toBeInTheDocument();
+        });
+      });
+
+      it('T016: Other section always displayed without filter', async () => {
+        const user = userEvent.setup();
+        render(
+          <EntityTypeSelector
+            value=""
+            onValueChange={vi.fn()}
+            parentType={WorldEntityType.Continent}
+          />
+        );
+
+        await user.click(screen.getByRole('combobox'));
+
+        // Verify both Recommended and Other sections appear immediately without filtering
+        await waitFor(() => {
+          expect(screen.getByText('Recommended')).toBeInTheDocument();
+          // The Other section heading exists (note: "Other" entity type also exists)
+          const otherTexts = screen.getAllByText('Other');
+          expect(otherTexts.length).toBeGreaterThan(0);
+        });
+
+        // Verify separator exists
+        const separator = screen.getByRole('separator');
+        expect(separator).toBeInTheDocument();
+      });
+
+      it('T017: hides empty sections when filtering', async () => {
+        const user = userEvent.setup();
+        render(
+          <EntityTypeSelector
+            value=""
+            onValueChange={vi.fn()}
+            parentType={WorldEntityType.Continent}
+          />
+        );
+
+        await user.click(screen.getByRole('combobox'));
+
+        // Initially both sections visible
+        await waitFor(() => {
+          expect(screen.getByText('Recommended')).toBeInTheDocument();
+          // Other section/heading exists
+          expect(screen.getAllByText('Other').length).toBeGreaterThan(0);
+        });
+
+        // Filter to show only recommended types (e.g., "Geographic")
+        const searchInput = screen.getByPlaceholderText('Filter...');
+        await user.type(searchInput, 'Geographic Region');
+
+        await waitFor(() => {
+          // Recommended section should still be visible
+          expect(screen.getByText('Recommended')).toBeInTheDocument();
+          // Other section heading should be hidden, but "Other" entity type shouldn't match this filter
+          // Just verify we only see the Recommended section by checking option count
+          const options = screen.getAllByRole('option');
+          // Should only have Geographic Region and Political Region (both recommended for Continent)
+          expect(options.length).toBeLessThan(5); // Much fewer than full list
         });
       });
     });
@@ -920,20 +979,20 @@ describe('EntityTypeSelector', () => {
       // Wait for UI
       await waitFor(() => {
         expect(screen.getByText('Recommended')).toBeInTheDocument();
+        // Verify Other section exists (heading or entity type)
+        expect(screen.getAllByText('Other').length).toBeGreaterThan(0);
       });
 
-      // By default (no search), only recommended types show.
-      // When user searches OR scrolls, other categorized types appear.
-      // Let's verify that searching shows non-recommended types
-      const searchInput = screen.getByPlaceholderText('Filter...');
-      await user.clear(searchInput);
-      await user.type(searchInput, 'a'); // Search for 'a' to trigger showing categorized types
+      // Other section is now always displayed below Recommended
+      // Verify all types are accessible without needing to search
+      const optionList = screen.getAllByRole('option');
+      // Should show recommended types plus all other types
+      expect(optionList.length).toBeGreaterThan(5);
       
-      await waitFor(() => {
-        const optionList = screen.getAllByRole('option');
-        // With search active, should show many matching types from categories
-        expect(optionList.length).toBeGreaterThan(5);
-      });
+      // Verify non-recommended types are present in the Other section
+      // (Quest is not recommended for Continent but should be in Other)
+      const allText = optionList.map(opt => opt.textContent).join(' ');
+      expect(allText).toContain('Quest');
     });
   });
 });
