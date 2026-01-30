@@ -287,16 +287,17 @@ export function EntityTypeSelector({
             {/* Other Types (Alphabetically Sorted) */}
             {otherFiltered.length > 0 && (
               <>
-                {/* Separator between Recommended and Other */}
+                {/* Separator and heading only when there are recommendations */}
                 {recommendedFiltered.length > 0 && (
-                  <Separator className="my-2" decorative={false} />
+                  <>
+                    <Separator className="my-2" decorative={false} />
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Other
+                    </div>
+                  </>
                 )}
                 
-                <div>
-                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Other
-                  </div>
-                  <div className="space-y-1">
+                <div className="space-y-1">
                     {otherFiltered.map((type) => {
                       const meta = getEntityTypeMeta(type);
                       const isSelected = value === type;
@@ -333,14 +334,13 @@ export function EntityTypeSelector({
                       );
                     })}
                   </div>
-                </div>
               </>
             )}
 
             {/* No Results */}
             {recommendedFiltered.length === 0 && otherFiltered.length === 0 && (
               <div className="px-3 py-8 text-center text-sm text-muted-foreground">
-                No entity types match "{search}"
+                No entity types match '{search}'
               </div>
             )}
           </div>

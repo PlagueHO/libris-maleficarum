@@ -33,7 +33,9 @@ export interface EntityTypeSelectorProps {
 
   /**
    * Whether to bypass parent-based filtering and allow all entity types.
-   * When true, shows all entity types alphabetically without recommendations.
+   * When true, all entity types are treated as recommended and shown in the
+   * selector, preserving the underlying WorldEntityType registry order and
+   * rendering the "Recommended" section with every type.
    * Default: false
    */
   allowAllTypes?: boolean;
@@ -118,7 +120,7 @@ function UnrestrictedEntitySelector() {
     <EntityTypeSelector
       value={entityType}
       onValueChange={setEntityType}
-      allowAllTypes={true}  // Shows all types, no recommendations
+      allowAllTypes={true}  // Treats all types as recommended, preserves registry order
     />
   );
 }

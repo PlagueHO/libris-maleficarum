@@ -723,7 +723,7 @@ describe('EntityTypeSelector', () => {
           <EntityTypeSelector
             value=""
             onValueChange={vi.fn()}
-            allowAllTypes={true} // Shows all types without recommendations
+            parentType={WorldEntityType.Item} // Item has suggestedChildren: []
           />
         );
 
@@ -734,10 +734,32 @@ describe('EntityTypeSelector', () => {
           expect(options.length).toBeGreaterThan(0);
         });
 
-        // When no distinct recommendations, should show flat list
-        // This means no "Other" heading or separator when all types treated equally
-        // Note: allowAllTypes shows all as "Recommended" per current implementation
-        // For true flat list (no recommendations), we'd need parentType with no suggestions
+        // When no recommendations, should show flat list with no section UI
+        // Check for absence of section headings (not entity type labels)
+        const recommendedHeading = screen.queryByText((content, element) => {
+          return !!(
+            content === 'Recommended' &&
+            element?.className.includes('uppercase') &&
+            element?.className.includes('tracking-wide')
+          );
+        });
+        expect(recommendedHeading).not.toBeInTheDocument();
+
+        const otherHeading = screen.queryByText((content, element) => {
+          return !!(
+            content === 'Other' &&
+            element?.className.includes('uppercase') &&
+            element?.className.includes('tracking-wide')
+          );
+        });
+        expect(otherHeading).not.toBeInTheDocument();
+
+        // Should have no separator
+        expect(screen.queryByRole('separator')).not.toBeInTheDocument();
+        
+        // But all entity types should still be accessible (flat list)
+        const options = screen.getAllByRole('option');
+        expect(options.length).toBeGreaterThan(0);
       });
 
       it('T014: empty state message format "No entity types match [term]"', async () => {
@@ -757,7 +779,7 @@ describe('EntityTypeSelector', () => {
 
         await waitFor(() => {
           //Message should include the search term
-          expect(screen.getByText(/No entity types match "xyz123nonexistent"/)).toBeInTheDocument();
+          expect(screen.getByText(/No entity types match 'xyz123nonexistent'/)).toBeInTheDocument();
         });
       });
 

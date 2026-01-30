@@ -41,8 +41,8 @@
 
 ### Tests
 
-- [X] T018 [US1] Create unit tests for DynamicPropertyField component in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertyField.test.tsx
-- [X] T019 [US1] Create accessibility tests for DynamicPropertyField using jest-axe in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertyField.test.tsx
+- [X] T018 [US1] Create unit tests for DynamicPropertyField component in `libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertyField.test.tsx`
+- [X] T019 [US1] Create accessibility tests for DynamicPropertyField using jest-axe in `libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertyField.test.tsx`
 
 ### Implementation
 
@@ -53,9 +53,9 @@
 - [X] T024 [US1] Remove renderCustomProperties switch statement from WorldEntityForm in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
 - [X] T025 [US1] Remove custom property component imports from WorldEntityForm in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
 - [X] T026 [US1] Add empty/undefined property filtering on save in WorldEntityForm in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
-- [X] T027 [US1] Create unit tests for DynamicPropertiesForm in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertiesForm.test.tsx
+- [X] T027 [US1] Create unit tests for DynamicPropertiesForm in `libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertiesForm.test.tsx`
 - [X] T028 [US1] Update WorldEntityForm tests to use DynamicPropertiesForm expectations in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.test.tsx
-- [X] T029 [US1] Create integration test for editing GeographicRegion entity in libris-maleficarum-app/src/**tests**/integration/editEntityWithProperties.test.tsx
+- [X] T029 [US1] Create integration test for editing GeographicRegion entity in `libris-maleficarum-app/src/__tests__/integration/editEntityWithProperties.test.tsx`
 
 ---
 
@@ -73,9 +73,9 @@
 - [X] T033 [US2] Implement numeric value formatting with thousand separators in DynamicPropertiesView in libris-maleficarum-app/src/components/MainPanel/DynamicPropertiesView.tsx
 - [X] T034 [US2] Implement tagArray rendering as badges in DynamicPropertiesView in libris-maleficarum-app/src/components/MainPanel/DynamicPropertiesView.tsx
 - [X] T035 [US2] Update EntityDetailReadOnlyView to use DynamicPropertiesView in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.tsx
-- [X] T036 [US2] Create unit tests for DynamicPropertiesView in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertiesView.test.tsx
+- [X] T036 [US2] Create unit tests for DynamicPropertiesView in `libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertiesView.test.tsx`
 - [X] T037 [US2] Update EntityDetailReadOnlyView tests to use DynamicPropertiesView expectations in libris-maleficarum-app/src/components/MainPanel/EntityDetailReadOnlyView.test.tsx
-- [ ] T038 [US2] Create integration test for viewing PoliticalRegion entity in libris-maleficarum-app/src/**tests**/integration/viewEntityWithProperties.test.tsx
+- [ ] T038 [US2] Create integration test for viewing PoliticalRegion entity in `libris-maleficarum-app/src/__tests__/integration/viewEntityWithProperties.test.tsx`
 
 ---
 
@@ -87,7 +87,7 @@
 
 ### Tests
 
-- [X] T039 [US3] Create integration test for creating MilitaryRegion entity in libris-maleficarum-app/src/**tests**/integration/createEntityWithProperties.test.tsx
+- [X] T039 [US3] Create integration test for creating MilitaryRegion entity in `libris-maleficarum-app/src/__tests__/integration/createEntityWithProperties.test.tsx`
 - [X] T040 [US3] Verify DynamicPropertiesForm displays empty fields for new entities in test
 
 ---
@@ -110,9 +110,9 @@
 
 ### Tests
 
-- [X] T048 [US4] Create validation test for integer field rejecting invalid input in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertyField.validation.test.tsx
-- [X] T049 [US4] Create validation test for maxLength constraint in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertyField.validation.test.tsx
-- [X] T050 [US4] Create validation test for error clearing on valid input in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertyField.validation.test.tsx
+- [X] T048 [US4] Create validation test for integer field rejecting invalid input in `libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertyField.validation.test.tsx`
+- [X] T049 [US4] Create validation test for maxLength constraint in `libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertyField.validation.test.tsx`
+- [X] T050 [US4] Create validation test for error clearing on valid input in `libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertyField.validation.test.tsx`
 
 ---
 
@@ -124,9 +124,9 @@
 
 ### Tests
 
-- [X] T051 [US5] Create test for entity without propertySchema in edit mode in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertiesForm.test.tsx
-- [X] T052 [US5] Create test for entity without propertySchema in view mode in libris-maleficarum-app/src/components/MainPanel/**tests**/DynamicPropertiesView.test.tsx
-- [X] T053 [US5] Create integration test for Character entity without custom properties in libris-maleficarum-app/src/**tests**/integration/entityWithoutProperties.test.tsx
+- [X] T051 [US5] Create test for entity without propertySchema in edit mode in `libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertiesForm.test.tsx`
+- [X] T052 [US5] Create test for entity without propertySchema in view mode in `libris-maleficarum-app/src/components/MainPanel/__tests__/DynamicPropertiesView.test.tsx`
+- [X] T053 [US5] Create integration test for Character entity without custom properties in `libris-maleficarum-app/src/__tests__/integration/entityWithoutProperties.test.tsx`
 
 ---
 
@@ -142,7 +142,7 @@
 - [X] T055 Verify existing PoliticalRegion entities display correctly after migration
 - [X] T056 Verify existing CulturalRegion entities display correctly after migration  
 - [X] T057 Verify existing MilitaryRegion entities display correctly after migration
-- [X] T057a Verify SC-002: Attempt to add new entity type with custom properties using only registry configuration (no new component files) in libris-maleficarum-app/src/services/config/**tests**/entityTypeRegistry.extensibility.test.tsx
+- [X] T057a Verify SC-002: Attempt to add new entity type with custom properties using only registry configuration (no new component files) in `libris-maleficarum-app/src/services/config/__tests__/entityTypeRegistry.extensibility.test.tsx`
 - [X] T058 Delete GeographicRegionProperties component and test from libris-maleficarum-app/src/components/MainPanel/customProperties/
 - [X] T059 Delete PoliticalRegionProperties component and test from libris-maleficarum-app/src/components/MainPanel/customProperties/
 - [X] T060 Delete CulturalRegionProperties component and test from libris-maleficarum-app/src/components/MainPanel/customProperties/
