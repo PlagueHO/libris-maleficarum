@@ -34,6 +34,11 @@
 .PARAMETER Environment
     Array of GitHub environment names to create managed identities for. Defaults to @('test').
     Each environment will get its own managed identity and federated credential.
+    The copilot environment is handled separately via the IncludeCopilot parameter.
+
+.PARAMETER IncludeCopilot
+    When true (default), creates a managed identity for GitHub Copilot coding agent.
+    The identity is named 'mi-copilot-coding-agent' and uses the 'copilot' environment.
 
 .PARAMETER Force
     Skips confirmation prompts and proceeds with resource creation/updates.
@@ -56,7 +61,12 @@
 .EXAMPLE
     .\Update-AzureUserAssignedManagedIdentityForGitHub.ps1 -RepositoryName 'my-repo' -Environment @('test', 'staging', 'prod')
 
-    Creates managed identities for multiple environments.
+    Creates managed identities for multiple environments plus the copilot environment.
+
+.EXAMPLE
+    .\Update-AzureUserAssignedManagedIdentityForGitHub.ps1 -RepositoryName 'my-repo' -IncludeCopilot:$false
+
+    Creates managed identity for test environment only, without the copilot coding agent.
 
 .OUTPUTS
     PSCustomObject
@@ -98,6 +108,9 @@ param(
     [Parameter()]
     [ValidateNotNullOrEmpty()]
     [string[]]$Environment = @('test'),
+
+    [Parameter()]
+    [switch]$IncludeCopilot = $true,
 
     [Parameter()]
     [switch]$Force
@@ -563,12 +576,23 @@ process {
         # Collection to store created identities
         $createdIdentities = @()
 
+        # Add copilot environment if requested
+        $environmentsToProcess = $Environment
+        if ($IncludeCopilot) {
+            $environmentsToProcess = $Environment + @('copilot')
+        }
+
         # Process each environment
-        foreach ($env in $Environment) {
+        foreach ($env in $environmentsToProcess) {
             Write-Verbose "Processing environment: $env"
             
             # Define identity name based on environment
-            $identityName = "mi-github-$env-environment"
+            if ($env -eq 'copilot') {
+                $identityName = 'mi-copilot-coding-agent'
+            }
+            else {
+                $identityName = "mi-github-actions-$env-environment"
+            }
             
             # Create managed identity
             $identity = New-GitHubManagedIdentity `
