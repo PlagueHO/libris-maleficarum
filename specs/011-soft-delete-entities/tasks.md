@@ -92,24 +92,24 @@
 
 ### Tests for User Story 2
 
-- [ ] T026 [P] [US2] Create unit tests for cascade delete logic in DeleteService in libris-maleficarum-service/tests/unit/Infrastructure/DeleteServiceCascadeTests.cs
-- [ ] T027 [P] [US2] Create unit tests for DeleteOperationProcessor in libris-maleficarum-service/tests/unit/Infrastructure/DeleteOperationProcessorTests.cs
+- [X] T026 [P] [US2] Create unit tests for cascade delete logic in DeleteService in libris-maleficarum-service/tests/unit/Infrastructure/DeleteServiceCascadeTests.cs
+- [X] T027 [P] [US2] Create unit tests for DeleteOperationProcessor in libris-maleficarum-service/tests/unit/Infrastructure/DeleteOperationProcessorTests.cs
 
 ### Implementation for User Story 2
 
 - [X] T028 [US2] Create DeleteOperationProcessor as IHostedService in libris-maleficarum-service/src/Infrastructure/Processors/DeleteOperationProcessor.cs
-- [ ] T029 [US2] Implement cascade delete discovery logic (query descendants by ParentId recursively)
-- [ ] T030 [US2] Implement batch soft-delete with progress updates in DeleteOperationProcessor
-- [ ] T031 [US2] Update WorldEntityRepository.DeleteAsync() to support cascade parameter in libris-maleficarum-service/src/Infrastructure/Repositories/WorldEntityRepository.cs
-- [ ] T032 [US2] Implement DeleteService.ProcessDeleteAsync() for background processing
+- [X] T029 [US2] Implement cascade delete discovery logic (query descendants by ParentId recursively)
+- [X] T030 [US2] Implement batch soft-delete with progress updates in DeleteOperationProcessor
+- [X] T031 [US2] Update WorldEntityRepository.DeleteAsync() to support cascade parameter in libris-maleficarum-service/src/Infrastructure/Repositories/WorldEntityRepository.cs
+- [X] T032 [US2] Implement DeleteService.ProcessDeleteAsync() for background processing
 - [X] T033 [US2] Register DeleteOperationProcessor as hosted service in DI container
-- [ ] T034 [US2] Add OpenTelemetry logging for cascade delete with entity count
+- [X] T034 [US2] Add OpenTelemetry logging for cascade delete with entity count
 
 ### Integration Tests for User Story 2
 
-- [ ] T035 [US2] Create integration test for cascade delete on parent with direct children
-- [ ] T036 [US2] Create integration test for cascade delete on deeply nested hierarchy (3+ levels)
-- [ ] T037 [US2] Create integration test for idempotent delete (already-deleted entity returns 202 with count=0)
+- [X] T035 [US2] Create integration test for cascade delete on parent with direct children
+- [X] T036 [US2] Create integration test for cascade delete on deeply nested hierarchy (3+ levels)
+- [X] T037 [US2] Create integration test for idempotent delete (already-deleted entity returns 202 with count=0)
 
 **Checkpoint**: User Story 2 complete - cascade delete works independently
 

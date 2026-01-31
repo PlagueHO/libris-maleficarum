@@ -170,6 +170,33 @@ public class WorldEntityRepository : IWorldEntityRepository
     }
 
     /// <inheritdoc/>
+    public async Task<IEnumerable<WorldEntity>> GetDescendantsAsync(Guid entityId, Guid worldId, CancellationToken cancellationToken = default)
+    {
+        var descendants = new List<WorldEntity>();
+        var queue = new Queue<Guid>();
+        queue.Enqueue(entityId);
+
+        while (queue.Count > 0)
+        {
+            var currentId = queue.Dequeue();
+
+            // Get all non-deleted children of current entity
+            var children = await _context.WorldEntities
+                .WithPartitionKeyIfCosmos(_context, worldId)
+                .Where(e => e.ParentId == currentId && !e.IsDeleted)
+                .ToListAsync(cancellationToken);
+
+            foreach (var child in children)
+            {
+                descendants.Add(child);
+                queue.Enqueue(child.Id); // Add children to queue for recursive traversal
+            }
+        }
+
+        return descendants;
+    }
+
+    /// <inheritdoc/>
     public async Task<WorldEntity> CreateAsync(WorldEntity entity, CancellationToken cancellationToken = default)
     {
         if (entity == null)
