@@ -122,33 +122,33 @@ libris-maleficarum-service/
 ### Phase 1: Entity & Repository Layer
 
 1. Add `DeletedDate` and `DeletedBy` to `WorldEntity`
-2. Create `DeleteOperation` entity and `DeleteOperationStatus` enum
-3. Create `IDeleteOperationRepository` interface and implementation
-4. Update `IWorldEntityRepository.DeleteAsync()` signature
+1. Create `DeleteOperation` entity and `DeleteOperationStatus` enum
+1. Create `IDeleteOperationRepository` interface and implementation
+1. Update `IWorldEntityRepository.DeleteAsync()` signature
 
 ### Phase 2: Service Layer
 
 1. Create `IDeleteService` interface
-2. Implement `DeleteService` with operation creation and cascading logic
-3. Add rate limiting check (5 concurrent operations per user per world)
+1. Implement `DeleteService` with operation creation and cascading logic
+1. Add rate limiting check (5 concurrent operations per user per world)
 
 ### Phase 3: API Layer
 
 1. Update `WorldEntitiesController.DeleteEntity()` to return 202 + Location
-2. Create `DeleteOperationsController` with GET endpoints
-3. Add 429 response handling for rate limit
+1. Create `DeleteOperationsController` with GET endpoints
+1. Add 429 response handling for rate limit
 
 ### Phase 4: Background Processing
 
 1. Create `DeleteOperationProcessor` as `IHostedService`
-2. Implement cascade delete logic with progress updates
-3. Handle checkpoint resume on processor restart
+1. Implement cascade delete logic with progress updates
+1. Handle checkpoint resume on processor restart
 
 ### Phase 5: Testing
 
 1. Unit tests for entity methods and controller logic
-2. Integration tests for full delete flow with Cosmos emulator
-3. Rate limiting and concurrency tests
+1. Integration tests for full delete flow with Cosmos emulator
+1. Rate limiting and concurrency tests
 
 ## Dependencies (External)
 

@@ -34,6 +34,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<Asset> Assets { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the DbSet for DeleteOperation entities.
+    /// </summary>
+    public DbSet<DeleteOperation> DeleteOperations { get; set; } = null!;
+
+    /// <summary>
     /// Configures the model that was discovered from the entity types exposed in <see cref="DbSet{TEntity}"/> properties.
     /// </summary>
     /// <param name="modelBuilder">The builder used to construct the model for this context.</param>
@@ -41,9 +46,13 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // Detect if using Cosmos DB or InMemory provider
+        var isCosmosDb = Database.IsCosmos();
+
         // Apply entity configurations
         modelBuilder.ApplyConfiguration(new Configurations.WorldConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.WorldEntityConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.AssetConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.DeleteOperationConfiguration(isCosmosDb));
     }
 }

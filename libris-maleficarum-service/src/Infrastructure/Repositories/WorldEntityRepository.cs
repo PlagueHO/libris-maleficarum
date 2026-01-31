@@ -313,8 +313,13 @@ public class WorldEntityRepository : IWorldEntityRepository
     }
 
     /// <inheritdoc/>
-    public async Task DeleteAsync(Guid worldId, Guid entityId, bool cascade = false, CancellationToken cancellationToken = default)
+    public async Task<int> DeleteAsync(Guid worldId, Guid entityId, string deletedBy, bool cascade = false, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(deletedBy))
+        {
+            throw new ArgumentException("DeletedBy is required.", nameof(deletedBy));
+        }
+
         var entity = await GetByIdAsync(worldId, entityId, cancellationToken);
         if (entity == null)
         {
@@ -332,13 +337,16 @@ public class WorldEntityRepository : IWorldEntityRepository
                 "Use cascade=true to delete all descendants.");
         }
 
+        int deletedCount = 0;
+
         using var activity = _telemetryService.StartActivity("DeleteWorldEntity", new Dictionary<string, object>
         {
             { "world.id", worldId },
             { "entity.id", entityId },
             { "entity.name", entity.Name },
             { "entity.type", entity.EntityType.ToString() },
-            { "cascade", cascade }
+            { "cascade", cascade },
+            { "user.id", deletedBy }
         });
 
         try
@@ -348,7 +356,7 @@ public class WorldEntityRepository : IWorldEntityRepository
             {
                 foreach (var child in childrenList)
                 {
-                    await DeleteAsync(worldId, child.Id, cascade: true, cancellationToken);
+                    deletedCount += await DeleteAsync(worldId, child.Id, deletedBy, cascade: true, cancellationToken);
                 }
             }
 
@@ -378,17 +386,44 @@ public class WorldEntityRepository : IWorldEntityRepository
             }
 
             // Soft delete the entity (AFTER updating parent)
-            entity.SoftDelete();
+            entity.SoftDelete(deletedBy);
+            deletedCount++;
 
             await _context.SaveChangesAsync(cancellationToken);
 
             // Record metric
             _telemetryService.RecordEntityDeleted(entity.EntityType.ToString());
+            activity?.AddTag("deleted_count", deletedCount);
+
+            return deletedCount;
         }
         finally
         {
             activity?.Dispose();
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> CountChildrenAsync(Guid worldId, Guid entityId, CancellationToken cancellationToken = default)
+    {
+        // Verify world access authorization
+        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
+        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+
+        if (world == null)
+        {
+            throw new WorldNotFoundException(worldId);
+        }
+
+        if (world.OwnerId != currentUserId)
+        {
+            throw new UnauthorizedWorldAccessException(worldId, currentUserId);
+        }
+
+        return await _context.WorldEntities
+            .WithPartitionKeyIfCosmos(_context, worldId)
+            .Where(e => e.ParentId == entityId && !e.IsDeleted)
+            .CountAsync(cancellationToken);
     }
 
     /// <summary>

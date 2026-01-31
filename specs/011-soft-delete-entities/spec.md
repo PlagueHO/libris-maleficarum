@@ -152,9 +152,9 @@ For a parent with 100 descendants across 5 levels:
 **All delete operations are asynchronous** for a consistent API contract:
 
 1. DELETE request creates a `DeleteOperation` record and returns `202 Accepted` immediately
-2. Background processor (Change Feed or in-process queue) processes the deletion
-3. Frontend polls status endpoint to track progress
-4. Operation marked `completed` when all entities processed
+1. Background processor (Change Feed or in-process queue) processes the deletion
+1. Frontend polls status endpoint to track progress
+1. Operation marked `completed` when all entities processed
 
 **Benefits of all-async approach**:
 

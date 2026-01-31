@@ -85,6 +85,18 @@ public class WorldEntity
     public bool IsDeleted { get; private set; }
 
     /// <summary>
+    /// Gets the UTC timestamp when this entity was soft-deleted.
+    /// Null if the entity has not been deleted.
+    /// </summary>
+    public DateTime? DeletedDate { get; private set; }
+
+    /// <summary>
+    /// Gets the user ID who soft-deleted this entity.
+    /// Null if the entity has not been deleted.
+    /// </summary>
+    public string? DeletedBy { get; private set; }
+
+    /// <summary>
     /// Gets the schema version for this entity type's property structure.
     /// Indicates which version of the entity type's schema was used when created/last migrated.
     /// Enables forward schema evolution without requiring bulk updates.
@@ -235,11 +247,19 @@ public class WorldEntity
     }
 
     /// <summary>
-    /// Marks this entity as soft-deleted.
+    /// Marks this entity as soft-deleted with audit metadata.
     /// </summary>
-    public void SoftDelete()
+    /// <param name="deletedBy">The user ID performing the deletion.</param>
+    public void SoftDelete(string deletedBy)
     {
+        if (string.IsNullOrWhiteSpace(deletedBy))
+        {
+            throw new ArgumentException("DeletedBy is required.", nameof(deletedBy));
+        }
+
         IsDeleted = true;
+        DeletedDate = DateTime.UtcNow;
+        DeletedBy = deletedBy;
         ModifiedDate = DateTime.UtcNow;
     }
 

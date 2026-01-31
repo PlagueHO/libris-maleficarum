@@ -482,7 +482,7 @@ Store in the WorldEntity container (same partition key) or a dedicated DeleteOpe
 }
 ```
 
-## New Interfaces
+## Repository Interfaces
 
 ### IDeleteOperationRepository
 

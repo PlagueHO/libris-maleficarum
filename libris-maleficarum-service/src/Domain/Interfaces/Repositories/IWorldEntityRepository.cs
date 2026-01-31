@@ -65,12 +65,23 @@ public interface IWorldEntityRepository
     Task<WorldEntity> UpdateAsync(WorldEntity entity, string? etag = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Soft-deletes an entity. If the entity has children, behavior depends on cascade parameter.
+    /// Soft-deletes an entity with optional cascade to descendants.
     /// </summary>
     /// <param name="worldId">The world identifier (partition key).</param>
     /// <param name="entityId">The entity identifier to delete.</param>
+    /// <param name="deletedBy">The user ID performing the deletion.</param>
     /// <param name="cascade">If true, recursively soft-delete all descendants; if false and children exist, throw InvalidOperationException.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The number of entities deleted (including descendants if cascade).</returns>
     /// <exception cref="InvalidOperationException">Thrown when cascade=false and entity has children.</exception>
-    Task DeleteAsync(Guid worldId, Guid entityId, bool cascade = false, CancellationToken cancellationToken = default);
+    Task<int> DeleteAsync(Guid worldId, Guid entityId, string deletedBy, bool cascade = false, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Counts the direct children of an entity.
+    /// </summary>
+    /// <param name="worldId">The world identifier (partition key).</param>
+    /// <param name="entityId">The entity identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The count of direct children (non-deleted).</returns>
+    Task<int> CountChildrenAsync(Guid worldId, Guid entityId, CancellationToken cancellationToken = default);
 }

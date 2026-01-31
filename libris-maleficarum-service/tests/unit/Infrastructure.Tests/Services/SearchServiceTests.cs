@@ -301,7 +301,7 @@ public class SearchServiceTests
         // Arrange
         var entity1 = CreateEntity("Active", "Description");
         var entity2 = CreateEntity("Deleted", "Description");
-        entity2.SoftDelete();
+        entity2.SoftDelete("test-user");
 
         await _context.WorldEntities.AddRangeAsync(entity1, entity2);
         await _context.SaveChangesAsync();
