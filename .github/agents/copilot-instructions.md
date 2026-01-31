@@ -7,6 +7,10 @@ Auto-generated from all feature plans. Last updated: 2026-01-21
 - N/A (refactor of in-memory constants) (007-entity-type-registry)
 - TypeScript 5.x + React 19 + Redux Toolkit, React Router, Shadcn/ui + Radix UI, TailwindCSS v4, Vitest + Testing Library, RTK Query (008-edit-world-entity)
 - Azure Cosmos DB (via REST API), client-side Redux state (008-edit-world-entity)
+- .NET 10, C# 14 + EF Core 10 (Cosmos DB provider), ASP.NET Core Minimal APIs/Controllers, Aspire.NET, OpenTelemetry (011-soft-delete-entities)
+- Azure Cosmos DB (WorldEntity container with partition key `[/WorldId, /id]`) (011-soft-delete-entities)
+- .NET 10, C# 14 + ASP.NET Core, EF Core 10 (Cosmos DB provider), Aspire.NET (local dev) (011-soft-delete-entities)
+- Azure Cosmos DB (WorldEntity container with hierarchical partition key `[/WorldId, /id]`) (011-soft-delete-entities)
 
 
 
@@ -27,8 +31,9 @@ tests/
 General: Follow standard conventions
 
 ## Recent Changes
+- 011-soft-delete-entities: Added .NET 10, C# 14 + ASP.NET Core, EF Core 10 (Cosmos DB provider), Aspire.NET (local dev)
+- 011-soft-delete-entities: Added .NET 10, C# 14 + EF Core 10 (Cosmos DB provider), ASP.NET Core Minimal APIs/Controllers, Aspire.NET, OpenTelemetry
 - 008-edit-world-entity: Added TypeScript 5.x + React 19 + Redux Toolkit, React Router, Shadcn/ui + Radix UI, TailwindCSS v4, Vitest + Testing Library, RTK Query
-- 007-entity-type-registry: Added TypeScript 5.x (existing) + React 19, Redux Toolkit, Vitest, jest-axe (all existing)
 
 
 
