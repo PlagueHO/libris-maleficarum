@@ -214,10 +214,12 @@ public class WorldEntityTests
         System.Threading.Thread.Sleep(10); // Ensure time difference
 
         // Act
-        entity.SoftDelete();
+        entity.SoftDelete("test-user");
 
         // Assert
         entity.IsDeleted.Should().BeTrue();
+        entity.DeletedBy.Should().Be("test-user");
+        entity.DeletedDate.Should().NotBeNull();
         entity.ModifiedDate.Should().BeAfter(originalModifiedDate);
     }
 

@@ -1,4 +1,5 @@
 using FluentValidation;
+using LibrisMaleficarum.Api.BackgroundServices;
 using LibrisMaleficarum.Api.Filters;
 using LibrisMaleficarum.Api.Middleware;
 using LibrisMaleficarum.Api.Validators;
@@ -26,6 +27,10 @@ builder.AddApplicationTelemetry();
 // Configure entity schema versioning
 builder.Services.Configure<EntitySchemaVersionConfig>(
     builder.Configuration.GetSection("EntitySchemaVersions"));
+
+// Configure delete operation options
+builder.Services.Configure<DeleteOperationOptions>(
+    builder.Configuration.GetSection(DeleteOperationOptions.SectionName));
 
 // Configure DbContext with Cosmos DB provider
 var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb")
@@ -62,6 +67,8 @@ builder.Services.AddScoped<ITelemetryService>(sp =>
 builder.Services.AddScoped<IWorldRepository, WorldRepository>();
 builder.Services.AddScoped<IWorldEntityRepository, WorldEntityRepository>();
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
+builder.Services.AddScoped<IDeleteOperationRepository, DeleteOperationRepository>();
+builder.Services.AddScoped<IDeleteService, DeleteService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 
 // Register validators
@@ -73,6 +80,9 @@ builder.AddAzureBlobServiceClient("blobs");
 
 // Register Azure Blob Storage service
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+
+// Register background services
+builder.Services.AddHostedService<DeleteOperationProcessor>();
 
 // Add controllers with JSON options and exception filters
 builder.Services.AddControllers(options =>

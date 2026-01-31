@@ -142,8 +142,8 @@ curl https://localhost:5001/api/v1/worlds/{worldId}/entities
 Open Aspire Dashboard at `http://localhost:15888`:
 
 1. Navigate to **Traces** tab
-2. Filter by operation name `EntitySoftDelete` or `DeleteOperation`
-3. View structured attributes:
+1. Filter by operation name `EntitySoftDelete` or `DeleteOperation`
+1. View structured attributes:
    - `operation.id`, `entity.id`, `entity.name`, `entity.type`
    - `delete.cascade`, `delete.total_count`, `delete.deleted_count`
    - `delete.status`, `user.id`
@@ -237,31 +237,31 @@ Operation may have expired (24-hour TTL):
 Background processor may have issues:
 
 1. Check Aspire Dashboard for processor errors
-2. Verify `DeleteOperationProcessor` is running
-3. Check for exceptions in processor logs
-4. Restart AppHost if needed
+1. Verify `DeleteOperationProcessor` is running
+1. Check for exceptions in processor logs
+1. Restart AppHost if needed
 
 ### High RU Usage
 
 Large cascade may be consuming RUs:
 
 1. Lower `RateLimitPerSecond` setting
-2. Check `MaxBatchSize` configuration
-3. Monitor RU consumption in Aspire Dashboard
+1. Check `MaxBatchSize` configuration
+1. Monitor RU consumption in Aspire Dashboard
 
 ### Partial Completion
 
 Operation completed with some failures:
 
 1. Check `failedEntityIds` in operation response
-2. Review `errorDetails` for failure reasons
-3. Retry individual failed entities if needed
+1. Review `errorDetails` for failure reasons
+1. Retry individual failed entities if needed
 
 ### Rate Limit Exceeded (429)
 
 Too many concurrent delete operations for this user/world:
 
 1. Wait for `Retry-After` seconds indicated in response header
-2. Check `GET /delete-operations` to see pending/in-progress operations
-3. Wait for existing operations to complete before retrying
-4. Limit: 5 concurrent operations per user per world
+1. Check `GET /delete-operations` to see pending/in-progress operations
+1. Wait for existing operations to complete before retrying
+1. Limit: 5 concurrent operations per user per world

@@ -26,8 +26,9 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
         // allowing for efficient single-partition queries when fetching the world tree.
         builder.HasPartitionKey(e => e.WorldId);
 
-        // Disable discriminator for single-type container
-        builder.HasNoDiscriminator();
+        // Configure discriminator to differentiate WorldEntity from DeleteOperation in the same container
+        builder.HasDiscriminator<string>("_type")
+            .HasValue("WorldEntity");
 
         // Primary key
         builder.HasKey(e => e.Id);

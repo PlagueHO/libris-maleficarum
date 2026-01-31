@@ -22,10 +22,10 @@ The codebase already has soft delete infrastructure in place:
 ### Gaps to Address
 
 1. **Entity Enhancement**: Add `DeletedDate` and `DeletedBy` properties to `WorldEntity`
-2. **Idempotent Delete**: Currently throws `EntityNotFoundException` when entity doesn't exist or already deleted
-3. **Async Cascade**: No infrastructure for Change Feed processing
-4. **Cascade Heuristics**: No threshold detection for sync vs async path
-5. **Audit Logging**: Need structured telemetry events with cascade count
+1. **Idempotent Delete**: Currently throws `EntityNotFoundException` when entity doesn't exist or already deleted
+1. **Async Cascade**: No infrastructure for Change Feed processing
+1. **Cascade Heuristics**: No threshold detection for sync vs async path
+1. **Audit Logging**: Need structured telemetry events with cascade count
 
 ## Technology Decisions
 
@@ -44,6 +44,7 @@ The codebase already has soft delete infrastructure in place:
 **Decision**: **Cosmos DB Change Feed**
 
 **Rationale**:
+
 - Already planned in architecture (DATA_MODEL.md mentions Change Feed for DeletedWorldEntity migration)
 - No new Azure resources needed
 - Automatic retry on processor failures
@@ -65,6 +66,7 @@ The codebase already has soft delete infrastructure in place:
 **Decision**: **In-process with hosted service** (for MVP), migrate to separate Container App if needed
 
 **Rationale**:
+
 - Simplest initial implementation
 - `IHostedService` in API project runs continuously
 - Low volume expected (deletes are infrequent)
@@ -76,11 +78,13 @@ The codebase already has soft delete infrastructure in place:
 **Context**: How to decide between sync and async cascade without expensive counting.
 
 **Decision**: Use **direct children count + entity depth** as heuristics:
+
 - If entity has >10 direct children → async
 - If entity depth <3 (closer to root) → async
 - Otherwise → sync
 
 **Rationale**:
+
 - Single query for direct children count (2-3 RUs)
 - Depth already stored on entity (no query needed)
 - Conservative: errs toward async for ambiguous cases
@@ -107,6 +111,7 @@ using var activity = _telemetryService.StartActivity("EntitySoftDelete", new Dic
 ```
 
 **Rationale**:
+
 - OpenTelemetry SDK automatically routes to Application Insights (prod) or Aspire Dashboard (local)
 - Structured tags enable rich querying in Application Insights
 - Activity context propagates correlation IDs
@@ -128,6 +133,7 @@ using var activity = _telemetryService.StartActivity("EntitySoftDelete", new Dic
 **Decision**: **User-scoped limit of 5 concurrent operations per world**
 
 **Rationale**:
+
 - Fair: Each user can have 5 pending/in-progress operations
 - Simple enforcement: Query `DeleteOperation` by `WorldId` + `CreatedBy` + status in (Pending, InProgress)
 - 429 response with `Retry-After` header provides clear guidance to clients
@@ -140,26 +146,26 @@ using var activity = _telemetryService.StartActivity("EntitySoftDelete", new Dic
 1. **Filter at query level**: All queries must include `WHERE IsDeleted = false`
    - Already implemented in `WorldEntityRepository.GetByIdAsync()` and `GetAllByWorldAsync()`
 
-2. **Separate deleted container**: Use Change Feed to move to DeletedWorldEntity after grace period
+1. **Separate deleted container**: Use Change Feed to move to DeletedWorldEntity after grace period
    - Planned but out of scope for this feature
 
-3. **TTL for hard delete**: Configure TTL on DeletedWorldEntity container
+1. **TTL for hard delete**: Configure TTL on DeletedWorldEntity container
    - Planned but out of scope for this feature
 
 ### .NET Change Feed Processor Best Practices
 
 1. **Lease container**: Use separate container or partition for leases
-2. **Processor name**: Unique name per processor instance
-3. **Start from beginning vs now**: Start from "now" for new processors
-4. **Handle exceptions gracefully**: Don't throw—log and continue
-5. **Idempotent processing**: Re-processing same change must be safe
+1. **Processor name**: Unique name per processor instance
+1. **Start from beginning vs now**: Start from "now" for new processors
+1. **Handle exceptions gracefully**: Don't throw—log and continue
+1. **Idempotent processing**: Re-processing same change must be safe
 
 ### ASP.NET Core Async Best Practices
 
 1. **Don't await async processing in request**: Fire-and-forget for async cascade
-2. **Return 204 immediately**: User sees success, cascade continues in background
-3. **Use CancellationToken**: Respect request cancellation for sync operations
-4. **Structured logging**: Use ILogger<T> with message templates
+1. **Return 204 immediately**: User sees success, cascade continues in background
+1. **Use CancellationToken**: Respect request cancellation for sync operations
+1. **Structured logging**: Use ILogger<T> with message templates
 
 ## Integration Points
 

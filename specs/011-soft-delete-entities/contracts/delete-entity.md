@@ -328,6 +328,7 @@ Authorization: Bearer {token}
 ```
 
 **Response**: `202 Accepted`
+
 ```http
 Location: /api/v1/worlds/550e8400-e29b-41d4-a716-446655440000/delete-operations/abc12345-6789-0abc-def0-123456789abc
 Content-Type: application/json
@@ -357,6 +358,7 @@ Authorization: Bearer {token}
 ```
 
 **Response**: `200 OK`
+
 ```json
 {
   "data": {
@@ -385,6 +387,7 @@ Authorization: Bearer {token}
 ```
 
 **Response**: `200 OK`
+
 ```json
 {
   "data": {
@@ -416,6 +419,7 @@ Authorization: Bearer {token}
 **Response**: `202 Accepted`
 
 After polling, the operation shows:
+
 ```json
 {
   "data": {
@@ -436,6 +440,7 @@ Authorization: Bearer {token}
 ```
 
 **Response**: `200 OK`
+
 ```json
 {
   "data": [
@@ -468,6 +473,7 @@ Authorization: Bearer {token}
 ```
 
 **Response**: `429 Too Many Requests`
+
 ```http
 Retry-After: 30
 Content-Type: application/json
@@ -520,9 +526,9 @@ async function deleteEntityWithPolling(worldId: string, entityId: string): Promi
 ## Behavior Notes
 
 1. **All Async**: Every delete returns 202 Accepted immediately (no sync path)
-2. **Idempotency**: Deleting an already-deleted entity creates an operation that completes with `deleted: 0`
-3. **Authorization**: User must own the world
-4. **TTL**: Operations auto-purge 24 hours after completion
-5. **Consistency**: During processing, descendant entities may briefly appear until marked deleted
-6. **Progress Updates**: Status updated in near real-time (within 2 seconds of actual progress)
-7. **Rate Limiting**: Users are limited to 5 concurrent delete operations per world; 429 returned if exceeded
+1. **Idempotency**: Deleting an already-deleted entity creates an operation that completes with `deleted: 0`
+1. **Authorization**: User must own the world
+1. **TTL**: Operations auto-purge 24 hours after completion
+1. **Consistency**: During processing, descendant entities may briefly appear until marked deleted
+1. **Progress Updates**: Status updated in near real-time (within 2 seconds of actual progress)
+1. **Rate Limiting**: Users are limited to 5 concurrent delete operations per world; 429 returned if exceeded
