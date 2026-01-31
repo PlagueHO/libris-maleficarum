@@ -47,6 +47,15 @@ public interface IWorldEntityRepository
     Task<IEnumerable<WorldEntity>> GetChildrenAsync(Guid worldId, Guid parentId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves all descendant entities of a parent entity (recursive, all levels).
+    /// </summary>
+    /// <param name="entityId">The parent entity identifier.</param>
+    /// <param name="worldId">The world identifier (partition key).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Collection of descendant entities (excludes already-deleted entities).</returns>
+    Task<IEnumerable<WorldEntity>> GetDescendantsAsync(Guid entityId, Guid worldId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Creates a new entity in the repository.
     /// </summary>
     /// <param name="entity">The entity to create.</param>

@@ -112,14 +112,29 @@ public class DeleteService : IDeleteService
 
         try
         {
-            // Start the operation
-            operation.Start(1); // Single entity for now (cascade will be implemented in User Story 2)
+            // T029: Discover all descendants if cascade is enabled
+            var descendants = new List<WorldEntity>();
+            if (operation.Cascade)
+            {
+                descendants = (await _worldEntityRepository.GetDescendantsAsync(
+                    operation.RootEntityId,
+                    worldId,
+                    cancellationToken)).ToList();
+
+                activity?.AddTag("descendants_discovered", descendants.Count);
+            }
+
+            // Calculate total entities: root + descendants
+            var totalEntities = 1 + descendants.Count;
+
+            // Start the operation with actual count
+            operation.Start(totalEntities);
             await _deleteOperationRepository.UpdateAsync(operation, cancellationToken);
 
             // Get current user from operation
             var userId = operation.CreatedBy;
 
-            // Perform the delete
+            // Perform the delete (repository handles cascade internally)
             var deletedCount = await _worldEntityRepository.DeleteAsync(
                 worldId,
                 operation.RootEntityId,
@@ -132,9 +147,11 @@ public class DeleteService : IDeleteService
             operation.Complete();
             await _deleteOperationRepository.UpdateAsync(operation, cancellationToken);
 
-            // Log completion
+            // T034: Log completion
             activity?.AddTag("operation.deleted_count", deletedCount);
             activity?.AddTag("operation.status", "completed");
+            activity?.AddTag("operation.processed_count", deletedCount);
+            activity?.AddTag("operation.failed_count", 0);
         }
         catch (Exception ex)
         {

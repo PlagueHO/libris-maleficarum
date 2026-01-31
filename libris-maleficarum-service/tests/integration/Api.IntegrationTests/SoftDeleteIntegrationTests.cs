@@ -288,4 +288,291 @@ public class SoftDeleteIntegrationTests
     }
 
     #endregion
+
+    #region T035: Cascade Delete - Direct Children
+
+    [TestMethod]
+    public async Task DeleteEntity_WithDirectChildren_CascadesSuccessfully()
+    {
+        // Arrange
+        var cancellationToken = TestContext!.CancellationTokenSource.Token;
+        using var httpClient = AppHostFixture.App!.CreateHttpClient("api");
+
+        // Create a world
+        var worldRequest = new { Name = "Test World for Cascade Direct", Description = "World to test cascade with direct children" };
+        using var worldResponse = await httpClient.PostAsJsonAsync("/api/v1/worlds", worldRequest, cancellationToken);
+        worldResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var worldId = worldResponse.Headers.Location!.Segments.Last();
+
+        // Create parent entity
+        var parentRequest = new
+        {
+            Name = "Parent Continent",
+            Description = "Parent entity to be deleted",
+            EntityType = EntityType.Continent
+        };
+        using var parentResponse = await httpClient.PostAsJsonAsync(
+            $"/api/v1/worlds/{worldId}/entities",
+            parentRequest,
+            cancellationToken);
+        parentResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var parentId = parentResponse.Headers.Location!.Segments.Last();
+
+        // Create 3 child entities
+        var childIds = new List<string>();
+        for (int i = 1; i <= 3; i++)
+        {
+            var childRequest = new
+            {
+                Name = $"Child Country {i}",
+                Description = $"Child entity {i}",
+                EntityType = EntityType.Country,
+                ParentId = parentId
+            };
+            using var childResponse = await httpClient.PostAsJsonAsync(
+                $"/api/v1/worlds/{worldId}/entities",
+                childRequest,
+                cancellationToken);
+            childResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+            childIds.Add(childResponse.Headers.Location!.Segments.Last());
+        }
+
+        // Act - Delete parent with cascade
+        using var deleteResponse = await httpClient.DeleteAsync(
+            $"/api/v1/worlds/{worldId}/entities/{parentId}?cascade=true",
+            cancellationToken);
+
+        // Assert - Should return 202 Accepted
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+
+        var operationId = deleteResponse.Headers.Location!.Segments.Last();
+
+        // Poll until completed
+        var pollingTimeout = TimeSpan.FromSeconds(10);
+        var pollingStart = DateTime.UtcNow;
+        string? status = null;
+
+        while (DateTime.UtcNow - pollingStart < pollingTimeout)
+        {
+            using var statusResponse = await httpClient.GetAsync(
+                $"/api/v1/worlds/{worldId}/delete-operations/{operationId}",
+                cancellationToken);
+
+            statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var statusContent = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
+
+            if (statusContent.Contains("\"status\":\"completed\"") || statusContent.Contains("\"status\": \"completed\""))
+            {
+                status = "completed";
+                statusContent.Should().Contain("\"totalEntities\":4", "Should delete 1 parent + 3 children");
+                statusContent.Should().Contain("\"deletedCount\":4");
+                break;
+            }
+
+            await Task.Delay(PollingInterval, cancellationToken);
+        }
+
+        status.Should().Be("completed");
+
+        // Verify all entities are deleted (404)
+        using var parentGetResponse = await httpClient.GetAsync($"/api/v1/worlds/{worldId}/entities/{parentId}", cancellationToken);
+        parentGetResponse.StatusCode.Should().Be(HttpStatusCode.NotFound, "Parent should be deleted");
+
+        foreach (var childId in childIds)
+        {
+            using var childGetResponse = await httpClient.GetAsync($"/api/v1/worlds/{worldId}/entities/{childId}", cancellationToken);
+            childGetResponse.StatusCode.Should().Be(HttpStatusCode.NotFound, $"Child {childId} should be deleted");
+        }
+    }
+
+    #endregion
+
+    #region T036: Cascade Delete - Deep Hierarchy
+
+    [TestMethod]
+    public async Task DeleteEntity_WithDeepHierarchy_CascadesAllLevels()
+    {
+        // Arrange
+        var cancellationToken = TestContext!.CancellationTokenSource.Token;
+        using var httpClient = AppHostFixture.App!.CreateHttpClient("api");
+
+        // Create a world
+        var worldRequest = new { Name = "Test World for Deep Hierarchy", Description = "World to test deep cascade" };
+        using var worldResponse = await httpClient.PostAsJsonAsync("/api/v1/worlds", worldRequest, cancellationToken);
+        worldResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var worldId = worldResponse.Headers.Location!.Segments.Last();
+
+        // Create 5-level hierarchy: Continent → Country → Region → City → Character
+        var continentRequest = new { Name = "Test Continent", EntityType = EntityType.Continent };
+        using var continentResponse = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", continentRequest, cancellationToken);
+        continentResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var continentId = continentResponse.Headers.Location!.Segments.Last();
+
+        var countryRequest = new { Name = "Test Country", EntityType = EntityType.Country, ParentId = continentId };
+        using var countryResponse = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", countryRequest, cancellationToken);
+        countryResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var countryId = countryResponse.Headers.Location!.Segments.Last();
+
+        var regionRequest = new { Name = "Test Region", EntityType = EntityType.Region, ParentId = countryId };
+        using var regionResponse = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", regionRequest, cancellationToken);
+        regionResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var regionId = regionResponse.Headers.Location!.Segments.Last();
+
+        var cityRequest = new { Name = "Test City", EntityType = EntityType.City, ParentId = regionId };
+        using var cityResponse = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", cityRequest, cancellationToken);
+        cityResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var cityId = cityResponse.Headers.Location!.Segments.Last();
+
+        var characterRequest = new { Name = "Test Character", EntityType = EntityType.Character, ParentId = cityId };
+        using var characterResponse = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", characterRequest, cancellationToken);
+        characterResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var characterId = characterResponse.Headers.Location!.Segments.Last();
+
+        // Act - Delete Continent (should cascade to all descendants)
+        using var deleteResponse = await httpClient.DeleteAsync(
+            $"/api/v1/worlds/{worldId}/entities/{continentId}?cascade=true",
+            cancellationToken);
+
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        var operationId = deleteResponse.Headers.Location!.Segments.Last();
+
+        // Poll until completed
+        var pollingTimeout = TimeSpan.FromSeconds(10);
+        var pollingStart = DateTime.UtcNow;
+        string? status = null;
+
+        while (DateTime.UtcNow - pollingStart < pollingTimeout)
+        {
+            using var statusResponse = await httpClient.GetAsync(
+                $"/api/v1/worlds/{worldId}/delete-operations/{operationId}",
+                cancellationToken);
+
+            var statusContent = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
+
+            if (statusContent.Contains("\"status\":\"completed\"") || statusContent.Contains("\"status\": \"completed\""))
+            {
+                status = "completed";
+                statusContent.Should().Contain("\"totalEntities\":5", "Should delete Continent + 4 descendants");
+                statusContent.Should().Contain("\"deletedCount\":5");
+                break;
+            }
+
+            await Task.Delay(PollingInterval, cancellationToken);
+        }
+
+        status.Should().Be("completed");
+
+        // Verify all entities are deleted
+        var entityIds = new[] { continentId, countryId, regionId, cityId, characterId };
+        foreach (var entityId in entityIds)
+        {
+            using var getResponse = await httpClient.GetAsync($"/api/v1/worlds/{worldId}/entities/{entityId}", cancellationToken);
+            getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound, $"Entity {entityId} should be deleted");
+        }
+    }
+
+    #endregion
+
+    #region T037: Cascade Delete - Idempotent (Already Deleted Descendants)
+
+    [TestMethod]
+    public async Task DeleteEntity_WithAlreadyDeletedDescendants_ReturnsCorrectCount()
+    {
+        // Arrange
+        var cancellationToken = TestContext!.CancellationTokenSource.Token;
+        using var httpClient = AppHostFixture.App!.CreateHttpClient("api");
+
+        // Create a world
+        var worldRequest = new { Name = "Test World for Idempotent Cascade", Description = "World to test idempotent cascade" };
+        using var worldResponse = await httpClient.PostAsJsonAsync("/api/v1/worlds", worldRequest, cancellationToken);
+        worldResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var worldId = worldResponse.Headers.Location!.Segments.Last();
+
+        // Create parent with 2 children
+        var parentRequest = new { Name = "Parent for Idempotent Test", EntityType = EntityType.Continent };
+        using var parentResponse = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", parentRequest, cancellationToken);
+        parentResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var parentId = parentResponse.Headers.Location!.Segments.Last();
+
+        var child1Request = new { Name = "Child 1", EntityType = EntityType.Country, ParentId = parentId };
+        using var child1Response = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", child1Request, cancellationToken);
+        child1Response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var child1Id = child1Response.Headers.Location!.Segments.Last();
+
+        var child2Request = new { Name = "Child 2", EntityType = EntityType.Country, ParentId = parentId };
+        using var child2Response = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", child2Request, cancellationToken);
+        child2Response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var child2Id = child2Response.Headers.Location!.Segments.Last();
+
+        // Pre-delete child1
+        using var deleteChild1Response = await httpClient.DeleteAsync($"/api/v1/worlds/{worldId}/entities/{child1Id}", cancellationToken);
+        deleteChild1Response.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        
+        var child1OperationId = deleteChild1Response.Headers.Location!.Segments.Last();
+
+        // Wait for child1 delete to complete
+        var child1DeleteCompleted = false;
+        var timeout = DateTime.UtcNow.AddSeconds(5);
+        while (DateTime.UtcNow < timeout && !child1DeleteCompleted)
+        {
+            using var child1StatusResponse = await httpClient.GetAsync(
+                $"/api/v1/worlds/{worldId}/delete-operations/{child1OperationId}",
+                cancellationToken);
+            var child1StatusContent = await child1StatusResponse.Content.ReadAsStringAsync(cancellationToken);
+            if (child1StatusContent.Contains("\"status\":\"completed\""))
+            {
+                child1DeleteCompleted = true;
+            }
+            else
+            {
+                await Task.Delay(100, cancellationToken);
+            }
+        }
+
+        child1DeleteCompleted.Should().BeTrue("Child1 delete should complete before parent cascade");
+
+        // Act - Delete parent (cascade should skip already-deleted child1)
+        using var deleteParentResponse = await httpClient.DeleteAsync(
+            $"/api/v1/worlds/{worldId}/entities/{parentId}?cascade=true",
+            cancellationToken);
+
+        deleteParentResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        var parentOperationId = deleteParentResponse.Headers.Location!.Segments.Last();
+
+        // Poll until completed
+        var pollingTimeout = TimeSpan.FromSeconds(10);
+        var pollingStart = DateTime.UtcNow;
+        string? status = null;
+
+        while (DateTime.UtcNow - pollingStart < pollingTimeout)
+        {
+            using var statusResponse = await httpClient.GetAsync(
+                $"/api/v1/worlds/{worldId}/delete-operations/{parentOperationId}",
+                cancellationToken);
+
+            var statusContent = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
+
+            if (statusContent.Contains("\"status\":\"completed\"") || statusContent.Contains("\"status\": \"completed\""))
+            {
+                status = "completed";
+                // Total entities should be 2: parent + child2 (child1 already deleted, so not counted)
+                statusContent.Should().Contain("\"totalEntities\":2", "Should only count parent + non-deleted child2");
+                statusContent.Should().Contain("\"deletedCount\":2");
+                break;
+            }
+
+            await Task.Delay(PollingInterval, cancellationToken);
+        }
+
+        status.Should().Be("completed");
+
+        // Verify parent and child2 are deleted
+        using var parentGetResponse = await httpClient.GetAsync($"/api/v1/worlds/{worldId}/entities/{parentId}", cancellationToken);
+        parentGetResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        using var child2GetResponse = await httpClient.GetAsync($"/api/v1/worlds/{worldId}/entities/{child2Id}", cancellationToken);
+        child2GetResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    #endregion
 }
