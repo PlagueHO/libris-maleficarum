@@ -220,8 +220,11 @@ public class DeleteOperationsControllerTests
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<IEnumerable<DeleteOperationResponse>>>().Subject;
         apiResponse.Data.Should().HaveCount(3);
-        apiResponse.Meta.Should().ContainKey("count");
-        apiResponse.Meta["count"].Should().Be(3);
+        
+        var meta = apiResponse.Meta;
+        meta.Should().NotBeNull();
+        meta!.Should().ContainKey("count");
+        meta!["count"].Should().Be(3);
     }
 
     [TestMethod]
@@ -240,7 +243,10 @@ public class DeleteOperationsControllerTests
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<IEnumerable<DeleteOperationResponse>>>().Subject;
         apiResponse.Data.Should().BeEmpty();
-        apiResponse.Meta["count"].Should().Be(0);
+        
+        var meta = apiResponse.Meta;
+        meta.Should().NotBeNull();
+        meta!["count"].Should().Be(0);
     }
 
     [TestMethod]

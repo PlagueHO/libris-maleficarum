@@ -25,11 +25,14 @@
 **Purpose**: Project initialization and core entity modifications
 
 - [X] T001 Add DeletedDate and DeletedBy properties to WorldEntity in libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs
-- [X] T002 Update SoftDelete() method to accept deletedBy parameter in libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs
+- [X] T001.1 Add Ttl property to WorldEntity for Cosmos DB automatic cleanup (90 days)
+- [X] T002 Update SoftDelete() method to accept deletedBy parameter and set Ttl to 7776000 seconds in libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs
+- [X] T002.1 Add Restore() method to clear deletion metadata and TTL in WorldEntity
 - [X] T003 [P] Create DeleteOperationStatus enum in libris-maleficarum-service/src/Domain/Entities/DeleteOperationStatus.cs
 - [X] T004 [P] Create DeleteOperation entity in libris-maleficarum-service/src/Domain/Entities/DeleteOperation.cs
 - [X] T005 [P] Create RateLimitExceededException in libris-maleficarum-service/src/Domain/Exceptions/RateLimitExceededException.cs
 - [X] T006 Add DeleteOperation configuration section to libris-maleficarum-service/src/Api/appsettings.json
+- [X] T006.1 Configure Ttl property mapping in WorldEntityConfiguration (maps to "ttl" JSON property)
 
 ---
 
@@ -59,6 +62,8 @@
 ### Tests for User Story 1
 
 - [X] T013 [P] [US1] Create unit tests for WorldEntity.SoftDelete() method in libris-maleficarum-service/tests/unit/Domain/WorldEntitySoftDeleteTests.cs
+- [X] T013.1 Add unit tests for WorldEntity.Restore() method to verify TTL clearing
+- [X] T013.2 Add unit test for Ttl property initialization (null for new entities)
 - [X] T014 [P] [US1] Create unit tests for DeleteOperation entity methods in libris-maleficarum-service/tests/unit/Domain/DeleteOperationTests.cs
 - [X] T015 [P] [US1] Create unit tests for DeleteOperationsController in libris-maleficarum-service/tests/unit/Api/DeleteOperationsControllerTests.cs
 
