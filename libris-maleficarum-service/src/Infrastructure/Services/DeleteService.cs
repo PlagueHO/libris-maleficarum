@@ -53,10 +53,11 @@ public class DeleteService : IDeleteService
             throw new RateLimitExceededException(activeCount, _options.MaxConcurrentPerUserPerWorld, _options.RetryAfterSeconds);
         }
 
-        // Get the entity to be deleted
-        var entity = await _worldEntityRepository.GetByIdAsync(worldId, entityId, cancellationToken);
+        // Get the entity including soft-deleted ones to distinguish between "doesn't exist" vs "already deleted"
+        var entity = await _worldEntityRepository.GetByIdIncludingDeletedAsync(worldId, entityId, cancellationToken);
         if (entity == null)
         {
+            // Entity truly doesn't exist
             throw new EntityNotFoundException(worldId, entityId);
         }
 
@@ -67,6 +68,13 @@ public class DeleteService : IDeleteService
             entity.Name,
             userId,
             cascade);
+
+        // If entity is already deleted, create an operation that completes immediately with count=0 (idempotent)
+        if (entity.IsDeleted)
+        {
+            operation.Start(totalEntities: 0);
+            operation.Complete();
+        }
 
         // Persist the operation
         operation = await _deleteOperationRepository.CreateAsync(operation, cancellationToken);
@@ -80,6 +88,7 @@ public class DeleteService : IDeleteService
             { "entity.type", entity.EntityType.ToString() },
             { "entity.world_id", worldId },
             { "delete.cascade", cascade },
+            { "delete.already_deleted", entity.IsDeleted },
             { "user.id", userId }
         });
 

@@ -63,6 +63,30 @@ public class WorldEntityRepository : IWorldEntityRepository
     }
 
     /// <inheritdoc/>
+    public async Task<WorldEntity?> GetByIdIncludingDeletedAsync(Guid worldId, Guid entityId, CancellationToken cancellationToken = default)
+    {
+        // Verify world access authorization
+        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
+        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+
+        if (world == null)
+        {
+            throw new WorldNotFoundException(worldId);
+        }
+
+        if (world.OwnerId != currentUserId)
+        {
+            throw new UnauthorizedWorldAccessException(worldId, currentUserId);
+        }
+
+        // Query with partition key for efficiency, INCLUDE soft-deleted entities
+        return await _context.WorldEntities
+            .WithPartitionKeyIfCosmos(_context, worldId)
+            .Where(e => e.Id == entityId)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<(IEnumerable<WorldEntity> Entities, string? NextCursor)> GetAllByWorldAsync(
         Guid worldId,
         Guid? parentId = null,

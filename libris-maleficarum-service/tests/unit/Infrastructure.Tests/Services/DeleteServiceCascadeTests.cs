@@ -69,7 +69,7 @@ public class DeleteServiceCascadeTests
         _deleteOperationRepository.CountActiveByUserAsync(_worldId, _userIdString, Arg.Any<CancellationToken>())
             .Returns(0);
 
-        _worldEntityRepository.GetByIdAsync(_worldId, parentId, Arg.Any<CancellationToken>())
+        _worldEntityRepository.GetByIdIncludingDeletedAsync(_worldId, parentId, Arg.Any<CancellationToken>())
             .Returns(parentEntity);
 
         var createdOperation = DeleteOperation.Create(_worldId, parentId, "Parent", _userIdString, cascade: true);

@@ -18,6 +18,15 @@ public interface IWorldEntityRepository
     Task<WorldEntity?> GetByIdAsync(Guid worldId, Guid entityId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves an entity by its unique identifier within a world partition, including soft-deleted entities.
+    /// </summary>
+    /// <param name="worldId">The world identifier (partition key).</param>
+    /// <param name="entityId">The entity identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The entity if found (regardless of IsDeleted status); otherwise null.</returns>
+    Task<WorldEntity?> GetByIdIncludingDeletedAsync(Guid worldId, Guid entityId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves all entities in a world with optional filtering by type and tags.
     /// </summary>
     /// <param name="worldId">The world identifier (partition key).</param>
