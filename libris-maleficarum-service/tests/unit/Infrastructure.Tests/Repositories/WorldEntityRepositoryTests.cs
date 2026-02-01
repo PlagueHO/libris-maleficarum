@@ -227,7 +227,7 @@ public class WorldEntityRepositoryTests
     {
         // Arrange
         var entity = await CreateEntityInDatabase("Deleted Entity");
-        entity.SoftDelete();
+        entity.SoftDelete("test-user");
         await _context.SaveChangesAsync();
 
         // Act
@@ -312,7 +312,7 @@ public class WorldEntityRepositoryTests
         // Arrange
         await CreateEntityInDatabase("Active Entity");
         var deleted = await CreateEntityInDatabase("Deleted Entity");
-        deleted.SoftDelete();
+        deleted.SoftDelete("test-user");
         await _context.SaveChangesAsync();
 
         // Act
@@ -364,7 +364,7 @@ public class WorldEntityRepositoryTests
         var parent = await CreateEntityInDatabase("Parent");
         var activeChild = await CreateEntityInDatabase("Active Child", EntityType.Location, parent.Id);
         var deletedChild = await CreateEntityInDatabase("Deleted Child", EntityType.Location, parent.Id);
-        deletedChild.SoftDelete();
+        deletedChild.SoftDelete("test-user");
         await _context.SaveChangesAsync();
 
         // Act
@@ -451,7 +451,7 @@ public class WorldEntityRepositoryTests
         var entity = await CreateEntityInDatabase("Entity to Delete");
 
         // Act
-        await _repository.DeleteAsync(_worldId, entity.Id);
+        await _repository.DeleteAsync(_worldId, entity.Id, "test-user");
 
         // Assert
         var deletedEntity = await _context.WorldEntities.FirstOrDefaultAsync(e => e.Id == entity.Id);
@@ -467,7 +467,7 @@ public class WorldEntityRepositoryTests
 
         // Act & Assert
         await Assert.ThrowsExactlyAsync<EntityNotFoundException>(
-            async () => await _repository.DeleteAsync(_worldId, nonExistentId));
+            async () => await _repository.DeleteAsync(_worldId, nonExistentId, "test-user"));
     }
 
     [TestMethod]
@@ -479,7 +479,7 @@ public class WorldEntityRepositoryTests
 
         // Act & Assert
         var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
-            async () => await _repository.DeleteAsync(_worldId, parent.Id, cascade: false));
+            async () => await _repository.DeleteAsync(_worldId, parent.Id, "test-user-id", cascade: false));
 
         exception.Message.Should().Contain("has").And.Contain("child entities");
     }
@@ -494,7 +494,7 @@ public class WorldEntityRepositoryTests
         var child2 = await CreateEntityInDatabase("Child 2", EntityType.Location, parent.Id);
 
         // Act
-        await _repository.DeleteAsync(_worldId, parent.Id, cascade: true);
+        await _repository.DeleteAsync(_worldId, parent.Id, "test-user", cascade: true);
 
         // Assert
         var allEntities = await _context.WorldEntities.ToListAsync();
@@ -509,7 +509,7 @@ public class WorldEntityRepositoryTests
         var entity = await CreateEntityInDatabase("Standalone Entity");
 
         // Act
-        await _repository.DeleteAsync(_worldId, entity.Id, cascade: false);
+        await _repository.DeleteAsync(_worldId, entity.Id, "test-user", cascade: false);
 
         // Assert
         var deletedEntity = await _context.WorldEntities.FirstOrDefaultAsync(e => e.Id == entity.Id);

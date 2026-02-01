@@ -330,6 +330,84 @@
       }
     },
     {
+      "label": "service: test (integration - Api)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "--project",
+        "tests/integration/Api.IntegrationTests/LibrisMaleficarum.Api.IntegrationTests.csproj",
+        "--filter",
+        "TestCategory=Integration",
+        "--configuration",
+        "Release",
+        "--no-restore",
+        "--results-directory",
+        "./TestResults"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
+      "label": "service: test (integration - Infrastructure)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "--project",
+        "tests/integration/Infrastructure.IntegrationTests/LibrisMaleficarum.Infrastructure.IntegrationTests.csproj",
+        "--filter",
+        "TestCategory=Integration",
+        "--configuration",
+        "Release",
+        "--no-restore",
+        "--results-directory",
+        "./TestResults"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
+      "label": "service: test (integration - Orchestration)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "--project",
+        "tests/integration/Orchestration.IntegrationTests/LibrisMaleficarum.Orchestration.IntegrationTests.csproj",
+        "--filter",
+        "TestCategory=Integration",
+        "--configuration",
+        "Release",
+        "--no-restore",
+        "--results-directory",
+        "./TestResults"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/libris-maleficarum-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
       "label": "service: code coverage (report)",
       "type": "shell",
       "command": "reportgenerator",
@@ -383,7 +461,7 @@
       }
     },
     {
-      "label": "markdown: fix",
+      "label": "markdown: lint (fix)",
       "type": "shell",
       "command": "pnpm",
       "args": ["lint:md:fix"],

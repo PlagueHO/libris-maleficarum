@@ -153,7 +153,7 @@ public class WorldEntitiesApiIntegrationTests
     }
 
     [TestMethod]
-    public async Task DeleteWorldEntity_WithValidId_ReturnsNoContent()
+    public async Task DeleteWorldEntity_WithValidId_ReturnsAccepted()
     {
         // Arrange
         var cancellationToken = TestContext!.CancellationTokenSource.Token;
@@ -172,11 +172,16 @@ public class WorldEntitiesApiIntegrationTests
         createResponse.Headers.Location.Should().NotBeNull("Location header should be present");
         var entityId = createResponse.Headers.Location!.Segments.Last();
 
-        // Act - Delete the entity (soft delete)
+        // Act - Delete the entity (initiates async soft delete)
         using var response = await httpClient.DeleteAsync($"/api/v1/worlds/{worldId}/entities/{entityId}", cancellationToken);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent, "API should return 204 No Content for DELETE /api/v1/worlds/{worldId}/entities/{entityId}");
+        response.StatusCode.Should().Be(HttpStatusCode.Accepted, "API should return 202 Accepted for DELETE /api/v1/worlds/{worldId}/entities/{entityId} (async operation)");
+        response.Headers.Location.Should().NotBeNull("Location header should be present for polling operation status");
+
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        content.Should().NotBeNullOrWhiteSpace("Response should contain delete operation details");
+        content.Should().Contain("id", "Response should contain operation ID");
     }
 
     [TestMethod]

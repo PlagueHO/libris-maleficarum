@@ -5,6 +5,7 @@ using LibrisMaleficarum.Api.Models.Requests;
 using LibrisMaleficarum.Api.Models.Responses;
 using LibrisMaleficarum.Api.Validators;
 using LibrisMaleficarum.Domain.Entities;
+using LibrisMaleficarum.Domain.Exceptions;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Domain.ValueObjects;
@@ -21,6 +22,7 @@ public class WorldEntitiesController : ControllerBase
     private readonly ISearchService _searchService;
     private readonly IWorldRepository _worldRepository;
     private readonly IUserContextService _userContextService;
+    private readonly IDeleteService _deleteService;
     private readonly IValidator<CreateWorldEntityRequest> _createValidator;
     private readonly IValidator<UpdateWorldEntityRequest> _updateValidator;
     private readonly SchemaVersionValidator _schemaVersionValidator;
@@ -33,6 +35,7 @@ public class WorldEntitiesController : ControllerBase
         ISearchService searchService,
         IWorldRepository worldRepository,
         IUserContextService userContextService,
+        IDeleteService deleteService,
         IValidator<CreateWorldEntityRequest> createValidator,
         IValidator<UpdateWorldEntityRequest> updateValidator,
         SchemaVersionValidator schemaVersionValidator)
@@ -41,6 +44,7 @@ public class WorldEntitiesController : ControllerBase
         _searchService = searchService;
         _worldRepository = worldRepository;
         _userContextService = userContextService;
+        _deleteService = deleteService;
         _schemaVersionValidator = schemaVersionValidator;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
@@ -399,26 +403,58 @@ public class WorldEntitiesController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes an entity (soft delete).
+    /// Initiates soft delete of an entity (asynchronous processing).
     /// </summary>
     /// <param name="worldId">The world identifier.</param>
     /// <param name="entityId">The entity identifier.</param>
-    /// <param name="cascade">If true, recursively delete all descendants.</param>
+    /// <param name="cascade">If true, recursively delete all descendants (default: true).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>204 No Content on success.</returns>
+    /// <returns>202 Accepted with operation status polling URL.</returns>
     [HttpDelete("{entityId:guid}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ApiResponse<DeleteOperationResponse>>(StatusCodes.Status202Accepted)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteEntity(
         Guid worldId,
         Guid entityId,
-        [FromQuery] bool cascade = false,
+        [FromQuery] bool cascade = true,
         CancellationToken cancellationToken = default)
     {
-        await _entityRepository.DeleteAsync(worldId, entityId, cascade, cancellationToken);
-        return NoContent();
+        try
+        {
+            // Initiate async delete operation
+            var operation = await _deleteService.InitiateDeleteAsync(worldId, entityId, cascade, cancellationToken);
+
+            // Generate Location header for polling
+            var location = Url.Action(
+                "GetDeleteOperation",
+                "DeleteOperations",
+                new { worldId, operationId = operation.Id },
+                Request.Scheme);
+
+            Response.Headers.Append("Location", location!);
+
+            // Return 202 Accepted with operation details
+            return Accepted(new ApiResponse<DeleteOperationResponse>
+            {
+                Data = MapToDeleteOperationResponse(operation)
+            });
+        }
+        catch (RateLimitExceededException ex)
+        {
+            Response.Headers.Append("Retry-After", ex.RetryAfterSeconds.ToString());
+
+            return StatusCode(StatusCodes.Status429TooManyRequests, new ErrorResponse
+            {
+                Error = new ErrorDetail
+                {
+                    Code = "RATE_LIMIT_EXCEEDED",
+                    Message = ex.Message
+                }
+            });
+        }
     }
 
     /// <summary>
@@ -526,5 +562,30 @@ public class WorldEntitiesController : ControllerBase
     private static string GetETag(WorldEntity entity)
     {
         return $"\"{entity.ModifiedDate.Ticks}\"";
+    }
+
+    /// <summary>
+    /// Maps a DeleteOperation to DeleteOperationResponse DTO.
+    /// </summary>
+    private static DeleteOperationResponse MapToDeleteOperationResponse(DeleteOperation operation)
+    {
+        return new DeleteOperationResponse
+        {
+            Id = operation.Id,
+            WorldId = operation.WorldId,
+            RootEntityId = operation.RootEntityId,
+            RootEntityName = operation.RootEntityName,
+            Status = operation.Status.ToString().ToLowerInvariant(),
+            TotalEntities = operation.TotalEntities,
+            DeletedCount = operation.DeletedCount,
+            FailedCount = operation.FailedCount,
+            FailedEntityIds = operation.FailedEntityIds,
+            ErrorDetails = operation.ErrorDetails,
+            Cascade = operation.Cascade,
+            CreatedBy = operation.CreatedBy,
+            CreatedAt = operation.CreatedAt,
+            StartedAt = operation.StartedAt,
+            CompletedAt = operation.CompletedAt
+        };
     }
 }

@@ -204,7 +204,7 @@ public class WorldEntityRepositoryIntegrationTests
         await context.WorldEntities.AddAsync(entity);
         await context.SaveChangesAsync();
 
-        entity.SoftDelete();
+        entity.SoftDelete("test-user");
         await context.SaveChangesAsync();
 
         // Act
@@ -455,7 +455,7 @@ public class WorldEntityRepositoryIntegrationTests
 
         var activeEntity = WorldEntity.Create(world.Id, EntityType.Character, "Active Character", TestOwnerId, null, null, null);
         var deletedEntity = WorldEntity.Create(world.Id, EntityType.Character, "Deleted Character", TestOwnerId, null, null, null);
-        deletedEntity.SoftDelete();
+        deletedEntity.SoftDelete("test-user");
 
         await context.WorldEntities.AddRangeAsync(activeEntity, deletedEntity);
         await context.SaveChangesAsync();
@@ -546,7 +546,7 @@ public class WorldEntityRepositoryIntegrationTests
 
         var activeChild = WorldEntity.Create(world.Id, EntityType.Location, "Active Child", TestOwnerId, null, parent.Id, null);
         var deletedChild = WorldEntity.Create(world.Id, EntityType.Location, "Deleted Child", TestOwnerId, null, parent.Id, null);
-        deletedChild.SoftDelete();
+        deletedChild.SoftDelete("test-user-id");
         await context.WorldEntities.AddRangeAsync(activeChild, deletedChild);
         await context.SaveChangesAsync();
 
@@ -676,7 +676,7 @@ public class WorldEntityRepositoryIntegrationTests
         await context.SaveChangesAsync();
 
         // Act
-        await repository.DeleteAsync(world.Id, entity.Id);
+        await repository.DeleteAsync(world.Id, entity.Id, "test-user-id");
 
         // Assert
         var deletedEntity = await context.WorldEntities.FindAsync(entity.Id);
@@ -724,7 +724,7 @@ public class WorldEntityRepositoryIntegrationTests
         await context.SaveChangesAsync();
 
         // Act
-        await repository.DeleteAsync(world.Id, parent.Id, cascade: true);
+        await repository.DeleteAsync(world.Id, parent.Id, "test-user-id", cascade: true);
 
         // Assert
         var deletedParent = await context.WorldEntities.FindAsync(parent.Id);
@@ -772,7 +772,7 @@ public class WorldEntityRepositoryIntegrationTests
         await context.SaveChangesAsync();
 
         // Act & Assert
-        var act = async () => await repository.DeleteAsync(world.Id, parent.Id, cascade: false);
+        var act = async () => await repository.DeleteAsync(world.Id, parent.Id, "test-user-id", cascade: false);
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage($"*{parent.Id}*child entities*cascade=true*");
 
@@ -809,7 +809,7 @@ public class WorldEntityRepositoryIntegrationTests
         var telemetryService = new NoOpTelemetryService(); var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
         // Act & Assert
-        var act = async () => await repository.DeleteAsync(world.Id, entity.Id);
+        var act = async () => await repository.DeleteAsync(world.Id, entity.Id, "unauthorized-user-id");
         await act.Should().ThrowAsync<UnauthorizedWorldAccessException>()
             .WithMessage($"*{unauthorizedUserId}*{world.Id}*");
 
@@ -843,7 +843,7 @@ public class WorldEntityRepositoryIntegrationTests
         var nonExistentEntityId = Guid.NewGuid();
 
         // Act & Assert
-        var act = async () => await repository.DeleteAsync(world.Id, nonExistentEntityId);
+        var act = async () => await repository.DeleteAsync(world.Id, nonExistentEntityId, "test-user-id");
         await act.Should().ThrowAsync<EntityNotFoundException>()
             .WithMessage($"*{nonExistentEntityId}*{world.Id}*");
 

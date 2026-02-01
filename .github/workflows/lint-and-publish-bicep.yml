@@ -33,5 +33,5 @@ jobs:
           name: infrastructure_bicep
           path: |
             ./infra/main.bicep
-            ./infra/abbreviations.json
-            ./infra/core/
+            ./infra/*.json
+            ./infra/**/*

@@ -26,8 +26,9 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
         // allowing for efficient single-partition queries when fetching the world tree.
         builder.HasPartitionKey(e => e.WorldId);
 
-        // Disable discriminator for single-type container
-        builder.HasNoDiscriminator();
+        // Configure discriminator to differentiate WorldEntity from DeleteOperation in the same container
+        builder.HasDiscriminator<string>("_type")
+            .HasValue("WorldEntity");
 
         // Primary key
         builder.HasKey(e => e.Id);
@@ -104,6 +105,15 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
         builder.Property(e => e.IsDeleted)
             .ToJsonProperty("IsDeleted")
             .IsRequired();
+
+        // TTL property for Cosmos DB automatic cleanup
+        // Maps to "ttl" (lowercase) - Cosmos DB reserved field name
+        // When null, the property is omitted from JSON (not serialized)
+        // When set to 7776000 (90 days), Cosmos DB will automatically delete the document
+        // after 90 days from the last modified timestamp (_ts)
+        builder.Property(e => e.Ttl)
+            .ToJsonProperty("ttl")
+            .IsRequired(false); // Omit from JSON when null
 
         // SchemaVersion property with backward compatibility conversion (FR-008)
         // Converts 0 to 1 when reading from database to handle pre-versioning documents.

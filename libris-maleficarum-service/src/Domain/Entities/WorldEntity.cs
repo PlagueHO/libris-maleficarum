@@ -85,11 +85,30 @@ public class WorldEntity
     public bool IsDeleted { get; private set; }
 
     /// <summary>
+    /// Gets the UTC timestamp when this entity was soft-deleted.
+    /// Null if the entity has not been deleted.
+    /// </summary>
+    public DateTime? DeletedDate { get; private set; }
+
+    /// <summary>
+    /// Gets the user ID who soft-deleted this entity.
+    /// Null if the entity has not been deleted.
+    /// </summary>
+    public string? DeletedBy { get; private set; }
+
+    /// <summary>
     /// Gets the schema version for this entity type's property structure.
     /// Indicates which version of the entity type's schema was used when created/last migrated.
     /// Enables forward schema evolution without requiring bulk updates.
     /// </summary>
     public int SchemaVersion { get; private set; }
+
+    /// <summary>
+    /// Gets the time-to-live in seconds for automatic deletion by Cosmos DB.
+    /// Null means the item doesn't expire (uses container default behavior).
+    /// Set to 7776000 (90 days) when soft-deleted for automatic purge.
+    /// </summary>
+    public int? Ttl { get; private set; }
 
     /// <summary>
     /// Private constructor for EF Core.
@@ -235,11 +254,33 @@ public class WorldEntity
     }
 
     /// <summary>
-    /// Marks this entity as soft-deleted.
+    /// Marks this entity as soft-deleted with audit metadata.
+    /// Sets TTL to 90 days (7776000 seconds) for automatic Cosmos DB cleanup.
     /// </summary>
-    public void SoftDelete()
+    /// <param name="deletedBy">The user ID performing the deletion.</param>
+    public void SoftDelete(string deletedBy)
     {
+        if (string.IsNullOrWhiteSpace(deletedBy))
+        {
+            throw new ArgumentException("DeletedBy is required.", nameof(deletedBy));
+        }
+
         IsDeleted = true;
+        DeletedDate = DateTime.UtcNow;
+        DeletedBy = deletedBy;
+        Ttl = 7776000; // 90 days in seconds (90 * 24 * 60 * 60)
+        ModifiedDate = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Restores a soft-deleted entity by clearing deletion metadata and TTL.
+    /// </summary>
+    public void Restore()
+    {
+        IsDeleted = false;
+        DeletedDate = null;
+        DeletedBy = null;
+        Ttl = null; // Remove TTL to prevent auto-deletion
         ModifiedDate = DateTime.UtcNow;
     }
 
