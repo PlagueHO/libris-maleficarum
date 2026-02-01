@@ -148,13 +148,13 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T048 [P] Add XML documentation comments to all public APIs
-- [ ] T049 [P] Update OpenAPI/Swagger documentation for new endpoints
-- [ ] T050 Verify all queries filter IsDeleted=false (FR-003, FR-017)
-- [ ] T051 Run quickstart.md validation scenarios manually
-- [ ] T052 [P] Create rate limiting concurrency tests in libris-maleficarum-service/tests/integration/Api/RateLimitingTests.cs
-- [ ] T053 Performance test: verify DELETE returns 202 in <200ms
-- [ ] T054 Performance test: verify 500+ entity cascade completes in <60s
+- [X] T048 [P] Add XML documentation comments to all public APIs
+- [X] T049 [P] Update OpenAPI/Swagger documentation for new endpoints
+- [X] T050 Verify all queries filter IsDeleted=false (FR-003, FR-017)
+- [X] T051 Run quickstart.md validation scenarios manually
+- [X] T052 [P] Create rate limiting concurrency tests in libris-maleficarum-service/tests/integration/Api/RateLimitingTests.cs
+- [X] T053 Performance test: verify DELETE returns 202 in <200ms
+- [X] T054 Performance test: verify 500+ entity cascade completes in <60s
 
 ---
 
