@@ -137,16 +137,22 @@ public class DeleteService : IDeleteService
             // Calculate total entities: root + descendants
             var totalEntities = 1 + descendants.Count;
 
-            // Start the operation with actual count
-            operation.Start(totalEntities);
-            await _deleteOperationRepository.UpdateAsync(operation, cancellationToken);
+            // Only start the operation if it's new (Pending); preserve existing progress if resuming (InProgress)
+            if (operation.Status == DeleteOperationStatus.Pending)
+            {
+                operation.Start(totalEntities);
+                await _deleteOperationRepository.UpdateAsync(operation, cancellationToken);
+            }
 
             // Get current user from operation
             var userId = operation.CreatedBy;
 
             // T041: Process descendants in batches with real-time progress updates
-            const int batchSize = 10;
-            var processedCount = 0;
+            var configuredBatchSize = _options?.MaxBatchSize ?? 10;
+            var batchSize = Math.Clamp(configuredBatchSize, 1, 1000);
+
+            // Initialize processedCount from existing progress when resuming (InProgress), or 0 for new operations (Pending)
+            var processedCount = operation.DeletedCount;
 
             // Process descendants first (deepest to shallowest for referential integrity)
             // Order by depth descending (children before parents)
@@ -161,9 +167,9 @@ public class DeleteService : IDeleteService
                     try
                     {
                         // Skip if already deleted (idempotency for checkpoint resume)
+                        // Don't increment processedCount for already-deleted entities to avoid double-counting on resume
                         if (entity.IsDeleted)
                         {
-                            processedCount++;
                             continue;
                         }
 
@@ -195,11 +201,7 @@ public class DeleteService : IDeleteService
                     await _worldEntityRepository.UpdateAsync(rootEntity, cancellationToken: cancellationToken);
                     processedCount++;
                 }
-                else if (rootEntity != null)
-                {
-                    // Already deleted (idempotency)
-                    processedCount++;
-                }
+                // If already deleted, skip without incrementing (idempotency for checkpoint resume)
             }
             catch (Exception ex)
             {

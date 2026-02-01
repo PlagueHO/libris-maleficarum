@@ -246,8 +246,8 @@ public class DeleteServiceCascadeTests
 
         var updatedOperation = finalUpdate.GetArguments()[0] as DeleteOperation;
         updatedOperation.Should().NotBeNull();
-        // child1 skipped (already deleted), child2 + parent = 3 total processed (including already-deleted count)
-        updatedOperation!.DeletedCount.Should().Be(3);
+        // child1 skipped (already deleted, not counted to avoid double-counting on resume), child2 + parent = 2 total
+        updatedOperation!.DeletedCount.Should().Be(2);
         updatedOperation.Status.Should().Be(DeleteOperationStatus.Completed);
     }
 
