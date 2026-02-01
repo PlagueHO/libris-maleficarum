@@ -183,11 +183,51 @@ public class DeleteOperation
     }
 
     /// <summary>
+    /// Adds a failed entity ID to the list (ensures no duplicates).
+    /// </summary>
+    /// <param name="entityId">The entity ID that failed to delete.</param>
+    public void AddFailedEntity(Guid entityId)
+    {
+        if (!FailedEntityIds.Contains(entityId))
+        {
+            FailedEntityIds.Add(entityId);
+            FailedCount = FailedEntityIds.Count;
+        }
+    }
+
+    /// <summary>
+    /// Gets whether this operation has any failed entities.
+    /// </summary>
+    public bool HasFailures => FailedEntityIds.Count > 0;
+
+    /// <summary>
     /// Marks the operation as completed successfully.
+    /// Determines final status based on failures: Completed, Partial, or Failed.
     /// </summary>
     public void Complete()
     {
-        Status = FailedCount > 0 ? DeleteOperationStatus.Partial : DeleteOperationStatus.Completed;
+        // Determine status based on failure count
+        if (TotalEntities == 0 || (DeletedCount == 0 && FailedCount == 0))
+        {
+            // Idempotent case or empty operation
+            Status = DeleteOperationStatus.Completed;
+        }
+        else if (FailedCount == TotalEntities)
+        {
+            // All entities failed
+            Status = DeleteOperationStatus.Failed;
+        }
+        else if (FailedCount > 0)
+        {
+            // Some failed
+            Status = DeleteOperationStatus.Partial;
+        }
+        else
+        {
+            // All succeeded
+            Status = DeleteOperationStatus.Completed;
+        }
+
         CompletedAt = DateTime.UtcNow;
     }
 

@@ -515,7 +515,7 @@ public class EntitiesControllerTests
 
     // TODO: Rewrite these tests for the new async delete API that returns 202 Accepted
     // The controller now uses IDeleteService.InitiateDeleteAsync() instead of directly calling DeleteAsync()
-    
+
     /*
     [TestMethod]
     public async Task DeleteEntity_WithValidId_ReturnsNoContent()

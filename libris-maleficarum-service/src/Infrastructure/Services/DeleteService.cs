@@ -96,9 +96,9 @@ public class DeleteService : IDeleteService
             throw new InvalidOperationException($"Delete operation '{operationId}' not found.");
         }
 
-        if (operation.Status != DeleteOperationStatus.Pending)
+        if (operation.Status != DeleteOperationStatus.Pending && operation.Status != DeleteOperationStatus.InProgress)
         {
-            // Operation already processed or in progress
+            // Operation already completed, failed, or partial
             return;
         }
 
@@ -134,24 +134,80 @@ public class DeleteService : IDeleteService
             // Get current user from operation
             var userId = operation.CreatedBy;
 
-            // Perform the delete (repository handles cascade internally)
-            var deletedCount = await _worldEntityRepository.DeleteAsync(
-                worldId,
-                operation.RootEntityId,
-                userId,
-                operation.Cascade,
-                cancellationToken);
+            // T041: Process descendants in batches with real-time progress updates
+            const int batchSize = 10;
+            var processedCount = 0;
 
-            // Update operation progress and complete
-            operation.UpdateProgress(deletedCount, 0);
+            // Process descendants first (deepest to shallowest for referential integrity)
+            // Order by depth descending (children before parents)
+            var orderedDescendants = descendants.OrderByDescending(d => d.Depth).ToList();
+
+            for (var i = 0; i < orderedDescendants.Count; i += batchSize)
+            {
+                var batch = orderedDescendants.Skip(i).Take(batchSize);
+
+                foreach (var entity in batch)
+                {
+                    try
+                    {
+                        // Skip if already deleted (idempotency for checkpoint resume)
+                        if (entity.IsDeleted)
+                        {
+                            processedCount++;
+                            continue;
+                        }
+
+                        // Soft delete the entity
+                        entity.SoftDelete(userId);
+                        await _worldEntityRepository.UpdateAsync(entity, cancellationToken: cancellationToken);
+                        processedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the failure and add to failed list
+                        operation.AddFailedEntity(entity.Id);
+                        activity?.AddTag($"entity.{entity.Id}.error", ex.Message);
+                    }
+                }
+
+                // Update progress after each batch
+                operation.UpdateProgress(processedCount, operation.FailedCount);
+                await _deleteOperationRepository.UpdateAsync(operation, cancellationToken);
+            }
+
+            // Delete root entity last
+            try
+            {
+                var rootEntity = await _worldEntityRepository.GetByIdAsync(worldId, operation.RootEntityId, cancellationToken);
+                if (rootEntity != null && !rootEntity.IsDeleted)
+                {
+                    rootEntity.SoftDelete(userId);
+                    await _worldEntityRepository.UpdateAsync(rootEntity, cancellationToken: cancellationToken);
+                    processedCount++;
+                }
+                else if (rootEntity != null)
+                {
+                    // Already deleted (idempotency)
+                    processedCount++;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log root entity failure
+                operation.AddFailedEntity(operation.RootEntityId);
+                activity?.AddTag("root_entity.error", ex.Message);
+            }
+
+            // Final progress update and complete
+            operation.UpdateProgress(processedCount, operation.FailedCount);
             operation.Complete();
             await _deleteOperationRepository.UpdateAsync(operation, cancellationToken);
 
             // T034: Log completion
-            activity?.AddTag("operation.deleted_count", deletedCount);
-            activity?.AddTag("operation.status", "completed");
-            activity?.AddTag("operation.processed_count", deletedCount);
-            activity?.AddTag("operation.failed_count", 0);
+            activity?.AddTag("operation.deleted_count", processedCount);
+            activity?.AddTag("operation.status", operation.Status.ToString().ToLowerInvariant());
+            activity?.AddTag("operation.processed_count", processedCount);
+            activity?.AddTag("operation.failed_count", operation.FailedCount);
         }
         catch (Exception ex)
         {
