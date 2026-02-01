@@ -11,8 +11,10 @@ Phase 6 successfully implemented all production readiness requirements for the s
 ## Tasks Completed
 
 ### ✅ T048: XML Documentation Comments
+
 **Status**: Complete (already existed)  
 **Files Documented**:
+
 - `src/Domain/Entities/DeleteOperation.cs` - All public methods/properties
 - `src/Domain/Entities/DeleteOperationStatus.cs` - All enum values
 - `src/Domain/Interfaces/Services/IDeleteService.cs` - All methods with exceptions
@@ -20,7 +22,8 @@ Phase 6 successfully implemented all production readiness requirements for the s
 - `src/Infrastructure/Services/DeleteService.cs` - Public methods with inheritdoc
 - `src/Api/Controllers/DeleteOperationsController.cs` - All endpoints
 
-**Quality**: 
+**Quality**:
+
 - ✅ Brief `<summary>` tags (1-2 sentences)
 - ✅ `<param>` tags for all parameters
 - ✅ `<returns>` tags for return values
@@ -29,10 +32,12 @@ Phase 6 successfully implemented all production readiness requirements for the s
 - ✅ Cross-references using `<see cref=""/>`
 
 ### ✅ T049: OpenAPI/Swagger Documentation
+
 **Status**: Complete (already existed)  
 **Endpoints Verified**:
 
 #### DELETE /api/v1/worlds/{worldId}/entities/{entityId}
+
 ```csharp
 [ProducesResponseType<ApiResponse<DeleteOperationResponse>>(StatusCodes.Status202Accepted)]
 [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
@@ -42,67 +47,78 @@ Phase 6 successfully implemented all production readiness requirements for the s
 ```
 
 #### GET /api/v1/worlds/{worldId}/delete-operations/{operationId}
+
 ```csharp
 [ProducesResponseType<ApiResponse<DeleteOperationResponse>>(StatusCodes.Status200OK)]
 [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
 ```
 
 #### GET /api/v1/worlds/{worldId}/delete-operations
+
 ```csharp
 [ProducesResponseType<ApiResponse<IEnumerable<DeleteOperationResponse>>>(StatusCodes.Status200OK)]
 ```
 
 **Features**:
+
 - ✅ All response types documented
 - ✅ Error responses included
 - ✅ Rate limit response (429) properly annotated
 
 ### ✅ T050: Verify Query Filters for IsDeleted
+
 **Status**: Complete - All queries properly filter deleted entities  
 **Files Verified**: `src/Infrastructure/Repositories/WorldEntityRepository.cs`
 
 **Query Methods Filtering `.Where(e => !e.IsDeleted)`**:
+
 1. ✅ `GetByIdAsync` (line 58) - Returns null for deleted entities
-2. ✅ `GetAllByWorldAsync` (line 92) - Excludes deleted from listings
-3. ✅ `GetChildrenAsync` (line 169) - Excludes deleted children
-4. ✅ `GetDescendantsAsync` (line 189) - Excludes deleted descendants
-5. ✅ `CountChildrenAsync` (line 453) - Only counts non-deleted children
-6. ✅ `ValidateNoCircularReferenceAsync` (line 479) - Checks non-deleted ancestors
+1. ✅ `GetAllByWorldAsync` (line 92) - Excludes deleted from listings
+1. ✅ `GetChildrenAsync` (line 169) - Excludes deleted children
+1. ✅ `GetDescendantsAsync` (line 189) - Excludes deleted descendants
+1. ✅ `CountChildrenAsync` (line 453) - Only counts non-deleted children
+1. ✅ `ValidateNoCircularReferenceAsync` (line 479) - Checks non-deleted ancestors
 
 **Intentional Exceptions** (where deleted entities ARE included):
+
 - DeleteService.ProcessDeleteAsync - Needs to see already-deleted entities for idempotency
 
-**Compliance**: 
+**Compliance**:
+
 - ✅ FR-003: "Deleted entities must not appear in query results" - **VERIFIED**
 - ✅ FR-017: "Queries must filter IsDeleted=false" - **VERIFIED**
 
 ### ✅ T051: Quickstart Validation Checklist
+
 **Status**: Complete  
 **Deliverable**: `specs/011-soft-delete-entities/VALIDATION_CHECKLIST.md`
 
 **Checklist Sections**:
+
 1. ✅ Prerequisites verification (SDK, Docker, Ports)
-2. ✅ Setup validation (AppHost, API, Aspire Dashboard)
-3. ✅ Scenario 1: Create test data (world, parent, children)
-4. ✅ Scenario 2: Delete without cascade (expect 400)
-5. ✅ Scenario 3: Delete with cascade (202 → poll → complete)
-6. ✅ Scenario 4: List recent operations
-7. ✅ Scenario 5: Verify deletion (404 + filtered lists)
-8. ✅ Scenario 6: Rate limiting (429 on 6th concurrent delete)
-9. ✅ Scenario 7: Telemetry verification (Aspire Dashboard traces)
-10. ✅ Scenario 8: Configuration changes (appsettings.json)
+1. ✅ Setup validation (AppHost, API, Aspire Dashboard)
+1. ✅ Scenario 1: Create test data (world, parent, children)
+1. ✅ Scenario 2: Delete without cascade (expect 400)
+1. ✅ Scenario 3: Delete with cascade (202 → poll → complete)
+1. ✅ Scenario 4: List recent operations
+1. ✅ Scenario 5: Verify deletion (404 + filtered lists)
+1. ✅ Scenario 6: Rate limiting (429 on 6th concurrent delete)
+1. ✅ Scenario 7: Telemetry verification (Aspire Dashboard traces)
+1. ✅ Scenario 8: Configuration changes (appsettings.json)
 
 **Total Checks**: 60+ manual validation steps  
 **Format**: Step-by-step curl commands with expected responses  
 **Sign-Off**: Includes validation sign-off section
 
 ### ✅ T052: Rate Limiting Concurrency Tests
+
 **Status**: Complete  
 **File**: `tests/integration/Api.IntegrationTests/RateLimitingTests.cs`
 
 **Tests Created**:
 
 #### 1. `DeleteOperations_WithConcurrentRequests_EnforcesRateLimit`
+
 - Creates 6 test entities
 - Spawns 6 concurrent DELETE requests
 - **Asserts**: 5 return `202 Accepted`, 1+ returns `429 Too Many Requests`
@@ -110,6 +126,7 @@ Phase 6 successfully implemented all production readiness requirements for the s
 - **Validates**: FR-009 (max 5 concurrent per user per world)
 
 #### 2. `DeleteOperations_AfterCompletion_AllowsNewOperations`
+
 - Creates 10 test entities (2 batches of 5)
 - Initiates first 5 deletes, waits for completion
 - Initiates second 5 deletes
@@ -120,10 +137,12 @@ Phase 6 successfully implemented all production readiness requirements for the s
 **Attributes**: `[TestCategory("Integration")]`, `[TestCategory("RequiresDocker")]`
 
 ### ✅ T053: DELETE Response Time Performance Test
+
 **Status**: Complete  
 **File**: `tests/integration/Api.IntegrationTests/PerformanceTests.cs`
 
 #### Test: `DeleteEntity_ReturnsWithin200ms`
+
 - Creates single entity
 - Measures DELETE request → 202 Accepted response time
 - **Asserts**: Response time < 200ms (excluding network latency)
@@ -134,12 +153,14 @@ Phase 6 successfully implemented all production readiness requirements for the s
 **Baseline**: < 200ms for initial 202 response
 
 ### ✅ T054: Large Cascade Completion Performance Test
+
 **Status**: Complete (adjusted for CI efficiency)  
 **File**: `tests/integration/Api.IntegrationTests/PerformanceTests.cs`
 
 **Tests Created**:
 
 #### 1. `DeleteEntity_With100PlusEntities_CompletesWithin30Seconds`
+
 - Creates hierarchy: 1 root + 10 branches × 10 children = **101 entities**
 - Initiates cascade delete
 - Polls status every 500ms until complete
@@ -152,12 +173,14 @@ Phase 6 successfully implemented all production readiness requirements for the s
 **Timeout**: 60 second test timeout via `[Timeout(60000)]` attribute
 
 #### 2. `DeleteEntity_With20Entities_CompletesWithin5Seconds`
+
 - Creates hierarchy: 1 root + 19 children = **20 entities**
 - More realistic scenario for typical user operations
 - **Asserts**: Completion within 5 seconds
 - **Asserts**: All 20 entities deleted successfully
 
 **Performance Baselines Established**:
+
 - Small cascade (20 entities): < 5 seconds
 - Large cascade (101 entities): < 30 seconds
 - Per-entity average: ~200-300ms (measured in test output)
@@ -165,6 +188,7 @@ Phase 6 successfully implemented all production readiness requirements for the s
 ## Test Coverage Summary
 
 ### Unit Tests
+
 - **Total**: 334 tests passing
 - **Domain**: 91 tests
 - **Api**: 146 tests
@@ -172,12 +196,14 @@ Phase 6 successfully implemented all production readiness requirements for the s
 - **Coverage**: All delete operation logic covered
 
 ### Integration Tests
+
 - **Soft Delete Flow**: 3 tests (T023-T025)
 - **Rate Limiting**: 2 tests (T052)
 - **Performance**: 3 tests (T053-T054)
 - **Total Integration**: 8 tests
 
 ### Performance Metrics Established
+
 | Scenario | Target | Baseline |
 |----------|--------|----------|
 | DELETE response | < 200ms | ~150ms |
@@ -187,30 +213,35 @@ Phase 6 successfully implemented all production readiness requirements for the s
 ## Production Readiness Checklist
 
 ### Documentation
+
 - [X] XML docs on all public APIs
 - [X] Swagger annotations complete
 - [X] Quickstart guide validated
 - [X] Validation checklist created
 
 ### Code Quality
+
 - [X] All queries filter `IsDeleted=false`
 - [X] No soft-deleted entities leak to clients
 - [X] Rate limiting enforced (5 concurrent per user/world)
 - [X] Idempotency verified (T037)
 
 ### Testing
+
 - [X] 334 unit tests passing
 - [X] Integration tests for all user stories
 - [X] Concurrency/rate limiting tests
 - [X] Performance baselines established
 
 ### Performance
+
 - [X] DELETE responds < 200ms
 - [X] Medium cascades (20 entities) < 5s
 - [X] Large cascades (100+ entities) < 30s
 - [X] Background processor handles batches efficiently
 
 ### Observability
+
 - [X] Structured logging via OpenTelemetry
 - [X] Telemetry attributes documented
 - [X] Aspire Dashboard integration verified
@@ -218,7 +249,8 @@ Phase 6 successfully implemented all production readiness requirements for the s
 ## Files Added/Modified
 
 ### New Files (Phase 6)
-```
+
+```text
 tests/integration/Api.IntegrationTests/RateLimitingTests.cs
 tests/integration/Api.IntegrationTests/PerformanceTests.cs
 specs/011-soft-delete-entities/VALIDATION_CHECKLIST.md
@@ -226,20 +258,23 @@ specs/011-soft-delete-entities/PHASE_6_SUMMARY.md (this file)
 ```
 
 ### Modified Files (Phase 6)
-```
+
+```text
 specs/011-soft-delete-entities/tasks.md (marked T048-T054 complete)
 ```
 
 ## Next Steps
 
 ### Optional Enhancements (Post-MVP)
+
 1. **Bulk Delete API**: Endpoint to delete multiple entities in one operation
-2. **Scheduled Cleanup**: Background job to permanently delete old soft-deleted entities
-3. **Restore API**: Endpoint to un-delete soft-deleted entities
-4. **Admin Audit**: Query endpoint for viewing all deleted entities
-5. **Metrics Dashboard**: Real-time delete operation metrics in Aspire
+1. **Scheduled Cleanup**: Background job to permanently delete old soft-deleted entities
+1. **Restore API**: Endpoint to un-delete soft-deleted entities
+1. **Admin Audit**: Query endpoint for viewing all deleted entities
+1. **Metrics Dashboard**: Real-time delete operation metrics in Aspire
 
 ### Deployment Readiness
+
 - ✅ All acceptance criteria met
 - ✅ All functional requirements (FR-001 through FR-019) implemented
 - ✅ All non-functional requirements (NFR-001 through NFR-005) verified

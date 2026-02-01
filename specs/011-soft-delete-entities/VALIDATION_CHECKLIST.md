@@ -191,8 +191,8 @@ done
 ### Open Aspire Dashboard
 
 1. Navigate to `http://localhost:15888`
-2. Click **Traces** tab
-3. Filter by operation name: `DeleteOperation`
+1. Click **Traces** tab
+1. Filter by operation name: `DeleteOperation`
 
 **Verify traces contain:**
 
@@ -241,10 +241,10 @@ Edit `appsettings.Development.json` to lower rate limit:
 If any scenario fails:
 
 1. **Check AppHost logs** in Aspire Dashboard → Logs
-2. **Verify Cosmos DB emulator** is running
-3. **Check port conflicts** (5001, 15888)
-4. **Restart AppHost** if services are stale
-5. **Review test coverage** - unit/integration tests should catch issues first
+1. **Verify Cosmos DB emulator** is running
+1. **Check port conflicts** (5001, 15888)
+1. **Restart AppHost** if services are stale
+1. **Review test coverage** - unit/integration tests should catch issues first
 
 ## Sign-Off
 
