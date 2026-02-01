@@ -122,9 +122,13 @@ libris-maleficarum-service/
 ### Phase 1: Entity & Repository Layer
 
 1. Add `DeletedDate` and `DeletedBy` to `WorldEntity`
+1. Add `Ttl` property to `WorldEntity` for Cosmos DB automatic cleanup (90 days)
+1. Update `SoftDelete()` method to set TTL to 7776000 seconds
+1. Add `Restore()` method to clear deletion metadata and TTL
 1. Create `DeleteOperation` entity and `DeleteOperationStatus` enum
 1. Create `IDeleteOperationRepository` interface and implementation
 1. Update `IWorldEntityRepository.DeleteAsync()` signature
+1. Configure `Ttl` property mapping in `WorldEntityConfiguration` (maps to "ttl" JSON property)
 
 ### Phase 2: Service Layer
 

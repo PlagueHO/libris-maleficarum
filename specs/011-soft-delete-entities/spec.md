@@ -75,7 +75,7 @@ As a world builder deleting a large portion of my world, I want to monitor the p
 ### Functional Requirements
 
 - **FR-001**: System MUST provide a DELETE endpoint at `/api/v1/worlds/{worldId}/entities/{entityId}` that initiates a soft-delete operation and returns `202 Accepted` with a `Location` header pointing to the operation status endpoint.
-- **FR-002**: Soft delete MUST set `IsDeleted = true`, `DeletedDate` to current UTC timestamp, and `DeletedBy` to the authenticated user's ID.
+- **FR-002**: Soft delete MUST set `IsDeleted = true`, `DeletedDate` to current UTC timestamp, `DeletedBy` to the authenticated user's ID, and `Ttl = 7776000` (90 days in seconds) for automatic Cosmos DB cleanup.
 - **FR-003**: System MUST exclude soft-deleted entities from all standard query results (entities with `IsDeleted = true` are filtered out).
 - **FR-004**: System MUST return `404 Not Found` when attempting to GET a soft-deleted entity.
 - **FR-005**: System MUST cascade soft-delete to all descendant entities when a parent entity is deleted (cascade=true, which is the default).

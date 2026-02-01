@@ -104,6 +104,13 @@ public class WorldEntity
     public int SchemaVersion { get; private set; }
 
     /// <summary>
+    /// Gets the time-to-live in seconds for automatic deletion by Cosmos DB.
+    /// Null means the item doesn't expire (uses container default behavior).
+    /// Set to 7776000 (90 days) when soft-deleted for automatic purge.
+    /// </summary>
+    public int? Ttl { get; private set; }
+
+    /// <summary>
     /// Private constructor for EF Core.
     /// </summary>
     private WorldEntity()
@@ -248,6 +255,7 @@ public class WorldEntity
 
     /// <summary>
     /// Marks this entity as soft-deleted with audit metadata.
+    /// Sets TTL to 90 days (7776000 seconds) for automatic Cosmos DB cleanup.
     /// </summary>
     /// <param name="deletedBy">The user ID performing the deletion.</param>
     public void SoftDelete(string deletedBy)
@@ -260,6 +268,19 @@ public class WorldEntity
         IsDeleted = true;
         DeletedDate = DateTime.UtcNow;
         DeletedBy = deletedBy;
+        Ttl = 7776000; // 90 days in seconds (90 * 24 * 60 * 60)
+        ModifiedDate = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Restores a soft-deleted entity by clearing deletion metadata and TTL.
+    /// </summary>
+    public void Restore()
+    {
+        IsDeleted = false;
+        DeletedDate = null;
+        DeletedBy = null;
+        Ttl = null; // Remove TTL to prevent auto-deletion
         ModifiedDate = DateTime.UtcNow;
     }
 

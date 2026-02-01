@@ -106,6 +106,15 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
             .ToJsonProperty("IsDeleted")
             .IsRequired();
 
+        // TTL property for Cosmos DB automatic cleanup
+        // Maps to "ttl" (lowercase) - Cosmos DB reserved field name
+        // When null, the property is omitted from JSON (not serialized)
+        // When set to 7776000 (90 days), Cosmos DB will automatically delete the document
+        // after 90 days from the last modified timestamp (_ts)
+        builder.Property(e => e.Ttl)
+            .ToJsonProperty("ttl")
+            .IsRequired(false); // Omit from JSON when null
+
         // SchemaVersion property with backward compatibility conversion (FR-008)
         // Converts 0 to 1 when reading from database to handle pre-versioning documents.
         // Pre-versioning documents (created before schema versioning was implemented) either:

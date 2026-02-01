@@ -35,6 +35,13 @@ public DateTime? DeletedDate { get; private set; }
 /// Null if the entity has not been deleted.
 /// </summary>
 public string? DeletedBy { get; private set; }
+
+/// <summary>
+/// Gets the time-to-live in seconds for automatic deletion by Cosmos DB.
+/// Null means the item doesn't expire (uses container default behavior).
+/// Set to 7776000 (90 days) when soft-deleted for automatic purge.
+/// </summary>
+public int? Ttl { get; private set; }
 ```
 
 ### SoftDelete Method Enhancement
@@ -54,6 +61,7 @@ public void SoftDelete()
 ```csharp
 /// <summary>
 /// Marks this entity as soft-deleted with audit metadata.
+/// Sets TTL to 90 days (7776000 seconds) for automatic Cosmos DB cleanup.
 /// </summary>
 /// <param name="deletedBy">The user ID performing the deletion.</param>
 public void SoftDelete(string deletedBy)
@@ -66,6 +74,19 @@ public void SoftDelete(string deletedBy)
     IsDeleted = true;
     DeletedDate = DateTime.UtcNow;
     DeletedBy = deletedBy;
+    Ttl = 7776000; // 90 days in seconds (90 * 24 * 60 * 60)
+    ModifiedDate = DateTime.UtcNow;
+}
+
+/// <summary>
+/// Restores a soft-deleted entity by clearing deletion metadata and TTL.
+/// </summary>
+public void Restore()
+{
+    IsDeleted = false;
+    DeletedDate = null;
+    DeletedBy = null;
+    Ttl = null; // Remove TTL to prevent auto-deletion
     ModifiedDate = DateTime.UtcNow;
 }
 ```
@@ -248,12 +269,53 @@ No container changes required. The WorldEntity container already supports the sc
   "IsDeleted": true,
   "DeletedDate": "2026-01-31T12:00:00.000Z",
   "DeletedBy": "user-123",
+  "ttl": 7776000,
   "ModifiedDate": "2026-01-31T12:00:00.000Z",
   // ... other fields
 }
 ```
 
 EF Core will automatically serialize the new properties. No migration needed for Cosmos DB.
+
+**TTL Behavior**: 
+- When `Ttl` is null in C#, the property is omitted from JSON (not serialized as `"ttl\": null`)
+- When `Ttl = 7776000`, Cosmos DB automatically deletes the document 90 days after the `_ts` (last modified) timestamp
+- Container must have `DefaultTimeToLive = -1` configured to enable item-level TTL
+
+## Infrastructure Configuration
+
+### Cosmos DB Container TTL Setup
+
+For the TTL functionality to work, the WorldEntity container must be configured with container-level TTL enabled. This is an infrastructure setting, not application code:
+
+**Via Azure Portal**:
+1. Navigate to Container Settings
+2. Set "Time to Live": On (no default)
+3. Leave "Default TTL" blank or set to -1
+
+**Via Bicep/ARM Template**:
+```bicep
+resource worldEntityContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
+  name: 'WorldEntities'
+  properties: {
+    resource: {
+      id: 'WorldEntities'
+      partitionKey: {
+        paths: ['/WorldId']
+        kind: 'Hash'
+      }
+      defaultTtl: -1  // Enable item-level TTL (documents without ttl field never expire)
+    }
+  }
+}
+```
+
+**TTL Settings Explained**:
+- `defaultTtl: -1` = Item-level TTL enabled; documents without `ttl` field never expire
+- `defaultTtl: <positive number>` = Default expiration in seconds for documents without `ttl` field
+- `defaultTtl: null` or omitted = TTL disabled; all documents persist indefinitely regardless of `ttl` field
+
+**Note**: This infrastructure configuration is typically handled in the `infra/` folder Bicep templates, not in the application code.
 
 ## New Entity: DeleteOperation
 
