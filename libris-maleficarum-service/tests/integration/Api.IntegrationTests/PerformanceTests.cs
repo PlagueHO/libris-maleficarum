@@ -22,7 +22,7 @@ public class PerformanceTests
     public TestContext? TestContext { get; set; }
 
     [ClassInitialize]
-public static async Task ClassInitialize(TestContext context)
+    public static async Task ClassInitialize(TestContext context)
     {
         await AppHostFixture.InitializeAsync(context);
     }
@@ -70,7 +70,7 @@ public static async Task ClassInitialize(TestContext context)
     /// Reduced from 500+ entities to improve CI performance.
     /// </summary>
     [TestMethod]
-    [Timeout(60000)] // 60 second timeout for entire test
+    [Timeout(60000, CooperativeCancellation = true)] // 60 second timeout for entire test
     public async Task DeleteEntity_With100PlusEntities_CompletesWithin30Seconds()
     {
         // Arrange: Create hierarchy - 1 root + 10 branches + 90 children = 101 entities

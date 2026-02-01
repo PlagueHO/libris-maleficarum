@@ -68,12 +68,12 @@ public class RateLimitingTests
 
         // Accept either 5 or 6 due to race conditions, but verify rate limiting is active
         acceptedCount.Should().BeInRange(5, 6, "rate limit allows 5 concurrent operations, but race conditions may allow 6");
-        
+
         // If we got exactly 5 accepted, verify the 6th was rate limited
         if (acceptedCount == 5)
         {
             tooManyRequestsCount.Should().Be(1, "6th operation should be rate limited");
-            
+
             // Verify Retry-After header is present on 429 response
             var rateLimitedResponse = responses.First(r => r.StatusCode == HttpStatusCode.TooManyRequests);
             rateLimitedResponse.Headers.Should().ContainKey("Retry-After");
