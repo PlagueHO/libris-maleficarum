@@ -13,14 +13,13 @@ The core data model revolves around the concept of a "World" or "Campaign", whic
 
 ## Cosmos DB Containers
 
-Four core containers store all TTRPG data, each with optimized partition keys for their access patterns:
+Three core containers store all TTRPG data, each with optimized partition keys for their access patterns:
 
 | Container | Purpose | Partition Key | Key Characteristics |
 | --------- | ------- | ------------- | ------------------- |
 | **World** | World/campaign metadata | `/Id` | Top-level world documents; efficient user-owned world queries; isolated from entity hierarchy |
-| **WorldEntity** | World entity hierarchy | `[/WorldId, /id]` | All entities within worlds (locations, characters, campaigns, etc.) with hierarchical relationships via `ParentId` |
+| **WorldEntity** | World entity hierarchy | `[/WorldId, /id]` | All entities within worlds (locations, characters, campaigns, etc.) with hierarchical relationships via `ParentId`; soft-deleted entities remain in-place with TTL for automatic purge |
 | **Asset** | Asset metadata (images, audio, video, documents) | `[/WorldId, /EntityId]` | References to Azure Blob Storage; separate from entities to prevent document bloat; partitioned by entity for efficient entity-scoped queries |
-| **DeletedWorldEntity** | Soft-deleted entities | `[/WorldId, /id]` | Moved from WorldEntity after 30-day grace period; TTL auto-purges after 90 days |
 
 > [!IMPORTANT]
 > Partition key design for each container is critical to ensure RU usage is kept as low as possible. Hot partitions must also be avoided. Hierarchical partition keys (e.g., `[/WorldId, /id]`, `[/WorldId, /EntityId]`) enable efficient queries while distributing load across partitions.
@@ -35,24 +34,22 @@ This section outlines common operations and their estimated RU costs for each co
 | **Get world by ID** | World | `worldId` | 1 RU | Point read with partition key |
 | **Create world** | World | `world` | 5-8 RUs | Includes indexing overhead |
 | **Update world** | World | `worldId`, `updates` | 6-12 RUs | Read (1 RU) + write (5-8 RUs) |
-| **Soft delete world** | World | `worldId` | 6-10 RUs | Mark `IsDeleted = true` |
-| **Get entity by ID** | WorldEntity | `worldId`, `entityId` | 1 RU | Point read with both partition keys |
-| **Get entity children** | WorldEntity | `worldId`, `parentId` | 2-5 RUs | Filtered partition prefix query; used for lazy-loading tree nodes |
-| **List all world entities** | WorldEntity | `worldId` | 5-15 RUs | Partition prefix query for full entity data |
-| **List entities by type** | WorldEntity | `worldId`, `entityType` | 3-8 RUs | Filtered partition prefix query |
-| **Search entities** | WorldEntity | `worldId`, `searchTerm` | 5-12 RUs | Name/tag search within world |
-| **Count children** | WorldEntity | `worldId`, `parentId` | 2-3 RUs | Aggregate query |
-| **Get entities by owner** | WorldEntity | `ownerId` | 10-50 RUs | Cross-partition (use sparingly) |
+| **Soft delete world** | World | `worldId` | 6-10 RUs | Mark `IsDeleted = true`, set TTL |
+| **Get entity by ID** | WorldEntity | `worldId`, `entityId` | 1 RU | Point read with both partition keys; excludes deleted |
+| **Get entity children** | WorldEntity | `worldId`, `parentId` | 2-6 RUs | Filtered partition prefix query with `IsDeleted` filter; used for lazy-loading tree nodes |
+| **List all world entities** | WorldEntity | `worldId` | 6-18 RUs | Partition prefix query with `IsDeleted` filter; ~10-20% overhead from deleted items |
+| **List entities by type** | WorldEntity | `worldId`, `entityType` | 3-10 RUs | Filtered partition prefix query with `IsDeleted` filter |
+| **Search entities** | WorldEntity | `worldId`, `searchTerm` | 5-14 RUs | Name/tag search with `IsDeleted` filter |
+| **Count children** | WorldEntity | `worldId`, `parentId` | 2-4 RUs | Aggregate query with `IsDeleted` filter |
+| **Get entities by owner** | WorldEntity | `ownerId` | 10-60 RUs | Cross-partition (use sparingly); includes deleted filter overhead |
 | **Create entity** | WorldEntity | `entity` | 5-8 RUs | Includes indexing overhead |
 | **Update entity** | WorldEntity | `worldId`, `entityId`, `updates` | 6-12 RUs | Read (1 RU) + write (5-8 RUs) |
-| **Soft delete entity** | WorldEntity | `worldId`, `entityId` | 6-10 RUs | Mark `IsDeleted = true` |
+| **Soft delete entity** | WorldEntity | `worldId`, `entityId` | 6-10 RUs | Mark `IsDeleted = true`, set TTL (90 days) |
 | **Move entity** | WorldEntity | `worldId`, `entityId`, `newParentId` | 6-10 RUs | Update `ParentId`, `Path`, `Depth` |
 | **Get entity assets** | Asset | `worldId`, `entityId` | 2-5 RUs | Filtered partition prefix query |
 | **Create asset** | Asset | `asset` | 5-7 RUs | Asset metadata only |
 | **Delete asset** | Asset | `worldId`, `assetId` | 6-8 RUs | Soft delete + blob delete |
-| **Get deleted entities** | DeletedWorldEntity | `worldId` | 5-10 RUs | Partition prefix query |
-| **Restore entity** | DeletedWorldEntity | `worldId`, `entityId` | 12-20 RUs | Move back to WorldEntity |
-| **Purge entity** | DeletedWorldEntity | `worldId`, `entityId` | 1 RU | Permanent delete (auto via TTL) |
+| **Auto-purge deleted** | WorldEntity | N/A | 0 RUs | Cosmos DB TTL handles cleanup automatically (free) |
 
 ## Container Details
 
@@ -98,6 +95,11 @@ public record World
     public required bool IsDeleted { get; init; }         // Soft delete flag (default: false)
     public DateTime? DeletedDate { get; init; }           // ISO 8601 timestamp when deleted
     public string? DeletedBy { get; init; }               // User ID who deleted
+    public int? Ttl { get; init; }                        // Time-to-live in seconds (Cosmos DB reserved field)
+                                                          // null = omit property (use container default, requires DefaultTimeToLive set)
+                                                          // -1 = never expire (override container TTL)
+                                                          // >0 = expire N seconds after last modified (_ts)
+                                                          // Set to 7776000 (90 days) on soft delete for automatic purge
 }
 ```
 
@@ -190,6 +192,11 @@ public record BaseWorldEntity
     public required bool IsDeleted { get; init; }      // Soft delete flag (default: false)
     public DateTime? DeletedDate { get; init; }        // ISO 8601 timestamp when deleted
     public string? DeletedBy { get; init; }            // User ID who deleted
+    public int? Ttl { get; init; }                     // Time-to-live in seconds (Cosmos DB reserved field)
+                                                       // null = omit property (use container default, requires DefaultTimeToLive set)
+                                                       // -1 = never expire (override container TTL)
+                                                       // >0 = expire N seconds after last modified (_ts)
+                                                       // Set to 7776000 (90 days) on soft delete for automatic purge
     
     // === Entity Properties (Flexible Schema) ===
     public object? Properties { get; init; }           // Common properties (cross-system)
@@ -579,6 +586,11 @@ public record Asset
     public required bool IsDeleted { get; init; }         // Soft delete flag (default: false)
     public DateTime? DeletedDate { get; init; }           // When deleted
     public string? DeletedBy { get; init; }               // User who deleted
+    public int? Ttl { get; init; }                        // Time-to-live in seconds (Cosmos DB reserved field)
+                                                          // null = omit property (use container default, requires DefaultTimeToLive set)
+                                                          // -1 = never expire (override container TTL)
+                                                          // >0 = expire N seconds after last modified (_ts)
+                                                          // Set to 7776000 (90 days) on soft delete for automatic purge
 }
 
 public record ImageDimensions(int Width, int Height);
@@ -904,95 +916,178 @@ Total cost: 3-6 RUs
 - Historical recordings in archive tier
 - Use blob versioning for important assets (maps, official art)
 
-## DeletedWorldEntity Container
+## Soft Delete Strategy: In-Place with TTL-Based Automatic Cleanup
 
-**Separate Deleted Storage**: Soft-deleted WorldEntities are moved to a dedicated `DeletedWorldEntity` container after a retention grace period (e.g., 30 days). This design:
+**In-Place Soft Delete**: Deleted WorldEntities remain in the `WorldEntity` container with `IsDeleted = true` until automatically purged by Cosmos DB's TTL feature. This simplified approach:
 
-- **Reduces Query Overhead**: Active queries don't filter through deleted items (no `WHERE IsDeleted = false` needed)
-- **Optimizes Active Container**: WorldEntity container remains lean and fast
-- **Enables Different Retention**: Apply different TTL/lifecycle policies to deleted items
-- **Simplifies Recovery**: All deleted items in one place for admin restore operations
-- **Reduces Costs**: Deleted items can use lower throughput provisioning
+- **Simple Implementation**: No Change Feed processor or secondary container needed
+- **Automatic Cleanup**: Cosmos DB TTL handles permanent deletion (zero RU cost)
+- **Single Source of Truth**: All entities (active and deleted) in one container
+- **Restore Capability**: Deleted entities can be restored within retention period
+- **Trade-off**: Active queries include deleted item filtering (~10-20% RU overhead)
 
-**DeletedWorldEntity Container Schema**:
+**Soft Delete Lifecycle**:
+
+1. **Soft Delete** (instant): Set `IsDeleted = true`, `DeletedDate`, `DeletedBy`, and `Ttl = 7776000` (90 days)
+   - TTL countdown starts from the item's `_ts` (last modified timestamp)
+   - Item becomes eligible for deletion 90 days after soft delete operation
+   
+1. **Retention Period** (90 days): Entity queryable with `IsDeleted = true` filter for restore operations
+   - Restore before TTL expires: Set `Ttl = null` to remove expiration (property omitted from JSON)
+   - Item remains in container until background purge cycle runs after TTL expiration
+   
+1. **Automatic Purge** (after TTL expires): Cosmos DB background process deletes document
+   - Zero RU cost for deletion (handled by Cosmos DB internally)
+   - Deletion may not be instantaneous; occurs during next background purge cycle
+   - No manual cleanup or scheduled jobs required
+
+**TTL Configuration**:
 
 ```csharp
-public record DeletedWorldEntity : BaseWorldEntity
+// WorldEntity.cs - TTL property for automatic cleanup
+public int? Ttl { get; private set; }  // Time-to-live in seconds
+                                        // null = property omitted (uses container default)
+                                        // -1 = never expire (override container TTL)
+                                        // >0 = expire after N seconds from last modified time
+
+public void SoftDelete(string deletedBy)
 {
-    // Inherits all fields from BaseWorldEntity
-    // Additional deletion metadata:
-    public required string DeletionReason { get; init; }      // "user_deleted", "cascade_delete", "purge"
-    public required DateTime HardDeleteDate { get; init; }    // When to permanently purge (TTL)
-    public string? OriginalWorldId { get; init; }             // For cross-world restore scenarios
+    IsDeleted = true;
+    DeletedDate = DateTime.UtcNow;
+    DeletedBy = deletedBy;
+    Ttl = 7776000; // 90 days in seconds (90 * 24 * 60 * 60)
+    ModifiedDate = DateTime.UtcNow;
 }
+
+public void Restore()
+{
+    IsDeleted = false;
+    DeletedDate = null;
+    DeletedBy = null;
+    Ttl = null; // Omit TTL property (don't serialize to JSON)
+    ModifiedDate = DateTime.UtcNow;
+}
+
+// WorldEntityConfiguration.cs - EF Core Cosmos DB provider mapping
+builder.Property(e => e.Ttl)
+    .ToJsonProperty("ttl")  // Cosmos DB reserved TTL field name (lowercase)
+    .IsRequired(false);     // Omit property from JSON when null
+
+// IMPORTANT: Container-level TTL configuration required
+// The WorldEntity container must have DefaultTimeToLive enabled (set to -1)
+// This allows per-item TTL to work. Without container TTL enabled, item TTL is ignored.
+// 
+// Azure Portal > Container Settings > Time to Live: On (no default)
+// OR via SDK:
+// ContainerProperties containerProperties = new ContainerProperties
+// {
+//     Id = "WorldEntity",
+//     PartitionKeyPath = "/WorldId",
+//     DefaultTimeToLive = -1  // Enable TTL, but no default expiration
+// };
 ```
-
-**Partition Key**: `[/WorldId, /id]` - maintains same hierarchical partition structure as WorldEntity for efficient world-scoped queries and hot partition prevention.
-
-**Lifecycle Flow**:
-
-1. **Soft Delete** (instant): Set `IsDeleted = true` on WorldEntity, set `DeletedDate` and `DeletedBy`
-1. **Grace Period** (e.g., 30 days): Entity remains in WorldEntity container for quick undo
-1. **Move to Deleted Container** (Change Feed trigger after grace period):
-   - Copy to DeletedWorldEntity container
-   - Remove from WorldEntity container
-   - Set TTL for permanent deletion (e.g., +90 days)
-1. **Hard Delete** (automatic via TTL): Cosmos DB auto-purges after TTL expires
 
 **Query Patterns**:
 
 ```sql
--- Get all deleted entities for a world (for admin restore)
-SELECT * FROM d
-WHERE d.WorldId = @worldId
-ORDER BY d.DeletedDate DESC
--- Cost: ~2-5 RUs (single partition query)
+-- Get all entities (excludes deleted by default)
+SELECT * FROM c
+WHERE c.WorldId = @worldId
+  AND c.IsDeleted = false
+-- Cost: ~6-18 RUs (includes filter overhead from deleted items)
 
--- Get recently deleted entities (undo candidates)
+-- Get deleted entities for restore UI
 SELECT * FROM c
 WHERE c.WorldId = @worldId
   AND c.IsDeleted = true
   AND c.DeletedDate > @cutoffDate
--- Cost: ~2-5 RUs (in WorldEntity container during grace period)
+ORDER BY c.DeletedDate DESC
+-- Cost: ~3-8 RUs
 
--- Restore deleted entity
--- 1. Copy from DeletedWorldEntity back to WorldEntity
--- 2. Set IsDeleted = false, clear DeletedDate/DeletedBy
--- 3. Remove from DeletedWorldEntity
+-- Restore deleted entity (C# code, not SQL)
+// In repository/service:
+entity.IsDeleted = false;
+entity.DeletedDate = null;
+entity.DeletedBy = null;
+entity.Ttl = null;  // Omit ttl from JSON (EF Core won't serialize null properties)
+entity.ModifiedDate = DateTime.UtcNow;
+await context.SaveChangesAsync();
+// Cost: ~6-10 RUs (read + write)
 ```
 
-**Cost Benefits**:
+**Performance Characteristics**:
 
-- **Active queries**: No filtering deleted items (no extra RU cost)
-- **Deletion operations**: Async move via Change Feed (doesn't block user operations)
-- **Lower provisioned RU**: DeletedWorldEntity container can run at minimal throughput (100 RU/s)
-- **Automatic cleanup**: TTL handles hard deletes (no manual purge jobs)
+| Scenario | In-Place TTL Approach | Notes |
+|----------|----------------------|-------|
+| **Query overhead** | +10-20% RU cost | All queries filter `IsDeleted = false` |
+| **Delete operation** | 6-10 RUs | Mark deleted + set TTL |
+| **Restore operation** | 6-10 RUs | Clear delete flags + remove TTL |
+| **Automatic purge** | 0 RUs | Cosmos DB TTL is free |
+| **Storage overhead** | Minimal | Deleted items purged after 90 days |
+| **Implementation complexity** | Low | No Change Feed processor needed |
 
-**Change Feed Processor Logic**:
+**Container-Level TTL Configuration**:
+
+For item-level TTL to work, the container must have TTL enabled:
 
 ```csharp
-// Pseudo-code for Change Feed processor
-foreach (var change in feed.Changes)
+// Infrastructure/Persistence/DbInitializer.cs - Container creation
+var containerProperties = new ContainerProperties
 {
-    if (change.IsDeleted == true && 
-        change.DeletedDate < DateTime.UtcNow.AddDays(-30))
-    {
-        // Grace period expired - move to deleted container
-        var deletedEntity = new DeletedWorldEntity
-        {
-            // Copy all fields from change
-            DeletionReason = "retention_expired",
-            HardDeleteDate = DateTime.UtcNow.AddDays(90) // TTL for final purge
-        };
-        
-        await deletedContainer.CreateItemAsync(deletedEntity, 
-            new PartitionKey(deletedEntity.WorldId));
-        
-        await worldEntityContainer.DeleteItemAsync<WorldEntity>(
-            change.id, new PartitionKey(change.WorldId));
-    }
-}
+    Id = "WorldEntity",
+    PartitionKeyPath = "/WorldId",
+    DefaultTimeToLive = -1  // Enable TTL; -1 = items don't expire by default
+                            // Items with ttl property will override this
+};
+
+// Alternative: Set to positive number (e.g., 7776000) to make ALL items 
+// expire after 90 days unless they have their own ttl value
 ```
+
+**TTL Behavior Summary** (per Microsoft documentation):
+
+| Container `DefaultTimeToLive` | Item `ttl` | Result |
+|-------------------------------|-----------|--------|
+| `null` (not set) | Any value | TTL disabled; items never expire |
+| `-1` | Not present | Item never expires |
+| `-1` | `-1` | Item never expires |
+| `-1` | `7776000` | Item expires after 90 days |
+| `7776000` | Not present | Item expires after 90 days (container default) |
+| `7776000` | `-1` | Item never expires (override) |
+| `7776000` | `3600` | Item expires after 1 hour (override) |
+
+**Critical Implementation Notes**:
+
+1. **Property omission**: When `Ttl` is `null` in C#, the `ttl` property must be **omitted** from the JSON document (not serialized as `"ttl": null`). The EF Core Cosmos provider handles this automatically for nullable properties.
+
+2. **Container configuration**: The `DefaultTimeToLive` must be set to `-1` (or a positive number) on the container for item-level TTL to work. If not set, all item `ttl` values are ignored.
+
+3. **TTL countdown**: Starts from the item's `_ts` (last modified timestamp), not from creation time if the item was updated.
+
+4. **Value constraints**: Item TTL must be:
+   - Omitted entirely (null in C#, property not in JSON), OR
+   - `-1` (never expire), OR  
+   - Positive integer ≤ `2147483647` seconds (~68 years max)
+
+**When to Consider Two-Container Migration**:
+
+The current in-place approach is suitable for initial release and typical usage patterns. Consider migrating to a separate `DeletedWorldEntity` container if:
+
+- Average >500 soft-deleted entities per world (causes >20% query overhead)
+- High query volume (>10,000 queries/day) where 10-20% overhead becomes significant
+- Customer demand for longer retention periods (>6 months)
+- Need for different access patterns on deleted vs active entities
+
+**Future Optimization Path**:
+
+If metrics show query overhead becoming a bottleneck, implement a Change Feed processor to:
+
+1. Monitor WorldEntity changes
+1. Move entities with `IsDeleted = true` and `DeletedDate > 30 days` to separate container
+1. Remove from WorldEntity container
+1. Apply different retention/TTL policies on deleted container
+
+This migration can be implemented without API changes, as the delete/restore logic remains the same from the client perspective.
 
 ## WorldEntity.EntityType Hierarchy
 
