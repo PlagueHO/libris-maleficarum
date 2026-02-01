@@ -229,7 +229,6 @@ public class SoftDeleteProgressTests
         var pollingStart = DateTime.UtcNow;
         var finalStatus = string.Empty;
         var failedCount = 0;
-        var failedEntityIds = new List<Guid>();
 
         while (DateTime.UtcNow - pollingStart < PollingTimeout)
         {
@@ -245,13 +244,6 @@ public class SoftDeleteProgressTests
 
             var status = dataElement.GetProperty("status").GetString() ?? "unknown";
             failedCount = dataElement.GetProperty("failedCount").GetInt32();
-
-            if (dataElement.TryGetProperty("failedEntityIds", out var failedIdsElement) && failedIdsElement.ValueKind == JsonValueKind.Array)
-            {
-                failedEntityIds = failedIdsElement.EnumerateArray()
-                    .Select(e => Guid.Parse(e.GetString()!))
-                    .ToList();
-            }
 
             if (status is "completed" or "partial" or "failed")
             {
@@ -292,8 +284,6 @@ public class SoftDeleteProgressTests
         var worldId = worldResponse.Headers.Location!.Segments.Last();
 
         // Create and delete 5 entities to generate operations
-        var operationIds = new List<string>();
-
         for (var i = 1; i <= 5; i++)
         {
             // Create entity
@@ -315,7 +305,6 @@ public class SoftDeleteProgressTests
                 $"/api/v1/worlds/{worldId}/entities/{entityId}",
                 cancellationToken);
             deleteResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
-            operationIds.Add(deleteResponse.Headers.Location!.Segments.Last());
 
             // Small delay to ensure different timestamps
             await Task.Delay(100, cancellationToken);
