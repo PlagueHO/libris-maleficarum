@@ -86,7 +86,10 @@ public class DeleteServiceCascadeTests
         result.RootEntityName.Should().Be("Parent");
 
         await _deleteOperationRepository.Received(1).CreateAsync(
-            Arg.Is<DeleteOperation>(op => op.Cascade == true && op.RootEntityId == parentId),
+            Arg.Is<DeleteOperation>(op =>
+                op.Cascade &&
+                op.RootEntityId == parentId &&
+                op.RootEntityName == "Parent"),
             Arg.Any<CancellationToken>());
     }
 
