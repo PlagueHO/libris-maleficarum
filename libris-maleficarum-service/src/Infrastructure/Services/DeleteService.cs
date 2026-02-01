@@ -67,7 +67,8 @@ public class DeleteService : IDeleteService
             entityId,
             entity.Name,
             userId,
-            cascade);
+            cascade,
+            ttlSeconds: _options.OperationTtlHours * 3600);
 
         // If entity is already deleted, create an operation that completes immediately with count=0 (idempotent)
         if (entity.IsDeleted)

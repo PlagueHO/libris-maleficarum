@@ -104,13 +104,15 @@ public class DeleteOperation
     /// <param name="rootEntityName">The name of the root entity.</param>
     /// <param name="createdBy">The user ID who initiated the operation.</param>
     /// <param name="cascade">Whether cascade delete is enabled.</param>
+    /// <param name="ttlSeconds">TTL in seconds for automatic cleanup (default: 24 hours = 86400 seconds).</param>
     /// <returns>A new DeleteOperation instance.</returns>
     public static DeleteOperation Create(
         Guid worldId,
         Guid rootEntityId,
         string rootEntityName,
         string createdBy,
-        bool cascade = true)
+        bool cascade = true,
+        int ttlSeconds = 86400)
     {
         if (string.IsNullOrWhiteSpace(rootEntityName))
         {
@@ -136,7 +138,7 @@ public class DeleteOperation
             CreatedBy = createdBy,
             CreatedAt = DateTime.UtcNow,
             Cascade = cascade,
-            Ttl = 86400 // 24 hours
+            Ttl = ttlSeconds
         };
     }
 
