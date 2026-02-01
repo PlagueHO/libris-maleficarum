@@ -112,31 +112,32 @@ public class DeleteServiceCascadeTests
             .Returns(operation);
 
         // Setup descendants: 1 parent + 2 children = 3 total
-        var descendants = new List<WorldEntity>
-        {
-            CreateWorldEntity(child1Id, "Child1", EntityType.Country, parentId),
-            CreateWorldEntity(child2Id, "Child2", EntityType.Country, parentId)
-        };
+        var child1 = CreateWorldEntity(child1Id, "Child1", EntityType.Country, parentId);
+        var child2 = CreateWorldEntity(child2Id, "Child2", EntityType.Country, parentId);
+        var descendants = new List<WorldEntity> { child1, child2 };
 
         _worldEntityRepository.GetDescendantsAsync(parentId, _worldId, Arg.Any<CancellationToken>())
             .Returns(descendants);
 
-        // Mock DeleteAsync to return the count of deleted entities
-        _worldEntityRepository.DeleteAsync(_worldId, parentId, _userIdString, true, Arg.Any<CancellationToken>())
-            .Returns(3); // 1 parent + 2 children
+        // Mock GetByIdAsync for parent entity
+        var parent = CreateWorldEntity(parentId, "Parent", EntityType.Continent);
+        _worldEntityRepository.GetByIdAsync(_worldId, parentId, Arg.Any<CancellationToken>())
+            .Returns(parent);
+
+        // Mock UpdateAsync for all entity soft deletes
+        _worldEntityRepository.UpdateAsync(Arg.Any<WorldEntity>(), null, Arg.Any<CancellationToken>())
+            .Returns(callInfo => callInfo.Arg<WorldEntity>());
 
         // Act
         await _deleteService.ProcessDeleteAsync(_worldId, operationId);
 
-        // Assert - verify operation was updated twice (Start + Complete)
-        await _deleteOperationRepository.Received(2).UpdateAsync(Arg.Any<DeleteOperation>(), Arg.Any<CancellationToken>());
-        
-        // Repository DeleteAsync should be called with cascade=true
-        await _worldEntityRepository.Received(1).DeleteAsync(
-            _worldId,
-            parentId,
-            _userIdString,
-            true,
+        // Assert - verify operation was updated: Start + batch progress + Complete = 3 times
+        await _deleteOperationRepository.Received(3).UpdateAsync(Arg.Any<DeleteOperation>(), Arg.Any<CancellationToken>());
+
+        // Verify each entity was updated (soft deleted)
+        await _worldEntityRepository.Received(3).UpdateAsync(
+            Arg.Any<WorldEntity>(),
+            null,
             Arg.Any<CancellationToken>());
     }
 
@@ -159,29 +160,30 @@ public class DeleteServiceCascadeTests
             .Returns(operation);
 
         // Setup descendants (all descendants of parent)
-        var descendants = new List<WorldEntity>
-        {
-            CreateWorldEntity(childId, "Child", EntityType.Country, parentId),
-            CreateWorldEntity(grandchildId, "Grandchild", EntityType.Region, childId),
-            CreateWorldEntity(greatGrandchildId, "GreatGrandchild", EntityType.City, grandchildId)
-        };
+        var child = CreateWorldEntity(childId, "Child", EntityType.Country, parentId);
+        var grandchild = CreateWorldEntity(grandchildId, "Grandchild", EntityType.Region, childId);
+        var greatGrandchild = CreateWorldEntity(greatGrandchildId, "GreatGrandchild", EntityType.City, grandchildId);
+        var descendants = new List<WorldEntity> { child, grandchild, greatGrandchild };
 
         _worldEntityRepository.GetDescendantsAsync(parentId, _worldId, Arg.Any<CancellationToken>())
             .Returns(descendants);
 
-        // Mock DeleteAsync to return total count
-        _worldEntityRepository.DeleteAsync(_worldId, parentId, _userIdString, true, Arg.Any<CancellationToken>())
-            .Returns(4); // 1 parent + 3 descendants
+        // Mock GetByIdAsync for parent entity
+        var parent = CreateWorldEntity(parentId, "Parent", EntityType.Continent);
+        _worldEntityRepository.GetByIdAsync(_worldId, parentId, Arg.Any<CancellationToken>())
+            .Returns(parent);
+
+        // Mock UpdateAsync for all entity soft deletes
+        _worldEntityRepository.UpdateAsync(Arg.Any<WorldEntity>(), null, Arg.Any<CancellationToken>())
+            .Returns(callInfo => callInfo.Arg<WorldEntity>());
 
         // Act
         await _deleteService.ProcessDeleteAsync(_worldId, operationId);
 
-        // Assert
-        await _worldEntityRepository.Received(1).DeleteAsync(
-            _worldId,
-            parentId,
-            _userIdString,
-            true,
+        // Assert - verify all entities were soft deleted
+        await _worldEntityRepository.Received(4).UpdateAsync(
+            Arg.Any<WorldEntity>(),
+            null,
             Arg.Any<CancellationToken>());
 
         // Verify final operation status
@@ -212,18 +214,24 @@ public class DeleteServiceCascadeTests
         _deleteOperationRepository.GetByIdAsync(_worldId, operationId, Arg.Any<CancellationToken>())
             .Returns(operation);
 
-        // Setup descendants: only non-deleted child2 (child1 already deleted, so not returned)
-        var descendants = new List<WorldEntity>
-        {
-            CreateWorldEntity(child2Id, "Child2", EntityType.Country, parentId)
-        };
+        // Setup descendants: child1 is already deleted (IsDeleted=true), child2 is not
+        var child1 = CreateWorldEntity(child1Id, "Child1", EntityType.Country, parentId);
+        child1.SoftDelete(_userIdString); // Mark as already deleted
+
+        var child2 = CreateWorldEntity(child2Id, "Child2", EntityType.Country, parentId);
+        var descendants = new List<WorldEntity> { child1, child2 };
 
         _worldEntityRepository.GetDescendantsAsync(parentId, _worldId, Arg.Any<CancellationToken>())
             .Returns(descendants);
 
-        // Mock DeleteAsync: only 2 entities deleted (parent + child2)
-        _worldEntityRepository.DeleteAsync(_worldId, parentId, _userIdString, true, Arg.Any<CancellationToken>())
-            .Returns(2);
+        // Mock GetByIdAsync for parent entity
+        var parent = CreateWorldEntity(parentId, "Parent", EntityType.Continent);
+        _worldEntityRepository.GetByIdAsync(_worldId, parentId, Arg.Any<CancellationToken>())
+            .Returns(parent);
+
+        // Mock UpdateAsync
+        _worldEntityRepository.UpdateAsync(Arg.Any<WorldEntity>(), null, Arg.Any<CancellationToken>())
+            .Returns(callInfo => callInfo.Arg<WorldEntity>());
 
         // Act
         await _deleteService.ProcessDeleteAsync(_worldId, operationId);
@@ -235,7 +243,8 @@ public class DeleteServiceCascadeTests
 
         var updatedOperation = finalUpdate.GetArguments()[0] as DeleteOperation;
         updatedOperation.Should().NotBeNull();
-        updatedOperation!.DeletedCount.Should().Be(2);
+        // child1 skipped (already deleted), child2 + parent = 3 total processed (including already-deleted count)
+        updatedOperation!.DeletedCount.Should().Be(3);
         updatedOperation.Status.Should().Be(DeleteOperationStatus.Completed);
     }
 
@@ -258,13 +267,19 @@ public class DeleteServiceCascadeTests
         _worldEntityRepository.GetDescendantsAsync(parentId, _worldId, Arg.Any<CancellationToken>())
             .Returns([]);
 
-        _worldEntityRepository.DeleteAsync(_worldId, parentId, _userIdString, true, Arg.Any<CancellationToken>())
-            .Returns(1);
+        // Mock GetByIdAsync for parent entity
+        var parent = CreateWorldEntity(parentId, "Parent", EntityType.Continent);
+        _worldEntityRepository.GetByIdAsync(_worldId, parentId, Arg.Any<CancellationToken>())
+            .Returns(parent);
+
+        // Mock UpdateAsync
+        _worldEntityRepository.UpdateAsync(Arg.Any<WorldEntity>(), null, Arg.Any<CancellationToken>())
+            .Returns(callInfo => callInfo.Arg<WorldEntity>());
 
         // Act
         await _deleteService.ProcessDeleteAsync(_worldId, operationId);
 
-        // Assert - should update operation twice: Start + Complete
+        // Assert - should update operation: Start + Complete = 2 times
         await _deleteOperationRepository.Received(2).UpdateAsync(Arg.Any<DeleteOperation>(), Arg.Any<CancellationToken>());
     }
 

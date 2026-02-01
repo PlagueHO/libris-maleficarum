@@ -187,7 +187,7 @@ public class SoftDeleteIntegrationTests
 
         // Act - Attempt to delete entity in unauthorized world
         using var unauthorizedClient = AppHostFixture.App!.CreateHttpClient("api");
-        
+
         // Add a header to simulate different user (adjust based on actual auth implementation)
         // Example: unauthorizedClient.DefaultRequestHeaders.Add("X-User-Id", "unauthorized-user-id");
 
@@ -507,7 +507,7 @@ public class SoftDeleteIntegrationTests
         // Pre-delete child1
         using var deleteChild1Response = await httpClient.DeleteAsync($"/api/v1/worlds/{worldId}/entities/{child1Id}", cancellationToken);
         deleteChild1Response.StatusCode.Should().Be(HttpStatusCode.Accepted);
-        
+
         var child1OperationId = deleteChild1Response.Headers.Location!.Segments.Last();
 
         // Wait for child1 delete to complete

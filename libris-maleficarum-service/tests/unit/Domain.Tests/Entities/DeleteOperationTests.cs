@@ -219,6 +219,99 @@ public class DeleteOperationTests
 
     #endregion
 
+    #region AddFailedEntity Tests
+
+    [TestMethod]
+    public void AddFailedEntity_WithNewEntityId_ShouldAddToList()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+        var failedId = Guid.NewGuid();
+
+        // Act
+        operation.AddFailedEntity(failedId);
+
+        // Assert
+        operation.FailedEntityIds.Should().Contain(failedId);
+        operation.FailedCount.Should().Be(1);
+    }
+
+    [TestMethod]
+    public void AddFailedEntity_WithDuplicateEntityId_ShouldNotAddDuplicate()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+        var failedId = Guid.NewGuid();
+
+        // Act
+        operation.AddFailedEntity(failedId);
+        operation.AddFailedEntity(failedId); // Add same ID again
+
+        // Assert
+        operation.FailedEntityIds.Should().HaveCount(1);
+        operation.FailedCount.Should().Be(1);
+    }
+
+    [TestMethod]
+    public void AddFailedEntity_WithMultipleIds_ShouldAddAll()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+        var failedId1 = Guid.NewGuid();
+        var failedId2 = Guid.NewGuid();
+        var failedId3 = Guid.NewGuid();
+
+        // Act
+        operation.AddFailedEntity(failedId1);
+        operation.AddFailedEntity(failedId2);
+        operation.AddFailedEntity(failedId3);
+
+        // Assert
+        operation.FailedEntityIds.Should().HaveCount(3);
+        operation.FailedCount.Should().Be(3);
+        operation.FailedEntityIds.Should().Contain([failedId1, failedId2, failedId3]);
+    }
+
+    #endregion
+
+    #region HasFailures Tests
+
+    [TestMethod]
+    public void HasFailures_WithNoFailures_ShouldReturnFalse()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+
+        // Act & Assert
+        operation.HasFailures.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void HasFailures_WithFailures_ShouldReturnTrue()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+        operation.AddFailedEntity(Guid.NewGuid());
+
+        // Act & Assert
+        operation.HasFailures.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void HasFailures_WithFailuresViaUpdateProgress_ShouldReturnTrue()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+        operation.Start(10);
+        var failedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+        operation.UpdateProgress(deletedCount: 8, failedCount: 2, failedIds: failedIds);
+
+        // Act & Assert
+        operation.HasFailures.Should().BeTrue();
+    }
+
+    #endregion
+
     #region Complete Tests
 
     [TestMethod]
@@ -251,6 +344,37 @@ public class DeleteOperationTests
 
         // Assert
         operation.Status.Should().Be(DeleteOperationStatus.Partial);
+        operation.CompletedAt.Should().NotBeNull();
+    }
+
+    [TestMethod]
+    public void Complete_WithAllFailed_ShouldSetStatusToFailed()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+        operation.Start(10);
+        operation.UpdateProgress(deletedCount: 0, failedCount: 10);
+
+        // Act
+        operation.Complete();
+
+        // Assert
+        operation.Status.Should().Be(DeleteOperationStatus.Failed);
+        operation.CompletedAt.Should().NotBeNull();
+    }
+
+    [TestMethod]
+    public void Complete_WithZeroEntities_ShouldSetStatusToCompleted()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+        operation.Start(0);
+
+        // Act
+        operation.Complete();
+
+        // Assert
+        operation.Status.Should().Be(DeleteOperationStatus.Completed);
         operation.CompletedAt.Should().NotBeNull();
     }
 

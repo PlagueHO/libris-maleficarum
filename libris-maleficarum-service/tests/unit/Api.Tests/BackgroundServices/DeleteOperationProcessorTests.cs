@@ -84,7 +84,7 @@ public class DeleteOperationProcessorTests
 
         // Give processor time to run one iteration
         await Task.Delay(300, CancellationToken.None);
-        
+
         // Stop processor
         await processor.StopAsync(CancellationToken.None);
         await executeTask;
@@ -122,7 +122,7 @@ public class DeleteOperationProcessorTests
 
         // Give processor time to run iterations
         await Task.Delay(500, CancellationToken.None);
-        
+
         // Stop processor
         await processor.StopAsync(CancellationToken.None);
         await executeTask;
@@ -161,7 +161,7 @@ public class DeleteOperationProcessorTests
 
         // Give processor time to run one iteration
         await Task.Delay(300, CancellationToken.None);
-        
+
         // Stop processor
         await processor.StopAsync(CancellationToken.None);
         await executeTask;
@@ -198,7 +198,7 @@ public class DeleteOperationProcessorTests
         var executeTask = processor.StartAsync(cts.Token);
 
         await Task.Delay(300, CancellationToken.None);
-        
+
         await processor.StopAsync(CancellationToken.None);
         await executeTask;
 
@@ -233,7 +233,7 @@ public class DeleteOperationProcessorTests
         var executeTask = processor.StartAsync(cts.Token);
 
         await Task.Delay(300, CancellationToken.None);
-        
+
         await processor.StopAsync(CancellationToken.None);
         await executeTask;
 

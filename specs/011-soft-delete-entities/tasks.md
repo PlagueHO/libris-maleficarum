@@ -123,22 +123,22 @@
 
 ### Tests for User Story 3
 
-- [ ] T038 [P] [US3] Create unit tests for DeleteOperation.UpdateProgress() and Complete() methods
-- [ ] T039 [P] [US3] Create unit tests for list operations endpoint in DeleteOperationsController
+- [X] T038 [P] [US3] Create unit tests for DeleteOperation.UpdateProgress() and Complete() methods
+- [X] T039 [P] [US3] Create unit tests for list operations endpoint in DeleteOperationsController
 
 ### Implementation for User Story 3
 
-- [ ] T040 [US3] Add GET /delete-operations endpoint to list recent operations in DeleteOperationsController
-- [ ] T041 [US3] Implement real-time progress updates in DeleteOperationProcessor (update every N entities)
-- [ ] T042 [US3] Implement checkpoint resume on processor restart (query in-progress operations on startup)
-- [ ] T043 [US3] Add failedEntityIds tracking to DeleteOperation for partial failure reporting
-- [ ] T044 [US3] Implement TTL auto-cleanup for DeleteOperation (24-hour expiry via Cosmos TTL)
+- [X] T040 [US3] Add GET /delete-operations endpoint to list recent operations in DeleteOperationsController
+- [X] T041 [US3] Implement real-time progress updates in DeleteOperationProcessor (update every N entities)
+- [X] T042 [US3] Implement checkpoint resume on processor restart (query in-progress operations on startup)
+- [X] T043 [US3] Add failedEntityIds tracking to DeleteOperation for partial failure reporting
+- [X] T044 [US3] Implement TTL auto-cleanup for DeleteOperation (24-hour expiry via Cosmos TTL)
 
 ### Integration Tests for User Story 3
 
-- [ ] T045 [US3] Create integration test for progress polling on large hierarchy (50+ entities)
-- [ ] T046 [US3] Create integration test for partial failure scenario
-- [ ] T047 [US3] Create integration test for list recent operations endpoint
+- [X] T045 [US3] Create integration test for progress polling on large hierarchy (50+ entities)
+- [X] T046 [US3] Create integration test for partial failure scenario
+- [X] T047 [US3] Create integration test for list recent operations endpoint
 
 **Checkpoint**: User Story 3 complete - progress monitoring works independently
 
