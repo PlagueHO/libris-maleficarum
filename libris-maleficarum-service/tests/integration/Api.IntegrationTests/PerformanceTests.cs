@@ -91,14 +91,12 @@ public class PerformanceTests
         var rootId = Guid.Parse(rootResponse.Headers.Location!.Segments.Last());
 
         // Create 10 branch entities under root
-        var branchIds = new List<Guid>();
         for (var b = 0; b < 10; b++)
         {
             var branchRequest = new { Name = $"Branch {b + 1}", EntityType = EntityType.Location, ParentId = rootId };
             using var branchResponse = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", branchRequest, cancellationToken);
             branchResponse.StatusCode.Should().Be(HttpStatusCode.Created);
             var branchId = Guid.Parse(branchResponse.Headers.Location!.Segments.Last());
-            branchIds.Add(branchId);
 
             // Create 9 children under each branch (parallelized for speed)
             var childTasks = Enumerable.Range(1, 9).Select(async c =>
