@@ -3,6 +3,7 @@ namespace LibrisMaleficarum.Infrastructure.Services;
 using LibrisMaleficarum.Domain.Configuration;
 using LibrisMaleficarum.Domain.Entities;
 using LibrisMaleficarum.Domain.Exceptions;
+using LibrisMaleficarum.Domain.Extensions;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using Microsoft.Extensions.Options;
@@ -223,7 +224,7 @@ public class DeleteService : IDeleteService
 
             // T034: Log completion
             activity?.AddTag("operation.deleted_count", processedCount);
-            activity?.AddTag("operation.status", operation.Status.ToString().ToLowerInvariant());
+            activity?.AddTag("operation.status", operation.Status.ToApiString());
             activity?.AddTag("operation.processed_count", processedCount);
             activity?.AddTag("operation.failed_count", operation.FailedCount);
         }
