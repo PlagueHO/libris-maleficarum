@@ -114,7 +114,32 @@ curl https://localhost:5001/api/v1/worlds/{worldId}/delete-operations/{operation
   - [ ] `failedCount: 0`
   - [ ] `completedAt` timestamp is set
 
-## Scenario 3: List Recent Operations
+## Scenario 3: Delete Without Cascade (Validation Error)
+
+### Attempt Delete Without Cascade on Parent
+
+```bash
+curl -X DELETE "https://localhost:5001/api/v1/worlds/{worldId}/entities/{parentEntityId}?cascade=false" \
+  -v -k
+```
+
+**Note**: This test requires that the parent entity from Scenario 1 still has children. If you completed Scenario 2, you'll need to recreate the test data first.
+
+- [ ] Response: `400 Bad Request`
+- [ ] Response contains error code `ENTITY_HAS_CHILDREN`
+- [ ] Response message mentions `cascade=true` as solution
+- [ ] Parent entity is NOT deleted (verify with GET request)
+
+### Verify Parent Still Exists
+
+```bash
+curl https://localhost:5001/api/v1/worlds/{worldId}/entities/{parentEntityId} -k
+```
+
+- [ ] Response: `200 OK`
+- [ ] Parent entity is still present and not deleted
+
+## Scenario 4: List Recent Operations
 
 ```bash
 curl "https://localhost:5001/api/v1/worlds/{worldId}/delete-operations?limit=10" -k
@@ -122,17 +147,19 @@ curl "https://localhost:5001/api/v1/worlds/{worldId}/delete-operations?limit=10"
 
 - [ ] Response: `200 OK`
 - [ ] Response contains `data` array with at least 1 operation
-- [ ] First operation matches `{operationId}` from above
+- [ ] First operation matches `{operationId}` from Scenario 2
 - [ ] Response contains `meta.count` field
 - [ ] Each operation has `id`, `status`, `deletedCount` fields
 
-## Scenario 4: Verify Deletion
+## Scenario 5: Verify Deletion (from Scenario 2)
 
 ### Get Entity (Should Return 404)
 
 ```bash
 curl https://localhost:5001/api/v1/worlds/{worldId}/entities/{parentEntityId} -v -k
 ```
+
+**Note**: This verifies the entity deleted in Scenario 2 is truly gone.
 
 - [ ] Response: `404 Not Found`
 - [ ] Response contains error code `ENTITY_NOT_FOUND`
@@ -146,11 +173,11 @@ curl "https://localhost:5001/api/v1/worlds/{worldId}/entities" -k
 - [ ] Response: `200 OK`
 - [ ] Response `data` array does NOT contain:
   - [ ] Parent entity (`{parentEntityId}`)
-  - [ ] Child 1
-  - [ ] Child 2
+  - [ ] Child 1 (from Scenario 1)
+  - [ ] Child 2 (from Scenario 1)
 - [ ] Soft-deleted entities are filtered out
 
-## Scenario 5: Rate Limiting
+## Scenario 6: Rate Limiting
 
 ### Create 6 More Entities
 
@@ -175,7 +202,7 @@ done
 - [ ] 429 response contains `Retry-After` header
 - [ ] 429 response contains error code `RATE_LIMIT_EXCEEDED`
 
-## Scenario 6: Telemetry Verification
+## Scenario 7: Telemetry Verification
 
 ### Open Aspire Dashboard
 
@@ -193,7 +220,7 @@ done
 - [ ] `delete.status` attribute
 - [ ] Structured events with timestamps
 
-## Scenario 7: Configuration Changes
+## Scenario 8: Configuration Changes
 
 ### Verify Config File
 
@@ -222,7 +249,7 @@ Edit `appsettings.Development.json` to lower rate limit:
 
 ## Summary
 
-**Total Checks**: 60+  
+**Total Checks**: 70+  
 **Required Pass Rate**: 100% for production readiness
 
 ## Troubleshooting Guide
