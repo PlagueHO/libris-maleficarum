@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 public class DeleteService : IDeleteService
 {
     private readonly IWorldEntityRepository _worldEntityRepository;
+    private readonly IWorldRepository _worldRepository;
     private readonly IDeleteOperationRepository _deleteOperationRepository;
     private readonly IUserContextService _userContextService;
     private readonly ITelemetryService _telemetryService;
@@ -23,18 +24,21 @@ public class DeleteService : IDeleteService
     /// Initializes a new instance of the <see cref="DeleteService"/> class.
     /// </summary>
     /// <param name="worldEntityRepository">The world entity repository.</param>
+    /// <param name="worldRepository">The world repository.</param>
     /// <param name="deleteOperationRepository">The delete operation repository.</param>
     /// <param name="userContextService">The user context service.</param>
     /// <param name="telemetryService">The telemetry service.</param>
     /// <param name="options">The delete operation options.</param>
     public DeleteService(
         IWorldEntityRepository worldEntityRepository,
+        IWorldRepository worldRepository,
         IDeleteOperationRepository deleteOperationRepository,
         IUserContextService userContextService,
         ITelemetryService telemetryService,
         IOptions<DeleteOperationOptions> options)
     {
         _worldEntityRepository = worldEntityRepository ?? throw new ArgumentNullException(nameof(worldEntityRepository));
+        _worldRepository = worldRepository ?? throw new ArgumentNullException(nameof(worldRepository));
         _deleteOperationRepository = deleteOperationRepository ?? throw new ArgumentNullException(nameof(deleteOperationRepository));
         _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
         _telemetryService = telemetryService ?? throw new ArgumentNullException(nameof(telemetryService));
@@ -255,15 +259,23 @@ public class DeleteService : IDeleteService
     /// <inheritdoc/>
     public async Task<DeleteOperation?> GetOperationStatusAsync(Guid worldId, Guid operationId, CancellationToken cancellationToken = default)
     {
-        return await _deleteOperationRepository.GetByIdAsync(worldId, operationId, cancellationToken);
+        // Enforce world ownership before returning operation metadata
+        // This call is expected to throw or fail if the current user does not own the world.
+        _ = await _worldRepository.GetByIdAsync(worldId, cancellationToken).ConfigureAwait(false);
+
+        return await _deleteOperationRepository.GetByIdAsync(worldId, operationId, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<DeleteOperation>> ListRecentOperationsAsync(Guid worldId, int limit = 20, CancellationToken cancellationToken = default)
     {
+        // Enforce world ownership before listing operation metadata
+        // This call is expected to throw or fail if the current user does not own the world.
+        _ = await _worldRepository.GetByIdAsync(worldId, cancellationToken).ConfigureAwait(false);
+
         // Clamp limit to max 100
         limit = Math.Min(limit, 100);
 
-        return await _deleteOperationRepository.GetRecentByWorldAsync(worldId, limit, cancellationToken);
+        return await _deleteOperationRepository.GetRecentByWorldAsync(worldId, limit, cancellationToken).ConfigureAwait(false);
     }
 }

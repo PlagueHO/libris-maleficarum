@@ -20,6 +20,7 @@ using NSubstitute;
 public class DeleteServiceCascadeTests
 {
     private IWorldEntityRepository _worldEntityRepository = null!;
+    private IWorldRepository _worldRepository = null!;
     private IDeleteOperationRepository _deleteOperationRepository = null!;
     private IUserContextService _userContextService = null!;
     private ITelemetryService _telemetryService = null!;
@@ -34,6 +35,7 @@ public class DeleteServiceCascadeTests
     public void Setup()
     {
         _worldEntityRepository = Substitute.For<IWorldEntityRepository>();
+        _worldRepository = Substitute.For<IWorldRepository>();
         _deleteOperationRepository = Substitute.For<IDeleteOperationRepository>();
         _userContextService = Substitute.For<IUserContextService>();
         _telemetryService = new NoOpTelemetryService();
@@ -51,6 +53,7 @@ public class DeleteServiceCascadeTests
 
         _deleteService = new DeleteService(
             _worldEntityRepository,
+            _worldRepository,
             _deleteOperationRepository,
             _userContextService,
             _telemetryService,
@@ -246,8 +249,8 @@ public class DeleteServiceCascadeTests
 
         var updatedOperation = finalUpdate.GetArguments()[0] as DeleteOperation;
         updatedOperation.Should().NotBeNull();
-        // child1 skipped (already deleted, not counted to avoid double-counting on resume), child2 + parent = 2 total
-        updatedOperation!.DeletedCount.Should().Be(2);
+        // All 3 entities counted as processed (child1 already deleted, child2 deleted, parent deleted)
+        updatedOperation!.DeletedCount.Should().Be(3);
         updatedOperation.Status.Should().Be(DeleteOperationStatus.Completed);
     }
 
