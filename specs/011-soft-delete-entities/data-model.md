@@ -204,10 +204,9 @@ public class CascadeDeleteOptions
 /// <param name="worldId">The world identifier (partition key).</param>
 /// <param name="entityId">The entity identifier to delete.</param>
 /// <param name="deletedBy">The user ID performing the deletion.</param>
-/// <param name="cascade">If true, recursively soft-delete all descendants; if false and children exist, throw InvalidOperationException.</param>
+/// <param name="cascade">If true, recursively soft-delete all descendants; if false, only delete the root entity.</param>
 /// <param name="cancellationToken">Cancellation token.</param>
 /// <returns>The number of entities deleted (including descendants if cascade).</returns>
-/// <exception cref="InvalidOperationException">Thrown when cascade=false and entity has children.</exception>
 Task<int> DeleteAsync(Guid worldId, Guid entityId, string deletedBy, bool cascade = false, CancellationToken cancellationToken = default);
 
 /// <summary>
@@ -277,7 +276,8 @@ No container changes required. The WorldEntity container already supports the sc
 
 EF Core will automatically serialize the new properties. No migration needed for Cosmos DB.
 
-**TTL Behavior**: 
+**TTL Behavior**:
+
 - When `Ttl` is null in C#, the property is omitted from JSON (not serialized as `"ttl\": null`)
 - When `Ttl = 7776000`, Cosmos DB automatically deletes the document 90 days after the `_ts` (last modified) timestamp
 - Container must have `DefaultTimeToLive = -1` configured to enable item-level TTL
@@ -289,11 +289,13 @@ EF Core will automatically serialize the new properties. No migration needed for
 For the TTL functionality to work, the WorldEntity container must be configured with container-level TTL enabled. This is an infrastructure setting, not application code:
 
 **Via Azure Portal**:
+
 1. Navigate to Container Settings
-2. Set "Time to Live": On (no default)
-3. Leave "Default TTL" blank or set to -1
+1. Set "Time to Live": On (no default)
+1. Leave "Default TTL" blank or set to -1
 
 **Via Bicep/ARM Template**:
+
 ```bicep
 resource worldEntityContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
   name: 'WorldEntities'
@@ -311,6 +313,7 @@ resource worldEntityContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabase
 ```
 
 **TTL Settings Explained**:
+
 - `defaultTtl: -1` = Item-level TTL enabled; documents without `ttl` field never expire
 - `defaultTtl: <positive number>` = Default expiration in seconds for documents without `ttl` field
 - `defaultTtl: null` or omitted = TTL disabled; all documents persist indefinitely regardless of `ttl` field

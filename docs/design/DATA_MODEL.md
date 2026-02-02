@@ -931,11 +931,11 @@ Total cost: 3-6 RUs
 1. **Soft Delete** (instant): Set `IsDeleted = true`, `DeletedDate`, `DeletedBy`, and `Ttl = 7776000` (90 days)
    - TTL countdown starts from the item's `_ts` (last modified timestamp)
    - Item becomes eligible for deletion 90 days after soft delete operation
-   
+
 1. **Retention Period** (90 days): Entity queryable with `IsDeleted = true` filter for restore operations
    - Restore before TTL expires: Set `Ttl = null` to remove expiration (property omitted from JSON)
    - Item remains in container until background purge cycle runs after TTL expiration
-   
+
 1. **Automatic Purge** (after TTL expires): Cosmos DB background process deletes document
    - Zero RU cost for deletion (handled by Cosmos DB internally)
    - Deletion may not be instantaneous; occurs during next background purge cycle
@@ -1060,11 +1060,11 @@ var containerProperties = new ContainerProperties
 
 1. **Property omission**: When `Ttl` is `null` in C#, the `ttl` property must be **omitted** from the JSON document (not serialized as `"ttl": null`). The EF Core Cosmos provider handles this automatically for nullable properties.
 
-2. **Container configuration**: The `DefaultTimeToLive` must be set to `-1` (or a positive number) on the container for item-level TTL to work. If not set, all item `ttl` values are ignored.
+1. **Container configuration**: The `DefaultTimeToLive` must be set to `-1` (or a positive number) on the container for item-level TTL to work. If not set, all item `ttl` values are ignored.
 
-3. **TTL countdown**: Starts from the item's `_ts` (last modified timestamp), not from creation time if the item was updated.
+1. **TTL countdown**: Starts from the item's `_ts` (last modified timestamp), not from creation time if the item was updated.
 
-4. **Value constraints**: Item TTL must be:
+1. **Value constraints**: Item TTL must be:
    - Omitted entirely (null in C#, property not in JSON), OR
    - `-1` (never expire), OR  
    - Positive integer ≤ `2147483647` seconds (~68 years max)

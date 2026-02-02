@@ -20,6 +20,7 @@ paths:
       description: |
         Initiates an asynchronous delete operation for the specified entity. 
         If cascade=true (default), all descendant entities are also deleted.
+        If cascade=false, only the specified entity is deleted (descendants remain as orphaned entities).
         
         Returns immediately with 202 Accepted and a Location header pointing to 
         the status endpoint. The frontend should poll the status endpoint to 
@@ -49,7 +50,7 @@ paths:
           required: false
           description: |
             If true (default), recursively soft-delete all descendant entities.
-            If false, only delete the specified entity (fails if it has children).
+            If false, only delete the specified entity (descendants remain and become orphaned).
           schema:
             type: boolean
             default: true
@@ -78,12 +79,6 @@ paths:
                   failedCount: 0
                   cascade: true
                   createdAt: "2026-01-31T12:00:00.000Z"
-        '400':
-          description: Bad request - entity has children but cascade=false
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: Forbidden - user does not own this world
           content:
@@ -309,7 +304,6 @@ components:
           enum:
             - ENTITY_NOT_FOUND
             - WORLD_NOT_FOUND
-            - ENTITY_HAS_CHILDREN
             - OPERATION_NOT_FOUND
             - FORBIDDEN
             - VALIDATION_ERROR
@@ -526,6 +520,9 @@ async function deleteEntityWithPolling(worldId: string, entityId: string): Promi
 ## Behavior Notes
 
 1. **All Async**: Every delete returns 202 Accepted immediately (no sync path)
+1. **Cascade Behavior**:
+   - `cascade=true` (default): Deletes entity and all descendants
+   - `cascade=false`: Deletes only the specified entity; descendants remain but become orphaned
 1. **Idempotency**: Deleting an already-deleted entity creates an operation that completes with `deleted: 0`
 1. **Authorization**: User must own the world
 1. **TTL**: Operations auto-purge 24 hours after completion
