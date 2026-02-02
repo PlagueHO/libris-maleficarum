@@ -4,22 +4,27 @@ using FluentAssertions;
 using LibrisMaleficarum.Api.Controllers;
 using LibrisMaleficarum.Api.Models.Responses;
 using LibrisMaleficarum.Domain.Entities;
+using LibrisMaleficarum.Domain.Exceptions;
+using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 /// <summary>
 /// Unit tests for DeleteOperationsController.
-/// Tests status polling and list operations endpoints.
+/// Tests status polling, list operations endpoints, and authorization.
 /// </summary>
 [TestClass]
 [TestCategory("Unit")]
 public class DeleteOperationsControllerTests
 {
     private IDeleteService _deleteService = null!;
+    private IWorldRepository _worldRepository = null!;
     private DeleteOperationsController _controller = null!;
 
     private readonly Guid _worldId = Guid.NewGuid();
+    private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _operationId = Guid.NewGuid();
     private readonly Guid _entityId = Guid.NewGuid();
     private const string TestUserId = "test-user-id";
@@ -28,7 +33,13 @@ public class DeleteOperationsControllerTests
     public void Setup()
     {
         _deleteService = Substitute.For<IDeleteService>();
-        _controller = new DeleteOperationsController(_deleteService);
+        _worldRepository = Substitute.For<IWorldRepository>();
+        _controller = new DeleteOperationsController(_deleteService, _worldRepository);
+
+        // Setup default world ownership (authorized)
+        var world = World.Create(_userId, "Test World", null);
+        _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>())
+            .Returns(world);
     }
 
     #region Constructor Tests
@@ -37,11 +48,22 @@ public class DeleteOperationsControllerTests
     public void Constructor_WithNullDeleteService_ShouldThrowArgumentNullException()
     {
         // Act
-        var action = () => new DeleteOperationsController(null!);
+        var action = () => new DeleteOperationsController(null!, _worldRepository);
 
         // Assert
         action.Should().Throw<ArgumentNullException>()
             .And.ParamName.Should().Be("deleteService");
+    }
+
+    [TestMethod]
+    public void Constructor_WithNullWorldRepository_ShouldThrowArgumentNullException()
+    {
+        // Act
+        var action = () => new DeleteOperationsController(_deleteService, null!);
+
+        // Assert
+        action.Should().Throw<ArgumentNullException>()
+            .And.ParamName.Should().Be("worldRepository");
     }
 
     #endregion
@@ -72,7 +94,7 @@ public class DeleteOperationsControllerTests
         response.WorldId.Should().Be(_worldId);
         response.RootEntityId.Should().Be(_entityId);
         response.RootEntityName.Should().Be("Test Entity");
-        response.Status.Should().Be("inprogress");
+        response.Status.Should().Be("in_progress");
         response.TotalEntities.Should().Be(10);
         response.DeletedCount.Should().Be(5);
         response.FailedCount.Should().Be(0);
@@ -196,6 +218,20 @@ public class DeleteOperationsControllerTests
         apiResponse.Data.Cascade.Should().BeTrue();
     }
 
+    [TestMethod]
+    public async Task GetDeleteOperation_WithUnauthorizedWorld_ShouldThrowUnauthorizedWorldAccessException()
+    {
+        // Arrange
+        _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>())
+            .Throws(new UnauthorizedWorldAccessException(_worldId, _userId));
+
+        // Act
+        var action = async () => await _controller.GetDeleteOperation(_worldId, _operationId, CancellationToken.None);
+
+        // Assert
+        await action.Should().ThrowAsync<UnauthorizedWorldAccessException>();
+    }
+
     #endregion
 
     #region ListDeleteOperations Tests
@@ -304,11 +340,25 @@ public class DeleteOperationsControllerTests
 
         firstOp.Id.Should().Be(operation.Id);
         firstOp.RootEntityName.Should().Be("Test Entity");
-        firstOp.Status.Should().Be("inprogress");
+        firstOp.Status.Should().Be("in_progress");
         firstOp.TotalEntities.Should().Be(10);
         firstOp.DeletedCount.Should().Be(5);
         firstOp.FailedCount.Should().Be(1);
         firstOp.Cascade.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public async Task ListDeleteOperations_WithUnauthorizedWorld_ShouldThrowUnauthorizedWorldAccessException()
+    {
+        // Arrange
+        _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>())
+            .Throws(new UnauthorizedWorldAccessException(_worldId, _userId));
+
+        // Act
+        var action = async () => await _controller.ListDeleteOperations(_worldId, limit: 20, CancellationToken.None);
+
+        // Assert
+        await action.Should().ThrowAsync<UnauthorizedWorldAccessException>();
     }
 
     #endregion

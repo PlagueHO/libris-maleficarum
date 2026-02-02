@@ -2,6 +2,7 @@ namespace LibrisMaleficarum.Api.Controllers;
 
 using LibrisMaleficarum.Api.Models.Responses;
 using LibrisMaleficarum.Domain.Entities;
+using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,14 +14,17 @@ using Microsoft.AspNetCore.Mvc;
 public class DeleteOperationsController : ControllerBase
 {
     private readonly IDeleteService _deleteService;
+    private readonly IWorldRepository _worldRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeleteOperationsController"/> class.
     /// </summary>
     /// <param name="deleteService">The delete service.</param>
-    public DeleteOperationsController(IDeleteService deleteService)
+    /// <param name="worldRepository">The world repository for authorization checks.</param>
+    public DeleteOperationsController(IDeleteService deleteService, IWorldRepository worldRepository)
     {
         _deleteService = deleteService ?? throw new ArgumentNullException(nameof(deleteService));
+        _worldRepository = worldRepository ?? throw new ArgumentNullException(nameof(worldRepository));
     }
 
     /// <summary>
@@ -32,12 +36,16 @@ public class DeleteOperationsController : ControllerBase
     /// <returns>The delete operation status.</returns>
     [HttpGet("{operationId:guid}")]
     [ProducesResponseType<ApiResponse<DeleteOperationResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetDeleteOperation(
         Guid worldId,
         Guid operationId,
         CancellationToken cancellationToken)
     {
+        // Validate world ownership - will throw UnauthorizedWorldAccessException if user doesn't own world
+        await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+
         var operation = await _deleteService.GetOperationStatusAsync(worldId, operationId, cancellationToken);
 
         if (operation == null)
@@ -67,11 +75,15 @@ public class DeleteOperationsController : ControllerBase
     /// <returns>List of recent delete operations.</returns>
     [HttpGet]
     [ProducesResponseType<ApiResponse<IEnumerable<DeleteOperationResponse>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ListDeleteOperations(
         Guid worldId,
         [FromQuery] int limit = 20,
         CancellationToken cancellationToken = default)
     {
+        // Validate world ownership - will throw UnauthorizedWorldAccessException if user doesn't own world
+        await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+
         var operations = await _deleteService.ListRecentOperationsAsync(worldId, limit, cancellationToken);
 
         return Ok(new ApiResponse<IEnumerable<DeleteOperationResponse>>
@@ -95,7 +107,7 @@ public class DeleteOperationsController : ControllerBase
             WorldId = operation.WorldId,
             RootEntityId = operation.RootEntityId,
             RootEntityName = operation.RootEntityName,
-            Status = operation.Status.ToString().ToLowerInvariant(),
+            Status = MapStatusToString(operation.Status),
             TotalEntities = operation.TotalEntities,
             DeletedCount = operation.DeletedCount,
             FailedCount = operation.FailedCount,
@@ -106,6 +118,24 @@ public class DeleteOperationsController : ControllerBase
             CreatedAt = operation.CreatedAt,
             StartedAt = operation.StartedAt,
             CompletedAt = operation.CompletedAt
+        };
+    }
+
+    /// <summary>
+    /// Maps DeleteOperationStatus enum to documented API string values.
+    /// </summary>
+    /// <param name="status">The delete operation status enum value.</param>
+    /// <returns>The API string representation matching the documented contract.</returns>
+    private static string MapStatusToString(DeleteOperationStatus status)
+    {
+        return status switch
+        {
+            DeleteOperationStatus.Pending => "pending",
+            DeleteOperationStatus.InProgress => "in_progress",
+            DeleteOperationStatus.Completed => "completed",
+            DeleteOperationStatus.Partial => "partial",
+            DeleteOperationStatus.Failed => "failed",
+            _ => status.ToString().ToLowerInvariant()
         };
     }
 }
