@@ -574,5 +574,64 @@ public class SoftDeleteIntegrationTests
         child2GetResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    [TestMethod]
+    [TestCategory("Integration")]
+    public async Task DeleteEntity_WithChildrenAndCascadeFalse_Returns400()
+    {
+        // Arrange
+        var cancellationToken = TestContext!.CancellationTokenSource.Token;
+        using var httpClient = AppHostFixture.App!.CreateHttpClient("api");
+
+        // Create a world
+        var worldRequest = new { Name = "Test World for Cascade False Validation", Description = "World to test cascade=false with children" };
+        using var worldResponse = await httpClient.PostAsJsonAsync("/api/v1/worlds", worldRequest, cancellationToken);
+        worldResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var worldId = worldResponse.Headers.Location!.Segments.Last();
+
+        // Create parent entity
+        var parentRequest = new
+        {
+            Name = "Parent Entity",
+            Description = "Parent entity with children",
+            EntityType = EntityType.Location
+        };
+        using var parentResponse = await httpClient.PostAsJsonAsync(
+            $"/api/v1/worlds/{worldId}/entities",
+            parentRequest,
+            cancellationToken);
+        parentResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var parentId = parentResponse.Headers.Location!.Segments.Last();
+
+        // Create child entity
+        var childRequest = new
+        {
+            Name = "Child Entity",
+            Description = "Child entity",
+            EntityType = EntityType.Location,
+            ParentId = parentId
+        };
+        using var childResponse = await httpClient.PostAsJsonAsync(
+            $"/api/v1/worlds/{worldId}/entities",
+            childRequest,
+            cancellationToken);
+        childResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Act - Attempt to delete parent with cascade=false
+        using var deleteResponse = await httpClient.DeleteAsync(
+            $"/api/v1/worlds/{worldId}/entities/{parentId}?cascade=false",
+            cancellationToken);
+
+        // Assert - Should return 400 Bad Request
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var errorContent = await deleteResponse.Content.ReadAsStringAsync(cancellationToken);
+        errorContent.Should().Contain("ENTITY_HAS_CHILDREN");
+        errorContent.Should().Contain("cascade=true");
+
+        // Verify parent entity still exists (not deleted)
+        using var getResponse = await httpClient.GetAsync($"/api/v1/worlds/{worldId}/entities/{parentId}", cancellationToken);
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
     #endregion
 }

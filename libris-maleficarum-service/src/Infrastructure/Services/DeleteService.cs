@@ -61,6 +61,12 @@ public class DeleteService : IDeleteService
             throw new EntityNotFoundException(worldId, entityId);
         }
 
+        // Validate cascade=false on entities with children (zero-RU check using HasChildren property)
+        if (!cascade && entity.HasChildren)
+        {
+            throw new EntityHasChildrenException(entityId, entity.Name);
+        }
+
         // Create delete operation
         var operation = DeleteOperation.Create(
             worldId,

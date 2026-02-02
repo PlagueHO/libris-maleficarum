@@ -56,7 +56,7 @@ curl -X POST https://localhost:5001/api/v1/worlds/{worldId}/entities \
 > **Note**: The `cascade` parameter controls whether descendant entities are deleted:
 >
 > - `cascade=true` (default): Deletes the entity and all its descendants
-> - `cascade=false`: Deletes only the specified entity (descendants remain but become orphaned)
+> - `cascade=false`: Deletes only the specified entity if it has no children (returns 400 Bad Request if children exist)
 >
 > All deletes return `202 Accepted` immediately and are processed asynchronously in the background.
 
