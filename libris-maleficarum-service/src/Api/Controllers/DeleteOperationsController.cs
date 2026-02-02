@@ -2,6 +2,7 @@ namespace LibrisMaleficarum.Api.Controllers;
 
 using LibrisMaleficarum.Api.Models.Responses;
 using LibrisMaleficarum.Domain.Entities;
+using LibrisMaleficarum.Domain.Extensions;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -99,7 +100,7 @@ public class DeleteOperationsController : ControllerBase
     /// <summary>
     /// Maps a DeleteOperation to DeleteOperationResponse DTO.
     /// </summary>
-    private static DeleteOperationResponse MapToResponse(DeleteOperation operation)
+    internal static DeleteOperationResponse MapToResponse(DeleteOperation operation)
     {
         return new DeleteOperationResponse
         {
@@ -107,7 +108,7 @@ public class DeleteOperationsController : ControllerBase
             WorldId = operation.WorldId,
             RootEntityId = operation.RootEntityId,
             RootEntityName = operation.RootEntityName,
-            Status = MapStatusToString(operation.Status),
+            Status = operation.Status.ToApiString(),
             TotalEntities = operation.TotalEntities,
             DeletedCount = operation.DeletedCount,
             FailedCount = operation.FailedCount,
@@ -118,24 +119,6 @@ public class DeleteOperationsController : ControllerBase
             CreatedAt = operation.CreatedAt,
             StartedAt = operation.StartedAt,
             CompletedAt = operation.CompletedAt
-        };
-    }
-
-    /// <summary>
-    /// Maps DeleteOperationStatus enum to documented API string values.
-    /// </summary>
-    /// <param name="status">The delete operation status enum value.</param>
-    /// <returns>The API string representation matching the documented contract.</returns>
-    private static string MapStatusToString(DeleteOperationStatus status)
-    {
-        return status switch
-        {
-            DeleteOperationStatus.Pending => "pending",
-            DeleteOperationStatus.InProgress => "in_progress",
-            DeleteOperationStatus.Completed => "completed",
-            DeleteOperationStatus.Partial => "partial",
-            DeleteOperationStatus.Failed => "failed",
-            _ => status.ToString().ToLowerInvariant()
         };
     }
 }

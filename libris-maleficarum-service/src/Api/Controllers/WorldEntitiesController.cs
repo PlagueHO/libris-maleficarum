@@ -6,6 +6,7 @@ using LibrisMaleficarum.Api.Models.Responses;
 using LibrisMaleficarum.Api.Validators;
 using LibrisMaleficarum.Domain.Entities;
 using LibrisMaleficarum.Domain.Exceptions;
+using LibrisMaleficarum.Domain.Extensions;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Domain.ValueObjects;
@@ -439,7 +440,7 @@ public class WorldEntitiesController : ControllerBase
             // Return 202 Accepted with operation details
             return Accepted(new ApiResponse<DeleteOperationResponse>
             {
-                Data = MapToDeleteOperationResponse(operation)
+                Data = DeleteOperationsController.MapToResponse(operation)
             });
         }
         catch (EntityHasChildrenException ex)
@@ -573,30 +574,5 @@ public class WorldEntitiesController : ControllerBase
     private static string GetETag(WorldEntity entity)
     {
         return $"\"{entity.ModifiedDate.Ticks}\"";
-    }
-
-    /// <summary>
-    /// Maps a DeleteOperation to DeleteOperationResponse DTO.
-    /// </summary>
-    private static DeleteOperationResponse MapToDeleteOperationResponse(DeleteOperation operation)
-    {
-        return new DeleteOperationResponse
-        {
-            Id = operation.Id,
-            WorldId = operation.WorldId,
-            RootEntityId = operation.RootEntityId,
-            RootEntityName = operation.RootEntityName,
-            Status = operation.Status.ToString().ToLowerInvariant(),
-            TotalEntities = operation.TotalEntities,
-            DeletedCount = operation.DeletedCount,
-            FailedCount = operation.FailedCount,
-            FailedEntityIds = operation.FailedEntityIds,
-            ErrorDetails = operation.ErrorDetails,
-            Cascade = operation.Cascade,
-            CreatedBy = operation.CreatedBy,
-            CreatedAt = operation.CreatedAt,
-            StartedAt = operation.StartedAt,
-            CompletedAt = operation.CompletedAt
-        };
     }
 }
