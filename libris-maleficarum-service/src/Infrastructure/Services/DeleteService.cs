@@ -173,17 +173,19 @@ public class DeleteService : IDeleteService
                 {
                     try
                     {
-                        // Skip if already deleted (idempotency for checkpoint resume)
-                        // Don't increment processedCount for already-deleted entities to avoid double-counting on resume
-                        if (entity.IsDeleted)
+                        // Soft delete the entity if not already deleted
+                        if (!entity.IsDeleted)
                         {
-                            continue;
+                            entity.SoftDelete(userId);
+                            await _worldEntityRepository.UpdateAsync(entity, cancellationToken: cancellationToken);
                         }
 
-                        // Soft delete the entity
-                        entity.SoftDelete(userId);
-                        await _worldEntityRepository.UpdateAsync(entity, cancellationToken: cancellationToken);
-                        processedCount++;
+                        // Count the entity as processed once it is (or was already) deleted,
+                        // but do not exceed the total number of entities for this operation.
+                        if (processedCount < totalEntities)
+                        {
+                            processedCount++;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -202,13 +204,21 @@ public class DeleteService : IDeleteService
             try
             {
                 var rootEntity = await _worldEntityRepository.GetByIdAsync(worldId, operation.RootEntityId, cancellationToken);
-                if (rootEntity != null && !rootEntity.IsDeleted)
+                if (rootEntity != null)
                 {
-                    rootEntity.SoftDelete(userId);
-                    await _worldEntityRepository.UpdateAsync(rootEntity, cancellationToken: cancellationToken);
-                    processedCount++;
+                    if (!rootEntity.IsDeleted)
+                    {
+                        rootEntity.SoftDelete(userId);
+                        await _worldEntityRepository.UpdateAsync(rootEntity, cancellationToken: cancellationToken);
+                    }
+
+                    // Count the root entity as processed once it is (or was already) deleted,
+                    // but do not exceed the total number of entities for this operation.
+                    if (processedCount < totalEntities)
+                    {
+                        processedCount++;
+                    }
                 }
-                // If already deleted, skip without incrementing (idempotency for checkpoint resume)
             }
             catch (Exception ex)
             {
