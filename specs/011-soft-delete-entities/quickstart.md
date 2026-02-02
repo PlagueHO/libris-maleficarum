@@ -51,18 +51,14 @@ curl -X POST https://localhost:5001/api/v1/worlds/{worldId}/entities \
   -d '{"name": "Child 2", "entityType": "Location", "parentId": "{parentEntityId}"}'
 ```
 
-### 3. Test Delete Without Cascade (Has Children)
+### 3. Initiate Delete With Cascade
 
-```bash
-# Attempt to delete parent without cascade (should fail with 400)
-curl -X DELETE https://localhost:5001/api/v1/worlds/{worldId}/entities/{parentEntityId}?cascade=false \
-  -v
-
-# Response: 400 Bad Request
-# {"error":{"code":"ENTITY_HAS_CHILDREN","message":"Cannot delete entity..."}}
-```
-
-### 4. Initiate Delete With Cascade
+> **Note**: The `cascade` parameter controls whether descendant entities are deleted:
+>
+> - `cascade=true` (default): Deletes the entity and all its descendants
+> - `cascade=false`: Deletes only the specified entity (descendants remain but become orphaned)
+>
+> All deletes return `202 Accepted` immediately and are processed asynchronously in the background.
 
 ```bash
 # Delete parent with cascade (returns 202 immediately)
@@ -82,7 +78,7 @@ curl -X DELETE "https://localhost:5001/api/v1/worlds/{worldId}/entities/{parentE
 # }
 ```
 
-### 5. Poll for Completion
+### 4. Poll for Completion
 
 ```bash
 # Check operation status (poll every 500ms until complete)
@@ -111,7 +107,7 @@ curl https://localhost:5001/api/v1/worlds/{worldId}/delete-operations/{operation
 # }
 ```
 
-### 6. List Recent Delete Operations
+### 5. List Recent Delete Operations
 
 ```bash
 # View all recent delete operations for the world
@@ -127,7 +123,7 @@ curl https://localhost:5001/api/v1/worlds/{worldId}/delete-operations?limit=10
 # }
 ```
 
-### 7. Verify Deletion
+### 6. Verify Deletion
 
 ```bash
 # Get entity (should return 404)
@@ -137,7 +133,7 @@ curl https://localhost:5001/api/v1/worlds/{worldId}/entities/{parentEntityId}
 curl https://localhost:5001/api/v1/worlds/{worldId}/entities
 ```
 
-### 8. View Telemetry
+### 7. View Telemetry
 
 Open Aspire Dashboard at `http://localhost:15888`:
 

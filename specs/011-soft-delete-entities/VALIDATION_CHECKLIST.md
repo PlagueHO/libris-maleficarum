@@ -66,18 +66,7 @@ curl -X POST https://localhost:5001/api/v1/worlds/{worldId}/entities \
 - [ ] Both responses: `201 Created`
 - [ ] Both contain `parentId` matching `{parentEntityId}`
 
-## Scenario 2: Delete Without Cascade (Should Fail)
-
-```bash
-curl -X DELETE "https://localhost:5001/api/v1/worlds/{worldId}/entities/{parentEntityId}?cascade=false" \
-  -v -k
-```
-
-- [ ] Response: `400 Bad Request`
-- [ ] Response contains error code `ENTITY_HAS_CHILDREN`
-- [ ] Error message mentions "Cannot delete entity" and "has child entities"
-
-## Scenario 3: Delete With Cascade (Async Processing)
+## Scenario 2: Delete With Cascade (Async Processing)
 
 ### Initiate Delete
 
@@ -125,7 +114,7 @@ curl https://localhost:5001/api/v1/worlds/{worldId}/delete-operations/{operation
   - [ ] `failedCount: 0`
   - [ ] `completedAt` timestamp is set
 
-## Scenario 4: List Recent Operations
+## Scenario 3: List Recent Operations
 
 ```bash
 curl "https://localhost:5001/api/v1/worlds/{worldId}/delete-operations?limit=10" -k
@@ -137,7 +126,7 @@ curl "https://localhost:5001/api/v1/worlds/{worldId}/delete-operations?limit=10"
 - [ ] Response contains `meta.count` field
 - [ ] Each operation has `id`, `status`, `deletedCount` fields
 
-## Scenario 5: Verify Deletion
+## Scenario 4: Verify Deletion
 
 ### Get Entity (Should Return 404)
 
@@ -161,7 +150,7 @@ curl "https://localhost:5001/api/v1/worlds/{worldId}/entities" -k
   - [ ] Child 2
 - [ ] Soft-deleted entities are filtered out
 
-## Scenario 6: Rate Limiting
+## Scenario 5: Rate Limiting
 
 ### Create 6 More Entities
 
@@ -186,7 +175,7 @@ done
 - [ ] 429 response contains `Retry-After` header
 - [ ] 429 response contains error code `RATE_LIMIT_EXCEEDED`
 
-## Scenario 7: Telemetry Verification
+## Scenario 6: Telemetry Verification
 
 ### Open Aspire Dashboard
 
@@ -204,7 +193,7 @@ done
 - [ ] `delete.status` attribute
 - [ ] Structured events with timestamps
 
-## Scenario 8: Configuration Changes
+## Scenario 7: Configuration Changes
 
 ### Verify Config File
 
