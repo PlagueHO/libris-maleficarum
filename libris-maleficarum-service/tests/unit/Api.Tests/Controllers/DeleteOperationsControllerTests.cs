@@ -220,7 +220,7 @@ public class DeleteOperationsControllerTests
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<IEnumerable<DeleteOperationResponse>>>().Subject;
         apiResponse.Data.Should().HaveCount(3);
-        
+
         var meta = apiResponse.Meta;
         meta.Should().NotBeNull();
         meta!.Should().ContainKey("count");
@@ -243,7 +243,7 @@ public class DeleteOperationsControllerTests
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<IEnumerable<DeleteOperationResponse>>>().Subject;
         apiResponse.Data.Should().BeEmpty();
-        
+
         var meta = apiResponse.Meta;
         meta.Should().NotBeNull();
         meta!["count"].Should().Be(0);
