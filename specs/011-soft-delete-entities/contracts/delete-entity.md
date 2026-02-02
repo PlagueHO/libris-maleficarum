@@ -50,7 +50,8 @@ paths:
           required: false
           description: |
             If true (default), recursively soft-delete all descendant entities.
-            If false, only delete the specified entity (descendants remain and become orphaned).
+            If false, only delete the specified entity if it has no children.
+            Attempting to delete an entity with children when cascade=false returns 400 Bad Request.
           schema:
             type: boolean
             default: true
@@ -85,6 +86,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Bad Request - attempting to delete entity with children when cascade=false
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: ENTITY_HAS_CHILDREN
+                  message: "Cannot delete entity 'Parent Entity' (ID: '123...') without cascade - it has child entities. Use cascade=true to delete all descendants."
         '404':
           description: World or entity not found
           content:
@@ -307,6 +318,7 @@ components:
             - OPERATION_NOT_FOUND
             - FORBIDDEN
             - VALIDATION_ERROR
+            - ENTITY_HAS_CHILDREN
             - RATE_LIMIT_EXCEEDED
         message:
           type: string
@@ -522,7 +534,7 @@ async function deleteEntityWithPolling(worldId: string, entityId: string): Promi
 1. **All Async**: Every delete returns 202 Accepted immediately (no sync path)
 1. **Cascade Behavior**:
    - `cascade=true` (default): Deletes entity and all descendants
-   - `cascade=false`: Deletes only the specified entity; descendants remain but become orphaned
+   - `cascade=false`: Deletes only the specified entity if it has no children; returns 400 if children exist
 1. **Idempotency**: Deleting an already-deleted entity creates an operation that completes with `deleted: 0`
 1. **Authorization**: User must own the world
 1. **TTL**: Operations auto-purge 24 hours after completion

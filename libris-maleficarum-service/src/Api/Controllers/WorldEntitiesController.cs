@@ -442,6 +442,17 @@ public class WorldEntitiesController : ControllerBase
                 Data = MapToDeleteOperationResponse(operation)
             });
         }
+        catch (EntityHasChildrenException ex)
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Error = new ErrorDetail
+                {
+                    Code = "ENTITY_HAS_CHILDREN",
+                    Message = ex.Message
+                }
+            });
+        }
         catch (RateLimitExceededException ex)
         {
             Response.Headers.Append("Retry-After", ex.RetryAfterSeconds.ToString());
