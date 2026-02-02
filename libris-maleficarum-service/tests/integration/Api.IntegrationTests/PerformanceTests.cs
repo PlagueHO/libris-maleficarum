@@ -28,12 +28,13 @@ public class PerformanceTests
     }
 
     /// <summary>
-    /// Tests that DELETE endpoint returns 202 Accepted within 500ms.
+    /// Tests that DELETE endpoint returns 202 Accepted within 500ms in integration test environment.
     /// This measures full end-to-end integration test including AppHost, Cosmos DB emulator,
     /// HTTP roundtrip, serialization, and validation. Not a pure API benchmark.
+    /// Production target (SC-001) is 200ms; integration test threshold is 500ms to account for test infrastructure overhead.
     /// </summary>
     [TestMethod]
-    public async Task DeleteEntity_ReturnsWithin200ms()
+    public async Task DeleteEntity_ReturnsWithin500ms_IntegrationTest()
     {
         // Arrange: Create a world and a simple entity
         var cancellationToken = TestContext!.CancellationTokenSource.Token;
