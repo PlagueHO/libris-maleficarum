@@ -4,6 +4,7 @@ using FluentAssertions;
 using LibrisMaleficarum.Api.Controllers;
 using LibrisMaleficarum.Api.Models.Responses;
 using LibrisMaleficarum.Domain.Entities;
+using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
@@ -16,13 +17,21 @@ using NSubstitute;
 public class DeleteOperationsControllerListTests
 {
     private IDeleteService _deleteService = null!;
+    private IWorldRepository _worldRepository = null!;
     private DeleteOperationsController _controller = null!;
 
     [TestInitialize]
     public void Setup()
     {
         _deleteService = Substitute.For<IDeleteService>();
-        _controller = new DeleteOperationsController(_deleteService);
+        _worldRepository = Substitute.For<IWorldRepository>();
+        _controller = new DeleteOperationsController(_deleteService, _worldRepository);
+
+        // Setup default world ownership (authorized) for all tests
+        var userId = Guid.NewGuid();
+        var world = World.Create(userId, "Test World", null);
+        _worldRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(world);
     }
 
     [TestMethod]
