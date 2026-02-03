@@ -52,13 +52,13 @@ Tasks organized by user story to enable independent implementation and testing. 
 
 **Story Goal**: Users can delete WorldEntity items asynchronously without UI blocking
 
-**Independent Test**: Click delete button on entity with children → confirm dialog → delete initiates → UI remains responsive → operation appears in notification center within 3 seconds
+**Independent Test**: Click delete button on entity with children → confirm dialog → delete initiates → entity immediately disappears from hierarchy (optimistic update) → UI remains responsive → operation appears in notification center within 3 seconds
 
 **Tasks**:
 
 - [ ] T015 [US1] Write test for initiateAsyncDelete mutation in libris-maleficarum-app/src/services/asyncOperationsApi.test.ts
 - [ ] T016 [US1] Update DeleteConfirmationModal tests in libris-maleficarum-app/src/components/MainPanel/DeleteConfirmationModal.test.tsx
-- [ ] T017 [US1] Implement async delete trigger in libris-maleficarum-app/src/components/MainPanel/DeleteConfirmationModal.tsx
+- [ ] T017 [US1] Implement async delete trigger with optimistic hierarchy update in libris-maleficarum-app/src/components/MainPanel/DeleteConfirmationModal.tsx
 - [ ] T018 [US1] Add loading state and error handling for async delete in libris-maleficarum-app/src/components/MainPanel/DeleteConfirmationModal.tsx
 - [ ] T019 [P] [US1] Write integration test for async delete workflow in libris-maleficarum-app/src/**tests**/integration/asyncDeleteWorkflow.test.tsx
 - [ ] T020 [US1] Update WorldEntityForm to disable editing for entities being deleted in libris-maleficarum-app/src/components/MainPanel/WorldEntityForm.tsx
@@ -69,14 +69,14 @@ Tasks organized by user story to enable independent implementation and testing. 
 
 **Story Goal**: Users can view async operation status through notification center sidebar with bell icon
 
-**Independent Test**: Click bell icon → sidebar opens → displays active operations with real-time status → badge shows unread count → click outside closes sidebar
+**Independent Test**: Click bell icon → sidebar opens over chat panel → displays active operations with real-time status → badge shows unread count → click outside closes sidebar
 
 **Tasks**:
 
 - [ ] T021 [US2] Write NotificationBell component test in libris-maleficarum-app/src/components/NotificationCenter/NotificationBell.test.tsx
 - [ ] T022 [US2] Implement NotificationBell component in libris-maleficarum-app/src/components/NotificationCenter/NotificationBell.tsx
 - [ ] T023 [US2] Write NotificationCenter component test in libris-maleficarum-app/src/components/NotificationCenter/NotificationCenter.test.tsx
-- [ ] T024 [US2] Implement NotificationCenter component with Drawer in libris-maleficarum-app/src/components/NotificationCenter/NotificationCenter.tsx
+- [ ] T024 [US2] Implement NotificationCenter component with Drawer positioned over chat panel in libris-maleficarum-app/src/components/NotificationCenter/NotificationCenter.tsx
 - [ ] T025 [US2] Write NotificationItem component test in libris-maleficarum-app/src/components/NotificationCenter/NotificationItem.test.tsx
 - [ ] T026 [US2] Implement NotificationItem component in libris-maleficarum-app/src/components/NotificationCenter/NotificationItem.tsx
 - [ ] T027 [US2] Create barrel export in libris-maleficarum-app/src/components/NotificationCenter/index.ts

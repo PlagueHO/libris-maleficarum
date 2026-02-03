@@ -7,9 +7,9 @@
 
 ## Summary
 
-Implement asynchronous WorldEntity delete operations with cascading entity removal, complemented by a notification center UI component similar to Azure Portal. The notification center features a bell icon in the top-right toolbar that displays a badge count for unread notifications and opens a sidebar panel showing active and completed async operations with real-time status updates via periodic polling.
+Implement asynchronous WorldEntity delete operations with cascading entity removal, complemented by a notification center UI component similar to Azure Portal. The notification center features a bell icon in the top-right toolbar that displays a badge count for unread notifications and opens a sidebar panel over the chat area showing active and completed async operations with real-time status updates via periodic polling. Frontend provides optimistic UI updates by immediately removing deleted entities from the hierarchy while backend processing continues asynchronously.
 
-**Technical Approach**: Frontend-only implementation using React 19+ with TypeScript, Redux Toolkit for state management, Shadcn/ui components for UI, and periodic polling (2-3 second intervals) for status updates with abstraction layer to enable future migration to push-based mechanisms (SSE/WebSocket/SignalR).
+**Technical Approach**: Frontend-only implementation using React 19+ with TypeScript, Redux Toolkit for state management (including optimistic entity removal), Shadcn/ui components for UI (Drawer positioned over chat panel), and periodic polling (2-3 second intervals) for status updates with abstraction layer to enable future migration to push-based mechanisms (SSE/WebSocket/SignalR).
 
 ## Technical Context
 
@@ -102,7 +102,7 @@ libris-maleficarum-app/
 ├── src/
 │   ├── components/
 │   │   ├── NotificationCenter/          # NEW: Notification center components
-│   │   │   ├── NotificationCenter.tsx      # Sidebar panel component
+│   │   │   ├── NotificationCenter.tsx      # Sidebar panel component (overlays chat area)
 │   │   │   ├── NotificationCenter.test.tsx # Accessibility + unit tests
 │   │   │   ├── NotificationBell.tsx        # Bell icon button with badge
 │   │   │   ├── NotificationBell.test.tsx   # Accessibility + unit tests
@@ -112,7 +112,7 @@ libris-maleficarum-app/
 │   │   ├── TopToolbar/
 │   │   │   └── TopToolbar.tsx              # MODIFIED: Add NotificationBell
 │   │   ├── MainPanel/
-│   │   │   ├── DeleteConfirmationModal.tsx # MODIFIED: Initiate async delete
+│   │   │   ├── DeleteConfirmationModal.tsx # MODIFIED: Initiate async delete + optimistic UI update
 │   │   │   └── WorldEntityForm.tsx         # MODIFIED: Handle entity being deleted
 │   │   └── ui/
 │   │       └── badge.tsx                   # EXISTING: Shadcn/ui Badge component

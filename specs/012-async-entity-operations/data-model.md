@@ -381,12 +381,17 @@ DeleteConfirmationModal
      ▼
 POST /api/world-entities/{id}/async-delete
      │
+     ├─→ Frontend: Optimistically remove entity from hierarchy (immediate UI update)
+     │   └─→ Update WorldSidebar Redux state to hide deleted entities
+     │
      ▼
 Server responds with { operationId: "..." }
      │
      ▼
 Operation appears in next polling cycle (within 3 seconds)
 ```
+
+**Note**: Frontend performs optimistic update by immediately removing the entity and its children from the displayed hierarchy while the backend processes the delete asynchronously. This provides immediate visual feedback without performance concerns since only loaded/expanded nodes in the UI are affected.
 
 ### 2. Polling Cycle (Every 3 Seconds)
 
