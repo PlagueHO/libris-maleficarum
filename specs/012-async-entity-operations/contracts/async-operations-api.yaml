@@ -1,0 +1,482 @@
+openapi: 3.0.3
+info:
+  title: Async Operations API
+  description: |
+    API endpoints for managing asynchronous WorldEntity operations with progress tracking.
+    
+    This contract defines the backend endpoints that the frontend notification center
+    will consume to track long-running operations like cascading entity deletes.
+    
+    **Feature**: Async Entity Operations with Notification Center
+    **Spec**: ../spec.md
+    **Data Model**: ../data-model.md
+  version: 1.0.0
+  contact:
+    name: Libris Maleficarum API
+    url: https://github.com/PlagueHO/libris-maleficarum
+
+servers:
+  - url: https://localhost:8080/api
+    description: Local development (Aspire.NET)
+  - url: https://api.libris-maleficarum.example.com/api
+    description: Production (Azure Container Apps)
+
+tags:
+  - name: Async Operations
+    description: Endpoints for managing and tracking asynchronous operations
+  - name: World Entities
+    description: WorldEntity operations that support async execution
+
+paths:
+  /world-entities/{id}/async-delete:
+    post:
+      summary: Initiate async delete of WorldEntity with cascading
+      description: |
+        Initiates an asynchronous delete operation for the specified WorldEntity.
+        If the entity has child entities, they will be cascaded deleted.
+        
+        Operation runs in the background; use returned `operationId` to poll status
+        via `/async-operations/{operationId}` endpoint.
+        
+        **Relates to User Story**: P1 - Initiate Async Entity Delete
+      tags:
+        - World Entities
+        - Async Operations
+      operationId: initiateAsyncDelete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: WorldEntity ID (GUID)
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '202':
+          description: Async delete operation accepted and initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - operationId
+                  - targetEntityId
+                  - targetEntityName
+                  - estimatedCount
+                properties:
+                  operationId:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for tracking this operation
+                    example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  targetEntityId:
+                    type: string
+                    format: uuid
+                    description: ID of the entity being deleted
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+                  targetEntityName:
+                    type: string
+                    description: Name of the entity being deleted
+                    example: "Fantasy Realm"
+                  estimatedCount:
+                    type: integer
+                    description: Estimated total entities to delete (including children)
+                    example: 267
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflict - Entity is already being deleted or locked
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://api.libris-maleficarum.example.com/problems/entity-locked"
+                title: "Entity Locked"
+                status: 409
+                detail: "This entity is already being deleted by operation 7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                instance: "/api/world-entities/550e8400-e29b-41d4-a716-446655440000/async-delete"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /async-operations:
+    get:
+      summary: List all async operations for current user
+      description: |
+        Returns list of all async operations (current and completed) for the authenticated user.
+        Frontend polls this endpoint every 2-3 seconds when notification center is active.
+        
+        Operations older than 7 days may be automatically cleaned up by server.
+        
+        **Relates to User Story**: P2 - Track Operation Progress via Notification Center
+      tags:
+        - Async Operations
+      operationId: listAsyncOperations
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filter by operation status
+          schema:
+            type: string
+            enum: [pending, in-progress, completed, failed]
+        - name: type
+          in: query
+          required: false
+          description: Filter by operation type
+          schema:
+            type: string
+            enum: [DELETE, CREATE, UPDATE, IMPORT, EXPORT]
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of operations to return (default 50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: List of async operations
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - operations
+                  - totalCount
+                properties:
+                  operations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AsyncOperation'
+                  totalCount:
+                    type: integer
+                    description: Total number of operations (ignoring limit parameter)
+                    example: 12
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /async-operations/{operationId}:
+    get:
+      summary: Get status of specific async operation
+      description: |
+        Returns current status and progress of the specified async operation.
+        Frontend may poll this endpoint for fine-grained status updates.
+        
+        **Relates to User Story**: P2 - Track Operation Progress via Notification Center
+      tags:
+        - Async Operations
+      operationId: getAsyncOperation
+      parameters:
+        - name: operationId
+          in: path
+          required: true
+          description: Async operation ID
+          schema:
+            type: string
+            format: uuid
+            example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+      responses:
+        '200':
+          description: Async operation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncOperation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /async-operations/{operationId}/retry:
+    post:
+      summary: Retry a failed async operation
+      description: |
+        Retries a failed async operation. Operation continues from the point of failure
+        (does not reprocess already-deleted entities for delete operations).
+        
+        Only failed operations can be retried. Returns 409 if operation is not in failed state.
+        
+        **Relates to User Story**: P3 - View Operation History and Handle Errors
+      tags:
+        - Async Operations
+      operationId: retryAsyncOperation
+      parameters:
+        - name: operationId
+          in: path
+          required: true
+          description: Async operation ID to retry
+          schema:
+            type: string
+            format: uuid
+            example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+      responses:
+        '202':
+          description: Retry accepted; operation restarted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncOperation'
+        '409':
+          description: Conflict - Operation is not in failed state
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /async-operations/{operationId}/cancel:
+    post:
+      summary: Cancel a pending or in-progress async operation
+      description: |
+        Attempts to cancel a pending or in-progress async operation.
+        
+        For delete operations with partial commit semantics, already-deleted entities
+        will NOT be restored. Operation will be marked as cancelled.
+        
+        Only pending or in-progress operations can be cancelled.
+      tags:
+        - Async Operations
+      operationId: cancelAsyncOperation
+      parameters:
+        - name: operationId
+          in: path
+          required: true
+          description: Async operation ID to cancel
+          schema:
+            type: string
+            format: uuid
+            example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+      responses:
+        '200':
+          description: Operation cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncOperation'
+        '409':
+          description: Conflict - Operation is not cancellable (already completed/failed)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  schemas:
+    AsyncOperation:
+      type: object
+      required:
+        - id
+        - type
+        - targetEntityId
+        - targetEntityName
+        - targetEntityType
+        - status
+        - startTimestamp
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique operation identifier
+          example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+        type:
+          type: string
+          enum: [DELETE, CREATE, UPDATE, IMPORT, EXPORT]
+          description: Type of operation
+          example: "DELETE"
+        targetEntityId:
+          type: string
+          format: uuid
+          description: ID of the WorldEntity being operated on
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        targetEntityName:
+          type: string
+          description: Name of the WorldEntity being operated on
+          example: "Fantasy Realm"
+        targetEntityType:
+          type: string
+          description: Type of WorldEntity (World, Continent, Character, etc.)
+          example: "World"
+        status:
+          type: string
+          enum: [pending, in-progress, completed, failed, cancelled]
+          description: Current operation status
+          example: "in-progress"
+        progress:
+          type: object
+          nullable: true
+          description: Progress information (null for pending operations)
+          required:
+            - percentComplete
+            - itemsProcessed
+            - itemsTotal
+          properties:
+            percentComplete:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 100
+              description: Percentage complete (0-100)
+              example: 45.2
+            itemsProcessed:
+              type: integer
+              minimum: 0
+              description: Number of items processed so far
+              example: 120
+            itemsTotal:
+              type: integer
+              minimum: 0
+              description: Total number of items to process
+              example: 267
+            currentItem:
+              type: string
+              nullable: true
+              description: Name of item currently being processed (optional)
+              example: "Deleting character: Gandalf"
+        result:
+          type: object
+          nullable: true
+          description: Operation result (null until completed or failed)
+          required:
+            - success
+            - affectedCount
+            - retryCount
+          properties:
+            success:
+              type: boolean
+              description: Whether operation completed successfully
+              example: true
+            affectedCount:
+              type: integer
+              minimum: 0
+              description: Number of entities affected (created/updated/deleted)
+              example: 267
+            errorMessage:
+              type: string
+              nullable: true
+              description: Error message if operation failed
+              example: "Failed to delete entity: Database connection timeout"
+            errorDetails:
+              type: object
+              nullable: true
+              description: Detailed error information
+              properties:
+                code:
+                  type: string
+                  description: Error code for programmatic handling
+                  example: "DB_TIMEOUT"
+                failedAtItem:
+                  type: string
+                  nullable: true
+                  description: Name/ID of item that caused failure
+                  example: "Character:550e8400-e29b-41d4-a716-446655440001"
+                stackTrace:
+                  type: string
+                  nullable: true
+                  description: Stack trace (development only; omit in production)
+            retryCount:
+              type: integer
+              minimum: 0
+              description: Number of times operation has been retried
+              example: 0
+        startTimestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when operation started
+          example: "2026-02-03T08:13:06.123Z"
+        completionTimestamp:
+          type: string
+          format: date-time
+          nullable: true
+          description: ISO 8601 timestamp when operation completed (null if still running)
+          example: "2026-02-03T08:15:42.789Z"
+
+    ProblemDetails:
+      type: object
+      description: RFC 7807 Problem Details for HTTP APIs
+      required:
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+          description: URI reference identifying the problem type
+          example: "https://api.libris-maleficarum.example.com/problems/not-found"
+        title:
+          type: string
+          description: Short, human-readable summary of the problem
+          example: "Not Found"
+        status:
+          type: integer
+          description: HTTP status code
+          example: 404
+        detail:
+          type: string
+          description: Human-readable explanation specific to this occurrence
+          example: "The requested async operation was not found"
+        instance:
+          type: string
+          format: uri
+          description: URI reference identifying the specific occurrence
+          example: "/api/async-operations/7c9e6679-7425-40de-944b-e07fc1f90ae7"
+
+  responses:
+    BadRequest:
+      description: Bad Request - Invalid input
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: "https://api.libris-maleficarum.example.com/problems/validation-error"
+            title: "Validation Error"
+            status: 400
+            detail: "The request contains invalid data"
+            instance: "/api/world-entities/invalid-id/async-delete"
+
+    Unauthorized:
+      description: Unauthorized - Authentication required
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: "https://api.libris-maleficarum.example.com/problems/unauthorized"
+            title: "Unauthorized"
+            status: 401
+            detail: "Authentication is required to access this resource"
+
+    NotFound:
+      description: Not Found - Resource does not exist
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: "https://api.libris-maleficarum.example.com/problems/not-found"
+            title: "Not Found"
+            status: 404
+            detail: "The requested resource was not found"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Azure Entra ID JWT token
+
+security:
+  - bearerAuth: []
