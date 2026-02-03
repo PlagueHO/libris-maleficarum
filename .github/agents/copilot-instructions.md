@@ -11,6 +11,8 @@ Auto-generated from all feature plans. Last updated: 2026-01-21
 - Azure Cosmos DB (WorldEntity container with partition key `[/WorldId, /id]`) (011-soft-delete-entities)
 - .NET 10, C# 14 + ASP.NET Core, EF Core 10 (Cosmos DB provider), Aspire.NET (local dev) (011-soft-delete-entities)
 - Azure Cosmos DB (WorldEntity container with hierarchical partition key `[/WorldId, /id]`) (011-soft-delete-entities)
+- TypeScript 5.x / React 19+ / Node.js 20.x + Redux Toolkit (RTK Query), Shadcn/ui + Radix UI primitives, TailwindCSS v4, Vitest + Testing Library + jest-axe (012-async-entity-operations)
+- Session-only (in-memory Redux state), no persistence across browser sessions (012-async-entity-operations)
 
 
 
@@ -31,9 +33,9 @@ tests/
 General: Follow standard conventions
 
 ## Recent Changes
+- 012-async-entity-operations: Added TypeScript 5.x / React 19+ / Node.js 20.x + Redux Toolkit (RTK Query), Shadcn/ui + Radix UI primitives, TailwindCSS v4, Vitest + Testing Library + jest-axe
 - 011-soft-delete-entities: Added .NET 10, C# 14 + ASP.NET Core, EF Core 10 (Cosmos DB provider), Aspire.NET (local dev)
 - 011-soft-delete-entities: Added .NET 10, C# 14 + EF Core 10 (Cosmos DB provider), ASP.NET Core Minimal APIs/Controllers, Aspire.NET, OpenTelemetry
-- 008-edit-world-entity: Added TypeScript 5.x + React 19 + Redux Toolkit, React Router, Shadcn/ui + Radix UI, TailwindCSS v4, Vitest + Testing Library, RTK Query
 
 
 
