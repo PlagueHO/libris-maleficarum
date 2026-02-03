@@ -12,6 +12,8 @@
 - Q: How should the frontend receive real-time status updates from the backend? → A: Periodic Polling (frontend polls backend API every 2-3 seconds for operation status updates). Implementation must use abstraction layer to allow future migration to Server-Sent Events, WebSocket, or SignalR without impacting consumer code.
 - Q: Should completed notifications persist across browser sessions or only during the current session? → A: Session-only with 24-hour cap (keep notifications only in current browser session with automatic cleanup of completed operations older than 24 hours if browser remains open).
 - Q: Should clicking outside the sidebar close it, or does it require explicit close action? → A: Click-outside closes (clicking anywhere outside sidebar or pressing ESC closes it, matching common modal patterns).
+- Q: Where should the notification center sidebar be positioned? → A: Display over the Chat sidebar (right side of app), not over main content. When notification center opens, it overlays the chat panel area.
+- Q: How should frontend WorldEntity hierarchy updates be handled during async backend delete? → A: Frontend synchronously removes entities from the displayed hierarchy (optimistic update) while backend delete processes asynchronously. This provides immediate visual feedback without performance concerns since only loaded/expanded nodes are affected.
 - Q: What format should progress indicators use? → A: Both percentage and count (show "X% complete • N/Total items processed" format, e.g., "45% complete • 120/267 entities deleted").
 - Q: When a cascading delete encounters an error partway through, what should happen to already-deleted entities? → A: Partial commit with clear status (keep already-deleted entities deleted; show partial success with error details; retry continues from failure point).
 
@@ -27,9 +29,9 @@ Users need to delete WorldEntity items (such as characters, locations, or entire
 
 **Acceptance Scenarios**:
 
-1. **Given** user has selected a WorldEntity with child entities, **When** user clicks the delete button and confirms, **Then** the delete operation initiates asynchronously and the UI remains responsive
-1. **Given** user initiates an async delete, **When** the request is sent, **Then** user sees immediate confirmation that the operation has started
-1. **Given** an async delete is in progress, **When** user navigates to different views, **Then** the delete continues processing without interruption
+1. **Given** user has selected a WorldEntity with child entities, **When** user clicks the delete button and confirms, **Then** the delete operation initiates asynchronously, the UI remains responsive, and the entity is immediately removed from the frontend hierarchy (optimistic update)
+2. **Given** user initiates an async delete, **When** the request is sent, **Then** user sees immediate confirmation that the operation has started and the entity disappears from the displayed hierarchy
+3. **Given** an async delete is in progress, **When** user navigates to different views, **Then** the delete continues processing without interruption and deleted entities remain hidden from the hierarchy
 1. **Given** user initiates a delete of an entity with no children, **When** the operation completes quickly, **Then** user still receives consistent feedback through the notification system
 
 ---
@@ -44,7 +46,7 @@ Users need visibility into async operations (starting with deletes) through a ce
 
 **Acceptance Scenarios**:
 
-1. **Given** user has initiated one or more async operations, **When** user clicks the bell icon in top-right, **Then** a sidebar opens displaying all active and recent operations
+1. **Given** user has initiated one or more async operations, **When** user clicks the bell icon in top-right, **Then** a sidebar opens over the chat panel area displaying all active and recent operations
 1. **Given** an async delete is in progress, **When** user views the notification center, **Then** the operation shows current status (pending, in-progress, completed, failed) with progress indicator
 1. **Given** no async operations have been initiated, **When** user clicks the bell icon, **Then** notification center shows empty state with helpful message
 1. **Given** notification center is open, **When** an operation status changes, **Then** the display updates in real-time without requiring refresh
@@ -89,9 +91,10 @@ When users delete a parent WorldEntity, the system must delete all descendant en
 
 ### Edge Cases
 
-- What happens when user closes the browser tab while an async delete is in progress? (Operation continues on server; notification state lost and must be retrieved from backend API when user returns in new session)
-- How does system handle concurrent deletes of parent and child entities? (Server-side validation prevents conflicts; user receives clear error if conflict detected)
-- What happens when network connectivity is lost during an async operation? (Notification shows connection lost; polling resumes when connectivity restored)
+- What happens when user closes the browser tab while an async delete is in progress? (Operation continues on server; notification state lost and must be retrieved from backend API when user returns in new session; optimistically deleted entities remain hidden in new session until backend confirms completion)
+- How does system handle concurrent deletes of parent and child entities? (Server-side validation prevents conflicts; user receives clear error if conflict detected; frontend prevents selection of entities already marked for deletion)
+- What happens when network connectivity is lost during an async operation? (Notification shows connection lost; polling resumes when connectivity restored; optimistically deleted entities remain hidden until network restores and backend confirms)
+- What happens if async delete fails after frontend has optimistically removed entities? (Entities remain hidden; notification shows failure; user can retry operation or manually refresh to restore failed entities if needed)
 - How does system handle very long-running operations (e.g., deleting a world with 10,000+ entities)? (Progress updates continue; operation state persists in backend; frontend can retrieve current state on page refresh or new session)
 - What happens when user tries to edit an entity that's queued for deletion? (UI prevents edits; shows warning that entity is being deleted)
 - How are notifications managed when user has dozens of completed operations? (Session-only storage with automatic cleanup of completed operations older than 24 hours if browser remains open; users can manually clear all or individually; new session starts fresh)
@@ -101,9 +104,9 @@ When users delete a parent WorldEntity, the system must delete all descendant en
 
 ### Functional Requirements
 
-- **FR-001**: System MUST initiate WorldEntity delete operations asynchronously without blocking the UI
+- **FR-001**: System MUST initiate WorldEntity delete operations asynchronously without blocking the UI and MUST immediately remove deleted entities from the frontend hierarchy display (optimistic update) while backend processing continues
 - **FR-002**: System MUST provide a notification center accessible via bell icon in top-right corner of the application window
-- **FR-003**: System MUST display notification center in a sidebar panel that overlays the main content
+- **FR-003**: System MUST display notification center in a sidebar panel that overlays the chat panel (right side), not the main content area
 - **FR-004**: System MUST track async operation status with states: pending, in-progress, completed, failed
 - **FR-005**: System MUST update operation status in real-time as progress occurs using periodic polling (every 2-3 seconds) with abstraction layer that allows future migration to push-based mechanisms (SSE, WebSocket, SignalR) without impacting consumer code
 - **FR-006**: System MUST persist notification state during user session only (in-memory, not across browser sessions) and maintain state across page navigation within app

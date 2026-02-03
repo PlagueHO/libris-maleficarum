@@ -8,7 +8,9 @@
 
 **Status**: ✅ **READY FOR IMPLEMENTATION** (All issues resolved)
 
-Comprehensive analysis across 3 core artifacts (spec, plan, tasks) with constitution alignment check. All functional requirements are covered, user stories are independently testable, and tasks map correctly to requirements. Two medium-severity inconsistencies were identified and **resolved** (2026-02-03).
+**Last Updated**: February 3, 2026 (minor spec adjustments applied)
+
+Comprehensive analysis across 3 core artifacts (spec, plan, tasks) with constitution alignment check. All functional requirements are covered, user stories are independently testable, and tasks map correctly to requirements. Two medium-severity inconsistencies were identified and **resolved** (2026-02-03). Minor spec adjustments applied for notification sidebar positioning and optimistic UI updates.
 
 ---
 
@@ -228,17 +230,27 @@ None detected. All 7 principles validated as PASS in plan.md.
 
 ## Remediation Summary
 
-**Both issues successfully resolved on 2026-02-03:**
+**Original issues successfully resolved on 2026-02-03:**
 
 1. ✅ **U1 Fixed**: Removed `asyncOperationsService.ts` from plan.md project structure
    - File: [plan.md](./plan.md)
    - Change: Updated services section to note abstraction in asyncOperationsApi.ts
    - Result: Plan now aligns with tasks (no separate service file)
 
-1. ✅ **I1 Fixed**: Corrected Drawer library reference in research.md
+2. ✅ **I1 Fixed**: Corrected Drawer library reference in research.md
    - File: [research.md](./research.md)  
    - Change: Updated 3 references from "Radix UI Dialog" to "Vaul library"
    - Result: Research documentation now accurate
+
+**Minor specification adjustments applied on 2026-02-03:**
+
+3. ✅ **Clarified notification sidebar positioning**: Updated spec to specify sidebar displays over chat panel (right side), not main content
+   - Files updated: spec.md (FR-003, US2, Clarifications), plan.md, tasks.md
+   - Impact: UI implementation guidance now precise
+
+4. ✅ **Added optimistic UI update pattern**: Updated spec to clarify frontend synchronously removes entities from hierarchy while backend delete processes asynchronously
+   - Files updated: spec.md (FR-001, US1, Edge Cases, Clarifications), plan.md, tasks.md, data-model.md
+   - Impact: Frontend behavior now explicitly defined for immediate user feedback
 
 **All artifacts are now in perfect alignment.** No further action required before starting implementation.
 
