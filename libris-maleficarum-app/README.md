@@ -1,4 +1,34 @@
-# React + TypeScript + Vite
+# Libris Maleficarum - Frontend Application
+
+React + TypeScript application for TTRPG campaign management with AI-enhanced worldbuilding tools.
+
+## Features
+
+### Core Functionality
+- **World Management**: Create and manage fantasy worlds with hierarchical entity structures
+- **Entity Types**: Support for Worlds, Continents, Countries, Regions, Cities, Characters, Locations, and more
+- **Schema-Driven Properties**: Dynamic property forms based on entity type schemas
+- **Async Operations**: Non-blocking entity operations with real-time notification center
+
+### Async Entity Operations (Feature 012)
+
+Long-running operations (such as deleting entities with many children) run asynchronously without blocking the UI.
+
+**Notification Center**:
+- Bell icon (top-right) shows unread operation count
+- Click to view all active and recent async operations
+- Real-time updates via polling (3-second interval)
+- Operations show status: pending, in-progress, completed, failed, cancelled
+- Progress indicators for in-progress operations: "X% complete • N/Total items"
+
+**Key Features**:
+- **Optimistic Updates**: Deleted entities immediately disappear from the UI while backend processes asynchronously
+- **Retry Failed Operations**: Click retry button on failed operations
+- **Cancel In-Progress**: Cancel pending or in-progress operations  
+- **Session-Only Persistence**: Notifications persist during browser session only (24-hour automatic cleanup)
+- **Accessibility**: WCAG 2.2 Level AA compliant with ARIA live regions and keyboard navigation
+
+## Tech Stack
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

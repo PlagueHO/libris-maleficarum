@@ -30,7 +30,7 @@ import type { WorldEntity } from '@/services/types/worldEntity.types';
  *
  * @returns Tree UI
  */
-export function EntityTree() {
+export function EntityTree({ optimisticallyDeletedIds }: { optimisticallyDeletedIds?: Set<string> }) {
   const selectedWorldId = useSelector(selectSelectedWorldId);
   const selectedEntityId = useSelector(selectSelectedEntityId);
   const expandedNodeIds = useSelector(selectExpandedNodeIds);
@@ -143,7 +143,12 @@ export function EntityTree() {
 
   return (
     <div ref={treeRef} onKeyDown={handleKeyDown}>
-      <EntityTreeLevel parentId={null} worldId={selectedWorldId} level={0} />
+      <EntityTreeLevel 
+        parentId={null} 
+        worldId={selectedWorldId} 
+        level={0} 
+        optimisticallyDeletedIds={optimisticallyDeletedIds}
+      />
     </div>
   );
 }
@@ -152,13 +157,14 @@ interface EntityTreeLevelProps {
   parentId: string | null;
   worldId: string;
   level: number;
+  optimisticallyDeletedIds?: Set<string>;
 }
 
 /**
  * Recursive tree level component
  * Fetches children for a given parent entity
  */
-function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
+function EntityTreeLevel({ worldId, parentId, level, optimisticallyDeletedIds }: EntityTreeLevelProps) {
   const dispatch = useDispatch();
   const expandedNodeIds = useSelector(selectExpandedNodeIds);
   const cacheKey = `sidebar_hierarchy_${worldId}_${parentId || 'root'}`;
@@ -180,7 +186,12 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
   );
 
   // Use fetched data if available, otherwise use cache as fallback
-  const entities = fetchedEntities || cachedData;
+  let entities = fetchedEntities || cachedData;
+  
+  // Filter out optimistically deleted entities
+  if (optimisticallyDeletedIds && optimisticallyDeletedIds.size > 0) {
+    entities = entities?.filter(entity => !optimisticallyDeletedIds.has(entity.id));
+  }
 
   // Update cache when data fetched (keep sync)
   useEffect(() => {
@@ -238,9 +249,10 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
           <EntityTreeNode key={entity.id} entity={entity} level={level}>
             {entity.hasChildren && expandedNodeIds.includes(entity.id) && (
               <EntityTreeLevel
-                parentId={entity.id}
                 worldId={worldId}
+                parentId={entity.id}
                 level={level + 1}
+                optimisticallyDeletedIds={optimisticallyDeletedIds}
               />
             )}
           </EntityTreeNode>
@@ -259,6 +271,7 @@ function EntityTreeLevel({ parentId, worldId, level }: EntityTreeLevelProps) {
               parentId={entity.id}
               worldId={worldId}
               level={level + 1}
+              optimisticallyDeletedIds={optimisticallyDeletedIds}
             />
           )}
         </EntityTreeNode>

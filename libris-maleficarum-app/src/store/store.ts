@@ -1,7 +1,10 @@
 import { configureStore, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import { useDispatch, useSelector } from 'react-redux';
+import type { TypedUseSelectorHook } from 'react-redux';
 import { api } from '@/services/api';
 import worldSidebarReducer from './worldSidebarSlice';
+import notificationsReducer from './notificationsSlice';
 
 // Side panel slice for managing expand/collapse state
 interface SidePanelState {
@@ -32,6 +35,7 @@ export const store = configureStore({
   reducer: {
     sidePanel: sidePanelSlice.reducer,
     worldSidebar: worldSidebarReducer,
+    notifications: notificationsReducer,
     // Add RTK Query API reducer
     [api.reducerPath]: api.reducer,
   },
@@ -43,3 +47,7 @@ export const store = configureStore({
 // Export types for TypeScript
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+// Export typed hooks
+export const useAppDispatch: () => AppDispatch = useDispatch;
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

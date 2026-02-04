@@ -16,7 +16,10 @@
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { closeDeleteConfirmation } from '@/store/worldSidebarSlice';
-import { useDeleteWorldEntityMutation, useGetWorldEntityByIdQuery } from '@/services/worldEntityApi';
+import { useGetWorldEntityByIdQuery } from '@/services/worldEntityApi';
+import { useInitiateEntityDeleteMutation } from '@/services/asyncOperationsApi';
+import { useOptimisticDelete } from '@/components/WorldSidebar/OptimisticDeleteContext';
+import { useWorldOptional } from '@/contexts';
 import {
   Dialog,
   DialogContent,
@@ -30,33 +33,47 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 
 export function DeleteConfirmationModal() {
   const dispatch = useDispatch();
-  const { deletingEntityId, selectedWorldId, showDeleteConfirmation } = useSelector(
+  const worldContext = useWorldOptional();
+  const { deletingEntityId, showDeleteConfirmation } = useSelector(
     (state: RootState) => state.worldSidebar
   );
+  
+  const { onOptimisticDelete } = useOptimisticDelete();
 
-  const [deleteEntity, { isLoading }] = useDeleteWorldEntityMutation();
+  const [initiateAsyncDelete, { isLoading: isInitiatingAsync }] = useInitiateEntityDeleteMutation();
 
   // Fetch entity details to show name in confirmation
   const { data: entity } = useGetWorldEntityByIdQuery(
-    { worldId: selectedWorldId!, entityId: deletingEntityId! },
-    { skip: !selectedWorldId || !deletingEntityId }
+    { worldId: worldContext?.worldId!, entityId: deletingEntityId! },
+    { skip: !worldContext?.worldId || !deletingEntityId }
   );
 
   const handleConfirmDelete = async () => {
-    if (!selectedWorldId || !deletingEntityId) return;
+    if (!worldContext?.worldId || !deletingEntityId) return;
 
     try {
-      await deleteEntity({
-        worldId: selectedWorldId,
+      // 1. Optimistic UI update (remove from sidebar immediately)
+      onOptimisticDelete(deletingEntityId);
+      
+      // 2. Initiate async delete on backend
+      await initiateAsyncDelete({ 
+        worldId: worldContext.worldId, 
         entityId: deletingEntityId,
+        cascade: true
       }).unwrap();
 
+      // 3. Close dialog immediately - operation continues in background
       dispatch(closeDeleteConfirmation());
+      
+      // Note: Notification will be registered automatically by RTK Query cache update
     } catch (error) {
-      console.error('Failed to delete entity:', error);
+      console.error('Failed to initiate async delete:', error);
+      // TODO: Rollback optimistic update on error
       // Error handling delegated to RTK Query error state
     }
   };
+  
+  const isDeleting = isInitiatingAsync;
 
   const handleCancel = () => {
     dispatch(closeDeleteConfirmation());
@@ -86,11 +103,11 @@ export function DeleteConfirmationModal() {
           </p>
         </div>
 
-        <DialogFooter className="flex gap-3 justify-end pt-4 mt-4 border-t border-border sm:flex-row flex-col-reverse">
+        <DialogFooter className="gap-2">
           <Button
             variant="outline"
             onClick={handleCancel}
-            disabled={isLoading}
+            disabled={isDeleting}
             aria-label="Cancel deletion"
           >
             Cancel
@@ -98,11 +115,11 @@ export function DeleteConfirmationModal() {
           <Button
             variant="destructive"
             onClick={handleConfirmDelete}
-            disabled={isLoading}
+            disabled={isDeleting}
             aria-label={`Confirm delete "${entity?.name || 'entity'}"`}
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogFooter>
       </DialogContent>
