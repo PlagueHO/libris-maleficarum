@@ -98,6 +98,56 @@ public class DeleteOperationsController : ControllerBase
     }
 
     /// <summary>
+    /// Retries a failed or partial delete operation.
+    /// </summary>
+    /// <param name="worldId">The world identifier.</param>
+    /// <param name="operationId">The operation identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The new delete operation created for the retry.</returns>
+    [HttpPost("{operationId:guid}/retry")]
+    [ProducesResponseType<ApiResponse<DeleteOperationResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RetryDeleteOperation(
+        Guid worldId,
+        Guid operationId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var retriedOperation = await _deleteService.RetryDeleteOperationAsync(worldId, operationId, cancellationToken);
+
+            return Ok(new ApiResponse<DeleteOperationResponse>
+            {
+                Data = MapToResponse(retriedOperation)
+            });
+        }
+        catch (Domain.Exceptions.EntityNotFoundException)
+        {
+            return NotFound(new ErrorResponse
+            {
+                Error = new ErrorDetail
+                {
+                    Code = "OPERATION_NOT_FOUND",
+                    Message = $"Delete operation '{operationId}' not found or has expired."
+                }
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Error = new ErrorDetail
+                {
+                    Code = "INVALID_OPERATION_STATUS",
+                    Message = ex.Message
+                }
+            });
+        }
+    }
+
+    /// <summary>
     /// Maps a DeleteOperation to DeleteOperationResponse DTO.
     /// </summary>
     internal static DeleteOperationResponse MapToResponse(DeleteOperation operation)

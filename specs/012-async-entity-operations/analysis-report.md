@@ -237,18 +237,18 @@ None detected. All 7 principles validated as PASS in plan.md.
    - Change: Updated services section to note abstraction in asyncOperationsApi.ts
    - Result: Plan now aligns with tasks (no separate service file)
 
-2. ✅ **I1 Fixed**: Corrected Drawer library reference in research.md
+1. ✅ **I1 Fixed**: Corrected Drawer library reference in research.md
    - File: [research.md](./research.md)  
    - Change: Updated 3 references from "Radix UI Dialog" to "Vaul library"
    - Result: Research documentation now accurate
 
 **Minor specification adjustments applied on 2026-02-03:**
 
-3. ✅ **Clarified notification sidebar positioning**: Updated spec to specify sidebar displays over chat panel (right side), not main content
+1. ✅ **Clarified notification sidebar positioning**: Updated spec to specify sidebar displays over chat panel (right side), not main content
    - Files updated: spec.md (FR-003, US2, Clarifications), plan.md, tasks.md
    - Impact: UI implementation guidance now precise
 
-4. ✅ **Added optimistic UI update pattern**: Updated spec to clarify frontend synchronously removes entities from hierarchy while backend delete processes asynchronously
+1. ✅ **Added optimistic UI update pattern**: Updated spec to clarify frontend synchronously removes entities from hierarchy while backend delete processes asynchronously
    - Files updated: spec.md (FR-001, US1, Edge Cases, Clarifications), plan.md, tasks.md, data-model.md
    - Impact: Frontend behavior now explicitly defined for immediate user feedback
 

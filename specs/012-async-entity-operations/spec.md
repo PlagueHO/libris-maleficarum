@@ -30,8 +30,8 @@ Users need to delete WorldEntity items (such as characters, locations, or entire
 **Acceptance Scenarios**:
 
 1. **Given** user has selected a WorldEntity with child entities, **When** user clicks the delete button and confirms, **Then** the delete operation initiates asynchronously, the UI remains responsive, and the entity is immediately removed from the frontend hierarchy (optimistic update)
-2. **Given** user initiates an async delete, **When** the request is sent, **Then** user sees immediate confirmation that the operation has started and the entity disappears from the displayed hierarchy
-3. **Given** an async delete is in progress, **When** user navigates to different views, **Then** the delete continues processing without interruption and deleted entities remain hidden from the hierarchy
+1. **Given** user initiates an async delete, **When** the request is sent, **Then** user sees immediate confirmation that the operation has started and the entity disappears from the displayed hierarchy
+1. **Given** an async delete is in progress, **When** user navigates to different views, **Then** the delete continues processing without interruption and deleted entities remain hidden from the hierarchy
 1. **Given** user initiates a delete of an entity with no children, **When** the operation completes quickly, **Then** user still receives consistent feedback through the notification system
 
 ---

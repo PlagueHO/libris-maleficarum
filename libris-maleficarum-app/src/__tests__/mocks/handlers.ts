@@ -597,6 +597,219 @@ export const worldEntityHandlers = [
 ];
 
 /**
- * All MSW handlers (World + WorldEntity)
+ * In-memory mock storage for async operations
  */
-export const handlers = [...worldHandlers, ...worldEntityHandlers];
+const mockAsyncOperations: Map<string, import('@/services/types/asyncOperations').AsyncOperation> = new Map();
+
+/**
+ * MSW HTTP handlers for Async Operations API
+ */
+export const asyncOperationsHandlers = [
+  /**
+   * POST /api/world-entities/:id/async-delete
+   *
+   * Initiate async delete operation
+   */
+  http.post(`${baseUrl}/api/world-entities/:id/async-delete`, ({ params }) => {
+    const { id } = params;
+    const entity = mockEntities.get(id as string);
+
+    if (!entity) {
+      return new HttpResponse(null, {
+        status: 404,
+        statusText: 'Entity not found',
+      });
+    }
+
+    // Create new async operation
+    const operationId = `op-${Date.now()}`;
+    const newOperation: import('@/services/types/asyncOperations').AsyncOperation = {
+      id: operationId,
+      type: 'DELETE',
+      targetEntityId: id as string,
+      targetEntityName: entity.name,
+      targetEntityType: entity.entityType,
+      status: 'pending',
+      progress: null,
+      result: null,
+      startTimestamp: new Date().toISOString(),
+      completionTimestamp: null,
+    };
+
+    mockAsyncOperations.set(operationId, newOperation);
+
+    // Simulate operation progressing after 1 second
+    setTimeout(() => {
+      const op = mockAsyncOperations.get(operationId);
+      if (op) {
+        op.status = 'in-progress';
+        op.progress = {
+          percentComplete: 50,
+          itemsProcessed: 5,
+          itemsTotal: 10,
+        };
+      }
+    }, 1000);
+
+    // Simulate completion after 3 seconds
+    setTimeout(() => {
+      const op = mockAsyncOperations.get(operationId);
+      if (op) {
+        op.status = 'completed';
+        op.progress = {
+          percentComplete: 100,
+          itemsProcessed: 10,
+          itemsTotal: 10,
+        };
+        op.result = {
+          success: true,
+          affectedCount: 10,
+          retryCount: 0,
+        };
+        op.completionTimestamp = new Date().toISOString();
+
+        // Actually delete the entity from mock storage
+        entity.isDeleted = true;
+      }
+    }, 3000);
+
+    return HttpResponse.json(
+      {
+        operationId,
+        targetEntityId: id,
+        targetEntityName: entity.name,
+        estimatedCount: 10,
+      },
+      { status: 202 }
+    );
+  }),
+
+  /**
+   * GET /api/async-operations
+   *
+   * Fetch list of async operations
+   */
+  http.get(`${baseUrl}/api/async-operations`, ({ request }) => {
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status');
+    const type = url.searchParams.get('type');
+    const limit = parseInt(url.searchParams.get('limit') ?? '50', 10);
+
+    let operations = Array.from(mockAsyncOperations.values());
+
+    // Filter by status
+    if (status) {
+      operations = operations.filter((op) => op.status === status);
+    }
+
+    // Filter by type
+    if (type) {
+      operations = operations.filter((op) => op.type === type);
+    }
+
+    // Apply limit
+    operations = operations.slice(0, limit);
+
+    return HttpResponse.json({
+      operations,
+      totalCount: mockAsyncOperations.size,
+    });
+  }),
+
+  /**
+   * GET /api/async-operations/:operationId
+   *
+   * Fetch single async operation
+   */
+  http.get(`${baseUrl}/api/async-operations/:operationId`, ({ params }) => {
+    const { operationId } = params;
+    const operation = mockAsyncOperations.get(operationId as string);
+
+    if (!operation) {
+      return new HttpResponse(null, {
+        status: 404,
+        statusText: 'Operation not found',
+      });
+    }
+
+    return HttpResponse.json(operation);
+  }),
+
+  /**
+   * POST /api/async-operations/:operationId/retry
+   *
+   * Retry a failed operation
+   */
+  http.post(`${baseUrl}/api/async-operations/:operationId/retry`, ({ params }) => {
+    const { operationId } = params;
+    const operation = mockAsyncOperations.get(operationId as string);
+
+    if (!operation) {
+      return new HttpResponse(null, {
+        status: 404,
+        statusText: 'Operation not found',
+      });
+    }
+
+    if (operation.status !== 'failed') {
+      return HttpResponse.json(
+        {
+          type: 'https://api.example.com/problems/conflict',
+          title: 'Conflict',
+          status: 409,
+          detail: 'Operation is not in failed state',
+        },
+        { status: 409 }
+      );
+    }
+
+    // Reset operation to pending
+    operation.status = 'pending';
+    operation.progress = null;
+    operation.result = null;
+    operation.startTimestamp = new Date().toISOString();
+    operation.completionTimestamp = null;
+
+    return HttpResponse.json(operation, { status: 202 });
+  }),
+
+  /**
+   * POST /api/async-operations/:operationId/cancel
+   *
+   * Cancel a pending or in-progress operation
+   */
+  http.post(`${baseUrl}/api/async-operations/:operationId/cancel`, ({ params }) => {
+    const { operationId } = params;
+    const operation = mockAsyncOperations.get(operationId as string);
+
+    if (!operation) {
+      return new HttpResponse(null, {
+        status: 404,
+        statusText: 'Operation not found',
+      });
+    }
+
+    if (operation.status === 'completed' || operation.status === 'failed') {
+      return HttpResponse.json(
+        {
+          type: 'https://api.example.com/problems/conflict',
+          title: 'Conflict',
+          status: 409,
+          detail: 'Operation is not cancellable',
+        },
+        { status: 409 }
+      );
+    }
+
+    // Mark as cancelled
+    operation.status = 'cancelled';
+    operation.completionTimestamp = new Date().toISOString();
+
+    return HttpResponse.json(operation);
+  }),
+];
+
+/**
+ * All MSW handlers (World + WorldEntity + AsyncOperations)
+ */
+export const handlers = [...worldHandlers, ...worldEntityHandlers, ...asyncOperationsHandlers];

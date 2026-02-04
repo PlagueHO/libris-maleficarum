@@ -45,4 +45,15 @@ public interface IDeleteService
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of recent delete operations.</returns>
     Task<IEnumerable<DeleteOperation>> ListRecentOperationsAsync(Guid worldId, int limit = 20, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retries a failed delete operation.
+    /// </summary>
+    /// <param name="worldId">The world identifier.</param>
+    /// <param name="operationId">The operation identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The updated delete operation.</returns>
+    /// <exception cref="Exceptions.EntityNotFoundException">Thrown when operation does not exist.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when operation is not in Failed or Partial status.</exception>
+    Task<DeleteOperation> RetryDeleteOperationAsync(Guid worldId, Guid operationId, CancellationToken cancellationToken = default);
 }
