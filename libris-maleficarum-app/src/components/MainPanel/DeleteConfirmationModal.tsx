@@ -44,7 +44,10 @@ export function DeleteConfirmationModal() {
 
   // Fetch entity details to show name in confirmation
   const { data: entity } = useGetWorldEntityByIdQuery(
-    { worldId: worldContext?.worldId!, entityId: deletingEntityId! },
+    { 
+      worldId: worldContext?.worldId || '', 
+      entityId: deletingEntityId || '' 
+    },
     { skip: !worldContext?.worldId || !deletingEntityId }
   );
 

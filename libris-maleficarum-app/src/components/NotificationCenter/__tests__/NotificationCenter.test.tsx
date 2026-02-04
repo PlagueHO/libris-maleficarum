@@ -6,17 +6,14 @@
  * @module NotificationCenter/__tests__/NotificationCenter
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import { renderWithProviders } from '@/__tests__/test-utils';
 import userEvent from '@testing-library/user-event';
-import { configureStore } from '@reduxjs/toolkit';
 import { axe, toHaveNoViolations } from 'jest-axe';
 
 import { NotificationCenter } from '../NotificationCenter';
-import notificationsReducer from '@/store/notificationsSlice';
-import { api } from '@/services/api';
-import type { DeleteOperationDto } from '@/services/types/asyncOperations';
+import type { DeleteOperationDto, DeleteOperationsState } from '@/services/types/asyncOperations';
 
 expect.extend(toHaveNoViolations);
 
@@ -25,52 +22,96 @@ describe('NotificationCenter', () => {
     {
       id: 'op-1',
       worldId: 'test-world-id',
-      targetEntityId: 'entity-1',
-      targetEntityName: 'World 1',
-      targetEntityType: 'World',
+      rootEntityId: 'entity-1',
+      rootEntityName: 'World 1',
       status: 'in_progress',
+      totalEntities: 10,
+      deletedCount: 5,
+      failedCount: 0,
+      failedEntityIds: null,
+      errorDetails: null,
+      cascade: true,
+      createdBy: 'test-user',
+      createdAt: '2026-02-03T10:00:00Z',
       startedAt: '2026-02-03T10:00:00Z',
       completedAt: null,
-      deletedEntities: [],
-      error: null,
-      retryCount: 0,
     },
     {
       id: 'op-2',
       worldId: 'test-world-id',
-      targetEntityId: 'entity-2',
-      targetEntityName: 'Character 1',
-      targetEntityType: 'Character',
+      rootEntityId: 'entity-2',
+      rootEntityName: 'Character 1',
       status: 'completed',
+      totalEntities: 1,
+      deletedCount: 1,
+      failedCount: 0,
+      failedEntityIds: null,
+      errorDetails: null,
+      cascade: true,
+      createdBy: 'test-user',
+      createdAt: '2026-02-03T09:30:00Z',
       startedAt: '2026-02-03T09:30:00Z',
       completedAt: '2026-02-03T09:30:05Z',
-      deletedEntities: ['entity-2'],
-      error: null,
-      retryCount: 0,
     },
     {
       id: 'op-3',
       worldId: 'test-world-id',
-      targetEntityId: 'entity-3',
-      targetEntityName: 'Location 1',
-      targetEntityType: 'Location',
+      rootEntityId: 'entity-3',
+      rootEntityName: 'Location 1',
       status: 'failed',
+      totalEntities: 1,
+      deletedCount: 0,
+      failedCount: 1,
+      failedEntityIds: ['entity-3'],
+      errorDetails: 'Network error',
+      cascade: true,
+      createdBy: 'test-user',
+      createdAt: '2026-02-03T09:00:00Z',
       startedAt: '2026-02-03T09:00:00Z',
       completedAt: '2026-02-03T09:00:10Z',
-      deletedEntities: [],
-      error: { code: 'NETWORK_ERROR', message: 'Network error' },
-      retryCount: 0,
     },
   ];
 
   // No need for custom store creation - renderWithProviders handles it
+
+  function createPreloadedState(operations: DeleteOperationDto[] = mockOperations): Partial<RootState> {
+    return {
+      api: {
+        queries: {
+          'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
+            status: 'fulfilled' as const,
+            endpointName: 'getDeleteOperations',
+            requestId: 'test-request-id',
+            data: operations,
+            startedTimeStamp: Date.now(),
+            fulfilledTimeStamp: Date.now(),
+          },
+        },
+        mutations: {},
+        provided: {},
+        subscriptions: {},
+        config: {
+          reducerPath: 'api',
+          keepUnusedDataFor: 60,
+          refetchOnMountOrArgChange: false,
+          refetchOnFocus: false,
+          refetchOnReconnect: false,
+          online: true,
+        },
+      },
+    } as unknown as Partial<RootState>;
+  }
 
   it('renders drawer with title and description', () => {
     const handleOpenChange = vi.fn();
 
     renderWithProviders(
       <NotificationCenter open={true} onOpenChange={handleOpenChange} />,
-      { worldId: 'test-world-id', worldName: 'Test World' }
+      {
+        worldId: 'test-world-id',
+        worldName: 'Test World',
+        preloadedState: createPreloadedState() as unknown as Partial<RootState>,
+      }
     );
 
     expect(screen.getByText('Notifications')).toBeInTheDocument();
@@ -82,7 +123,11 @@ describe('NotificationCenter', () => {
 
     renderWithProviders(
       <NotificationCenter open={true} onOpenChange={handleOpenChange} />,
-      { worldId: 'test-world-id', worldName: 'Test World' }
+      {
+        worldId: 'test-world-id',
+        worldName: 'Test World',
+        preloadedState: createPreloadedState() as unknown as Partial<RootState>,
+      }
     );
 
     expect(screen.getByText('World 1')).toBeInTheDocument();
@@ -106,7 +151,11 @@ describe('NotificationCenter', () => {
 
     renderWithProviders(
       <NotificationCenter open={true} onOpenChange={handleOpenChange} />,
-      { worldId: 'test-world-id', worldName: 'Test World' }
+      {
+        worldId: 'test-world-id',
+        worldName: 'Test World',
+        preloadedState: createPreloadedState() as unknown as Partial<RootState>,
+      }
     );
 
     const markAllReadButton = screen.getByRole('button', { name: /mark all read/i });
@@ -118,7 +167,11 @@ describe('NotificationCenter', () => {
 
     renderWithProviders(
       <NotificationCenter open={true} onOpenChange={handleOpenChange} />,
-      { worldId: 'test-world-id', worldName: 'Test World' }
+      {
+        worldId: 'test-world-id',
+        worldName: 'Test World',
+        preloadedState: createPreloadedState() as unknown as Partial<RootState>,
+      }
     );
 
     // Should show count of completed operations (1 in mockOperations)
@@ -133,7 +186,11 @@ describe('NotificationCenter', () => {
 
     const { store } = renderWithProviders(
       <NotificationCenter open={true} onOpenChange={handleOpenChange} />,
-      { worldId: 'test-world-id', worldName: 'Test World' }
+      {
+        worldId: 'test-world-id',
+        worldName: 'Test World',
+        preloadedState: createPreloadedState() as unknown as Partial<RootState>,
+      }
     );
 
     const markAllReadButton = screen.getByRole('button', { name: /mark all read/i });
@@ -142,7 +199,7 @@ describe('NotificationCenter', () => {
     // Verify all operations marked as read in store
     const state = store.getState();
     mockOperations.forEach((op) => {
-      expect(state.notifications.metadata[op.id]?.read).toBe(true);
+      expect((state.notifications as DeleteOperationsState).metadata[op.id]?.isRead).toBe(true);
     });
   });
 
@@ -152,7 +209,11 @@ describe('NotificationCenter', () => {
 
     const { store } = renderWithProviders(
       <NotificationCenter open={true} onOpenChange={handleOpenChange} />,
-      { worldId: 'test-world-id', worldName: 'Test World' }
+      {
+        worldId: 'test-world-id',
+        worldName: 'Test World',
+        preloadedState: createPreloadedState() as unknown as Partial<RootState>,
+      }
     );
 
     const clearButton = screen.getByRole('button', { name: /clear completed/i });
@@ -160,16 +221,19 @@ describe('NotificationCenter', () => {
 
     // Verify completed operation (op-2) is dismissed
     const state = store.getState();
-    expect(state.notifications.metadata['op-2']?.dismissed).toBe(true);
+    expect((state.notifications as DeleteOperationsState).metadata['op-2']?.isDismissed).toBe(true);
   });
 
   it('closes drawer when onOpenChange called with false', async () => {
-    const user = userEvent.setup();
     const handleOpenChange = vi.fn();
 
     renderWithProviders(
       <NotificationCenter open={true} onOpenChange={handleOpenChange} />,
-      { worldId: 'test-world-id', worldName: 'Test World' }
+      {
+        worldId: 'test-world-id',
+        worldName: 'Test World',
+        preloadedState: createPreloadedState() as unknown as Partial<RootState>,
+      }
     );
 
     // Simulate ESC key or click outside (Drawer component handles this)
@@ -182,7 +246,11 @@ describe('NotificationCenter', () => {
 
     const { container } = renderWithProviders(
       <NotificationCenter open={true} onOpenChange={handleOpenChange} />,
-      { worldId: 'test-world-id', worldName: 'Test World' }
+      {
+        worldId: 'test-world-id',
+        worldName: 'Test World',
+        preloadedState: createPreloadedState() as unknown as Partial<RootState>,
+      }
     );
 
     const results = await axe(container);
@@ -194,7 +262,11 @@ describe('NotificationCenter', () => {
 
     renderWithProviders(
       <NotificationCenter open={true} onOpenChange={handleOpenChange} />,
-      { worldId: 'test-world-id', worldName: 'Test World' }
+      {
+        worldId: 'test-world-id',
+        worldName: 'Test World',
+        preloadedState: createPreloadedState() as unknown as Partial<RootState>,
+      }
     );
 
     // Verify onOpenChange prop is connected
@@ -208,7 +280,11 @@ describe('NotificationCenter', () => {
 
     renderWithProviders(
       <NotificationCenter open={true} onOpenChange={handleOpenChange} />,
-      { worldId: 'test-world-id', worldName: 'Test World' }
+      {
+        worldId: 'test-world-id',
+        worldName: 'Test World',
+        preloadedState: createPreloadedState() as unknown as Partial<RootState>,
+      }
     );
 
     // Find the ARIA live region
@@ -223,7 +299,11 @@ describe('NotificationCenter', () => {
 
     renderWithProviders(
       <NotificationCenter open={true} onOpenChange={handleOpenChange} />,
-      { worldId: 'test-world-id', worldName: 'Test World' }
+      {
+        worldId: 'test-world-id',
+        worldName: 'Test World',
+        preloadedState: createPreloadedState() as unknown as Partial<RootState>,
+      }
     );
 
     // Get all notification items

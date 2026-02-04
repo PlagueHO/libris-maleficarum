@@ -95,6 +95,7 @@ export function WorldProvider({
  * }
  * ```
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useWorld(): WorldContextValue {
   const context = useContext(WorldContext);
 
@@ -127,6 +128,7 @@ export function useWorld(): WorldContextValue {
  * }
  * ```
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useWorldOptional(): WorldContextValue | null {
   return useContext(WorldContext);
 }

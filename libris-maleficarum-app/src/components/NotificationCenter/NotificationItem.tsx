@@ -18,7 +18,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Loader2, CheckCircle, XCircle, Ban, X, RotateCw } from 'lucide-react';
+import { Clock, Loader2, CheckCircle, XCircle, X, RotateCw } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { markAsRead, dismissNotification, selectOperationMetadata } from '@/store/notificationsSlice';
 import { useRetryDeleteOperationMutation } from '@/services/asyncOperationsApi';
@@ -48,7 +48,7 @@ export function NotificationItem({ operation }: NotificationItemProps) {
   const metadata = useAppSelector(selectOperationMetadata(operation.id));
   const [retryOperation, { isLoading: isRetrying }] = useRetryDeleteOperationMutation();
   
-  const isUnread = !metadata?.read;
+  const isUnread = !metadata?.isRead;
   
   // Status icon mapping
   const statusIcon = {
@@ -95,7 +95,7 @@ export function NotificationItem({ operation }: NotificationItemProps) {
       <div
         className="cursor-pointer hover:bg-accent/50 rounded -m-3 p-3 pr-10 pb-2"
         onClick={handleClick}
-        aria-label={`Mark ${operation.targetEntityName} notification as read`}
+        aria-label={`Mark ${operation.rootEntityName} notification as read`}
       >
         <div className="flex items-start gap-3">
           {/* Status Icon */}
@@ -104,7 +104,7 @@ export function NotificationItem({ operation }: NotificationItemProps) {
           {/* Content */}
           <div className="flex-1 min-w-0">
             {/* Entity Name */}
-            <p className="font-medium truncate">{operation.targetEntityName}</p>
+            <p className="font-medium truncate">{operation.rootEntityName}</p>
             
             {/* Status Message */}
             <p className="text-sm text-muted-foreground">
@@ -112,9 +112,9 @@ export function NotificationItem({ operation }: NotificationItemProps) {
             </p>
             
             {/* Deleted Count (for in-progress or completed operations) */}
-            {operation.deletedEntities.length > 0 && (
+            {operation.deletedCount > 0 && (
               <p className="text-xs text-muted-foreground mt-1">
-                Deleted: {operation.deletedEntities.length} entities
+                Deleted: {operation.deletedCount} entities
               </p>
             )}
           </div>

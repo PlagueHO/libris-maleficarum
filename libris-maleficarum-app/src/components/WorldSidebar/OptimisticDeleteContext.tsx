@@ -29,6 +29,7 @@ export const OptimisticDeleteProvider = OptimisticDeleteContext.Provider;
  * @returns Optimistic delete context value
  * @throws Error if used outside OptimisticDeleteProvider
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useOptimisticDelete(): OptimisticDeleteContextValue {
   const context = useContext(OptimisticDeleteContext);
   

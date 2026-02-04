@@ -19,22 +19,20 @@
  * ```
  */
 
-import { ReactElement, ReactNode } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
+import { type ReactElement, type ReactNode } from 'react';
+import { render, type RenderOptions } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { configureStore, type PreloadedState } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
 import { WorldProvider } from '@/contexts';
 import { api } from '@/services/api';
 import notificationsReducer from '@/store/notificationsSlice';
 import worldSidebarReducer from '@/store/worldSidebarSlice';
-import sidePanelReducer from '@/store/sidePanelSlice';
 
 // Define RootState based on our reducers
 export interface RootState {
   [api.reducerPath]: ReturnType<typeof api.reducer>;
   notifications: ReturnType<typeof notificationsReducer>;
   worldSidebar: ReturnType<typeof worldSidebarReducer>;
-  sidePanel: ReturnType<typeof sidePanelReducer>;
 }
 
 export interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
@@ -53,7 +51,7 @@ export interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   /**
    * Preloaded state for Redux store
    */
-  preloadedState?: PreloadedState<RootState>;
+  preloadedState?: Partial<RootState>;
 }
 
 /**
@@ -78,12 +76,15 @@ export function renderWithProviders(
 ) {
   const store = configureStore({
     reducer: {
+      // @ts-expect-error - Reducer type inference issues with RTK Query
       [api.reducerPath]: api.reducer,
+      // @ts-expect-error - Reducer type inference issues
       notifications: notificationsReducer,
+      // @ts-expect-error - Reducer type inference issues
       worldSidebar: worldSidebarReducer,
-      sidePanel: sidePanelReducer,
     },
     preloadedState,
+    // @ts-expect-error - Middleware type inference issue with RTK Query
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(api.middleware),
   });
@@ -102,5 +103,6 @@ export function renderWithProviders(
 }
 
 // Re-export everything from testing-library for convenience
+// eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react';
 export { renderWithProviders as render };

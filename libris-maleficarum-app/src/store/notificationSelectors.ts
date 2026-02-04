@@ -28,8 +28,6 @@ const CURRENT_WORLD_ID = 'PLACEHOLDER'; // This should come from context
  * Returns empty array if no data or worldId not configured
  */
 const selectDeleteOperationsData = (state: RootState): DeleteOperationDto[] => {
-  if (CURRENT_WORLD_ID === 'PLACEHOLDER') return [];
-  
   const result = deleteOperationsApi.endpoints.getDeleteOperations.select({
     worldId: CURRENT_WORLD_ID,
   })(state);

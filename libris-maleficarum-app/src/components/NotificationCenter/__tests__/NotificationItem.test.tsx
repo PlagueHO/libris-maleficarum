@@ -6,7 +6,7 @@
  * @module NotificationCenter/__tests__/NotificationItem
  */
 
-import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { renderWithProviders } from '@/__tests__/test-utils';
 import userEvent from '@testing-library/user-event';
@@ -15,27 +15,31 @@ import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
 
 import { NotificationItem } from '../NotificationItem';
-import type { DeleteOperationDto } from '@/services/types/asyncOperations';
+import type { DeleteOperationDto, DeleteOperationsState } from '@/services/types/asyncOperations';
 
 expect.extend(toHaveNoViolations);
 
 // MSW server for API mocking
 const server = setupServer(
   // Retry operation handler
-  http.post('/api/v1/worlds/:worldId/delete-operations/:operationId/retry', ({ params }) => {
+  http.post('/v1/worlds/:worldId/delete-operations/:operationId/retry', ({ params }) => {
     return HttpResponse.json({
       data: {
         id: params.operationId,
         worldId: params.worldId,
-        targetEntityId: 'entity-1',
-        targetEntityName: 'Test Entity',
-        targetEntityType: 'World',
+        rootEntityId: 'entity-1',
+        rootEntityName: 'Test Entity',
         status: 'pending',
+        totalEntities: 0,
+        deletedCount: 0,
+        failedCount: 0,
+        failedEntityIds: null,
+        errorDetails: null,
+        cascade: true,
+        createdBy: 'test-user',
+        createdAt: new Date().toISOString(),
         startedAt: new Date().toISOString(),
         completedAt: null,
-        deletedEntities: [],
-        error: null,
-        retryCount: 1,
       },
     });
   })
@@ -49,57 +53,73 @@ describe('NotificationItem', () => {
   const pendingOperation: DeleteOperationDto = {
     id: 'op-pending',
     worldId: 'test-world-id',
-    targetEntityId: 'entity-1',
-    targetEntityName: 'Test World',
-    targetEntityType: 'World',
+    rootEntityId: 'entity-1',
+    rootEntityName: 'Test World',
     status: 'pending',
+    totalEntities: 0,
+    deletedCount: 0,
+    failedCount: 0,
+    failedEntityIds: null,
+    errorDetails: null,
+    cascade: true,
+    createdBy: 'test-user',
+    createdAt: '2026-02-03T10:00:00Z',
     startedAt: '2026-02-03T10:00:00Z',
     completedAt: null,
-    deletedEntities: [],
-    error: null,
-    retryCount: 0,
   };
 
   const inProgressOperation: DeleteOperationDto = {
     id: 'op-progress',
     worldId: 'test-world-id',
-    targetEntityId: 'entity-2',
-    targetEntityName: 'Greyhawk City',
-    targetEntityType: 'City',
+    rootEntityId: 'entity-2',
+    rootEntityName: 'Greyhawk City',
     status: 'in_progress',
+    totalEntities: 10,
+    deletedCount: 5,
+    failedCount: 0,
+    failedEntityIds: null,
+    errorDetails: null,
+    cascade: true,
+    createdBy: 'test-user',
+    createdAt: '2026-02-03T10:05:00Z',
     startedAt: '2026-02-03T10:05:00Z',
     completedAt: null,
-    deletedEntities: [],
-    error: null,
-    retryCount: 0,
   };
 
   const completedOperation: DeleteOperationDto = {
     id: 'op-completed',
     worldId: 'test-world-id',
-    targetEntityId: 'entity-3',
-    targetEntityName: 'Sample Character',
-    targetEntityType: 'Character',
+    rootEntityId: 'entity-3',
+    rootEntityName: 'Sample Character',
     status: 'completed',
+    totalEntities: 1,
+    deletedCount: 1,
+    failedCount: 0,
+    failedEntityIds: null,
+    errorDetails: null,
+    cascade: true,
+    createdBy: 'test-user',
+    createdAt: '2026-02-03T09:30:00Z',
     startedAt: '2026-02-03T09:30:00Z',
     completedAt: '2026-02-03T09:30:05Z',
-    deletedEntities: ['entity-3'],
-    error: null,
-    retryCount: 0,
   };
 
   const failedOperation: DeleteOperationDto = {
     id: 'op-failed',
     worldId: 'test-world-id',
-    targetEntityId: 'entity-4',
-    targetEntityName: 'Failed Entity',
-    targetEntityType: 'Location',
+    rootEntityId: 'entity-4',
+    rootEntityName: 'Failed Entity',
     status: 'failed',
+    totalEntities: 1,
+    deletedCount: 0,
+    failedCount: 1,
+    failedEntityIds: ['entity-4'],
+    errorDetails: 'Network error occurred',
+    cascade: true,
+    createdBy: 'test-user',
+    createdAt: '2026-02-03T09:00:00Z',
     startedAt: '2026-02-03T09:00:00Z',
     completedAt: '2026-02-03T09:00:10Z',
-    deletedEntities: [],
-    error: { code: 'NETWORK_ERROR', message: 'Network error occurred' },
-    retryCount: 0,
   };
 
   it('renders entity name', () => {
@@ -117,7 +137,7 @@ describe('NotificationItem', () => {
       { worldId: 'test-world-id', worldName: 'Test World' }
     );
 
-    expect(screen.getByText(/pending/i)).toBeInTheDocument();
+    expect(screen.getByText(/queued for processing/i)).toBeInTheDocument();
   });
 
   it('shows in-progress status', () => {
@@ -126,8 +146,8 @@ describe('NotificationItem', () => {
       { worldId: 'test-world-id', worldName: 'Test World' }
     );
 
-    // Should show in-progress status message
-    expect(screen.getByText(/deleting/i)).toBeInTheDocument();
+    // Should show progress percentage message
+    expect(screen.getByText(/50% complete/i)).toBeInTheDocument();
   });
 
   it('shows completed status with checkmark icon', () => {
@@ -136,7 +156,7 @@ describe('NotificationItem', () => {
       { worldId: 'test-world-id', worldName: 'Test World' }
     );
 
-    expect(screen.getByText(/deleted successfully/i)).toBeInTheDocument();
+    expect(screen.getByText(/completed successfully/i)).toBeInTheDocument();
   });
 
   it('shows failed status with error icon and message', () => {
@@ -145,7 +165,7 @@ describe('NotificationItem', () => {
       { worldId: 'test-world-id', worldName: 'Test World' }
     );
 
-    expect(screen.getByText(/network error occurred/i)).toBeInTheDocument();
+    expect(screen.getByText(/Network error occurred/i)).toBeInTheDocument();
   });
 
   it('marks notification as read when clicked', async () => {
@@ -161,7 +181,7 @@ describe('NotificationItem', () => {
 
     // Verify dispatch called (check Redux state)
     const state = store.getState();
-    expect(state.notifications.metadata[pendingOperation.id]?.read).toBe(true);
+    expect((state.notifications as DeleteOperationsState).metadata[pendingOperation.id]?.isRead).toBe(true);
   });
 
   it('dismisses notification when dismiss button clicked', async () => {
@@ -177,7 +197,7 @@ describe('NotificationItem', () => {
 
     // Verify dispatch called (check Redux state)
     const state = store.getState();
-    expect(state.notifications.metadata[pendingOperation.id]?.dismissed).toBe(true);
+    expect((state.notifications as DeleteOperationsState).metadata[pendingOperation.id]?.isDismissed).toBe(true);
   });
 
   it('shows unread indicator for unread notifications', () => {
@@ -202,8 +222,6 @@ describe('NotificationItem', () => {
   });
 
   it('is keyboard accessible', async () => {
-    const user = userEvent.setup();
-
     renderWithProviders(
       <NotificationItem operation={failedOperation} />,
       { worldId: 'test-world-id', worldName: 'Test World' }
@@ -223,41 +241,41 @@ describe('NotificationItem', () => {
     dismissButton.focus();
     expect(dismissButton).toHaveFocus();
   });
-    it('[T026] shows retry button for failed operations', () => {
-      renderWithProviders(
-        <NotificationItem operation={failedOperation} />,
-        { worldId: 'test-world-id', worldName: 'Test World' }
-      );
 
-      const retryButton = screen.getByRole('button', { name: /retry operation/i });
-      expect(retryButton).toBeInTheDocument();
-      expect(retryButton).not.toBeDisabled();
-    });
+  it('[T026] shows retry button for failed operations', () => {
+    renderWithProviders(
+      <NotificationItem operation={failedOperation} />,
+      { worldId: 'test-world-id', worldName: 'Test World' }
+    );
 
-    it('[T026] does not show retry button for non-failed operations', () => {
-      renderWithProviders(
-        <NotificationItem operation={pendingOperation} />,
-        { worldId: 'test-world-id', worldName: 'Test World' }
-      );
+    const retryButton = screen.getByRole('button', { name: /retry operation/i });
+    expect(retryButton).toBeInTheDocument();
+    expect(retryButton).not.toBeDisabled();
+  });
 
-      expect(screen.queryByRole('button', { name: /retry operation/i })).not.toBeInTheDocument();
-    });
+  it('[T026] does not show retry button for non-failed operations', () => {
+    renderWithProviders(
+      <NotificationItem operation={pendingOperation} />,
+      { worldId: 'test-world-id', worldName: 'Test World' }
+    );
 
-    it('[T027-T028] calls retry API and shows loading state when retry clicked', async () => {
-      const user = userEvent.setup();
+    expect(screen.queryByRole('button', { name: /retry operation/i })).not.toBeInTheDocument();
+  });
 
-      renderWithProviders(
-        <NotificationItem operation={failedOperation} />,
-        { worldId: 'test-world-id', worldName: 'Test World' }
-      );
+  it('[T027-T028] calls retry API and shows loading state when retry clicked', async () => {
+    const user = userEvent.setup();
 
-      const retryButton = screen.getByRole('button', { name: /retry operation/i });
-      await user.click(retryButton);
+    renderWithProviders(
+      <NotificationItem operation={failedOperation} />,
+      { worldId: 'test-world-id', worldName: 'Test World' }
+    );
 
-      // Verify loading state appears
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /retry operation/i })).toHaveTextContent(/retrying/i);
-      });
+    const retryButton = screen.getByRole('button', { name: /retry operation/i });
+    await user.click(retryButton);
+
+    // Verify loading state appears
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /retry operation/i })).toHaveTextContent(/retrying/i);
     });
   });
 

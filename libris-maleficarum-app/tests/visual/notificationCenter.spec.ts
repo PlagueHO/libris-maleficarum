@@ -52,7 +52,7 @@ test.describe('NotificationCenter Visual Regression', () => {
     await expect(drawer).toHaveScreenshot('notification-center-empty.png');
   });
 
-  test('notification center - with operations (desktop)', async ({ page, viewport }) => {
+  test('notification center - with operations (desktop)', async ({ page }) => {
     // Set desktop viewport
     await page.setViewportSize({ width: 1280, height: 720 });
     

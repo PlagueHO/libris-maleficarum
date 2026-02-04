@@ -1,77 +1,93 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { selectUnreadCount, selectVisibleOperations } from '../notificationSelectors';
 import type { RootState } from '../store';
-import type { AsyncOperation } from '@/services/types/asyncOperations';
+import type { DeleteOperationDto } from '@/services/types/asyncOperations';
 
 describe('notification selectors', () => {
-  let mockState: Partial<RootState>;
-  let mockOperations: AsyncOperation[];
+  let mockState: RootState;
+  let mockOperations: DeleteOperationDto[];
 
   beforeEach(() => {
     mockOperations = [
       {
         id: 'op-1',
-        type: 'DELETE',
-        targetEntityId: 'entity-1',
-        targetEntityName: 'Test World',
-        targetEntityType: 'World',
+        worldId: 'test-world-id',
+        rootEntityId: 'entity-1',
+        rootEntityName: 'Test World',
         status: 'pending',
-        progress: null,
-        result: null,
-        startTimestamp: '2026-02-03T08:00:00Z',
-        completionTimestamp: null,
+        totalEntities: 0,
+        deletedCount: 0,
+        failedCount: 0,
+        failedEntityIds: null,
+        errorDetails: null,
+        cascade: true,
+        createdBy: 'test-user',
+        createdAt: '2026-02-03T08:00:00Z',
+        startedAt: null,
+        completedAt: null,
       },
       {
         id: 'op-2',
-        type: 'DELETE',
-        targetEntityId: 'entity-2',
-        targetEntityName: 'Old World',
-        targetEntityType: 'World',
+        worldId: 'test-world-id',
+        rootEntityId: 'entity-2',
+        rootEntityName: 'Old World',
         status: 'completed',
-        progress: { percentComplete: 100, itemsProcessed: 50, itemsTotal: 50 },
-        result: {
-          success: true,
-          affectedCount: 50,
-          retryCount: 0,
-        },
-        startTimestamp: '2026-02-03T07:00:00Z',
-        completionTimestamp: '2026-02-03T07:05:00Z',
+        totalEntities: 50,
+        deletedCount: 50,
+        failedCount: 0,
+        failedEntityIds: null,
+        errorDetails: null,
+        cascade: true,
+        createdBy: 'test-user',
+        createdAt: '2026-02-03T07:00:00Z',
+        startedAt: '2026-02-03T07:00:00Z',
+        completedAt: '2026-02-03T07:05:00Z',
       },
       {
         id: 'op-3',
-        type: 'DELETE',
-        targetEntityId: 'entity-3',
-        targetEntityName: 'Dismissed World',
-        targetEntityType: 'World',
-        status: 'in-progress',
-        progress: { percentComplete: 45, itemsProcessed: 120, itemsTotal: 267 },
-        result: null,
-        startTimestamp: '2026-02-03T08:10:00Z',
-        completionTimestamp: null,
+        worldId: 'test-world-id',
+        rootEntityId: 'entity-3',
+        rootEntityName: 'Dismissed World',
+        status: 'in_progress',
+        totalEntities: 267,
+        deletedCount: 120,
+        failedCount: 0,
+        failedEntityIds: null,
+        errorDetails: null,
+        cascade: true,
+        createdBy: 'test-user',
+        createdAt: '2026-02-03T08:10:00Z',
+        startedAt: '2026-02-03T08:10:00Z',
+        completedAt: null,
       },
     ];
 
     mockState = {
+      sidePanel: {
+        isExpanded: true,
+      },
+      worldSidebar: {
+        rootWorldId: 'test-world-id',
+        selectedNodeId: null,
+        expandedNodeIds: [],
+      },
       notifications: {
         sidebarOpen: false,
         metadata: {
-          'op-1': { read: false, dismissed: false, lastInteractionTimestamp: Date.now() },
-          'op-2': { read: true, dismissed: false, lastInteractionTimestamp: Date.now() },
-          'op-3': { read: false, dismissed: true, lastInteractionTimestamp: Date.now() },
+          'op-1': { operationId: 'op-1', isRead: false, isDismissed: false, lastInteractionTimestamp: Date.now() },
+          'op-2': { operationId: 'op-2', isRead: true, isDismissed: false, lastInteractionTimestamp: Date.now() },
+          'op-3': { operationId: 'op-3', isRead: false, isDismissed: true, lastInteractionTimestamp: Date.now() },
         },
         lastCleanupTimestamp: Date.now(),
         pollingEnabled: true,
       },
       api: {
         queries: {
-          'getAsyncOperations(undefined)': {
+          'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
             status: 'fulfilled',
-            endpointName: 'getAsyncOperations',
+            endpointName: 'getDeleteOperations',
             requestId: 'test-request-id',
-            data: {
-              operations: mockOperations,
-              totalCount: 3,
-            },
+            data: mockOperations,
             startedTimeStamp: Date.now(),
             fulfilledTimeStamp: Date.now(),
           },
@@ -88,7 +104,7 @@ describe('notification selectors', () => {
           online: true,
         },
       },
-    } as Partial<RootState>;
+    } as unknown as RootState;
   });
 
   describe('selectUnreadCount', () => {
@@ -102,38 +118,35 @@ describe('notification selectors', () => {
     });
 
     it('should return 0 when no operations exist', () => {
-      const emptyState = {
+      const emptyState: RootState = {
         ...mockState,
         api: {
           ...mockState.api,
           queries: {
-            'getAsyncOperations(undefined)': {
+            'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
               status: 'fulfilled',
-              endpointName: 'getAsyncOperations',
+              endpointName: 'getDeleteOperations',
               requestId: 'test-request-id',
-              data: {
-                operations: [],
-                totalCount: 0,
-              },
+              data: [],
               startedTimeStamp: Date.now(),
               fulfilledTimeStamp: Date.now(),
             },
           },
         },
-      } as RootState;
+      } as unknown as RootState;
 
       const count = selectUnreadCount(emptyState);
       expect(count).toBe(0);
     });
 
     it('should return 0 when operations data is not loaded', () => {
-      const noDataState = {
+      const noDataState: RootState = {
         ...mockState,
         api: {
           ...mockState.api,
           queries: {},
         },
-      } as RootState;
+      } as unknown as RootState;
 
       const count = selectUnreadCount(noDataState);
       expect(count).toBe(0);
@@ -144,37 +157,39 @@ describe('notification selectors', () => {
         ...mockOperations,
         {
           id: 'op-4',
-          type: 'DELETE',
-          targetEntityId: 'entity-4',
-          targetEntityName: 'New World',
-          targetEntityType: 'World',
+          worldId: 'test-world-id',
+          rootEntityId: 'entity-4',
+          rootEntityName: 'New World',
           status: 'pending',
-          progress: null,
-          result: null,
-          startTimestamp: '2026-02-03T08:20:00Z',
-          completionTimestamp: null,
-        } as AsyncOperation,
+          totalEntities: 0,
+          deletedCount: 0,
+          failedCount: 0,
+          failedEntityIds: null,
+          errorDetails: null,
+          cascade: true,
+          createdBy: 'test-user',
+          createdAt: '2026-02-03T08:20:00Z',
+          startedAt: null,
+          completedAt: null,
+        } as DeleteOperationDto,
       ];
 
-      const stateWithNewOp = {
+      const stateWithNewOp: RootState = {
         ...mockState,
         api: {
           ...mockState.api,
           queries: {
-            'getAsyncOperations(undefined)': {
+            'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
               status: 'fulfilled',
-              endpointName: 'getAsyncOperations',
+              endpointName: 'getDeleteOperations',
               requestId: 'test-request-id',
-              data: {
-                operations: newOperations,
-                totalCount: 4,
-              },
+              data: newOperations,
               startedTimeStamp: Date.now(),
               fulfilledTimeStamp: Date.now(),
             },
           },
         },
-      } as RootState;
+      } as unknown as RootState;
 
       const count = selectUnreadCount(stateWithNewOp);
 
@@ -206,25 +221,22 @@ describe('notification selectors', () => {
     });
 
     it('should return empty array when no operations exist', () => {
-      const emptyState = {
+      const emptyState: RootState = {
         ...mockState,
         api: {
           ...mockState.api,
           queries: {
-            'getAsyncOperations(undefined)': {
+            'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
               status: 'fulfilled',
-              endpointName: 'getAsyncOperations',
+              endpointName: 'getDeleteOperations',
               requestId: 'test-request-id',
-              data: {
-                operations: [],
-                totalCount: 0,
-              },
+              data: [],
               startedTimeStamp: Date.now(),
               fulfilledTimeStamp: Date.now(),
             },
           },
         },
-      } as RootState;
+      } as unknown as RootState;
 
       const visible = selectVisibleOperations(emptyState);
       expect(visible).toEqual([]);
@@ -236,9 +248,9 @@ describe('notification selectors', () => {
         notifications: {
           ...mockState.notifications,
           metadata: {
-            'op-1': { read: false, dismissed: false, lastInteractionTimestamp: Date.now() },
-            'op-2': { read: true, dismissed: false, lastInteractionTimestamp: Date.now() },
-            'op-3': { read: false, dismissed: false, lastInteractionTimestamp: Date.now() },
+            'op-1': { operationId: 'op-1', isRead: false, isDismissed: false, lastInteractionTimestamp: Date.now() },
+            'op-2': { operationId: 'op-2', isRead: true, isDismissed: false, lastInteractionTimestamp: Date.now() },
+            'op-3': { operationId: 'op-3', isRead: false, isDismissed: false, lastInteractionTimestamp: Date.now() },
           },
         },
       } as RootState;

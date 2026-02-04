@@ -8,10 +8,10 @@ import notificationsReducer, {
   performCleanup,
   setPollingEnabled,
 } from '../notificationsSlice';
-import type { NotificationsState } from '../notificationsSlice';
+import type { DeleteOperationsState } from '@/services/types/asyncOperations';
 
 describe('notificationsSlice', () => {
-  let initialState: NotificationsState;
+  let initialState: DeleteOperationsState;
 
   beforeEach(() => {
     initialState = {
@@ -54,19 +54,20 @@ describe('notificationsSlice', () => {
       const state = notificationsReducer(initialState, markAsRead(operationId));
 
       expect(state.metadata[operationId]).toBeDefined();
-      expect(state.metadata[operationId].read).toBe(true);
-      expect(state.metadata[operationId].dismissed).toBe(false);
+      expect(state.metadata[operationId].isRead).toBe(true);
+      expect(state.metadata[operationId].isDismissed).toBe(false);
       expect(state.metadata[operationId].lastInteractionTimestamp).toBeGreaterThan(0);
     });
 
     it('should update existing metadata to mark as read', () => {
       const operationId = 'op-123';
-      const stateWithMeta: NotificationsState = {
+      const stateWithMeta: DeleteOperationsState = {
         ...initialState,
         metadata: {
           [operationId]: {
-            read: false,
-            dismissed: false,
+            operationId,
+            isRead: false,
+            isDismissed: false,
             lastInteractionTimestamp: Date.now() - 1000,
           },
         },
@@ -74,8 +75,8 @@ describe('notificationsSlice', () => {
 
       const state = notificationsReducer(stateWithMeta, markAsRead(operationId));
 
-      expect(state.metadata[operationId].read).toBe(true);
-      expect(state.metadata[operationId].dismissed).toBe(false);
+      expect(state.metadata[operationId].isRead).toBe(true);
+      expect(state.metadata[operationId].isDismissed).toBe(false);
       expect(state.metadata[operationId].lastInteractionTimestamp).toBeGreaterThan(
         stateWithMeta.metadata[operationId].lastInteractionTimestamp
       );
@@ -87,19 +88,20 @@ describe('notificationsSlice', () => {
       const operationId = 'op-123';
       const state = notificationsReducer(initialState, dismissNotification(operationId));
 
-      expect(state.metadata[operationId].dismissed).toBe(true);
-      expect(state.metadata[operationId].read).toBe(true);
+      expect(state.metadata[operationId].isDismissed).toBe(true);
+      expect(state.metadata[operationId].isRead).toBe(true);
       expect(state.metadata[operationId].lastInteractionTimestamp).toBeGreaterThan(0);
     });
 
     it('should update existing metadata to mark as dismissed and read', () => {
       const operationId = 'op-123';
-      const stateWithMeta: NotificationsState = {
+      const stateWithMeta: DeleteOperationsState = {
         ...initialState,
         metadata: {
           [operationId]: {
-            read: false,
-            dismissed: false,
+            operationId,
+            isRead: false,
+            isDismissed: false,
             lastInteractionTimestamp: Date.now() - 1000,
           },
         },
@@ -107,8 +109,8 @@ describe('notificationsSlice', () => {
 
       const state = notificationsReducer(stateWithMeta, dismissNotification(operationId));
 
-      expect(state.metadata[operationId].dismissed).toBe(true);
-      expect(state.metadata[operationId].read).toBe(true); // Dismissed implies read
+      expect(state.metadata[operationId].isDismissed).toBe(true);
+      expect(state.metadata[operationId].isRead).toBe(true); // Dismissed implies read
     });
   });
 
@@ -119,28 +121,28 @@ describe('notificationsSlice', () => {
         clearAllCompleted(['op-1', 'op-2', 'op-3'])
       );
 
-      expect(state.metadata['op-1'].dismissed).toBe(true);
-      expect(state.metadata['op-1'].read).toBe(true);
-      expect(state.metadata['op-2'].dismissed).toBe(true);
-      expect(state.metadata['op-2'].read).toBe(true);
-      expect(state.metadata['op-3'].dismissed).toBe(true);
-      expect(state.metadata['op-3'].read).toBe(true);
+      expect(state.metadata['op-1'].isDismissed).toBe(true);
+      expect(state.metadata['op-1'].isRead).toBe(true);
+      expect(state.metadata['op-2'].isDismissed).toBe(true);
+      expect(state.metadata['op-2'].isRead).toBe(true);
+      expect(state.metadata['op-3'].isDismissed).toBe(true);
+      expect(state.metadata['op-3'].isRead).toBe(true);
     });
 
     it('should update existing metadata for operations', () => {
-      const stateWithMeta: NotificationsState = {
+      const stateWithMeta: DeleteOperationsState = {
         ...initialState,
         metadata: {
-          'op-1': { read: true, dismissed: false, lastInteractionTimestamp: Date.now() - 1000 },
-          'op-2': { read: false, dismissed: false, lastInteractionTimestamp: Date.now() - 1000 },
+          'op-1': { operationId: 'op-1', isRead: false, isDismissed: false, lastInteractionTimestamp: Date.now() },
+          'op-2': { operationId: 'op-2', isRead: false, isDismissed: false, lastInteractionTimestamp: Date.now() },
         },
       };
 
       const state = notificationsReducer(stateWithMeta, clearAllCompleted(['op-1', 'op-2']));
 
-      expect(state.metadata['op-1'].dismissed).toBe(true);
-      expect(state.metadata['op-2'].dismissed).toBe(true);
-      expect(state.metadata['op-2'].read).toBe(true); // Should be marked as read too
+      expect(state.metadata['op-1'].isDismissed).toBe(true);
+      expect(state.metadata['op-2'].isDismissed).toBe(true);
+      expect(state.metadata['op-2'].isRead).toBe(true); // Should be marked as read too
     });
   });
 
@@ -150,17 +152,19 @@ describe('notificationsSlice', () => {
       const oneHourAgo = now - 60 * 60 * 1000;
       const twentyFiveHoursAgo = now - 25 * 60 * 60 * 1000;
 
-      const stateWithOldMeta: NotificationsState = {
+      const stateWithOldMeta: DeleteOperationsState = {
         ...initialState,
         metadata: {
           'op-recent': {
-            read: true,
-            dismissed: false,
+            operationId: 'op-recent',
+            isRead: true,
+            isDismissed: false,
             lastInteractionTimestamp: oneHourAgo,
           },
           'op-old': {
-            read: true,
-            dismissed: true,
+            operationId: 'op-old',
+            isRead: true,
+            isDismissed: true,
             lastInteractionTimestamp: twentyFiveHoursAgo,
           },
         },
@@ -178,11 +182,11 @@ describe('notificationsSlice', () => {
       const now = Date.now();
       const oneHourAgo = now - 60 * 60 * 1000;
 
-      const stateWithRecentMeta: NotificationsState = {
+      const stateWithRecentMeta: DeleteOperationsState = {
         ...initialState,
         metadata: {
-          'op-1': { read: true, dismissed: false, lastInteractionTimestamp: oneHourAgo },
-          'op-2': { read: false, dismissed: false, lastInteractionTimestamp: oneHourAgo },
+          'op-1': { operationId: 'op-1', isRead: true, isDismissed: false, lastInteractionTimestamp: oneHourAgo },
+          'op-2': { operationId: 'op-2', isRead: false, isDismissed: false, lastInteractionTimestamp: oneHourAgo },
         },
       };
 
