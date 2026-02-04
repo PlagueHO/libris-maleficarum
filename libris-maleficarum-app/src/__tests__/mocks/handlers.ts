@@ -599,20 +599,20 @@ export const worldEntityHandlers = [
 /**
  * In-memory mock storage for async operations
  */
-const mockAsyncOperations: Map<string, import('@/services/types/asyncOperations').AsyncOperation> = new Map();
+const mockAsyncOperations: Map<string, import('@/services/types/asyncOperations').DeleteOperationDto> = new Map();
 
 /**
  * MSW HTTP handlers for Async Operations API
  */
 export const asyncOperationsHandlers = [
   /**
-   * POST /api/world-entities/:id/async-delete
+   * POST /v1/worlds/:worldId/entities/:entityId/delete
    *
    * Initiate async delete operation
    */
-  http.post(`${baseUrl}/api/world-entities/:id/async-delete`, ({ params }) => {
-    const { id } = params;
-    const entity = mockEntities.get(id as string);
+  http.post(`${baseUrl}/v1/worlds/:worldId/entities/:entityId/delete`, ({ params }) => {
+    const { entityId } = params;
+    const entity = mockEntities.get(entityId as string);
 
     if (!entity) {
       return new HttpResponse(null, {
@@ -623,17 +623,22 @@ export const asyncOperationsHandlers = [
 
     // Create new async operation
     const operationId = `op-${Date.now()}`;
-    const newOperation: import('@/services/types/asyncOperations').AsyncOperation = {
+    const newOperation: import('@/services/types/asyncOperations').DeleteOperationDto = {
       id: operationId,
-      type: 'DELETE',
-      targetEntityId: id as string,
-      targetEntityName: entity.name,
-      targetEntityType: entity.entityType,
+      worldId: entity.worldId,
+      rootEntityId: entityId as string,
+      rootEntityName: entity.name,
       status: 'pending',
-      progress: null,
-      result: null,
-      startTimestamp: new Date().toISOString(),
-      completionTimestamp: null,
+      totalEntities: 10,
+      deletedCount: 0,
+      failedCount: 0,
+      failedEntityIds: null,
+      errorDetails: null,
+      cascade: true,
+      createdBy: 'test-user',
+      createdAt: new Date().toISOString(),
+      startedAt: null,
+      completedAt: null,
     };
 
     mockAsyncOperations.set(operationId, newOperation);
@@ -642,12 +647,9 @@ export const asyncOperationsHandlers = [
     setTimeout(() => {
       const op = mockAsyncOperations.get(operationId);
       if (op) {
-        op.status = 'in-progress';
-        op.progress = {
-          percentComplete: 50,
-          itemsProcessed: 5,
-          itemsTotal: 10,
-        };
+        op.status = 'in_progress';
+        op.deletedCount = 5;
+        op.startedAt = new Date().toISOString();
       }
     }, 1000);
 
@@ -656,17 +658,8 @@ export const asyncOperationsHandlers = [
       const op = mockAsyncOperations.get(operationId);
       if (op) {
         op.status = 'completed';
-        op.progress = {
-          percentComplete: 100,
-          itemsProcessed: 10,
-          itemsTotal: 10,
-        };
-        op.result = {
-          success: true,
-          affectedCount: 10,
-          retryCount: 0,
-        };
-        op.completionTimestamp = new Date().toISOString();
+        op.deletedCount = 10;
+        op.completedAt = new Date().toISOString();
 
         // Actually delete the entity from mock storage
         entity.isDeleted = true;
@@ -675,53 +668,51 @@ export const asyncOperationsHandlers = [
 
     return HttpResponse.json(
       {
-        operationId,
-        targetEntityId: id,
-        targetEntityName: entity.name,
-        estimatedCount: 10,
+        data: {
+          operationId,
+          rootEntityId: entityId,
+          rootEntityName: entity.name,
+          estimatedCount: 10,
+        },
       },
       { status: 202 }
     );
   }),
 
   /**
-   * GET /api/async-operations
+   * GET /v1/worlds/:worldId/delete-operations
    *
-   * Fetch list of async operations
+   * Fetch list of delete operations for a world
    */
-  http.get(`${baseUrl}/api/async-operations`, ({ request }) => {
+  http.get(`${baseUrl}/v1/worlds/:worldId/delete-operations`, ({ request, params }) => {
     const url = new URL(request.url);
+    const { worldId } = params;
     const status = url.searchParams.get('status');
-    const type = url.searchParams.get('type');
     const limit = parseInt(url.searchParams.get('limit') ?? '50', 10);
 
-    let operations = Array.from(mockAsyncOperations.values());
+    let operations = Array.from(mockAsyncOperations.values())
+      .filter(op => op.worldId === worldId);
 
     // Filter by status
     if (status) {
-      operations = operations.filter((op) => op.status === status);
-    }
-
-    // Filter by type
-    if (type) {
-      operations = operations.filter((op) => op.type === type);
+      const statuses = status.split(',');
+      operations = operations.filter((op) => statuses.includes(op.status));
     }
 
     // Apply limit
     operations = operations.slice(0, limit);
 
     return HttpResponse.json({
-      operations,
-      totalCount: mockAsyncOperations.size,
+      data: operations,
     });
   }),
 
   /**
-   * GET /api/async-operations/:operationId
+   * GET /v1/worlds/:worldId/delete-operations/:operationId
    *
-   * Fetch single async operation
+   * Fetch single delete operation
    */
-  http.get(`${baseUrl}/api/async-operations/:operationId`, ({ params }) => {
+  http.get(`${baseUrl}/v1/worlds/:worldId/delete-operations/:operationId`, ({ params }) => {
     const { operationId } = params;
     const operation = mockAsyncOperations.get(operationId as string);
 
@@ -732,15 +723,15 @@ export const asyncOperationsHandlers = [
       });
     }
 
-    return HttpResponse.json(operation);
+    return HttpResponse.json({ data: operation });
   }),
 
   /**
-   * POST /api/async-operations/:operationId/retry
+   * POST /v1/worlds/:worldId/delete-operations/:operationId/retry
    *
    * Retry a failed operation
    */
-  http.post(`${baseUrl}/api/async-operations/:operationId/retry`, ({ params }) => {
+  http.post(`${baseUrl}/v1/worlds/:worldId/delete-operations/:operationId/retry`, ({ params }) => {
     const { operationId } = params;
     const operation = mockAsyncOperations.get(operationId as string);
 
@@ -765,20 +756,22 @@ export const asyncOperationsHandlers = [
 
     // Reset operation to pending
     operation.status = 'pending';
-    operation.progress = null;
-    operation.result = null;
-    operation.startTimestamp = new Date().toISOString();
-    operation.completionTimestamp = null;
+    operation.deletedCount = 0;
+    operation.failedCount = 0;
+    operation.failedEntityIds = null;
+    operation.errorDetails = null;
+    operation.startedAt = new Date().toISOString();
+    operation.completedAt = null;
 
-    return HttpResponse.json(operation, { status: 202 });
+    return HttpResponse.json({ data: operation }, { status: 200 });
   }),
 
   /**
-   * POST /api/async-operations/:operationId/cancel
+   * POST /v1/worlds/:worldId/delete-operations/:operationId/cancel
    *
    * Cancel a pending or in-progress operation
    */
-  http.post(`${baseUrl}/api/async-operations/:operationId/cancel`, ({ params }) => {
+  http.post(`${baseUrl}/v1/worlds/:worldId/delete-operations/:operationId/cancel`, ({ params }) => {
     const { operationId } = params;
     const operation = mockAsyncOperations.get(operationId as string);
 
@@ -801,9 +794,10 @@ export const asyncOperationsHandlers = [
       );
     }
 
-    // Mark as cancelled
-    operation.status = 'cancelled';
-    operation.completionTimestamp = new Date().toISOString();
+    // Mark as failed (DeleteOperationStatus doesn't have 'cancelled')
+    operation.status = 'failed';
+    operation.errorDetails = 'Operation cancelled by user';
+    operation.completedAt = new Date().toISOString();
 
     return HttpResponse.json(operation);
   }),

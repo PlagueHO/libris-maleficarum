@@ -63,3 +63,18 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })),
 });
+
+// Mock getComputedStyle for vaul Drawer (needs CSS transform parsing)
+const originalGetComputedStyle = window.getComputedStyle;
+window.getComputedStyle = function(element: Element) {
+  const styles = originalGetComputedStyle(element);
+  // Return a proxy that provides defaults for missing CSS properties  
+  return new Proxy(styles, {
+    get(target, prop) {
+      if (prop === 'transform' && !target[prop as keyof CSSStyleDeclaration]) {
+        return 'none';
+      }
+      return target[prop as keyof CSSStyleDeclaration];
+    }
+  });
+};

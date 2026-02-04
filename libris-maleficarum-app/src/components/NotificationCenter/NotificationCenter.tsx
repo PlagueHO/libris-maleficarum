@@ -56,7 +56,7 @@ export function NotificationCenter({ open, onOpenChange }: NotificationCenterPro
   const completedCount = operations.filter(op => op.status === 'completed').length;
   
   // Check if all visible operations are already read
-  const allRead = operations.length === 0 || operations.every(op => metadata[op.id]?.read);
+  const allRead = operations.length === 0 || operations.every(op => metadata[op.id]?.isRead);
   
   // Announce status changes for screen readers
   useEffect(() => {
@@ -64,18 +64,20 @@ export function NotificationCenter({ open, onOpenChange }: NotificationCenterPro
     
     // Find most recent status change (completed or failed operations)
     const recentlyCompleted = operations.find(
-      op => (op.status === 'completed' || op.status === 'failed') && !metadata[op.id]?.read
+      op => (op.status === 'completed' || op.status === 'failed') && !metadata[op.id]?.isRead
     );
     
     if (recentlyCompleted) {
       const message = recentlyCompleted.status === 'completed'
-        ? `Operation completed: ${recentlyCompleted.targetEntityName}`
-        : `Operation failed: ${recentlyCompleted.targetEntityName}`;
+        ? `Operation completed: ${recentlyCompleted.rootEntityName}`
+        : `Operation failed: ${recentlyCompleted.rootEntityName}`;
       
-      setAnnounceMessage(message);
-      
-      // Clear announcement after screen reader has time to announce
-      setTimeout(() => setAnnounceMessage(''), 3000);
+      // Use setTimeout to avoid setState during render
+      setTimeout(() => {
+        setAnnounceMessage(message);
+        // Clear announcement after screen reader has time to announce
+        setTimeout(() => setAnnounceMessage(''), 3000);
+      }, 0);
     }
   }, [operations, metadata, open]);
   

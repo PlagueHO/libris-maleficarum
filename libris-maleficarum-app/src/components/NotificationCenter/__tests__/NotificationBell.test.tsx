@@ -6,7 +6,7 @@
  * @module NotificationCenter/__tests__/NotificationBell
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe,it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
@@ -15,7 +15,9 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 
 import { NotificationBell } from '../NotificationBell';
 import notificationsReducer from '@/store/notificationsSlice';
+import worldSidebarReducer from '@/store/worldSidebarSlice';
 import { api } from '@/services/api';
+import type { RootState } from '@/__tests__/test-utils';
 
 expect.extend(toHaveNoViolations);
 
@@ -24,22 +26,32 @@ describe('NotificationBell', () => {
     // Mock RTK Query state with operations
     const operations = Array.from({ length: unreadCount }, (_, i) => ({
       id: `op-${i + 1}`,
-      type: 'DELETE' as const,
-      targetEntityId: `entity-${i + 1}`,
-      targetEntityName: `Entity ${i + 1}`,
-      targetEntityType: 'World',
-      status: 'in-progress' as const,
-      progress: null,
-      result: null,
-      startTimestamp: new Date().toISOString(),
-      completionTimestamp: null,
+      worldId: 'test-world-id',
+      rootEntityId: `entity-${i + 1}`,
+      rootEntityName: `Entity ${i + 1}`,
+      status: 'in_progress' as const,
+      totalEntities: 0,
+      deletedCount: 0,
+      failedCount: 0,
+      failedEntityIds: null,
+      errorDetails: null,
+      cascade: true,
+      createdBy: 'test-user',
+      createdAt: new Date().toISOString(),
+      startedAt: new Date().toISOString(),
+      completedAt: null,
     }));
 
     return configureStore({
       reducer: {
+        // @ts-expect-error - Reducer type inference issues
         notifications: notificationsReducer,
+        // @ts-expect-error - Reducer type inference issues
+        worldSidebar: worldSidebarReducer,
+        // @ts-expect-error - Reducer type inference issues with RTK Query
         [api.reducerPath]: api.reducer,
       },
+      // @ts-expect-error - Middleware type inference issue with RTK Query
       middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(api.middleware),
       preloadedState: {
@@ -49,18 +61,35 @@ describe('NotificationBell', () => {
           lastCleanupTimestamp: Date.now(),
           pollingEnabled: true,
         },
+        worldSidebar: {
+          rootWorldId: null,
+          selectedNodeId: null,
+          expandedNodeIds: [],
+        },
         [api.reducerPath]: {
           queries: {
-            'getAsyncOperations(undefined)': {
+            'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
               status: 'fulfilled',
-              data: {
-                operations,
-                totalCount: operations.length,
-              },
+              endpointName: 'getDeleteOperations',
+              requestId: 'test-request-id',
+              data: operations,
+              startedTimeStamp: Date.now(),
+              fulfilledTimeStamp: Date.now(),
             },
           },
-        } as any,
-      },
+          mutations: {},
+          provided: {},
+          subscriptions: {},
+          config: {
+            reducerPath: 'api',
+            keepUnusedDataFor: 60,
+            refetchOnMountOrArgChange: false,
+            refetchOnFocus: false,
+            refetchOnReconnect: false,
+            online: true,
+          },
+        },
+      } as unknown as Partial<RootState>,
     });
   }
 
