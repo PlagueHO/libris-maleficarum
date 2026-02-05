@@ -10,16 +10,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
+import { screen } from '@testing-library/react';
+import { renderWithProviders } from '@/__tests__/test-utils';
 import { toHaveNoViolations } from 'jest-axe';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-
-import { api } from '@/services/api';
-import notificationsReducer from '@/store/notificationsSlice';
-import worldSidebarReducer from '@/store/worldSidebarSlice';
 
 expect.extend(toHaveNoViolations);
 
@@ -149,16 +144,6 @@ describe('US2: Retry Failed Operations', () => {
    * → Operation status changes to "pending" → Progress updates show retry attempt
    */
   it('[T025] should allow user to retry failed operation', async () => {
-    // Create test store
-    const store = configureStore({
-      reducer: {
-        notifications: notificationsReducer,
-        worldSidebar: worldSidebarReducer,
-        [api.reducerPath]: api.reducer,      },
-      middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(api.middleware),
-    });
-
     const { NotificationItem } = await import('@/components/NotificationCenter/NotificationItem');
     
     const failedOperation = {
@@ -179,11 +164,10 @@ describe('US2: Retry Failed Operations', () => {
       completedAt: new Date().toISOString(),
     };
 
-    // Render NotificationItem with failed operation
-    render(
-      <Provider store={store}>
-        <NotificationItem operation={failedOperation} />
-      </Provider>
+    // Render NotificationItem with failed operation using renderWithProviders
+    renderWithProviders(
+      <NotificationItem operation={failedOperation} />,
+      { worldId: 'test-world-id', worldName: 'Test World' }
     );
 
     // Verify retry button appears
@@ -204,17 +188,6 @@ describe('US3: Cancel In-Progress Operations', () => {
    * → Operation status changes to "cancelled" → Notification shows cancelled
    */
   it('[T029] should allow user to cancel in-progress operation', async () => {
-    // Create test store
-    const store = configureStore({
-      reducer: {
-        notifications: notificationsReducer,
-        worldSidebar: worldSidebarReducer,
-        [api.reducerPath]: api.reducer,
-      },
-      middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(api.middleware),
-    });
-
     const { NotificationItem } = await import('@/components/NotificationCenter/NotificationItem');
     
     const inProgressOperation = {
@@ -235,10 +208,9 @@ describe('US3: Cancel In-Progress Operations', () => {
       completedAt: null,
     };
 
-    render(
-      <Provider store={store}>
-        <NotificationItem operation={inProgressOperation} />
-      </Provider>
+    renderWithProviders(
+      <NotificationItem operation={inProgressOperation} />,
+      { worldId: 'test-world-id', worldName: 'Test World' }
     );
 
     // Verify cancel button appears

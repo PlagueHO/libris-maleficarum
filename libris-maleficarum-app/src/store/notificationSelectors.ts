@@ -22,17 +22,32 @@ import type { DeleteOperationDto } from '@/services/types/asyncOperations';
 const CURRENT_WORLD_ID = 'PLACEHOLDER'; // This should come from context
 
 /**
+ * Create the RTK Query selector once (outside the selector function)
+ * to avoid creating new references on every call
+ */
+const selectDeleteOperationsQueryResult = deleteOperationsApi.endpoints.getDeleteOperations.select({
+  worldId: CURRENT_WORLD_ID,
+});
+
+/**
  * Select delete operations data from RTK Query cache
  *
  * Uses the RTK Query selector provided by deleteOperationsApi
  * Returns empty array if no data or worldId not configured
+ * 
+ * IMPORTANT: Returns a stable empty array reference to avoid selector warnings
  */
+const EMPTY_OPERATIONS: DeleteOperationDto[] = [];
+
 const selectDeleteOperationsData = (state: RootState): DeleteOperationDto[] => {
-  const result = deleteOperationsApi.endpoints.getDeleteOperations.select({
-    worldId: CURRENT_WORLD_ID,
-  })(state);
+  const result = selectDeleteOperationsQueryResult(state);
   
-  return result?.data ?? [];
+  // Return stable empty array reference if no data
+  if (!result?.data || result.data.length === 0) {
+    return EMPTY_OPERATIONS;
+  }
+  
+  return result.data;
 };
 
 /**

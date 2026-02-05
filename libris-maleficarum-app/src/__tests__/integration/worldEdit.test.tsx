@@ -81,7 +81,7 @@ describe('World Editing Integration', () => {
 
         renderWithProviders(
           <>
-            <WorldSidebar />
+            <WorldSidebar optimisticallyDeletedIds={new Set()} />
             <MainPanel />
           </>,
           { preloadedState }
@@ -182,7 +182,7 @@ describe('World Editing Integration', () => {
 
         renderWithProviders(
           <>
-            <WorldSidebar />
+            <WorldSidebar optimisticallyDeletedIds={new Set()} />
             <MainPanel />
           </>,
           { preloadedState }

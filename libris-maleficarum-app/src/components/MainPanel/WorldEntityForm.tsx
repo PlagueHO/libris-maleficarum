@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { closeEntityForm, setUnsavedChanges, expandNode, setSelectedEntity } from '../../store/worldSidebarSlice';
+import { logger } from '@/lib/logger';
 import {
   useCreateWorldEntityMutation,
   useUpdateWorldEntityMutation,
@@ -260,6 +261,11 @@ export function EntityDetailForm() {
     e.preventDefault();
     if (!validate() || !selectedWorldId) return;
 
+    logger.userAction(isEditing ? 'Update entity' : 'Create entity', {
+      entityType,
+      hasCustomProperties: !!customProperties && Object.keys(customProperties).length > 0,
+    });
+
     try {
       // Type assertion done once for reuse
       const typedEntityType = entityType as WorldEntityType;
@@ -275,6 +281,8 @@ export function EntityDetailForm() {
           data: {
             name,
             description,
+            entityType: typedEntityType,
+            tags: existingEntity?.tags || [],
             properties,
             schemaVersion: ENTITY_SCHEMA_VERSIONS[typedEntityType],
           },
@@ -308,7 +316,15 @@ export function EntityDetailForm() {
         dispatch(closeEntityForm());
       }
     } catch (error) {
-      console.error('Failed to save entity', error);
+      logger.error('UI', 'Failed to save entity', { error });
+      
+      // Log validation errors if present
+      if (error && typeof error === 'object' && 'data' in error) {
+        const apiError = error as { status?: number; data?: { errors?: Record<string, string[]> } };
+        if (apiError.data?.errors) {
+          logger.error('API', 'Validation errors from backend', apiError.data.errors);
+        }
+      }
     }
   }
 

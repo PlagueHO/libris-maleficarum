@@ -51,6 +51,14 @@ export interface RetryDeleteParams {
 }
 
 /**
+ * Parameters for cancel operation
+ */
+export interface CancelDeleteParams {
+  worldId: string;
+  operationId: string;
+}
+
+/**
  * Delete Operations API endpoints
  *
  * Injected into the base API slice using RTK Query's injectEndpoints pattern.
@@ -71,7 +79,7 @@ export const deleteOperationsApi = api.injectEndpoints({
       GetDeleteOperationsParams
     >({
       query: ({ worldId, status, limit }) => ({
-        url: `/v1/worlds/${worldId}/delete-operations`,
+        url: `/api/v1/worlds/${worldId}/delete-operations`,
         method: 'GET',
         params: status ? { status: status.join(','), limit } : { limit },
       }),
@@ -101,7 +109,7 @@ export const deleteOperationsApi = api.injectEndpoints({
       { worldId: string; operationId: string }
     >({
       query: ({ worldId, operationId }) => ({
-        url: `/v1/worlds/${worldId}/delete-operations/${operationId}`,
+        url: `/api/v1/worlds/${worldId}/delete-operations/${operationId}`,
         method: 'GET',
       }),
       transformResponse: (response: ApiResponse<DeleteOperationDto>) =>
@@ -121,7 +129,28 @@ export const deleteOperationsApi = api.injectEndpoints({
      */
     retryDeleteOperation: builder.mutation<DeleteOperationDto, RetryDeleteParams>({
       query: ({ worldId, operationId }) => ({
-        url: `/v1/worlds/${worldId}/delete-operations/${operationId}/retry`,
+        url: `/api/v1/worlds/${worldId}/delete-operations/${operationId}/retry`,
+        method: 'POST',
+      }),
+      transformResponse: (response: ApiResponse<DeleteOperationDto>) =>
+        response.data,
+      invalidatesTags: (_result, _error, { operationId }) => [
+        { type: 'DeleteOperation', id: operationId },
+        { type: 'DeleteOperation', id: 'LIST' },
+      ],
+    }),
+
+    /**
+     * Cancel an in-progress delete operation
+     *
+     * Only works for operations in 'in_progress' status.
+     * Returns 400 Bad Request if operation is not cancellable.
+     *
+     * Backend endpoint: POST /api/v1/worlds/{worldId}/delete-operations/{operationId}/cancel
+     */
+    cancelDeleteOperation: builder.mutation<DeleteOperationDto, CancelDeleteParams>({
+      query: ({ worldId, operationId }) => ({
+        url: `/api/v1/worlds/${worldId}/delete-operations/${operationId}/cancel`,
         method: 'POST',
       }),
       transformResponse: (response: ApiResponse<DeleteOperationDto>) =>
@@ -143,7 +172,7 @@ export const deleteOperationsApi = api.injectEndpoints({
      */
     initiateEntityDelete: builder.mutation<DeleteOperationDto, InitiateDeleteParams>({
       query: ({ worldId, entityId, cascade = true }) => ({
-        url: `/v1/worlds/${worldId}/entities/${entityId}`,
+        url: `/api/v1/worlds/${worldId}/entities/${entityId}`,
         method: 'DELETE',
         params: { cascade },
       }),
@@ -178,5 +207,6 @@ export const {
   useGetDeleteOperationsQuery,
   useGetDeleteOperationQuery,
   useRetryDeleteOperationMutation,
+  useCancelDeleteOperationMutation,
   useInitiateEntityDeleteMutation,
 } = deleteOperationsApi;

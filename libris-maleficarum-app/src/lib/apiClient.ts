@@ -9,6 +9,7 @@
 
 import axios, { type AxiosInstance } from 'axios';
 import axiosRetry from 'axios-retry';
+import { logger } from './logger';
 
 /**
  * Base URL for API requests
@@ -22,17 +23,17 @@ import axiosRetry from 'axios-retry';
  */
 
 // Debug: Log all environment variables to help troubleshoot Aspire integration
-console.group('🔧 API Client Configuration');
-console.log('Environment mode:', import.meta.env.MODE);
-console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
-console.log('VITE_HAS_ASPIRE_BACKEND:', import.meta.env.VITE_HAS_ASPIRE_BACKEND);
+logger.debug('API', 'API Client Configuration', {
+  mode: import.meta.env.MODE,
+  hasAspireBackend: import.meta.env.VITE_HAS_ASPIRE_BACKEND,
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
+});
 
 const baseURL =
   import.meta.env.VITE_API_BASE_URL ||
   (import.meta.env.MODE === 'development' ? '' : 'http://localhost:5000');
 
-console.log('✅ Final baseURL:', baseURL || '(empty string - using relative URLs/Proxy)');
-console.groupEnd();
+logger.debug('API', `Final baseURL: ${baseURL || '(empty - using Vite proxy)'}`);
 
 /**
  * Axios instance with retry configuration
@@ -90,34 +91,60 @@ axiosRetry(apiClient, {
     return false;
   },
   onRetry: (retryCount, error, requestConfig) => {
-    // Log retry attempts for debugging
-    console.warn(
-      `Retrying request (attempt ${retryCount}/${3}):`,
-      {
-        url: requestConfig.url,
-        method: requestConfig.method,
-        status: error.response?.status,
-        message: error.message,
-      }
-    );
+    logger.warn('API', `Retrying request (attempt ${retryCount}/3)`, {
+      url: requestConfig.url,
+      method: requestConfig.method?.toUpperCase(),
+      status: error.response?.status,
+    });
   },
 });
 
-// Add response interceptor for logging errors
+// Add request interceptor for logging outgoing API calls
+apiClient.interceptors.request.use(
+  (config) => {
+    // Log all outgoing API requests
+    logger.apiRequest(
+      config.method?.toUpperCase() || 'UNKNOWN',
+      config.url || 'unknown',
+      {
+        params: config.params,
+        hasData: !!config.data,
+      }
+    );
+    return config;
+  },
+  (error) => {
+    logger.error('API', 'Request failed before sending', { error });
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for logging responses and errors
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log successful API responses
+    logger.apiResponse(
+      response.config.url || 'unknown',
+      response.status,
+      {
+        method: response.config.method?.toUpperCase(),
+        hasData: !!response.data,
+      }
+    );
+    return response;
+  },
   (error) => {
     // Log API errors for debugging
     if (error.response) {
-      console.error('API Error:', {
-        url: error.config?.url,
-        method: error.config?.method,
+      logger.apiError(error.config?.url || 'unknown', error, {
+        method: error.config?.method?.toUpperCase(),
         status: error.response.status,
         data: error.response.data,
       });
     } else if (error.request) {
-      console.error('Network Error:', {
+      logger.error('API', 'Network error', {
         url: error.config?.url,
+        method: error.config?.method?.toUpperCase(),
         message: error.message,
       });
     }

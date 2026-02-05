@@ -17,6 +17,14 @@ export interface OptimisticDeleteContextValue {
    * @param childIds - Optional array of child entity IDs (for cascading deletes)
    */
   onOptimisticDelete: (entityId: string, childIds?: string[]) => void;
+  
+  /**
+   * Rollback optimistic delete (restore entity to UI)
+   * 
+   * @param entityId - ID of entity to restore
+   * @param childIds - Optional array of child entity IDs to restore
+   */
+  onRollbackDelete: (entityId: string, childIds?: string[]) => void;
 }
 
 const OptimisticDeleteContext = createContext<OptimisticDeleteContextValue | null>(null);

@@ -113,7 +113,7 @@ export function NotificationCenter({ open, onOpenChange }: NotificationCenterPro
         <DrawerHeader className="border-b">
           <DrawerTitle>Notifications</DrawerTitle>
           <DrawerDescription>
-            Track your async operations
+            Track long running operations
           </DrawerDescription>
         </DrawerHeader>
         
