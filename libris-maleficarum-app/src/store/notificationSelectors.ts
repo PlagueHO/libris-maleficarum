@@ -11,42 +11,35 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from './store';
 import { selectNotificationMetadata } from './notificationsSlice';
+import { selectSelectedWorldId } from './worldSidebarSlice';
 import { deleteOperationsApi } from '@/services/asyncOperationsApi';
 import type { DeleteOperationDto } from '@/services/types/asyncOperations';
 
 /**
- * NOTE: worldId should be injected from app context/router
- * For now, we'll use a placeholder that must be overridden
- * TODO: Get worldId from routing or context
+ * Stable empty array reference to avoid selector recomputation warnings
  */
-const CURRENT_WORLD_ID = 'PLACEHOLDER'; // This should come from context
-
-/**
- * Create the RTK Query selector once (outside the selector function)
- * to avoid creating new references on every call
- */
-const selectDeleteOperationsQueryResult = deleteOperationsApi.endpoints.getDeleteOperations.select({
-  worldId: CURRENT_WORLD_ID,
-});
+const EMPTY_OPERATIONS: DeleteOperationDto[] = [];
 
 /**
  * Select delete operations data from RTK Query cache
  *
- * Uses the RTK Query selector provided by deleteOperationsApi
- * Returns empty array if no data or worldId not configured
- * 
- * IMPORTANT: Returns a stable empty array reference to avoid selector warnings
+ * Dynamically reads the selected worldId from the worldSidebar slice
+ * and queries the matching RTK Query cache entry. Returns empty array
+ * if no world is selected or no data is available.
  */
-const EMPTY_OPERATIONS: DeleteOperationDto[] = [];
-
 const selectDeleteOperationsData = (state: RootState): DeleteOperationDto[] => {
-  const result = selectDeleteOperationsQueryResult(state);
-  
+  const worldId = selectSelectedWorldId(state);
+  if (!worldId) return EMPTY_OPERATIONS;
+
+  const result = deleteOperationsApi.endpoints.getDeleteOperations.select({
+    worldId,
+  })(state);
+
   // Return stable empty array reference if no data
   if (!result?.data || result.data.length === 0) {
     return EMPTY_OPERATIONS;
   }
-  
+
   return result.data;
 };
 

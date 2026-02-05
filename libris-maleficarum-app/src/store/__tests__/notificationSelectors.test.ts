@@ -67,9 +67,19 @@ describe('notification selectors', () => {
         isExpanded: true,
       },
       worldSidebar: {
-        rootWorldId: 'test-world-id',
-        selectedNodeId: null,
+        selectedWorldId: 'test-world-id',
+        selectedEntityId: null,
         expandedNodeIds: [],
+        mainPanelMode: 'empty',
+        isWorldFormOpen: false,
+        editingWorldId: null,
+        editingEntityId: null,
+        newEntityParentId: null,
+        hasUnsavedChanges: false,
+        deletingEntityId: null,
+        showDeleteConfirmation: false,
+        movingEntityId: null,
+        creatingEntityParentId: null,
       },
       notifications: {
         sidebarOpen: false,
@@ -83,7 +93,7 @@ describe('notification selectors', () => {
       },
       api: {
         queries: {
-          'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
+          'getDeleteOperations({"worldId":"test-world-id"})': {
             status: 'fulfilled',
             endpointName: 'getDeleteOperations',
             requestId: 'test-request-id',
@@ -123,7 +133,7 @@ describe('notification selectors', () => {
         api: {
           ...mockState.api,
           queries: {
-            'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
+            'getDeleteOperations({"worldId":"test-world-id"})': {
               status: 'fulfilled',
               endpointName: 'getDeleteOperations',
               requestId: 'test-request-id',
@@ -179,7 +189,7 @@ describe('notification selectors', () => {
         api: {
           ...mockState.api,
           queries: {
-            'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
+            'getDeleteOperations({"worldId":"test-world-id"})': {
               status: 'fulfilled',
               endpointName: 'getDeleteOperations',
               requestId: 'test-request-id',
@@ -226,7 +236,7 @@ describe('notification selectors', () => {
         api: {
           ...mockState.api,
           queries: {
-            'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
+            'getDeleteOperations({"worldId":"test-world-id"})': {
               status: 'fulfilled',
               endpointName: 'getDeleteOperations',
               requestId: 'test-request-id',

@@ -25,7 +25,7 @@ import { useRetryDeleteOperationMutation, useCancelDeleteOperationMutation } fro
 import { getOperationStatusMessage } from '@/lib/asyncOperationHelpers';
 import type { DeleteOperationDto } from '@/services/types/asyncOperations';
 import { cn } from '@/lib/utils';
-import { useWorld } from '@/contexts';
+import { useWorldOptional } from '@/contexts';
 
 export interface NotificationItemProps {
   /**
@@ -43,7 +43,9 @@ export interface NotificationItemProps {
  * ```
  */
 export function NotificationItem({ operation }: NotificationItemProps) {
-  const { worldId } = useWorld();
+  const worldContext = useWorldOptional();
+  // Use context worldId when available, fall back to the operation's own worldId
+  const worldId = worldContext?.worldId || operation.worldId;
   const dispatch = useAppDispatch();
   const metadata = useAppSelector(selectOperationMetadata(operation.id));
   const [retryOperation, { isLoading: isRetrying }] = useRetryDeleteOperationMutation();

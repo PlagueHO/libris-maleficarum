@@ -11,6 +11,7 @@ import { selectSelectedWorldId } from './store/worldSidebarSlice'
 import { WorldProvider } from './contexts'
 import { OptimisticDeleteProvider } from './components/WorldSidebar/OptimisticDeleteContext';
 import { selectHasPendingOperations } from './store/notificationSelectors';
+import { Toaster } from './components/ui/sonner';
 import { logger } from './lib/logger';
 
 function App() {
@@ -133,6 +134,7 @@ function App() {
   
   return (
     <OptimisticDeleteProvider value={{ onOptimisticDelete: handleOptimisticDelete, onRollbackDelete: handleRollbackDelete }}>
+      <Toaster position="bottom-right" />
       <div className="h-screen flex flex-col bg-background text-foreground">
         <TopToolbar />
         {/* Wrap world-scoped content with WorldProvider when a world is selected */}

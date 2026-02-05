@@ -21,6 +21,7 @@ import { useInitiateEntityDeleteMutation } from '@/services/asyncOperationsApi';
 import { useOptimisticDelete } from '@/components/WorldSidebar/OptimisticDeleteContext';
 import { useWorldOptional } from '@/contexts';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -95,8 +96,10 @@ export function DeleteConfirmationModal() {
       // Close dialog to allow user to retry or cancel
       dispatch(closeDeleteConfirmation());
       
-      // TODO: Show error toast notification to user
-      // For now error is logged to console and dialog closes
+      // Show error toast so the user knows the delete failed
+      toast.error('Failed to delete entity', {
+        description: `"${entity?.name || 'Entity'}" could not be deleted. Please try again.`,
+      });
     }
   };
   
