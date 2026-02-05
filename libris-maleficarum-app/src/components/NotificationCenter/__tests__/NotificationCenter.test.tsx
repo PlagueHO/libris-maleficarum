@@ -77,9 +77,24 @@ describe('NotificationCenter', () => {
 
   function createPreloadedState(operations: DeleteOperationDto[] = mockOperations): Partial<RootState> {
     return {
+      worldSidebar: {
+        selectedWorldId: 'test-world-id',
+        selectedEntityId: null,
+        expandedNodeIds: [],
+        mainPanelMode: 'empty',
+        isWorldFormOpen: false,
+        editingWorldId: null,
+        editingEntityId: null,
+        newEntityParentId: null,
+        hasUnsavedChanges: false,
+        deletingEntityId: null,
+        showDeleteConfirmation: false,
+        movingEntityId: null,
+        creatingEntityParentId: null,
+      } as unknown as RootState['worldSidebar'],
       api: {
         queries: {
-          'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
+          'getDeleteOperations({"worldId":"test-world-id"})': {
             status: 'fulfilled' as const,
             endpointName: 'getDeleteOperations',
             requestId: 'test-request-id',

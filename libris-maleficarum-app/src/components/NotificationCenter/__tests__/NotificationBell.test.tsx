@@ -62,13 +62,23 @@ describe('NotificationBell', () => {
           pollingEnabled: true,
         },
         worldSidebar: {
-          rootWorldId: null,
-          selectedNodeId: null,
+          selectedWorldId: 'test-world-id',
+          selectedEntityId: null,
           expandedNodeIds: [],
+          mainPanelMode: 'empty',
+          isWorldFormOpen: false,
+          editingWorldId: null,
+          editingEntityId: null,
+          newEntityParentId: null,
+          hasUnsavedChanges: false,
+          deletingEntityId: null,
+          showDeleteConfirmation: false,
+          movingEntityId: null,
+          creatingEntityParentId: null,
         },
         [api.reducerPath]: {
           queries: {
-            'getDeleteOperations({"worldId":"PLACEHOLDER"})': {
+            'getDeleteOperations({"worldId":"test-world-id"})': {
               status: 'fulfilled',
               endpointName: 'getDeleteOperations',
               requestId: 'test-request-id',
