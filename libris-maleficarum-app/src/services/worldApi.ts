@@ -8,6 +8,7 @@
  */
 
 import { api } from './api';
+import { logger } from '@/lib/logger';
 import type {
   World,
   WorldListResponse,
@@ -70,7 +71,15 @@ export const worldApi = api.injectEndpoints({
         data: body,
       }),
       transformResponse: (response: WorldResponse) => response.data,
-      invalidatesTags: [{ type: 'World', id: 'LIST' }],
+      invalidatesTags: (result) => {
+        if (result) {
+          logger.debug('API', 'World created, invalidating cache', {
+            worldId: result.id,
+            worldName: result.name,
+          });
+        }
+        return [{ type: 'World', id: 'LIST' }];
+      },
     }),
 
     /**
@@ -89,10 +98,18 @@ export const worldApi = api.injectEndpoints({
         data,
       }),
       transformResponse: (response: WorldResponse) => response.data,
-      invalidatesTags: (_result, _error, { id }) => [
-        { type: 'World', id },
-        { type: 'World', id: 'LIST' },
-      ],
+      invalidatesTags: (result, _error, { id }) => {
+        if (result) {
+          logger.debug('API', 'World updated, invalidating cache', {
+            worldId: result.id,
+            worldName: result.name,
+          });
+        }
+        return [
+          { type: 'World', id },
+          { type: 'World', id: 'LIST' },
+        ];
+      },
     }),
 
     /**

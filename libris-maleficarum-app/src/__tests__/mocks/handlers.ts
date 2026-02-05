@@ -538,26 +538,9 @@ export const worldEntityHandlers = [
   /**
    * DELETE /api/v1/worlds/:worldId/entities/:entityId
    *
-   * Soft delete an entity
+   * Async delete an entity (handled by asyncOperationsHandlers below)
+   * This placeholder is kept for documentation but the actual handler is in asyncOperationsHandlers.
    */
-  http.delete(`${baseUrl}/api/v1/worlds/:worldId/entities/:entityId`, ({ params }) => {
-    const { entityId } = params;
-
-    const entity = mockEntities.get(entityId as string);
-
-    if (!entity) {
-      return new HttpResponse(null, {
-        status: 404,
-        statusText: 'Entity not found',
-      });
-    }
-
-    // Soft delete
-    entity.isDeleted = true;
-    entity.updatedAt = new Date().toISOString();
-
-    return new HttpResponse(null, { status: 204 });
-  }),
 
   /**
    * PATCH /api/v1/worlds/:worldId/entities/:entityId/move
@@ -606,12 +589,13 @@ const mockAsyncOperations: Map<string, import('@/services/types/asyncOperations'
  */
 export const asyncOperationsHandlers = [
   /**
-   * POST /v1/worlds/:worldId/entities/:entityId/delete
+   * POST /api/v1/worlds/:worldId/entities/:entityId
+   * DELETE query parameter triggers async delete operation
    *
    * Initiate async delete operation
    */
-  http.post(`${baseUrl}/v1/worlds/:worldId/entities/:entityId/delete`, ({ params }) => {
-    const { entityId } = params;
+  http.delete(`${baseUrl}/api/v1/worlds/:worldId/entities/:entityId`, ({ params }) => {
+    const { entityId, worldId } = params;
     const entity = mockEntities.get(entityId as string);
 
     if (!entity) {
@@ -625,7 +609,7 @@ export const asyncOperationsHandlers = [
     const operationId = `op-${Date.now()}`;
     const newOperation: import('@/services/types/asyncOperations').DeleteOperationDto = {
       id: operationId,
-      worldId: entity.worldId,
+      worldId: worldId as string,
       rootEntityId: entityId as string,
       rootEntityName: entity.name,
       status: 'pending',
@@ -680,11 +664,11 @@ export const asyncOperationsHandlers = [
   }),
 
   /**
-   * GET /v1/worlds/:worldId/delete-operations
+   * GET /api/v1/worlds/:worldId/delete-operations
    *
    * Fetch list of delete operations for a world
    */
-  http.get(`${baseUrl}/v1/worlds/:worldId/delete-operations`, ({ request, params }) => {
+  http.get(`${baseUrl}/api/v1/worlds/:worldId/delete-operations`, ({ request, params }) => {
     const url = new URL(request.url);
     const { worldId } = params;
     const status = url.searchParams.get('status');
@@ -708,11 +692,11 @@ export const asyncOperationsHandlers = [
   }),
 
   /**
-   * GET /v1/worlds/:worldId/delete-operations/:operationId
+   * GET /api/v1/worlds/:worldId/delete-operations/:operationId
    *
    * Fetch single delete operation
    */
-  http.get(`${baseUrl}/v1/worlds/:worldId/delete-operations/:operationId`, ({ params }) => {
+  http.get(`${baseUrl}/api/v1/worlds/:worldId/delete-operations/:operationId`, ({ params }) => {
     const { operationId } = params;
     const operation = mockAsyncOperations.get(operationId as string);
 
@@ -727,11 +711,11 @@ export const asyncOperationsHandlers = [
   }),
 
   /**
-   * POST /v1/worlds/:worldId/delete-operations/:operationId/retry
+   * POST /api/v1/worlds/:worldId/delete-operations/:operationId/retry
    *
    * Retry a failed operation
    */
-  http.post(`${baseUrl}/v1/worlds/:worldId/delete-operations/:operationId/retry`, ({ params }) => {
+  http.post(`${baseUrl}/api/v1/worlds/:worldId/delete-operations/:operationId/retry`, ({ params }) => {
     const { operationId } = params;
     const operation = mockAsyncOperations.get(operationId as string);
 
@@ -767,11 +751,11 @@ export const asyncOperationsHandlers = [
   }),
 
   /**
-   * POST /v1/worlds/:worldId/delete-operations/:operationId/cancel
+   * POST /api/v1/worlds/:worldId/delete-operations/:operationId/cancel
    *
    * Cancel a pending or in-progress operation
    */
-  http.post(`${baseUrl}/v1/worlds/:worldId/delete-operations/:operationId/cancel`, ({ params }) => {
+  http.post(`${baseUrl}/api/v1/worlds/:worldId/delete-operations/:operationId/cancel`, ({ params }) => {
     const { operationId } = params;
     const operation = mockAsyncOperations.get(operationId as string);
 

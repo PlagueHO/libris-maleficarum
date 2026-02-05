@@ -9,6 +9,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import { renderWithProviders } from '@/__tests__/test-utils';
+import type { RootState } from '@/__tests__/test-utils';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 
@@ -115,7 +116,7 @@ describe('NotificationCenter', () => {
     );
 
     expect(screen.getByText('Notifications')).toBeInTheDocument();
-    expect(screen.getByText(/track your async operations/i)).toBeInTheDocument();
+    expect(screen.getByText(/track long running operations/i)).toBeInTheDocument();
   });
 
   it('displays list of operations', () => {

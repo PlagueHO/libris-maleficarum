@@ -20,6 +20,7 @@ import { useGetWorldEntityByIdQuery } from '@/services/worldEntityApi';
 import { useInitiateEntityDeleteMutation } from '@/services/asyncOperationsApi';
 import { useOptimisticDelete } from '@/components/WorldSidebar/OptimisticDeleteContext';
 import { useWorldOptional } from '@/contexts';
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -38,7 +39,7 @@ export function DeleteConfirmationModal() {
     (state: RootState) => state.worldSidebar
   );
   
-  const { onOptimisticDelete } = useOptimisticDelete();
+  const { onOptimisticDelete, onRollbackDelete } = useOptimisticDelete();
 
   const [initiateAsyncDelete, { isLoading: isInitiatingAsync }] = useInitiateEntityDeleteMutation();
 
@@ -52,7 +53,20 @@ export function DeleteConfirmationModal() {
   );
 
   const handleConfirmDelete = async () => {
-    if (!worldContext?.worldId || !deletingEntityId) return;
+
+    if (!worldContext?.worldId || !deletingEntityId) {
+      logger.error('UI', 'Delete aborted - missing required data', {
+        hasWorldContext: !!worldContext,
+        worldId: worldContext?.worldId,
+        deletingEntityId,
+      });
+      return;
+    }
+
+    logger.userAction('Confirm delete entity', {
+      entityId: deletingEntityId,
+      entityName: entity?.name,
+    });
 
     try {
       // 1. Optimistic UI update (remove from sidebar immediately)
@@ -70,9 +84,19 @@ export function DeleteConfirmationModal() {
       
       // Note: Notification will be registered automatically by RTK Query cache update
     } catch (error) {
-      console.error('Failed to initiate async delete:', error);
-      // TODO: Rollback optimistic update on error
-      // Error handling delegated to RTK Query error state
+      logger.error('API', 'Failed to initiate async delete', {
+        entityId: deletingEntityId,
+        error,
+      });
+      
+      // Rollback optimistic update on error (restore entity to UI)
+      onRollbackDelete(deletingEntityId);
+      
+      // Close dialog to allow user to retry or cancel
+      dispatch(closeDeleteConfirmation());
+      
+      // TODO: Show error toast notification to user
+      // For now error is logged to console and dialog closes
     }
   };
   
@@ -82,8 +106,14 @@ export function DeleteConfirmationModal() {
     dispatch(closeDeleteConfirmation());
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      handleCancel();
+    }
+  };
+
   return (
-    <Dialog open={showDeleteConfirmation} onOpenChange={handleCancel}>
+    <Dialog open={showDeleteConfirmation} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex mb-2">

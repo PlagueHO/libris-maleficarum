@@ -111,7 +111,7 @@ describe('Entity Selection Integration', () => {
         // Render App-like structure (Sidebar + MainPanel)
         const TestApp = () => (
             <>
-                <WorldSidebar />
+                <WorldSidebar optimisticallyDeletedIds={new Set()} />
                 <MainPanel />
             </>
         );
@@ -223,7 +223,7 @@ describe('Entity Selection Integration', () => {
 
         const TestApp = () => (
             <>
-                <WorldSidebar />
+                <WorldSidebar optimisticallyDeletedIds={new Set()} />
                 <MainPanel />
             </>
         );

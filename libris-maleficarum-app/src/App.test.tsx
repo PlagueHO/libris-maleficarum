@@ -9,6 +9,7 @@ import { setupServer } from 'msw/node';
 import App from './App';
 import { api } from '@/services/api';
 import worldSidebarReducer from '@/store/worldSidebarSlice';
+import notificationsReducer from '@/store/notificationsSlice';
 import { handlers } from '@/__tests__/mocks/handlers';
 
 // Setup MSW server
@@ -24,6 +25,7 @@ const createMockStore = () => {
     reducer: {
       sidePanel: (state = { isExpanded: true }) => state,
       worldSidebar: worldSidebarReducer,
+      notifications: notificationsReducer,
       [api.reducerPath]: api.reducer,
     },
     middleware: (getDefaultMiddleware) =>

@@ -33,6 +33,7 @@ import {
   selectSelectedWorldId,
 } from '@/store/worldSidebarSlice';
 import { invalidatePattern } from '@/lib/sessionCache';
+import { logger } from '@/lib/logger';
 import { EmptyState } from './EmptyState';
 
 /**
@@ -53,14 +54,17 @@ export function WorldSelector() {
   }, [worlds, selectedWorldId, dispatch]);
 
   const handleCreateWorld = () => {
+    logger.userAction('Open create world form');
     dispatch(openWorldFormCreate());
   };
 
   const handleEditWorld = (worldId: string) => {
+    logger.userAction('Open edit world form', { worldId });
     dispatch(openWorldFormEdit(worldId));
   };
 
   const handleWorldChange = (worldId: string) => {
+    logger.userAction('Switch world', { worldId });
     // Clear cache for previous world before switching
     if (selectedWorldId && selectedWorldId !== worldId) {
       invalidatePattern(new RegExp(`^sidebar_hierarchy_${selectedWorldId}`));

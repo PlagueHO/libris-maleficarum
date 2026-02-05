@@ -18,10 +18,10 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Loader2, CheckCircle, XCircle, X, RotateCw } from 'lucide-react';
+import { Clock, Loader2, CheckCircle, XCircle, X, RotateCw, StopCircle } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { markAsRead, dismissNotification, selectOperationMetadata } from '@/store/notificationsSlice';
-import { useRetryDeleteOperationMutation } from '@/services/asyncOperationsApi';
+import { useRetryDeleteOperationMutation, useCancelDeleteOperationMutation } from '@/services/asyncOperationsApi';
 import { getOperationStatusMessage } from '@/lib/asyncOperationHelpers';
 import type { DeleteOperationDto } from '@/services/types/asyncOperations';
 import { cn } from '@/lib/utils';
@@ -47,6 +47,7 @@ export function NotificationItem({ operation }: NotificationItemProps) {
   const dispatch = useAppDispatch();
   const metadata = useAppSelector(selectOperationMetadata(operation.id));
   const [retryOperation, { isLoading: isRetrying }] = useRetryDeleteOperationMutation();
+  const [cancelOperation, { isLoading: isCancelling }] = useCancelDeleteOperationMutation();
   
   const isUnread = !metadata?.isRead;
   
@@ -80,8 +81,20 @@ export function NotificationItem({ operation }: NotificationItemProps) {
     }
   };
   
+  const handleCancel = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await cancelOperation({ worldId, operationId: operation.id }).unwrap();
+      // Operation status will update via polling
+    } catch (error) {
+      console.error('Cancel failed:', error);
+    }
+  };
+  
   // Show retry button only for failed or partial operations
   const showRetryButton = operation.status === 'failed' || operation.status === 'partial';
+  // Show cancel button only for in-progress operations
+  const showCancelButton = operation.status === 'in_progress';
   
   return (
     <Card
@@ -122,20 +135,37 @@ export function NotificationItem({ operation }: NotificationItemProps) {
       </div>
       
       {/* Action Buttons - outside clickable area to avoid nested interactives */}
-      {showRetryButton && (
+      {(showRetryButton || showCancelButton) && (
         <div className="mt-2 flex gap-2 ml-7">
           {/* Retry Button (failed/partial operations only) */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRetry}
-            disabled={isRetrying}
-            className="text-xs"
-            aria-label="Retry operation"
-          >
-            <RotateCw className={cn("h-3 w-3 mr-1", isRetrying && "animate-spin")} aria-hidden="true" />
-            {isRetrying ? 'Retrying...' : 'Retry'}
-          </Button>
+          {showRetryButton && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRetry}
+              disabled={isRetrying}
+              className="text-xs"
+              aria-label="Retry operation"
+            >
+              <RotateCw className={cn("h-3 w-3 mr-1", isRetrying && "animate-spin")} aria-hidden="true" />
+              {isRetrying ? 'Retrying...' : 'Retry'}
+            </Button>
+          )}
+          
+          {/* Cancel Button (in-progress operations only) */}
+          {showCancelButton && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCancel}
+              disabled={isCancelling}
+              className="text-xs"
+              aria-label="Cancel operation"
+            >
+              <StopCircle className="h-3 w-3 mr-1" aria-hidden="true" />
+              {isCancelling ? 'Cancelling...' : 'Cancel'}
+            </Button>
+          )}
         </div>
       )}
       

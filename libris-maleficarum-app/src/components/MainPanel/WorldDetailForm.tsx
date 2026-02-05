@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Pencil, Plus } from 'lucide-react';
 import { useCreateWorldMutation, useUpdateWorldMutation } from '@/services/worldApi';
 import { closeWorldForm, setUnsavedChanges, selectHasUnsavedChanges } from '@/store/worldSidebarSlice';
+import { logger } from '@/lib/logger';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FormActions } from '@/components/ui/form-actions';
@@ -122,6 +123,11 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
       return;
     }
 
+    logger.userAction(mode === 'create' ? 'Create world' : 'Update world', {
+      worldName: name.trim(),
+      hasDescription: !!description.trim(),
+    });
+
     try {
       if (mode === 'create') {
         await createWorld({
@@ -154,7 +160,7 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
       }
     } catch (error) {
       // Error handling is done by RTK Query
-      console.error('Failed to save world:', error);
+      logger.error('UI', 'Failed to save world', { mode, error });
     }
   };
 

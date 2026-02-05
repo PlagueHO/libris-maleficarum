@@ -8,6 +8,7 @@
  */
 
 import { api } from './api';
+import { logger } from '@/lib/logger';
 import type {
   WorldEntity,
   WorldEntityListResponse,
@@ -89,11 +90,10 @@ export const worldEntityApi = api.injectEndpoints({
           type: 'WorldEntity' as const,
           id: `PARENT_${worldId}_${parentId ?? 'ROOT'}`,
         };
-        console.log('[getEntitiesByParent] Providing tags:', {
+        logger.debug('API', 'Entities fetched by parent', {
           worldId,
           parentId,
-          tag: parentTag,
-          resultCount: result?.length ?? 0,
+          count: result?.length ?? 0,
         });
         return result
           ? [
@@ -157,10 +157,10 @@ export const worldEntityApi = api.injectEndpoints({
           type: 'WorldEntity' as const,
           id: `PARENT_${worldId}_${data.parentId ?? 'ROOT'}`,
         } as const;
-        console.log('[createWorldEntity] Invalidating tags:', {
+        logger.debug('API', 'Entity created, invalidating cache', {
           worldId,
           parentId: data.parentId,
-          tag: parentTag,
+          entityType: data.entityType,
         });
 
         const tags: { type: 'WorldEntity'; id: string }[] = [

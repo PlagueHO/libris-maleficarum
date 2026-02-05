@@ -37,8 +37,8 @@
       "url": "https://gitmcp.io/nodejs/node",
       "type": "sse"
     },
-    "fluentui-docs": {
-      "url": "https://gitmcp.io/microsoft/fluentui",
+    "shadcnui-docs": {
+      "url": "https://gitmcp.io/shadcn-ui/ui",
       "type": "sse"
     },
     "playwright-test": {
@@ -47,6 +47,22 @@
       "args": [
         "playwright",
         "run-test-mcp-server"
+      ]
+    },
+    "aspire": {
+      "type": "stdio",
+      "command": "aspire",
+      "args": [
+        "mcp",
+        "start"
+      ]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
       ]
     }
   }
