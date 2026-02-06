@@ -51,7 +51,7 @@ export function EntityContextMenu({ entity, children }: EntityContextMenuProps) 
   };
 
   const handleDelete = () => {
-    dispatch(openDeleteConfirmation(entity.id));
+    dispatch(openDeleteConfirmation({ id: entity.id, name: entity.name }));
   };
 
   const handleMove = () => {
@@ -64,15 +64,15 @@ export function EntityContextMenu({ entity, children }: EntityContextMenuProps) 
       <ContextMenuContent className="w-56">
         <ContextMenuItem onClick={handleCreateChild}>
           <Plus className="mr-2 h-4 w-4" />
-          Inscribe Sub-entry
+          New Codex Entry
         </ContextMenuItem>
         <ContextMenuItem onClick={handleEdit}>
           <Edit className="mr-2 h-4 w-4" />
-          Amend Entry
+          Edit Codex Entry
         </ContextMenuItem>
         <ContextMenuItem onClick={handleMove}>
           <Move className="mr-2 h-4 w-4" />
-          Relocate Entry
+          Move Codex Entry
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
@@ -80,7 +80,7 @@ export function EntityContextMenu({ entity, children }: EntityContextMenuProps) 
           className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/10"
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Banish Entry
+          Delete Codex Entry
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

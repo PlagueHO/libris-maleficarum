@@ -34,7 +34,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     await user.click(worldOption);
 
     // Click "+" to open create form
-    const createBtn = await screen.findByRole('button', { name: /add root entity/i });
+    const createBtn = await screen.findByRole('button', { name: /add codex entry/i });
     await user.click(createBtn);
   }
 

@@ -26,12 +26,12 @@ describe('EmptyState', () => {
       expect(screen.getByText(/every great saga/i)).toBeInTheDocument();
     });
 
-    it('should render create world button', () => {
+    it('should render create realm button', () => {
       // Arrange & Act
       render(<EmptyState onCreateWorld={vi.fn()} />);
 
       // Assert
-      const button = screen.getByRole('button', { name: /create world/i });
+      const button = screen.getByRole('button', { name: /create realm/i });
       expect(button).toBeInTheDocument();
       expect(button).toBeEnabled();
     });
@@ -54,7 +54,7 @@ describe('EmptyState', () => {
       render(<EmptyState onCreateWorld={onCreateWorld} />);
 
       // Act
-      const button = screen.getByRole('button', { name: /create world/i });
+      const button = screen.getByRole('button', { name: /create realm/i });
       await user.click(button);
 
       // Assert
@@ -68,7 +68,7 @@ describe('EmptyState', () => {
       render(<EmptyState onCreateWorld={onCreateWorld} />);
 
       // Act
-      const button = screen.getByRole('button', { name: /create world/i });
+      const button = screen.getByRole('button', { name: /create realm/i });
       button.focus();
       await user.keyboard('{Enter}');
 
@@ -83,7 +83,7 @@ describe('EmptyState', () => {
       render(<EmptyState onCreateWorld={onCreateWorld} />);
 
       // Act
-      const button = screen.getByRole('button', { name: /create world/i });
+      const button = screen.getByRole('button', { name: /create realm/i });
       button.focus();
       await user.keyboard(' ');
 
@@ -108,7 +108,7 @@ describe('EmptyState', () => {
       render(<EmptyState onCreateWorld={vi.fn()} />);
 
       // Act
-      const button = screen.getByRole('button', { name: /create world/i });
+      const button = screen.getByRole('button', { name: /create realm/i });
       await user.tab();
 
       // Assert
@@ -132,7 +132,7 @@ describe('EmptyState', () => {
 
       // Assert
       expect(screen.getByText(/forge your first realm/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /create world/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /create realm/i })).toBeInTheDocument();
     });
 
     it('should explain what happens when user creates a world', () => {

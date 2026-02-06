@@ -11,7 +11,7 @@ import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export interface EmptyStateProps {
-  /** Callback when "Create World" button is clicked */
+  /** Callback when "Create Realm" button is clicked */
   onCreateWorld: () => void;
 }
 
@@ -49,11 +49,11 @@ export function EmptyState({ onCreateWorld }: EmptyStateProps) {
         {/* Call-to-action button */}
         <Button
           onClick={onCreateWorld}
-          aria-label="Create World"
+          aria-label="Create Realm"
           className="gap-2"
         >
           <Globe size={20} aria-hidden="true" />
-          <span>Create World</span>
+          <span>Create Realm</span>
         </Button>
       </div>
     </div>

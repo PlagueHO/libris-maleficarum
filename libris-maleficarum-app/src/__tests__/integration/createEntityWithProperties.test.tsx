@@ -155,7 +155,7 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     // Wait for form to load
     await waitFor(
       () => {
-        expect(screen.getByRole('heading', { name: /inscribe a new entry/i })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /new codex entry/i })).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
@@ -318,7 +318,7 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     // Wait for form to load
     await waitFor(
       () => {
-        expect(screen.getByRole('heading', { name: /inscribe a new entry/i })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /new codex entry/i })).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
@@ -420,7 +420,7 @@ describe('T040: DynamicPropertiesForm - Empty Fields for New Entities', () => {
     // Wait for form to load
     await waitFor(
       () => {
-        expect(screen.getByRole('heading', { name: /inscribe a new entry/i })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /new codex entry/i })).toBeInTheDocument();
       },
       { timeout: 3000 }
     );

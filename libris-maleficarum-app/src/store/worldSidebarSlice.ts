@@ -52,6 +52,9 @@ export interface WorldSidebarState {
   /** Entity ID pending deletion confirmation (null when not deleting) */
   deletingEntityId: string | null;
 
+  /** Entity name for deletion confirmation display */
+  deletingEntityName: string | null;
+
   /** Whether delete confirmation modal is open */
   showDeleteConfirmation: boolean;
 
@@ -76,6 +79,7 @@ const initialState: WorldSidebarState = {
   newEntityParentId: null,
   hasUnsavedChanges: false,
   deletingEntityId: null,
+  deletingEntityName: null,
   showDeleteConfirmation: false,
   movingEntityId: null,
   creatingEntityParentId: null,
@@ -264,10 +268,11 @@ export const worldSidebarSlice = createSlice({
      * Open delete confirmation for an entity
      *
      * @param state - Current state
-     * @param action - Payload with entity ID to delete
+     * @param action - Payload with entity ID and name to delete
      */
-    openDeleteConfirmation: (state, action: PayloadAction<string>) => {
-      state.deletingEntityId = action.payload;
+    openDeleteConfirmation: (state, action: PayloadAction<{ id: string; name: string }>) => {
+      state.deletingEntityId = action.payload.id;
+      state.deletingEntityName = action.payload.name;
       state.showDeleteConfirmation = true;
     },
 
@@ -278,6 +283,7 @@ export const worldSidebarSlice = createSlice({
      */
     closeDeleteConfirmation: (state) => {
       state.deletingEntityId = null;
+      state.deletingEntityName = null;
       state.showDeleteConfirmation = false;
     },
 

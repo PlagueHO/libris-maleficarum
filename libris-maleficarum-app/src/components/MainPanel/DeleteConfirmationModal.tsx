@@ -16,10 +16,8 @@
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { closeDeleteConfirmation } from '@/store/worldSidebarSlice';
-import { useGetWorldEntityByIdQuery } from '@/services/worldEntityApi';
 import { useInitiateEntityDeleteMutation } from '@/services/asyncOperationsApi';
 import { useOptimisticDelete } from '@/components/WorldSidebar/OptimisticDeleteContext';
-import { useWorldOptional } from '@/contexts';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import {
@@ -35,8 +33,7 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 
 export function DeleteConfirmationModal() {
   const dispatch = useDispatch();
-  const worldContext = useWorldOptional();
-  const { deletingEntityId, showDeleteConfirmation } = useSelector(
+  const { deletingEntityId, deletingEntityName, showDeleteConfirmation, selectedWorldId } = useSelector(
     (state: RootState) => state.worldSidebar
   );
   
@@ -44,21 +41,11 @@ export function DeleteConfirmationModal() {
 
   const [initiateAsyncDelete, { isLoading: isInitiatingAsync }] = useInitiateEntityDeleteMutation();
 
-  // Fetch entity details to show name in confirmation
-  const { data: entity } = useGetWorldEntityByIdQuery(
-    { 
-      worldId: worldContext?.worldId || '', 
-      entityId: deletingEntityId || '' 
-    },
-    { skip: !worldContext?.worldId || !deletingEntityId }
-  );
-
   const handleConfirmDelete = async () => {
 
-    if (!worldContext?.worldId || !deletingEntityId) {
+    if (!selectedWorldId || !deletingEntityId) {
       logger.error('UI', 'Delete aborted - missing required data', {
-        hasWorldContext: !!worldContext,
-        worldId: worldContext?.worldId,
+        selectedWorldId,
         deletingEntityId,
       });
       return;
@@ -66,7 +53,7 @@ export function DeleteConfirmationModal() {
 
     logger.userAction('Confirm delete entity', {
       entityId: deletingEntityId,
-      entityName: entity?.name,
+      entityName: deletingEntityName,
     });
 
     try {
@@ -75,7 +62,7 @@ export function DeleteConfirmationModal() {
       
       // 2. Initiate async delete on backend
       await initiateAsyncDelete({ 
-        worldId: worldContext.worldId, 
+        worldId: selectedWorldId, 
         entityId: deletingEntityId,
         cascade: true
       }).unwrap();
@@ -111,12 +98,12 @@ export function DeleteConfirmationModal() {
       
       // Show appropriate error message based on error type
       if (isClientError || isNetworkError) {
-        toast.error('The banishment has failed', {
-          description: `"${entity?.name || 'Entry'}" resists erasure. Please check the entry and attempt the rite again.`,
+        toast.error('The deletion has failed', {
+          description: `"${deletingEntityName || 'Entry'}" resists erasure. Please check the entry and attempt the rite again.`,
         });
       } else {
-        toast.error('The banishment outcome is uncertain', {
-          description: `"${entity?.name || 'Entry'}" may already be processing. Please check the notification center or refresh the sidebar to verify.`,
+        toast.error('The deletion outcome is uncertain', {
+          description: `"${deletingEntityName || 'Entry'}" may already be processing. Please check the notification center or refresh the sidebar to verify.`,
         });
       }
     }
@@ -138,13 +125,13 @@ export function DeleteConfirmationModal() {
     <Dialog open={showDeleteConfirmation} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex mb-2">
+          <DialogTitle className="flex items-center gap-2 text-xl font-semibold mb-1">
             <AlertTriangle className="h-5 w-5 text-destructive" aria-hidden="true" />
-          </div>
-          <DialogTitle className="text-xl font-semibold mb-1">Banish This Entry</DialogTitle>
+            Delete Codex Entry
+          </DialogTitle>
           <DialogDescription className="text-[0.95rem] text-muted-foreground leading-normal">
-            Are you certain you wish to banish{' '}
-            <strong>"{entity?.name || 'this entry'}"</strong> from the grimoire?
+            Are you certain you wish to delete{' '}
+            <strong>"{deletingEntityName || 'this entry'}"</strong> from the grimoire?
           </DialogDescription>
         </DialogHeader>
 
@@ -171,7 +158,7 @@ export function DeleteConfirmationModal() {
             variant="destructive"
             onClick={handleConfirmDelete}
             disabled={isDeleting}
-            aria-label={`Confirm banish "${entity?.name || 'entry'}"`}
+            aria-label={`Confirm delete "${deletingEntityName || 'entry'}"`}
           >
             {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isDeleting ? 'Deleting...' : 'Delete'}

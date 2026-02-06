@@ -151,7 +151,7 @@ describe('World Entity Editing Integration (T013)', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /amend this entry/i })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /edit codex entry/i })).toBeInTheDocument();
       });
     });
 
@@ -187,7 +187,7 @@ describe('World Entity Editing Integration (T013)', () => {
       await user.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.queryByRole('heading', { name: /amend this entry/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: /edit codex entry/i })).not.toBeInTheDocument();
       });
     });
   });
@@ -220,7 +220,7 @@ describe('World Entity Editing Integration (T013)', () => {
       expect(state.worldSidebar.mainPanelMode).toBe('editing_entity');
       
       await waitFor(() => {
-          expect(screen.getByRole('heading', { name: /amend this entry/i })).toBeInTheDocument();
+          expect(screen.getByRole('heading', { name: /edit codex entry/i })).toBeInTheDocument();
       });
     });
 
@@ -284,7 +284,7 @@ describe('World Entity Editing Integration (T013)', () => {
 
       await waitFor(() => {
         // Should return to viewing the ORIGINAL entity (mockEntity name is Faerûn)
-        expect(screen.queryByRole('heading', { name: /amend this entry/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: /edit codex entry/i })).not.toBeInTheDocument();
         expect(screen.getByText('Faerûn')).toBeInTheDocument();
       });
     });

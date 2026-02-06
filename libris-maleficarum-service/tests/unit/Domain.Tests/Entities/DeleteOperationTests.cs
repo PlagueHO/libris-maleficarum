@@ -544,7 +544,7 @@ public class DeleteOperationTests
         var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId, cascade: true, ttlSeconds: 3600);
         operation.Start(10);
         operation.Fail("Error occurred");
-        
+
         var originalId = operation.Id;
         var originalWorldId = operation.WorldId;
         var originalRootEntityId = operation.RootEntityId;

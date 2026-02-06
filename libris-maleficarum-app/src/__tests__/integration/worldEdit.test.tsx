@@ -95,7 +95,7 @@ describe('World Editing Integration', () => {
         await user.click(editButton);
 
         // 3. Verify form appears in MainPanel with pre-filled data
-        const heading = await screen.findByRole('heading', { name: 'Amend the Realm' });
+        const heading = await screen.findByRole('heading', { name: 'Edit Realm' });
         expect(heading).toBeInTheDocument();
         
         const nameInput = screen.getByLabelText(/Realm Name/i) as HTMLInputElement;
@@ -196,7 +196,7 @@ describe('World Editing Integration', () => {
         await user.click(editButton);
 
         // 3. Verify form appears
-        const heading = await screen.findByRole('heading', { name: 'Amend the Realm' });
+        const heading = await screen.findByRole('heading', { name: 'Edit Realm' });
         expect(heading).toBeInTheDocument();
 
         // 4. Modify form field
@@ -213,7 +213,7 @@ describe('World Editing Integration', () => {
         // 6. Verify form closes - the Edit World heading should disappear
         // Wait for the heading to disappear from the DOM
         await screen.findByText(/Welcome, Chronicler/i);
-        expect(screen.queryByRole('heading', { name: 'Amend the Realm' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Edit Realm' })).not.toBeInTheDocument();
         
         // 7. Verify welcome state is displayed (with grimoire message)
         expect(screen.getByText(/Your arcane tome/i)).toBeInTheDocument();
