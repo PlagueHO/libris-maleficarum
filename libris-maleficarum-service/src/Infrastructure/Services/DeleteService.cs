@@ -292,40 +292,15 @@ public class DeleteService : IDeleteService
             throw new EntityNotFoundException(worldId, operationId);
         }
 
-        // Validate operation can be retried (only Failed or Partial status)
-        if (operation.Status != DeleteOperationStatus.Failed && operation.Status != DeleteOperationStatus.Partial)
-        {
-            throw new InvalidOperationException($"Only failed or partial operations can be retried. Current status: {operation.Status}");
-        }
+        // Reset the operation state for retry (preserves operation ID)
+        operation.Retry();
 
-        // Reset operation to Pending status and clear failed entities list
-        // We'll keep the original TotalEntities count but reset progress
-        var resetOperation = DeleteOperation.Create(
-            operation.WorldId,
-            operation.RootEntityId,
-            operation.RootEntityName,
-            operation.CreatedBy,
-            operation.Cascade,
-            ttlSeconds: _options.OperationTtlHours * 3600);
-
-        // Important: preserve the original operation ID for consistency
-        // Use reflection or recreate with same ID by deleting old and creating new
-        // For now, we'll update the existing operation in-place by resetting its state
-        // The DeleteOperation entity needs additional methods for retry support
-
-        // Since DeleteOperation doesn't have a Retry() method, we need to delete the old operation
-        // and create a new one with the same details but reset state
-        // However, we want to keep the same operation ID for consistency with the frontend
-        // This is a limitation of the current entity design
-
-        // Workaround: Create new operation and return it
-        // The operation ID will change, which is not ideal but acceptable for MVP
-        var retriedOperation = await _deleteOperationRepository.CreateAsync(resetOperation, cancellationToken).ConfigureAwait(false);
+        // Update the operation in the repository
+        var retriedOperation = await _deleteOperationRepository.UpdateAsync(operation, cancellationToken).ConfigureAwait(false);
 
         using var activity = _telemetryService.StartActivity("DeleteOperationRetried", new Dictionary<string, object>
         {
-            { "operation.original_id", operationId },
-            { "operation.new_id", retriedOperation.Id },
+            { "operation.id", operationId },
             { "operation.root_entity_id", operation.RootEntityId },
             { "operation.world_id", worldId }
         });

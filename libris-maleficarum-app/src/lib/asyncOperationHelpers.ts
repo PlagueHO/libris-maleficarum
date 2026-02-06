@@ -159,7 +159,7 @@ export function formatElapsedTime(operation: DeleteOperationDto): string {
   if (diffSeconds < 10) {
     return 'just now';
   } else if (diffSeconds < 60) {
-    return `${diffSeconds} ${diffSeconds === 1 ? 'second' : 'seconds'} ago`;
+    return `${diffSeconds} seconds ago`;
   } else if (diffMinutes < 60) {
     return `${diffMinutes} ${diffMinutes === 1 ? 'minute' : 'minutes'} ago`;
   } else if (diffHours < 24) {

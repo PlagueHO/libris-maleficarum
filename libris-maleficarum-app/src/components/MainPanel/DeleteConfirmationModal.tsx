@@ -85,21 +85,40 @@ export function DeleteConfirmationModal() {
       
       // Note: Notification will be registered automatically by RTK Query cache update
     } catch (error) {
+      // Check error type to determine appropriate rollback and messaging strategy
+      // RTK Query unwrap() can throw FetchBaseQueryError or SerializedError
+      const errorObject = (typeof error === 'object' && error !== null) ? (error as { status?: unknown }) : undefined;
+      const rawStatus = errorObject?.status;
+      const numericStatus = typeof rawStatus === 'number' ? rawStatus : undefined;
+      const isClientError = typeof numericStatus === 'number' && numericStatus >= 400 && numericStatus < 500;
+      const isNetworkError = rawStatus === 'FETCH_ERROR';
+      
       logger.error('API', 'Failed to initiate async delete', {
         entityId: deletingEntityId,
+        status: rawStatus,
         error,
       });
       
-      // Rollback optimistic update on error (restore entity to UI)
-      onRollbackDelete(deletingEntityId);
+      // For client errors (4xx) or network errors, we know the delete wasn't accepted
+      // Roll back the optimistic update so the entity remains visible
+      // For server errors (5xx), the operation may have been queued - keep optimistic update
+      if (isClientError || isNetworkError) {
+        onRollbackDelete(deletingEntityId);
+      }
       
-      // Close dialog to allow user to retry or cancel
+      // Close dialog to allow user to retry or verify state
       dispatch(closeDeleteConfirmation());
       
-      // Show error toast so the user knows the delete failed
-      toast.error('The banishment has failed', {
-        description: `"${entity?.name || 'Entry'}" resists erasure. Please attempt the rite again.`,
-      });
+      // Show appropriate error message based on error type
+      if (isClientError || isNetworkError) {
+        toast.error('The banishment has failed', {
+          description: `"${entity?.name || 'Entry'}" resists erasure. Please check the entry and attempt the rite again.`,
+        });
+      } else {
+        toast.error('The banishment outcome is uncertain', {
+          description: `"${entity?.name || 'Entry'}" may already be processing. Please check the notification center or refresh the sidebar to verify.`,
+        });
+      }
     }
   };
   
