@@ -104,6 +104,7 @@ const createMockStore = (preloadedSidebarState?: Partial<WorldSidebarState>) => 
             newEntityParentId: null,
             hasUnsavedChanges: false,
             deletingEntityId: null,
+            deletingEntityName: null,
             showDeleteConfirmation: false,
             movingEntityId: null,
             creatingEntityParentId: null,
