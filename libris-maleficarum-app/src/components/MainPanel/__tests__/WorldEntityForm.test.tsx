@@ -28,7 +28,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
   // Helper function to open entity detail form for creation
   async function openCreateForm(user: ReturnType<typeof userEvent.setup>) {
     // Select world
-    const worldTrigger = await screen.findByRole('combobox', { name: /select world/i });
+    const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
     await user.click(worldTrigger);
     const worldOption = await screen.findByRole('option', { name: 'Forgotten Realms' });
     await user.click(worldOption);
@@ -455,7 +455,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       // Select world
-      const worldTrigger = await screen.findByRole('combobox', { name: /select world/i });
+      const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
       await user.click(worldTrigger);
       const worldOption = await screen.findByRole('option', { name: 'Forgotten Realms' });
       await user.click(worldOption);
@@ -538,7 +538,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       // Select world
-      const worldTrigger = await screen.findByRole('combobox', { name: /select world/i });
+      const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
       await user.click(worldTrigger);
       const worldOption = await screen.findByRole('option', { name: 'Forgotten Realms' });
       await user.click(worldOption);
@@ -621,7 +621,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       // Select world
-      const worldTrigger = await screen.findByRole('combobox', { name: /select world/i });
+      const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
       await user.click(worldTrigger);
       const worldOption = await screen.findByRole('option', { name: 'Forgotten Realms' });
       await user.click(worldOption);

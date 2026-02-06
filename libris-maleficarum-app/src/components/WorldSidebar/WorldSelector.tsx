@@ -88,7 +88,7 @@ export function WorldSelector() {
     return (
       <div className="p-4 border-b border-border">
         <div className="px-3 py-3 bg-destructive text-destructive-foreground rounded-md text-sm text-center">
-          <p className="m-0">Failed to load worlds</p>
+          <p className="m-0">The grimoire could not be opened</p>
         </div>
       </div>
     );
@@ -107,9 +107,9 @@ export function WorldSelector() {
     <div className="p-4 border-b border-border">
       <div className="flex items-center gap-2">
         <Select value={selectedWorldId || ''} onValueChange={handleWorldChange}>
-          <SelectTrigger className="flex-1" aria-label="Select world">
-            <SelectValue placeholder="Select a world">
-              {selectedWorld?.name || 'Select a world'}
+          <SelectTrigger className="flex-1" aria-label="Choose a realm">
+            <SelectValue placeholder="Choose a realm">
+              {selectedWorld?.name || 'Choose a realm'}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -137,7 +137,7 @@ export function WorldSelector() {
                 <Pencil size={16} aria-hidden="true" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Edit world details</TooltipContent>
+            <TooltipContent>Amend realm details</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -150,7 +150,7 @@ export function WorldSelector() {
                 <Plus size={16} aria-hidden="true" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Create new world</TooltipContent>
+            <TooltipContent>Forge a new realm</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>

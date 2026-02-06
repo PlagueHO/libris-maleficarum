@@ -128,7 +128,7 @@ describe('WorldSelector', () => {
       await renderWorldSelector([emptyWorldsHandler]);
 
       // Assert
-      expect(screen.getByText(/create your first world/i)).toBeInTheDocument();
+      expect(screen.getByText(/forge your first realm/i)).toBeInTheDocument();
     });
 
     it('should show "Create World" button in empty state', async () => {
@@ -559,7 +559,7 @@ describe('WorldSelector', () => {
       await renderWorldSelector([errorWorldsHandler]);
 
       // Assert
-      expect(screen.getByText(/failed to load worlds/i)).toBeInTheDocument();
+      expect(screen.getByText(/grimoire could not be opened/i)).toBeInTheDocument();
     });
   });
 });

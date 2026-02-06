@@ -152,7 +152,7 @@ describe('EntityTree', () => {
 
       // Assert
       await waitFor(() => {
-        expect(screen.getByText(/no entities yet/i)).toBeInTheDocument();
+        expect(screen.getByText(/no entries inscribed yet/i)).toBeInTheDocument();
       });
     });
 
@@ -608,7 +608,7 @@ describe('EntityTree', () => {
       // Assert - wait for RTK Query retries to complete (3 retries + initial request)
       await waitFor(
         () => {
-          expect(screen.getByText('Failed to load entities')).toBeInTheDocument();
+          expect(screen.getByText('The codex could not be read')).toBeInTheDocument();
         },
         { timeout: 10000 },
       );
@@ -629,7 +629,7 @@ describe('EntityTree', () => {
       // Assert - error state should be shown after retries, not crash
       await waitFor(
         () => {
-          expect(screen.getByText('Failed to load entities')).toBeInTheDocument();
+          expect(screen.getByText('The codex could not be read')).toBeInTheDocument();
         },
         { timeout: 10000 },
       );

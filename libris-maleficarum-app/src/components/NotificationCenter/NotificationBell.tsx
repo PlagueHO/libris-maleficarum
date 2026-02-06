@@ -42,8 +42,8 @@ export function NotificationBell({ onClick }: NotificationBellProps) {
   
   // Build aria-label with unread count
   const ariaLabel = unreadCount > 0
-    ? `Notifications (${unreadCount} unread)`
-    : 'Notifications';
+    ? `Tome dispatches (${unreadCount} unread)`
+    : 'Tome dispatches';
   
   return (
     <Button

@@ -62,9 +62,9 @@ describe('EntityContextMenu', () => {
 
     // Check for menu items
     await waitFor(() => {
-      expect(screen.getByText('Add Child Entity')).toBeInTheDocument();
-      expect(screen.getByText('Edit Entity')).toBeInTheDocument();
-      expect(screen.getByText('Delete Entity')).toBeInTheDocument();
+      expect(screen.getByText('Inscribe Sub-entry')).toBeInTheDocument();
+      expect(screen.getByText('Amend Entry')).toBeInTheDocument();
+      expect(screen.getByText('Banish Entry')).toBeInTheDocument();
     });
   });
 
@@ -75,7 +75,7 @@ describe('EntityContextMenu', () => {
     await userEvent.pointer({ keys: '[MouseRight]', target: trigger });
 
     await waitFor(() => {
-      screen.getByText('Add Child Entity').click();
+      screen.getByText('Inscribe Sub-entry').click();
     });
 
     expect(openEntityFormCreate).toHaveBeenCalledWith(mockEntity.id);
@@ -88,7 +88,7 @@ describe('EntityContextMenu', () => {
     await userEvent.pointer({ keys: '[MouseRight]', target: trigger });
 
     await waitFor(() => {
-      screen.getByText('Edit Entity').click();
+      screen.getByText('Amend Entry').click();
     });
 
     expect(openEntityFormEdit).toHaveBeenCalledWith(mockEntity.id);

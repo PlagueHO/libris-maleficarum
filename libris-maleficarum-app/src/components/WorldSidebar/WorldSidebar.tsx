@@ -41,14 +41,14 @@ export function WorldSidebar({ optimisticallyDeletedIds }: WorldSidebarProps) {
   };
 
   return (
-    <aside data-testid="world-sidebar" className="flex flex-col w-80 h-screen bg-background border-r border-border overflow-hidden" role="complementary" aria-label="World navigation">
+    <aside data-testid="world-sidebar" className="flex flex-col w-80 h-screen bg-background border-r border-border overflow-hidden" role="complementary" aria-label="Realm codex">
       {/* World Selector */}
       <WorldSelector />
 
       {/* Entity Toolbar */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border/40">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Entities
+          Codex Entries
         </span>
         <Button
           variant="ghost"

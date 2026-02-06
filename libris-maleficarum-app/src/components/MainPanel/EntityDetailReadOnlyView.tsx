@@ -100,7 +100,7 @@ export function EntityDetailReadOnlyView({
                 {entity.description}
               </p>
             ) : (
-              <p className="text-muted-foreground italic">No description available.</p>
+              <p className="text-muted-foreground italic">No lore has been inscribed for this entry.</p>
             )}
           </div>
 

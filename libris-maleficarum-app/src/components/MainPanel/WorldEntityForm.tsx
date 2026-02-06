@@ -334,14 +334,14 @@ export function EntityDetailForm() {
     <FormLayout onBack={handleClose}>
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          {isEditing ? 'Edit Entity' : 'Create Entity'}
+          {isEditing ? 'Amend This Entry' : 'Inscribe a New Entry'}
         </h1>
         <p className="text-sm text-muted-foreground mb-4">
           {isEditing
-            ? 'Update entity details'
+            ? 'Revise the details of this chronicle entry'
             : parentEntity
-              ? `Add a new entity under "${parentEntity.name}"`
-              : 'Create a new root-level entity'}
+              ? `Inscribe a new entry beneath "${parentEntity.name}"`
+              : 'Inscribe a new entry at the root of the codex'}
         </p>
       </div>
 
@@ -349,7 +349,7 @@ export function EntityDetailForm() {
         <div className="flex justify-center items-center h-96">
           <div className="flex flex-col items-center gap-2 text-muted-foreground">
             <Loader2 className="h-8 w-8 animate-spin" />
-            <p>Loading...</p>
+            <p>Consulting the tome...</p>
           </div>
         </div>
       ) : (
@@ -367,7 +367,7 @@ export function EntityDetailForm() {
                   setErrors((prev) => clearFieldError(prev, 'name'));
                 }
               }}
-              placeholder="Entity name"
+              placeholder="Name this entry..."
               aria-invalid={!!errors.name}
               aria-describedby={errors.name ? 'name-error' : undefined}
               disabled={isSubmitting}
@@ -395,7 +395,7 @@ export function EntityDetailForm() {
               parentType={parentEntity?.entityType || null}
               allowAllTypes={false}
               disabled={isEditing || isSubmitting}
-              placeholder="Select entity type"
+              placeholder="Choose the nature of this entry"
               aria-label="Entity type"
               aria-invalid={!!errors.type}
               aria-describedby={errors.type ? 'type-error' : undefined}
@@ -420,7 +420,7 @@ export function EntityDetailForm() {
                   setErrors((prev) => clearFieldError(prev, 'description'));
                 }
               }}
-              placeholder="Brief description..."
+              placeholder="Describe this entry's lore..."
               aria-invalid={!!errors.description}
               aria-describedby={errors.description ? 'description-error' : 'description-hint'}
               disabled={isSubmitting}

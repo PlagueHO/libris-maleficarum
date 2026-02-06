@@ -119,7 +119,7 @@ describe('Entity Selection Integration', () => {
         const { store } = renderWithProviders(<TestApp />, { preloadedState });
 
         // 1. Verify initial Welcome message
-        expect(screen.getByText('Welcome to Libris Maleficarum')).toBeInTheDocument();
+        expect(screen.getByText('Welcome, Chronicler')).toBeInTheDocument();
 
         // 2. Find entity in sidebar
         const entityNode = await screen.findByText('Faerûn');
@@ -132,7 +132,7 @@ describe('Entity Selection Integration', () => {
 
         // 5. Verify MainPanel updates (Welcome message gone, Entity Details shown)
         await waitFor(() => {
-            const hasWelcome = screen.queryByText('Welcome to Libris Maleficarum');
+            const hasWelcome = screen.queryByText('Welcome, Chronicler');
             expect(hasWelcome).not.toBeInTheDocument();
         });
         
@@ -235,7 +235,7 @@ describe('Entity Selection Integration', () => {
         fireEvent.click(entityNode);
 
         // Should see loading skeleton/spinner
-        expect(screen.getByRole('status', { name: /loading/i })).toBeInTheDocument();
+        expect(screen.getByRole('status', { name: /consulting the tome/i })).toBeInTheDocument();
 
         // Should eventually see content
         await screen.findByRole('heading', { name: 'E1' });

@@ -58,25 +58,25 @@ export function MainPanel() {
         <div className="max-w-4xl mx-auto space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">Welcome to Libris Maleficarum</CardTitle>
+              <CardTitle className="text-2xl">Welcome, Chronicler</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Your personal grimoire for world-building and campaign management.
-                Use the sidebar to navigate between different aspects of your world,
-                or ask the AI assistant for help creating new content.
+                Your arcane tome for chronicling worlds, shaping realms, and weaving
+                the tales of your campaigns. Consult the Codex to explore your realms,
+                or summon Malleus, your arcane advisor, for aid in crafting new lore.
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Getting Started</CardTitle>
+              <CardTitle>Begin Your Chronicle</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <p className="text-muted-foreground">
-                Create your first world, add locations, characters, and quests.
-                The AI will help you generate rich, detailed content for your campaigns.
+                Forge your first realm, inscribe its lands, denizens, and quests.
+                Malleus will help you conjure rich, detailed lore for your adventures.
               </p>
             </CardContent>
           </Card>
@@ -89,9 +89,9 @@ export function MainPanel() {
   if (isLoading) {
     return (
       <main className="flex-1 p-6 overflow-auto flex items-center justify-center h-full">
-        <div role="status" aria-label="Loading entity details" className="flex flex-col items-center gap-2 text-muted-foreground">
+        <div role="status" aria-label="Consulting the tome" className="flex flex-col items-center gap-2 text-muted-foreground">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <p>Loading entity details...</p>
+          <p>Consulting the tome...</p>
         </div>
       </main>
     );
@@ -104,11 +104,11 @@ export function MainPanel() {
          <div className="max-w-4xl mx-auto">
           <Card className="border-destructive/50">
             <CardHeader>
-              <CardTitle className="text-destructive">Error Loading Entity</CardTitle>
+              <CardTitle className="text-destructive">The Scroll Is Damaged</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Unable to load the selected entity. It may have been deleted or you don't have permission to view it.
+                The entry you seek could not be recovered from the grimoire. It may have been lost to the void or sealed beyond your reach.
               </p>
             </CardContent>
           </Card>

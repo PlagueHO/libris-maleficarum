@@ -67,7 +67,7 @@ describe('T037: EntityDetailReadOnlyView - Basic Rendering', () => {
 
     render(<EntityDetailReadOnlyView entity={entity} onEditClick={onEditClick} />);
 
-    expect(screen.getByText('No description available.')).toBeInTheDocument();
+    expect(screen.getByText('No lore has been inscribed for this entry.')).toBeInTheDocument();
   });
 });
 

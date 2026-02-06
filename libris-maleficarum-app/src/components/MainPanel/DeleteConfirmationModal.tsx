@@ -97,8 +97,8 @@ export function DeleteConfirmationModal() {
       dispatch(closeDeleteConfirmation());
       
       // Show error toast so the user knows the delete failed
-      toast.error('Failed to delete entity', {
-        description: `"${entity?.name || 'Entity'}" could not be deleted. Please try again.`,
+      toast.error('The banishment has failed', {
+        description: `"${entity?.name || 'Entry'}" resists erasure. Please attempt the rite again.`,
       });
     }
   };
@@ -122,10 +122,10 @@ export function DeleteConfirmationModal() {
           <div className="flex mb-2">
             <AlertTriangle className="h-5 w-5 text-destructive" aria-hidden="true" />
           </div>
-          <DialogTitle className="text-xl font-semibold mb-1">Delete Entity</DialogTitle>
+          <DialogTitle className="text-xl font-semibold mb-1">Banish This Entry</DialogTitle>
           <DialogDescription className="text-[0.95rem] text-muted-foreground leading-normal">
-            Are you sure you want to delete{' '}
-            <strong>"{entity?.name || 'this entity'}"</strong>?
+            Are you certain you wish to banish{' '}
+            <strong>"{entity?.name || 'this entry'}"</strong> from the grimoire?
           </DialogDescription>
         </DialogHeader>
 
@@ -135,7 +135,7 @@ export function DeleteConfirmationModal() {
           aria-live="polite"
         >
           <p className="m-0 text-sm text-foreground">
-            This action cannot be undone. The entity and all its child entities will be permanently deleted.
+            This rite cannot be undone. The entry and all its descendants will be permanently erased from the tome.
           </p>
         </div>
 
@@ -152,7 +152,7 @@ export function DeleteConfirmationModal() {
             variant="destructive"
             onClick={handleConfirmDelete}
             disabled={isDeleting}
-            aria-label={`Confirm delete "${entity?.name || 'entity'}"`}
+            aria-label={`Confirm banish "${entity?.name || 'entry'}"`}
           >
             {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isDeleting ? 'Deleting...' : 'Delete'}
