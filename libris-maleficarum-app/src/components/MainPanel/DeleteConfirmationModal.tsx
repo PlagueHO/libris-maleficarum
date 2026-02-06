@@ -20,6 +20,7 @@ import { useInitiateEntityDeleteMutation } from '@/services/asyncOperationsApi';
 import { useOptimisticDelete } from '@/components/WorldSidebar/OptimisticDeleteContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,58 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+
+/**
+ * Determines if an RTK Query error should trigger an optimistic update rollback.
+ * 
+ * Rollback cases:
+ * - Client errors (4xx): Request was rejected
+ * - FETCH_ERROR: Network failure (no response from server)
+ * - TIMEOUT_ERROR: Request timed out before completion
+ * - PARSING_ERROR: Response received but couldn't be parsed
+ * 
+ * No rollback cases:
+ * - Server errors (5xx): Operation may have been queued despite error
+ * - Unknown errors: Conservative approach - assume operation may have succeeded
+ */
+function shouldRollbackDelete(error: unknown): boolean {
+  // Type guard for FetchBaseQueryError
+  const fetchError = error as FetchBaseQueryError | undefined;
+  const status = fetchError?.status;
+  
+  if (typeof status === 'number') {
+    // HTTP status code - rollback only for client errors (4xx)
+    // Server errors (5xx) may indicate the operation was queued
+    return status >= 400 && status < 500;
+  }
+  
+  if (typeof status === 'string') {
+    // RTK Query string status types that indicate operation failure
+    return status === 'FETCH_ERROR' || status === 'TIMEOUT_ERROR' || status === 'PARSING_ERROR';
+  }
+  
+  // Unknown error type - don't rollback (conservative approach)
+  return false;
+}
+
+/**
+ * Generates appropriate error message based on error type.
+ */
+function getErrorMessage(error: unknown, entityName: string | undefined): { title: string; description: string } {
+  const isKnownFailure = shouldRollbackDelete(error);
+  
+  if (isKnownFailure) {
+    return {
+      title: 'The deletion has failed',
+      description: `"${entityName || 'Entry'}" resists erasure. Please check the entry and attempt the rite again.`,
+    };
+  }
+  
+  return {
+    title: 'The deletion outcome is uncertain',
+    description: `"${entityName || 'Entry'}" may already be processing. Please check the notification center or refresh the sidebar to verify.`,
+  };
+}
 
 export function DeleteConfirmationModal() {
   const dispatch = useDispatch();
@@ -72,24 +125,13 @@ export function DeleteConfirmationModal() {
       
       // Note: Notification will be registered automatically by RTK Query cache update
     } catch (error) {
-      // Check error type to determine appropriate rollback and messaging strategy
-      // RTK Query unwrap() can throw FetchBaseQueryError or SerializedError
-      const errorObject = (typeof error === 'object' && error !== null) ? (error as { status?: unknown }) : undefined;
-      const rawStatus = errorObject?.status;
-      const numericStatus = typeof rawStatus === 'number' ? rawStatus : undefined;
-      const isClientError = typeof numericStatus === 'number' && numericStatus >= 400 && numericStatus < 500;
-      const isNetworkError = rawStatus === 'FETCH_ERROR';
-      
       logger.error('API', 'Failed to initiate async delete', {
         entityId: deletingEntityId,
-        status: rawStatus,
         error,
       });
       
-      // For client errors (4xx) or network errors, we know the delete wasn't accepted
-      // Roll back the optimistic update so the entity remains visible
-      // For server errors (5xx), the operation may have been queued - keep optimistic update
-      if (isClientError || isNetworkError) {
+      // Rollback optimistic update if the error indicates the operation wasn't accepted
+      if (shouldRollbackDelete(error)) {
         onRollbackDelete(deletingEntityId);
       }
       
@@ -97,15 +139,8 @@ export function DeleteConfirmationModal() {
       dispatch(closeDeleteConfirmation());
       
       // Show appropriate error message based on error type
-      if (isClientError || isNetworkError) {
-        toast.error('The deletion has failed', {
-          description: `"${deletingEntityName || 'Entry'}" resists erasure. Please check the entry and attempt the rite again.`,
-        });
-      } else {
-        toast.error('The deletion outcome is uncertain', {
-          description: `"${deletingEntityName || 'Entry'}" may already be processing. Please check the notification center or refresh the sidebar to verify.`,
-        });
-      }
+      const { title, description } = getErrorMessage(error, deletingEntityName);
+      toast.error(title, { description });
     }
   };
   
@@ -127,7 +162,7 @@ export function DeleteConfirmationModal() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-semibold mb-1">
             <AlertTriangle className="h-5 w-5 text-destructive" aria-hidden="true" />
-            Delete Codex Entry
+            Delete Entry
           </DialogTitle>
           <DialogDescription className="text-[0.95rem] text-muted-foreground leading-normal">
             Are you certain you wish to delete{' '}

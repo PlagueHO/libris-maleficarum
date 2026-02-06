@@ -332,7 +332,7 @@ export function EntityDetailForm() {
     <FormLayout onBack={handleClose}>
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          {isEditing ? 'Edit Codex Entry' : 'New Codex Entry'}
+          {isEditing ? 'Edit Entry' : 'New Entry'}
         </h1>
         <p className="text-sm text-muted-foreground mb-4">
           {isEditing

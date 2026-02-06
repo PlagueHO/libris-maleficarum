@@ -35,8 +35,8 @@ const selectDeleteOperationsData = (state: RootState): DeleteOperationDto[] => {
     worldId,
   })(state);
 
-  // Return stable empty array reference if no data
-  if (!result?.data || result.data.length === 0) {
+  // Return stable empty array reference if no data or cache is not fresh
+  if (!result?.data || result.isUninitialized || result.isLoading || result.data.length === 0) {
     return EMPTY_OPERATIONS;
   }
 

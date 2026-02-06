@@ -62,9 +62,9 @@ describe('EntityContextMenu', () => {
 
     // Check for menu items
     await waitFor(() => {
-      expect(screen.getByText('New Codex Entry')).toBeInTheDocument();
-      expect(screen.getByText('Edit Codex Entry')).toBeInTheDocument();
-      expect(screen.getByText('Delete Codex Entry')).toBeInTheDocument();
+      expect(screen.getByText('New Entry')).toBeInTheDocument();
+      expect(screen.getByText('Edit Entry')).toBeInTheDocument();
+      expect(screen.getByText('Delete Entry')).toBeInTheDocument();
     });
   });
 
@@ -75,7 +75,7 @@ describe('EntityContextMenu', () => {
     await userEvent.pointer({ keys: '[MouseRight]', target: trigger });
 
     await waitFor(() => {
-      screen.getByText('New Codex Entry').click();
+      screen.getByText('New Entry').click();
     });
 
     expect(openEntityFormCreate).toHaveBeenCalledWith(mockEntity.id);
@@ -88,7 +88,7 @@ describe('EntityContextMenu', () => {
     await userEvent.pointer({ keys: '[MouseRight]', target: trigger });
 
     await waitFor(() => {
-      screen.getByText('Edit Codex Entry').click();
+      screen.getByText('Edit Entry').click();
     });
 
     expect(openEntityFormEdit).toHaveBeenCalledWith(mockEntity.id);

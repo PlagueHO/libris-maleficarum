@@ -139,8 +139,12 @@ function App() {
       <Toaster position="bottom-right" />
       <div className="h-screen flex flex-col bg-background text-foreground">
         <TopToolbar />
-        {/* WorldProvider wraps entire app tree to prevent unmount/remount on world selection changes */}
-        <WorldProvider initialWorldId={selectedWorldId || ''} initialWorldName="">
+        {/* WorldProvider wraps entire app tree; key ensures context resets when world changes */}
+        <WorldProvider
+          key={selectedWorldId || 'no-world-selected'}
+          initialWorldId={selectedWorldId || ''}
+          initialWorldName=""
+        >
           <div className="flex-1 flex overflow-hidden">
             <WorldSidebar optimisticallyDeletedIds={optimisticallyDeletedIds} />
             <MainPanel />

@@ -26,6 +26,7 @@ import { getOperationStatusMessage } from '@/lib/asyncOperationHelpers';
 import type { DeleteOperationDto } from '@/services/types/asyncOperations';
 import { cn } from '@/lib/utils';
 import { useWorldOptional } from '@/contexts';
+import { logger } from '@/lib/logger';
 
 export interface NotificationItemProps {
   /**
@@ -79,7 +80,10 @@ export function NotificationItem({ operation }: NotificationItemProps) {
       await retryOperation({ worldId, operationId: operation.id }).unwrap();
       // Operation status will update via polling
     } catch (error) {
-      console.error('Retry failed:', error);
+      logger.error('API', 'Failed to retry operation', {
+        operationId: operation.id,
+        error,
+      });
     }
   };
   
@@ -89,7 +93,10 @@ export function NotificationItem({ operation }: NotificationItemProps) {
       await cancelOperation({ worldId, operationId: operation.id }).unwrap();
       // Operation status will update via polling
     } catch (error) {
-      console.error('Cancel failed:', error);
+      logger.error('API', 'Failed to cancel operation', {
+        operationId: operation.id,
+        error,
+      });
     }
   };
   
