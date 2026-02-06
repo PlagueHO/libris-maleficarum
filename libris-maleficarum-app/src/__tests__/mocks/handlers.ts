@@ -652,14 +652,14 @@ export const asyncOperationsHandlers = [
 
     return HttpResponse.json(
       {
-        data: {
-          operationId,
-          rootEntityId: entityId,
-          rootEntityName: entity.name,
-          estimatedCount: 10,
-        },
+        data: newOperation,
       },
-      { status: 202 }
+      {
+        status: 202,
+        headers: {
+          Location: `${baseUrl}/api/v1/worlds/${worldId}/delete-operations/${operationId}`,
+        },
+      }
     );
   }),
 
