@@ -139,7 +139,7 @@ export function DeleteConfirmationModal() {
       dispatch(closeDeleteConfirmation());
       
       // Show appropriate error message based on error type
-      const { title, description } = getErrorMessage(error, deletingEntityName);
+      const { title, description } = getErrorMessage(error, deletingEntityName ?? undefined);
       toast.error(title, { description });
     }
   };
