@@ -150,7 +150,7 @@ export function WorldSelector() {
                 <Plus size={16} aria-hidden="true" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Forge a new realm</TooltipContent>
+            <TooltipContent>Create new realm</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>

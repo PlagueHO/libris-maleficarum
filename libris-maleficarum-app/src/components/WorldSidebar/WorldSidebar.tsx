@@ -56,7 +56,7 @@ export function WorldSidebar({ optimisticallyDeletedIds }: WorldSidebarProps) {
           className="h-6 w-6"
           onClick={handleAddRootEntity}
           disabled={!selectedWorldId}
-          aria-label="Add Root Entity"
+          aria-label="Add Codex Entry"
         >
           <Plus className="h-4 w-4" />
         </Button>

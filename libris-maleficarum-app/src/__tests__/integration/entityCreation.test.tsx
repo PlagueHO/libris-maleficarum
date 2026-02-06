@@ -108,10 +108,10 @@ describe('Entity Creation Integration', () => {
     await user.click(worldOption);
 
     // 2. Open the Create Entity modal
-    // Find the "Add Root Entity" button (the one with text, in the empty state)
-    const createButtons = await screen.findAllByRole('button', { name: /add root entity/i });
-    const createBtn = createButtons.find(btn => btn.textContent?.includes('Add Root Entity'));
-    if (!createBtn) throw new Error('Could not find Add Root Entity button');
+    // Find the "Add Codex Entry" button (the one with text, in the empty state)
+    const createButtons = await screen.findAllByRole('button', { name: /add codex entry/i });
+    const createBtn = createButtons.find(btn => btn.textContent?.includes('Add Codex Entry'));
+    if (!createBtn) throw new Error('Could not find Add Codex Entry button');
     await user.click(createBtn);
 
     // 3. Fill out the form

@@ -129,7 +129,7 @@ export function NotificationItem({ operation }: NotificationItemProps) {
             {/* Deleted Count (for in-progress or completed operations) */}
             {operation.deletedCount > 0 && (
               <p className="text-xs text-muted-foreground mt-1">
-                Banished: {operation.deletedCount} entries
+                Deleted: {operation.deletedCount} entries
               </p>
             )}
           </div>

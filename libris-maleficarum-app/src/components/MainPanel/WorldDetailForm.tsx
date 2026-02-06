@@ -123,7 +123,7 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
       return;
     }
 
-    logger.userAction(mode === 'create' ? 'Create world' : 'Update world', {
+    logger.userAction(mode === 'create' ? 'Create realm' : 'Update world', {
       worldName: name.trim(),
       hasDescription: !!description.trim(),
     });
@@ -175,7 +175,7 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
     <FormLayout data-testid="world-detail-form" onBack={handleCancel}>
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          {mode === 'create' ? 'Forge a New Realm' : 'Amend the Realm'}
+          {mode === 'create' ? 'New Realm' : 'Edit Realm'}
         </h1>
         <p className="text-sm text-muted-foreground mb-4">
           {mode === 'create'
@@ -239,7 +239,7 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
         </div>
 
         <FormActions
-          submitLabel={mode === 'create' ? 'Create World' : 'Save World'}
+          submitLabel={mode === 'create' ? 'Create Realm' : 'Save World'}
           submitIcon={mode === 'create' ? Plus : Pencil}
           cancelLabel="Cancel"
           isLoading={isLoading}

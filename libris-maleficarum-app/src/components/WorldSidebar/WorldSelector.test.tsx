@@ -131,21 +131,21 @@ describe('WorldSelector', () => {
       expect(screen.getByText(/forge your first realm/i)).toBeInTheDocument();
     });
 
-    it('should show "Create World" button in empty state', async () => {
+    it('should show "Create Realm" button in empty state', async () => {
       // Act
       await renderWorldSelector([emptyWorldsHandler]);
 
-      // Assert - EmptyState component has "Create World" button
-      expect(screen.getByRole('button', { name: /^create world$/i })).toBeInTheDocument();
+      // Assert - EmptyState component has "Create Realm" button
+      expect(screen.getByRole('button', { name: /^create realm$/i })).toBeInTheDocument();
     });
 
-    it('should open WorldForm in MainPanel when "Create World" button is clicked in empty state', async () => {
+    it('should open WorldForm in MainPanel when "Create Realm" button is clicked in empty state', async () => {
       // Arrange
       const user = userEvent.setup();
       const { store } = await renderWorldSelector([emptyWorldsHandler]);
 
-      // Act - EmptyState component has "Create World" button
-      const createButton = screen.getByRole('button', { name: /^create world$/i });
+      // Act - EmptyState component has "Create Realm" button
+      const createButton = screen.getByRole('button', { name: /^create realm$/i });
       await user.click(createButton);
 
       // Assert

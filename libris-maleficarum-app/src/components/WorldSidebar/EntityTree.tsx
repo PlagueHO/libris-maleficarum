@@ -229,10 +229,10 @@ function EntityTreeLevel({ worldId, parentId, level, optimisticallyDeletedIds }:
             variant="outline"
             size="default"
             onClick={() => dispatch(openEntityFormCreate(null))}
-            aria-label="Add root entity"
+            aria-label="Add Codex Entry"
           >
             <Plus size={16} aria-hidden="true" />
-            Add Root Entity
+            Add Codex Entry
           </Button>
         </div>
       );

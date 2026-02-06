@@ -332,14 +332,14 @@ export function EntityDetailForm() {
     <FormLayout onBack={handleClose}>
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          {isEditing ? 'Amend This Entry' : 'Inscribe a New Entry'}
+          {isEditing ? 'Edit Codex Entry' : 'New Codex Entry'}
         </h1>
         <p className="text-sm text-muted-foreground mb-4">
           {isEditing
             ? 'Revise the details of this chronicle entry'
             : parentEntity
-              ? `Inscribe a new entry beneath "${parentEntity.name}"`
-              : 'Inscribe a new entry at the root of the codex'}
+              ? `Create a new entry beneath "${parentEntity.name}"`
+              : 'Create a new entry at the root of the codex'}
         </p>
       </div>
 
