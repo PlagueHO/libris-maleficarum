@@ -281,8 +281,6 @@ export function EntityDetailForm() {
           data: {
             name,
             description,
-            entityType: typedEntityType,
-            tags: existingEntity?.tags || [],
             properties,
             schemaVersion: ENTITY_SCHEMA_VERSIONS[typedEntityType],
           },

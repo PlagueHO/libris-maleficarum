@@ -248,4 +248,28 @@ public class DeleteOperation
         ErrorDetails = errorDetails;
         CompletedAt = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Resets the operation to retry after a failure or partial completion.
+    /// Preserves the operation ID, world context, and entity information.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the operation is not in a retryable state.</exception>
+    public void Retry()
+    {
+        if (Status != DeleteOperationStatus.Failed && Status != DeleteOperationStatus.Partial)
+        {
+            throw new InvalidOperationException($"Only failed or partial operations can be retried. Current status: {Status}");
+        }
+
+        // Reset operation state while preserving identity and configuration
+        Status = DeleteOperationStatus.Pending;
+        DeletedCount = 0;
+        FailedCount = 0;
+        FailedEntityIds.Clear();
+        ErrorDetails = null;
+        StartedAt = null;
+        CompletedAt = null;
+        // TotalEntities is preserved and will be recalculated during processing
+        // Id, WorldId, RootEntityId, RootEntityName, CreatedBy, CreatedAt, Cascade, Ttl are all preserved
+    }
 }

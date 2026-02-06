@@ -432,6 +432,144 @@ public class DeleteOperationTests
 
     #endregion
 
+    #region Retry Tests
+
+    [TestMethod]
+    public void Retry_WithFailedOperation_ShouldResetToRetryableState()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+        operation.Start(10);
+        operation.UpdateProgress(deletedCount: 5, failedCount: 5);
+        operation.AddFailedEntity(Guid.NewGuid());
+        operation.Fail("Database connection lost");
+        var originalId = operation.Id;
+        var originalCreatedAt = operation.CreatedAt;
+
+        // Act
+        operation.Retry();
+
+        // Assert
+        operation.Id.Should().Be(originalId, "operation ID should be preserved");
+        operation.Status.Should().Be(DeleteOperationStatus.Pending);
+        operation.DeletedCount.Should().Be(0);
+        operation.FailedCount.Should().Be(0);
+        operation.FailedEntityIds.Should().BeEmpty();
+        operation.ErrorDetails.Should().BeNull();
+        operation.StartedAt.Should().BeNull();
+        operation.CompletedAt.Should().BeNull();
+        operation.CreatedAt.Should().Be(originalCreatedAt, "creation timestamp should be preserved");
+        operation.WorldId.Should().Be(_worldId, "world ID should be preserved");
+        operation.RootEntityId.Should().Be(_rootEntityId, "root entity ID should be preserved");
+        operation.RootEntityName.Should().Be(RootEntityName, "root entity name should be preserved");
+    }
+
+    [TestMethod]
+    public void Retry_WithPartialOperation_ShouldResetToRetryableState()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+        operation.Start(10);
+        operation.UpdateProgress(deletedCount: 7, failedCount: 3);
+        operation.AddFailedEntity(Guid.NewGuid());
+        operation.AddFailedEntity(Guid.NewGuid());
+        operation.AddFailedEntity(Guid.NewGuid());
+        operation.Complete(); // Should result in Partial status
+        var originalId = operation.Id;
+
+        // Act
+        operation.Retry();
+
+        // Assert
+        operation.Id.Should().Be(originalId, "operation ID should be preserved");
+        operation.Status.Should().Be(DeleteOperationStatus.Pending);
+        operation.DeletedCount.Should().Be(0);
+        operation.FailedCount.Should().Be(0);
+        operation.FailedEntityIds.Should().BeEmpty();
+        operation.ErrorDetails.Should().BeNull();
+        operation.StartedAt.Should().BeNull();
+        operation.CompletedAt.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void Retry_WithCompletedOperation_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+        operation.Start(10);
+        operation.UpdateProgress(deletedCount: 10, failedCount: 0);
+        operation.Complete();
+
+        // Act
+        var action = () => operation.Retry();
+
+        // Assert
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Only failed or partial operations can be retried*");
+    }
+
+    [TestMethod]
+    public void Retry_WithPendingOperation_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+
+        // Act
+        var action = () => operation.Retry();
+
+        // Assert
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Only failed or partial operations can be retried*");
+    }
+
+    [TestMethod]
+    public void Retry_WithInProgressOperation_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId);
+        operation.Start(10);
+
+        // Act
+        var action = () => operation.Retry();
+
+        // Assert
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Only failed or partial operations can be retried*");
+    }
+
+    [TestMethod]
+    public void Retry_PreservesImmutableProperties_AfterRetry()
+    {
+        // Arrange
+        var operation = DeleteOperation.Create(_worldId, _rootEntityId, RootEntityName, TestUserId, cascade: true, ttlSeconds: 3600);
+        operation.Start(10);
+        operation.Fail("Error occurred");
+        
+        var originalId = operation.Id;
+        var originalWorldId = operation.WorldId;
+        var originalRootEntityId = operation.RootEntityId;
+        var originalRootEntityName = operation.RootEntityName;
+        var originalCreatedBy = operation.CreatedBy;
+        var originalCreatedAt = operation.CreatedAt;
+        var originalCascade = operation.Cascade;
+        var originalTtl = operation.Ttl;
+
+        // Act
+        operation.Retry();
+
+        // Assert - All immutable properties should be preserved
+        operation.Id.Should().Be(originalId);
+        operation.WorldId.Should().Be(originalWorldId);
+        operation.RootEntityId.Should().Be(originalRootEntityId);
+        operation.RootEntityName.Should().Be(originalRootEntityName);
+        operation.CreatedBy.Should().Be(originalCreatedBy);
+        operation.CreatedAt.Should().Be(originalCreatedAt);
+        operation.Cascade.Should().Be(originalCascade);
+        operation.Ttl.Should().Be(originalTtl);
+    }
+
+    #endregion
+
     #region Complete Workflow Tests
 
     [TestMethod]

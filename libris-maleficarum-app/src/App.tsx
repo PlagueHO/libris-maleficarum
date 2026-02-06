@@ -126,8 +126,10 @@ function App() {
       // The notification panel handles filtering/display logic
     },
     {
-      skip: !selectedWorldId || !shouldPoll, // Skip when no world selected OR no active operations
-      pollingInterval: 3000, // Poll every 3 seconds
+      // Always perform the initial fetch when a world is selected,
+      // even if we are not currently polling for changes.
+      skip: !selectedWorldId,
+      pollingInterval: shouldPoll ? 3000 : 0, // Poll every 3 seconds when enabled; no polling otherwise
       skipPollingIfUnfocused: true, // Pause polling when browser tab is inactive
     }
   );
@@ -137,26 +139,15 @@ function App() {
       <Toaster position="bottom-right" />
       <div className="h-screen flex flex-col bg-background text-foreground">
         <TopToolbar />
-        {/* Wrap world-scoped content with WorldProvider when a world is selected */}
-        {selectedWorldId ? (
-          <WorldProvider initialWorldId={selectedWorldId} initialWorldName="">
-            <div className="flex-1 flex overflow-hidden">
-              <WorldSidebar optimisticallyDeletedIds={optimisticallyDeletedIds} />
-              <MainPanel />
-              <ChatPanel />
-            </div>
-            <DeleteConfirmationModal />
-          </WorldProvider>
-        ) : (
-          <>
-            <div className="flex-1 flex overflow-hidden">
-              <WorldSidebar optimisticallyDeletedIds={optimisticallyDeletedIds} />
-              <MainPanel />
-              <ChatPanel />
-            </div>
-            <DeleteConfirmationModal />
-          </>
-        )}
+        {/* WorldProvider wraps entire app tree to prevent unmount/remount on world selection changes */}
+        <WorldProvider initialWorldId={selectedWorldId || ''} initialWorldName="">
+          <div className="flex-1 flex overflow-hidden">
+            <WorldSidebar optimisticallyDeletedIds={optimisticallyDeletedIds} />
+            <MainPanel />
+            <ChatPanel />
+          </div>
+          <DeleteConfirmationModal />
+        </WorldProvider>
       </div>
     </OptimisticDeleteProvider>
   )
