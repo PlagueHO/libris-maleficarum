@@ -2,69 +2,17 @@
 > libris-maleficarum-app@0.0.0 build D:\source\GitHub\PlagueHO\libris-maleficarum\libris-maleficarum-app
 > tsc -b && vite build
 
-src/__tests__/mocks/handlers.ts(602,83): error TS2694: Namespace '"D:/source/GitHub/PlagueHO/libris-maleficarum/libris-maleficarum-app/src/services/types/asyncOperations"' has no exported member 'AsyncOperation'.
-src/__tests__/mocks/handlers.ts(628,16): error TS2304: Cannot find name 'worldId'.
-src/__tests__/test-utils.tsx(25,31): error TS2305: Module '"@reduxjs/toolkit"' has no exported member 'PreloadedState'.
-src/__tests__/test-utils.tsx(79,7): error TS2353: Object literal may only specify known properties, and '[api.reducerPath]' does not exist in type 'Reducer<{ api: CombinedState<{}, "Location" | "Character" | "Organization" | "World" | "WorldEntity" | "DeleteOperation", "api">; notifications: DeleteOperationsState; worldSidebar: WorldSidebarState; }, UnknownAction, any>'.
-src/__tests__/test-utils.tsx(84,5): error TS2719: Type '(getDefaultMiddleware: GetDefaultMiddleware<{ api: import("D:/source/GitHub/PlagueHO/libris-maleficarum/libris-maleficarum-app/node_modules/.pnpm/@reduxjs+toolkit@2.11.2_rea_9d2554fddddf0e09eddd48e62f248374/node_modules/@reduxjs/toolkit/dist/query/index").CombinedState<{}, "Location" | "Character" | "Organization" |...' is not assignable to type '(getDefaultMiddleware: GetDefaultMiddleware<{ api: import("D:/source/GitHub/PlagueHO/libris-maleficarum/libris-maleficarum-app/node_modules/.pnpm/@reduxjs+toolkit@2.11.2_rea_9d2554fddddf0e09eddd48e62f248374/node_modules/@reduxjs/toolkit/dist/query/index").CombinedState<{}, "Location" | "Character" | "Organization" |...'. Two different types with this name exist, but they are unrelated.
-  Type 'Tuple<[ThunkMiddleware<{ api: CombinedState<{}, "Location" | "Character" | "Organization" | "World" | "WorldEntity" | "DeleteOperation", "api">; notifications: DeleteOperationsState; worldSidebar: WorldSidebarState; }, UnknownAction>, Middleware<...>]>' is not assignable to type 'Tuple<[ThunkMiddleware<{ api: CombinedState<{}, "Location" | "Character" | "Organization" | "World" | "WorldEntity" | "DeleteOperation", "api">; notifications: DeleteOperationsState; worldSidebar: WorldSidebarState; }, UnknownAction>]>'.
-    Type '[ThunkMiddleware<{ api: CombinedState<{}, "Location" | "Character" | "Organization" | "World" | "WorldEntity" | "DeleteOperation", "api">; notifications: DeleteOperationsState; worldSidebar: WorldSidebarState; }, UnknownAction>, Middleware<...>]' is not assignable to type '[ThunkMiddleware<{ api: CombinedState<{}, "Location" | "Character" | "Organization" | "World" | "WorldEntity" | "DeleteOperation", "api">; notifications: DeleteOperationsState; worldSidebar: WorldSidebarState; }, UnknownAction>]'.
-      Source has 2 element(s) but target allows only 1.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(12,32): error TS6133: 'vi' is declared but its value is never read.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(13,26): error TS6133: 'waitFor' is declared but its value is never read.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(17,10): error TS6133: 'axe' is declared but its value is never read.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(77,11): error TS6133: 'user' is declared but its value is never read.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(80,11): error TS6133: 'store' is declared but its value is never read.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(95,13): error TS2339: Property 'useInitiateAsyncDeleteMutation' does not exist on type 'typeof import("D:/source/GitHub/PlagueHO/libris-maleficarum/libris-maleficarum-app/src/services/asyncOperationsApi")'.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(114,11): error TS6133: 'user' is declared but its value is never read.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(117,11): error TS6133: 'store' is declared but its value is never read.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(145,11): error TS6133: 'user' is declared but its value is never read.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(148,11): error TS6133: 'store' is declared but its value is never read.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(192,11): error TS6133: 'user' is declared but its value is never read.
-src/components/__tests__/AsyncDeleteIntegration.test.tsx(249,11): error TS6133: 'user' is declared but its value is never read.
-src/components/NotificationCenter/__tests__/NotificationCenter.test.tsx(9,36): error TS6133: 'beforeEach' is declared but its value is never read.
-src/components/NotificationCenter/__tests__/NotificationCenter.test.tsx(13,1): error TS6133: 'configureStore' is declared but its value is never read.
-src/components/NotificationCenter/__tests__/NotificationCenter.test.tsx(17,1): error TS6133: 'notificationsReducer' is declared but its value is never read.
-src/components/NotificationCenter/__tests__/NotificationCenter.test.tsx(18,1): error TS6133: 'api' is declared but its value is never read.
-src/components/NotificationCenter/__tests__/NotificationCenter.test.tsx(179,11): error TS6133: 'user' is declared but its value is never read.
-src/components/NotificationCenter/__tests__/NotificationItem.test.tsx(9,32): error TS6133: 'vi' is declared but its value is never read.
-src/components/NotificationCenter/__tests__/NotificationItem.test.tsx(123,5): error TS2353: Object literal may only specify known properties, and 'retryCount' does not exist in type 'DeleteOperationDto'.
-src/components/NotificationCenter/__tests__/NotificationItem.test.tsx(226,11): error TS6133: 'user' is declared but its value is never read.
-src/components/NotificationCenter/NotificationItem.tsx(21,48): error TS6133: 'Ban' is declared but its value is never read.
-src/components/NotificationCenter/NotificationItem.tsx(98,39): error TS2551: Property 'targetEntityName' does not exist on type 'DeleteOperationDto'. Did you mean 'rootEntityName'?
-src/components/NotificationCenter/NotificationItem.tsx(107,60): error TS2551: Property 'targetEntityName' does not exist on type 'DeleteOperationDto'. Did you mean 'rootEntityName'?
-src/services/__tests__/asyncOperationsApi.test.ts(4,10): error TS2305: Module '"../asyncOperationsApi"' has no exported member 'asyncOperationsApi'.
-src/store/__tests__/notificationSelectors.test.ts(14,9): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'DeleteOperationDto'.
-src/store/__tests__/notificationSelectors.test.ts(26,9): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'DeleteOperationDto'.
-src/store/__tests__/notificationSelectors.test.ts(46,9): error TS2820: Type '"in-progress"' is not assignable to type 'DeleteOperationStatus'. Did you mean '"in_progress"'?
-src/store/__tests__/notificationSelectors.test.ts(54,17): error TS2352: Conversion of type '{ notifications: { sidebarOpen: false; metadata: { 'op-1': { read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }; 'op-2': { read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }; 'op-3': { ...; }; }; lastCleanupTimestamp: number; pollingEnabled: true; }; api: { ...; }; }' to type 'Partial<{ sidePanel: SidePanelState; worldSidebar: WorldSidebarState; notifications: DeleteOperationsState; api: CombinedState<{}, "Location" | ... 4 more ... | "DeleteOperation", "api">; }>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-  The types of 'notifications.metadata' are incompatible between these types.
-    Type '{ 'op-1': { read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }; 'op-2': { read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }; 'op-3': { read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }; }' is not comparable to type 'Record<string, DeleteOperationMetadata>'.
-      Property ''op-1'' is incompatible with index signature.
-        Type '{ read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }' is missing the following properties from type 'DeleteOperationMetadata': operationId, isRead, isDismissed
-src/store/__tests__/notificationSelectors.test.ts(105,26): error TS2352: Conversion of type '{ api: { queries: { 'getAsyncOperations(undefined)': { status: "fulfilled"; endpointName: string; requestId: string; data: { operations: never[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }; }; mutations?: MutationState<...> | undefined; provided?: InvalidationState<...> | undefine...' to type '{ sidePanel: SidePanelState; worldSidebar: WorldSidebarState; notifications: DeleteOperationsState; api: CombinedState<{}, "Location" | ... 4 more ... | "DeleteOperation", "api">; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-  The types of 'api.queries' are incompatible between these types.
-    Type '{ 'getAsyncOperations(undefined)': { status: "fulfilled"; endpointName: string; requestId: string; data: { operations: never[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }; }' is not comparable to type 'QueryState<{}>'.
-      Property ''getAsyncOperations(undefined)'' is incompatible with index signature.
-        Type '{ status: "fulfilled"; endpointName: string; requestId: string; data: { operations: never[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }' is not comparable to type 'QuerySubState<unknown, unknown> | undefined'.
-          Type '{ status: "fulfilled"; endpointName: string; requestId: string; data: { operations: never[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }' is missing the following properties from type '{ status: QueryStatus.fulfilled; error: undefined; originalArgs: never; requestId: string; endpointName: string; startedTimeStamp: number; data: unknown; fulfilledTimeStamp: number; }': error, originalArgs
-src/store/__tests__/notificationSelectors.test.ts(156,14): error TS2304: Cannot find name 'AsyncOperation'.
-src/store/__tests__/notificationSelectors.test.ts(159,30): error TS2352: Conversion of type '{ api: { queries: { 'getAsyncOperations(undefined)': { status: "fulfilled"; endpointName: string; requestId: string; data: { operations: any[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }; }; mutations?: MutationState<...> | undefined; provided?: InvalidationState<...> | undefined;...' to type '{ sidePanel: SidePanelState; worldSidebar: WorldSidebarState; notifications: DeleteOperationsState; api: CombinedState<{}, "Location" | ... 4 more ... | "DeleteOperation", "api">; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-  The types of 'api.queries' are incompatible between these types.
-    Type '{ 'getAsyncOperations(undefined)': { status: "fulfilled"; endpointName: string; requestId: string; data: { operations: any[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }; }' is not comparable to type 'QueryState<{}>'.
-      Property ''getAsyncOperations(undefined)'' is incompatible with index signature.
-        Type '{ status: "fulfilled"; endpointName: string; requestId: string; data: { operations: any[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }' is not comparable to type 'QuerySubState<unknown, unknown> | undefined'.
-          Type '{ status: "fulfilled"; endpointName: string; requestId: string; data: { operations: any[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }' is missing the following properties from type '{ status: QueryStatus.fulfilled; error: undefined; originalArgs: never; requestId: string; endpointName: string; startedTimeStamp: number; data: unknown; fulfilledTimeStamp: number; }': error, originalArgs
-src/store/__tests__/notificationSelectors.test.ts(209,26): error TS2352: Conversion of type '{ api: { queries: { 'getAsyncOperations(undefined)': { status: "fulfilled"; endpointName: string; requestId: string; data: { operations: never[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }; }; mutations?: MutationState<...> | undefined; provided?: InvalidationState<...> | undefine...' to type '{ sidePanel: SidePanelState; worldSidebar: WorldSidebarState; notifications: DeleteOperationsState; api: CombinedState<{}, "Location" | ... 4 more ... | "DeleteOperation", "api">; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-  The types of 'api.queries' are incompatible between these types.
-    Type '{ 'getAsyncOperations(undefined)': { status: "fulfilled"; endpointName: string; requestId: string; data: { operations: never[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }; }' is not comparable to type 'QueryState<{}>'.
-      Property ''getAsyncOperations(undefined)'' is incompatible with index signature.
-        Type '{ status: "fulfilled"; endpointName: string; requestId: string; data: { operations: never[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }' is not comparable to type 'QuerySubState<unknown, unknown> | undefined'.
-          Type '{ status: "fulfilled"; endpointName: string; requestId: string; data: { operations: never[]; totalCount: number; }; startedTimeStamp: number; fulfilledTimeStamp: number; }' is missing the following properties from type '{ status: QueryStatus.fulfilled; error: undefined; originalArgs: never; requestId: string; endpointName: string; startedTimeStamp: number; data: unknown; fulfilledTimeStamp: number; }': error, originalArgs
-src/store/__tests__/notificationSelectors.test.ts(234,32): error TS2352: Conversion of type '{ notifications: { metadata: { 'op-1': { read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }; 'op-2': { read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }; 'op-3': { ...; }; }; sidebarOpen?: boolean | undefined; lastCleanupTimestamp?: number | undefined; pollingEnabled?: boolea...' to type '{ sidePanel: SidePanelState; worldSidebar: WorldSidebarState; notifications: DeleteOperationsState; api: CombinedState<{}, "Location" | ... 4 more ... | "DeleteOperation", "api">; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-  The types of 'notifications.metadata' are incompatible between these types.
-    Type '{ 'op-1': { read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }; 'op-2': { read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }; 'op-3': { read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }; }' is not comparable to type 'Record<string, DeleteOperationMetadata>'.
-      Property ''op-1'' is incompatible with index signature.
-        Type '{ read: boolean; dismissed: boolean; lastInteractionTimestamp: number; }' is missing the following properties from type 'DeleteOperationMetadata': operationId, isRead, isDismissed
-src/store/__tests__/notificationsSlice.test.ts(11,15): error TS2614: Module '"../notificationsSlice"' has no exported member 'NotificationsState'. Did you mean to use 'import NotificationsState from "../notificationsSlice"' instead?
-ΓÇëELIFECYCLEΓÇë Command failed with exit code 2.
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 3139 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                 [39m[1m[2m  0.47 kB[22m[1m[22m[2m Γöé gzip:   0.30 kB[22m
+[2mdist/[22m[35massets/index-gsNA1aNP.css  [39m[1m[2m 57.70 kB[22m[1m[22m[2m Γöé gzip:  10.41 kB[22m
+[2mdist/[22m[36massets/index-C5BC7giB.js   [39m[1m[33m798.40 kB[39m[22m[2m Γöé gzip: 244.86 kB[22m
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[32mΓ£ô built in 5.18s[39m
