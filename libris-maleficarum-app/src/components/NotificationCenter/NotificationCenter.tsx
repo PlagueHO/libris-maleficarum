@@ -69,8 +69,8 @@ export function NotificationCenter({ open, onOpenChange }: NotificationCenterPro
     
     if (recentlyCompleted) {
       const message = recentlyCompleted.status === 'completed'
-        ? `Operation completed: ${recentlyCompleted.rootEntityName}`
-        : `Operation failed: ${recentlyCompleted.rootEntityName}`;
+        ? `Rite completed: ${recentlyCompleted.rootEntityName}`
+        : `Rite failed: ${recentlyCompleted.rootEntityName}`;
       
       // Use setTimeout to avoid setState during render
       setTimeout(() => {
@@ -111,9 +111,9 @@ export function NotificationCenter({ open, onOpenChange }: NotificationCenterPro
         </div>
         
         <DrawerHeader className="border-b">
-          <DrawerTitle>Notifications</DrawerTitle>
+          <DrawerTitle>Chronicle of Deeds</DrawerTitle>
           <DrawerDescription>
-            Track long running operations
+            Observe the progress of your arcane rites
           </DrawerDescription>
         </DrawerHeader>
         
@@ -142,7 +142,7 @@ export function NotificationCenter({ open, onOpenChange }: NotificationCenterPro
           {operations.length === 0 ? (
             <div className="flex items-center justify-center h-32">
               <p className="text-center text-muted-foreground py-8">
-                No notifications
+                No tidings to report
               </p>
             </div>
           ) : (

@@ -136,7 +136,7 @@ export function EntityTree({ optimisticallyDeletedIds }: { optimisticallyDeleted
   if (!selectedWorldId) {
     return (
       <div className="px-4 py-8 text-center text-muted-foreground">
-        <p className="m-0 text-sm">Select a world to view entities</p>
+        <p className="m-0 text-sm">Choose a realm to explore its chronicles</p>
       </div>
     );
   }
@@ -213,7 +213,7 @@ function EntityTreeLevel({ worldId, parentId, level, optimisticallyDeletedIds }:
   if (error) {
     return (
       <div className="p-4 text-center text-destructive">
-        <p className="m-0 text-sm">Failed to load entities</p>
+        <p className="m-0 text-sm">The codex could not be read</p>
       </div>
     );
   }
@@ -224,7 +224,7 @@ function EntityTreeLevel({ worldId, parentId, level, optimisticallyDeletedIds }:
       // Root level empty
       return (
         <div className="px-4 py-8 text-center text-muted-foreground">
-          <p className="m-0 mb-2 text-sm">No entities yet</p>
+          <p className="m-0 mb-2 text-sm">No entries inscribed yet</p>
           <Button
             variant="outline"
             size="default"
@@ -244,7 +244,7 @@ function EntityTreeLevel({ worldId, parentId, level, optimisticallyDeletedIds }:
   if (level === 0) {
     // Root level - add tree role
     return (
-      <div role="tree" aria-label="Entity hierarchy" className="flex-1 overflow-y-auto p-2">
+      <div role="tree" aria-label="Codex entry hierarchy" className="flex-1 overflow-y-auto p-2">
         {entities.map((entity) => (
           <EntityTreeNode key={entity.id} entity={entity} level={level}>
             {entity.hasChildren && expandedNodeIds.includes(entity.id) && (

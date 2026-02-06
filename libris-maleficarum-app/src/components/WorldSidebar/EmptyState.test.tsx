@@ -22,8 +22,8 @@ describe('EmptyState', () => {
       render(<EmptyState onCreateWorld={vi.fn()} />);
 
       // Assert
-      expect(screen.getByRole('heading', { name: /create your first world/i })).toBeInTheDocument();
-      expect(screen.getByText(/start building your campaign/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /forge your first realm/i })).toBeInTheDocument();
+      expect(screen.getByText(/every great saga/i)).toBeInTheDocument();
     });
 
     it('should render create world button', () => {
@@ -120,7 +120,7 @@ describe('EmptyState', () => {
       render(<EmptyState onCreateWorld={vi.fn()} />);
 
       // Assert
-      const heading = screen.getByRole('heading', { name: /create your first world/i });
+      const heading = screen.getByRole('heading', { name: /forge your first realm/i });
       expect(heading.tagName).toMatch(/^H[2-3]$/);
     });
   });
@@ -131,7 +131,7 @@ describe('EmptyState', () => {
       render(<EmptyState onCreateWorld={vi.fn()} />);
 
       // Assert
-      expect(screen.getByText(/create your first world/i)).toBeInTheDocument();
+      expect(screen.getByText(/forge your first realm/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /create world/i })).toBeInTheDocument();
     });
 
@@ -141,7 +141,7 @@ describe('EmptyState', () => {
 
       // Assert
       // Should mention campaign building, world navigation, or similar context
-      const description = screen.getByText(/start building your campaign/i);
+      const description = screen.getByText(/every great saga/i);
       expect(description).toBeInTheDocument();
     });
   });

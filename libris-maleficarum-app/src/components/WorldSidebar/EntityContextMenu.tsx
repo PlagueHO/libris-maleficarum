@@ -64,15 +64,15 @@ export function EntityContextMenu({ entity, children }: EntityContextMenuProps) 
       <ContextMenuContent className="w-56">
         <ContextMenuItem onClick={handleCreateChild}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Child Entity
+          Inscribe Sub-entry
         </ContextMenuItem>
         <ContextMenuItem onClick={handleEdit}>
           <Edit className="mr-2 h-4 w-4" />
-          Edit Entity
+          Amend Entry
         </ContextMenuItem>
         <ContextMenuItem onClick={handleMove}>
           <Move className="mr-2 h-4 w-4" />
-          Move Entity
+          Relocate Entry
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
@@ -80,7 +80,7 @@ export function EntityContextMenu({ entity, children }: EntityContextMenuProps) 
           className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/10"
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Delete Entity
+          Banish Entry
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

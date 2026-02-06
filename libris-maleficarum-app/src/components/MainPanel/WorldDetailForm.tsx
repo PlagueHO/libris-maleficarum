@@ -109,7 +109,7 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
     const newErrors: { name?: string } = {};
 
     if (!name.trim()) {
-      newErrors.name = 'World name is required';
+      newErrors.name = 'Every realm must bear a name';
     }
 
     setErrors(newErrors);
@@ -175,19 +175,19 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
     <FormLayout data-testid="world-detail-form" onBack={handleCancel}>
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          {mode === 'create' ? 'Create World' : 'Edit World'}
+          {mode === 'create' ? 'Forge a New Realm' : 'Amend the Realm'}
         </h1>
         <p className="text-sm text-muted-foreground mb-4">
           {mode === 'create'
-            ? 'Create a new world for your campaign'
-            : 'Update your world details'}
+            ? 'Shape a new realm from the primordial void'
+            : 'Revise the annals of this realm'}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="world-name-input" className="block text-sm font-medium mb-3">
-            World Name <span className="text-destructive">*</span>
+            Realm Name <span className="text-destructive">*</span>
           </label>
           <Input
             id="world-name-input"
@@ -199,7 +199,7 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
                 setName(newValue);
               }
             }}
-            placeholder="Enter world name"
+            placeholder="Name this realm..."
             maxLength={100}
             disabled={isLoading}
             aria-invalid={!!errors.name}
@@ -228,7 +228,7 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
                 setDescription(newValue);
               }
             }}
-            placeholder="Enter world description (optional)"
+            placeholder="Describe this realm's history and nature (optional)"
             maxLength={500}
             disabled={isLoading}
             className="min-h-32"

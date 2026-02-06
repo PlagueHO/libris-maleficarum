@@ -96,10 +96,10 @@ export function UnsavedChangesDialog({
       >
         <DialogHeader>
           <DialogTitle id="unsaved-changes-title">
-            Unsaved Changes
+            Unsealed Changes
           </DialogTitle>
           <DialogDescription id="unsaved-changes-description">
-            You have unsaved changes. Would you like to save them before continuing?
+            Your inscription is not yet sealed. Would you like to preserve your work before continuing?
           </DialogDescription>
         </DialogHeader>
 

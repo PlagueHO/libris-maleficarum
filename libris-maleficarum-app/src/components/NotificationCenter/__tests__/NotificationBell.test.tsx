@@ -113,7 +113,7 @@ describe('NotificationBell', () => {
       </Provider>
     );
 
-    const button = screen.getByRole('button', { name: /notifications/i });
+    const button = screen.getByRole('button', { name: /tome dispatches/i });
     expect(button).toBeInTheDocument();
   });
 
@@ -128,7 +128,7 @@ describe('NotificationBell', () => {
     );
 
     expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Notifications \(2 unread\)/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Tome dispatches \(2 unread\)/i)).toBeInTheDocument();
   });
 
   it('does not show badge when no unread notifications', () => {
@@ -142,7 +142,7 @@ describe('NotificationBell', () => {
     );
 
     expect(screen.queryByText('0')).not.toBeInTheDocument();
-    expect(screen.getByLabelText(/Notifications$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Tome dispatches$/i)).toBeInTheDocument();
   });
 
   it('shows "99+" when unread count exceeds 99', () => {
@@ -169,7 +169,7 @@ describe('NotificationBell', () => {
       </Provider>
     );
 
-    const button = screen.getByRole('button', { name: /notifications/i });
+    const button = screen.getByRole('button', { name: /tome dispatches/i });
     await user.click(button);
 
     expect(handleClick).toHaveBeenCalledOnce();
@@ -200,7 +200,7 @@ describe('NotificationBell', () => {
       </Provider>
     );
 
-    const button = screen.getByRole('button', { name: /notifications/i });
+    const button = screen.getByRole('button', { name: /tome dispatches/i });
     
     // Tab to button
     await user.tab();

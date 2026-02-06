@@ -130,8 +130,8 @@ describe('NotificationCenter', () => {
       }
     );
 
-    expect(screen.getByText('Notifications')).toBeInTheDocument();
-    expect(screen.getByText(/track long running operations/i)).toBeInTheDocument();
+    expect(screen.getByText('Chronicle of Deeds')).toBeInTheDocument();
+    expect(screen.getByText(/observe the progress of your arcane rites/i)).toBeInTheDocument();
   });
 
   it('displays list of operations', () => {
@@ -159,7 +159,7 @@ describe('NotificationCenter', () => {
       { worldId: 'test-world-id', worldName: 'Test World' }
     );
 
-    expect(screen.getByText(/no notifications/i)).toBeInTheDocument();
+    expect(screen.getByText(/no tidings to report/i)).toBeInTheDocument();
   });
 
   it('shows "Mark All Read" button', () => {

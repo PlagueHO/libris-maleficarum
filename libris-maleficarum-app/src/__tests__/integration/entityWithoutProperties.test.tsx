@@ -122,7 +122,7 @@ describe('T053: Integration - Entity Without propertySchema (Character)', () => 
     );
 
    // Select world first
-    const worldTrigger = await screen.findByRole('combobox', { name: /select world/i });
+    const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
     await user.click(worldTrigger);
 
     const worldOption = await screen.findByRole('option', { name: 'Forgotten Realms' });
@@ -145,10 +145,10 @@ describe('T053: Integration - Entity Without propertySchema (Character)', () => 
     await user.click(newEntityButton);
 
     // Fill in basic entity details (form opens in MainPanel, not as dialog)
-    const nameInput = await screen.findByPlaceholderText(/entity name/i);
+    const nameInput = await screen.findByPlaceholderText(/name this entry/i);
     await user.type(nameInput, 'Elminster Aumar');
 
-    const descriptionInput = screen.getByPlaceholderText(/brief description/i);
+    const descriptionInput = screen.getByPlaceholderText(/describe this entry/i);
     await user.type(descriptionInput, 'A legendary wizard and sage');
 
     // Select Character entity type
@@ -252,7 +252,7 @@ describe('T053: Integration - Entity Without propertySchema (Character)', () => 
     // Wait for world to load
     await waitFor(
       () => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+        expect(screen.queryByText('Consulting the tome...')).not.toBeInTheDocument();
       },
       { timeout: 3000 }
     );

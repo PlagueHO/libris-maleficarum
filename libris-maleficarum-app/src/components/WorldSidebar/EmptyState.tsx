@@ -38,12 +38,12 @@ export function EmptyState({ onCreateWorld }: EmptyStateProps) {
         />
 
         {/* Heading */}
-        <h2 className="text-xl font-semibold mb-3">Create Your First World</h2>
+        <h2 className="text-xl font-semibold mb-3">Forge Your First Realm</h2>
 
         {/* Description */}
         <p className="text-sm text-muted-foreground leading-normal mb-6">
-          Start building your campaign world. Add continents, countries, cities,
-          characters, and more to bring your stories to life.
+          Every great saga begins with a single realm. Inscribe its continents,
+          kingdoms, cities, and denizens to bring your legends to life.
         </p>
 
         {/* Call-to-action button */}

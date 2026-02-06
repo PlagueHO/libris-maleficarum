@@ -30,7 +30,7 @@ export function ChatPanel() {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'AI backend not connected yet. This is a placeholder response.',
+        content: 'Malleus slumbers... the arcane link has not yet been forged.',
       };
       setMessages((prev) => [...prev, aiResponse]);
     }, 500);
@@ -49,7 +49,7 @@ export function ChatPanel() {
         <div className="space-y-4">
           {messages.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
-              <p>Ask me anything about your world...</p>
+              <p>Speak, Chronicler... what knowledge do you seek about your realm?</p>
             </div>
           ) : (
             messages.map((message) => (
@@ -71,7 +71,7 @@ export function ChatPanel() {
       <div className="p-4 border-t border-border">
         <div className="flex gap-2">
           <Input
-            placeholder="Ask about your world..."
+            placeholder="Consult Malleus about your realm..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}

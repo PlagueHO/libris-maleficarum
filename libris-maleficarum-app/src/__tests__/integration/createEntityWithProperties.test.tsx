@@ -133,7 +133,7 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     const user = userEvent.setup();
 
     // 1. Select world
-    const worldTrigger = await screen.findByRole('combobox', { name: /select world/i });
+    const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
     await user.click(worldTrigger);
 
     const worldOption = await screen.findByRole('option', { name: 'Forgotten Realms' });
@@ -155,12 +155,12 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     // Wait for form to load
     await waitFor(
       () => {
-        expect(screen.getByText(/create entity/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /inscribe a new entry/i })).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
     // 4. Fill in entity details
-    const nameInput = await screen.findByPlaceholderText(/entity name/i);
+    const nameInput = await screen.findByPlaceholderText(/name this entry/i);
     await user.type(nameInput, 'Northern Defense Zone');
 
     const typeSelect = screen.getByRole('combobox', { name: /type/i });
@@ -173,7 +173,7 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     );
     await user.click(militaryRegionOption);
 
-    const descInput = screen.getByPlaceholderText(/brief description/i);
+    const descInput = screen.getByPlaceholderText(/describe this entry/i);
     await user.type(descInput, 'Strategic military region in the north');
 
     // 5. Fill in custom properties
@@ -297,7 +297,7 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     const user = userEvent.setup();
 
     // 1. Select world
-    const worldTrigger = await screen.findByRole('combobox', { name: /select world/i });
+    const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
     await user.click(worldTrigger);
 
     const worldOption = await screen.findByRole('option', { name: 'Forgotten Realms' });
@@ -318,13 +318,13 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     // Wait for form to load
     await waitFor(
       () => {
-        expect(screen.getByText(/create entity/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /inscribe a new entry/i })).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
     // 4. Fill in only required fields (name and type)
-    const nameInput = screen.getByPlaceholderText(/entity name/i);
+    const nameInput = screen.getByPlaceholderText(/name this entry/i);
     await user.type(nameInput, 'Minimal Military Region');
 
     const typeSelect = screen.getByRole('combobox', { name: /type/i });
@@ -399,7 +399,7 @@ describe('T040: DynamicPropertiesForm - Empty Fields for New Entities', () => {
     const user = userEvent.setup();
 
     // 1. Select world
-    const worldTrigger = await screen.findByRole('combobox', { name: /select world/i });
+    const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
     await user.click(worldTrigger);
 
     const worldOption = await screen.findByRole('option', { name: 'Forgotten Realms' });
@@ -420,7 +420,7 @@ describe('T040: DynamicPropertiesForm - Empty Fields for New Entities', () => {
     // Wait for form to load
     await waitFor(
       () => {
-        expect(screen.getByText(/create entity/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /inscribe a new entry/i })).toBeInTheDocument();
       },
       { timeout: 3000 }
     );

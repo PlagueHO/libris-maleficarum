@@ -100,7 +100,7 @@ describe('Entity Creation Integration', () => {
     const user = userEvent.setup();
 
     // 1. Select a world to enable entity creation
-    const worldTrigger = await screen.findByRole('combobox', { name: /select world/i });
+    const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
     await user.click(worldTrigger);
     
     // Select the option explicitly using role 'option'

@@ -67,9 +67,9 @@ describe('UnsavedChangesDialog', () => {
       );
 
       // Assert
-      expect(screen.getByText('Unsaved Changes')).toBeInTheDocument();
+      expect(screen.getByText('Unsealed Changes')).toBeInTheDocument();
       expect(
-        screen.getByText('You have unsaved changes. Would you like to save them before continuing?'),
+        screen.getByText('Your inscription is not yet sealed. Would you like to preserve your work before continuing?'),
       ).toBeInTheDocument();
     });
 
@@ -354,7 +354,7 @@ describe('UnsavedChangesDialog', () => {
       expect(labelId).toBeTruthy();
       
       const titleElement = document.getElementById(labelId!);
-      expect(titleElement).toHaveTextContent('Unsaved Changes');
+      expect(titleElement).toHaveTextContent('Unsealed Changes');
     });
 
     it('should have aria-describedby pointing to description', () => {
@@ -374,7 +374,7 @@ describe('UnsavedChangesDialog', () => {
       expect(describeId).toBeTruthy();
       
       const descriptionElement = document.getElementById(describeId!);
-      expect(descriptionElement).toHaveTextContent(/you have unsaved changes/i);
+      expect(descriptionElement).toHaveTextContent(/your inscription is not yet sealed/i);
     });
 
     it('should make all buttons keyboard-accessible', () => {

@@ -137,7 +137,7 @@ describe('NotificationItem', () => {
       { worldId: 'test-world-id', worldName: 'Test World' }
     );
 
-    expect(screen.getByText(/queued for processing/i)).toBeInTheDocument();
+    expect(screen.getByText(/awaiting the rite/i)).toBeInTheDocument();
   });
 
   it('shows in-progress status', () => {
@@ -156,7 +156,7 @@ describe('NotificationItem', () => {
       { worldId: 'test-world-id', worldName: 'Test World' }
     );
 
-    expect(screen.getByText(/completed successfully/i)).toBeInTheDocument();
+    expect(screen.getByText(/rite completed/i)).toBeInTheDocument();
   });
 
   it('shows failed status with error icon and message', () => {

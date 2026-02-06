@@ -95,10 +95,10 @@ describe('World Editing Integration', () => {
         await user.click(editButton);
 
         // 3. Verify form appears in MainPanel with pre-filled data
-        const heading = await screen.findByRole('heading', { name: 'Edit World' });
+        const heading = await screen.findByRole('heading', { name: 'Amend the Realm' });
         expect(heading).toBeInTheDocument();
         
-        const nameInput = screen.getByLabelText(/World Name/i) as HTMLInputElement;
+        const nameInput = screen.getByLabelText(/Realm Name/i) as HTMLInputElement;
         const descInput = screen.getByLabelText(/Description/i) as HTMLTextAreaElement;
 
         expect(nameInput.value).toBe('Original World');
@@ -189,18 +189,18 @@ describe('World Editing Integration', () => {
         );
 
         // 1. Verify initial welcome state
-        await screen.findByText('Welcome to Libris Maleficarum');
+        await screen.findByText('Welcome, Chronicler');
         
         // 2. Click Edit button
         const editButton = await screen.findByLabelText('Edit current world');
         await user.click(editButton);
 
         // 3. Verify form appears
-        const heading = await screen.findByRole('heading', { name: 'Edit World' });
+        const heading = await screen.findByRole('heading', { name: 'Amend the Realm' });
         expect(heading).toBeInTheDocument();
 
         // 4. Modify form field
-        const nameInput = screen.getByLabelText(/World Name/i) as HTMLInputElement;
+        const nameInput = screen.getByLabelText(/Realm Name/i) as HTMLInputElement;
         await user.clear(nameInput);
         await user.type(nameInput, 'Updated Forgotten Realms');
         
@@ -212,10 +212,10 @@ describe('World Editing Integration', () => {
 
         // 6. Verify form closes - the Edit World heading should disappear
         // Wait for the heading to disappear from the DOM
-        await screen.findByText(/Welcome to Libris Maleficarum/i);
-        expect(screen.queryByRole('heading', { name: 'Edit World' })).not.toBeInTheDocument();
+        await screen.findByText(/Welcome, Chronicler/i);
+        expect(screen.queryByRole('heading', { name: 'Amend the Realm' })).not.toBeInTheDocument();
         
         // 7. Verify welcome state is displayed (with grimoire message)
-        expect(screen.getByText(/Your personal grimoire/i)).toBeInTheDocument();
+        expect(screen.getByText(/Your arcane tome/i)).toBeInTheDocument();
     });
 });

@@ -58,11 +58,11 @@ const CONSTRAINTS = {
  * Error messages
  */
 const ERROR_MESSAGES = {
-  NAME_REQUIRED: 'Name is required',
-  NAME_TOO_LONG: `Name must be ${CONSTRAINTS.NAME.MAX_LENGTH} characters or less`,
-  TYPE_REQUIRED: 'Type is required',
-  DESCRIPTION_TOO_LONG: `Description must be ${CONSTRAINTS.DESCRIPTION.MAX_LENGTH} characters or less`,
-  PROPERTIES_NOT_SERIALIZABLE: 'Custom properties must be valid JSON',
+  NAME_REQUIRED: 'Every entry must bear a name',
+  NAME_TOO_LONG: `A name must be no longer than ${CONSTRAINTS.NAME.MAX_LENGTH} characters`,
+  TYPE_REQUIRED: 'You must choose the nature of this entry',
+  DESCRIPTION_TOO_LONG: `The lore must be no longer than ${CONSTRAINTS.DESCRIPTION.MAX_LENGTH} characters`,
+  PROPERTIES_NOT_SERIALIZABLE: 'The arcane properties are malformed',
 } as const;
 
 /**

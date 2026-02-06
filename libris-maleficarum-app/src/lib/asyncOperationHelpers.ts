@@ -27,28 +27,28 @@ import type {
 export function getOperationStatusMessage(operation: DeleteOperationDto): string {
   switch (operation.status) {
     case 'pending':
-      return 'Queued for processing';
+      return 'Awaiting the rite';
 
     case 'in_progress':
       if (operation.totalEntities > 0) {
         const percent = Math.round((operation.deletedCount / operation.totalEntities) * 100);
-        return `${percent}% complete • ${operation.deletedCount}/${operation.totalEntities} entities`;
+        return `${percent}% complete • ${operation.deletedCount}/${operation.totalEntities} entries banished`;
       }
-      return 'Processing...';
+      return 'The incantation is underway...';
 
     case 'completed':
-      return `Completed successfully • ${operation.deletedCount} ${
-        operation.deletedCount === 1 ? 'entity' : 'entities'
-      } deleted`;
+      return `Rite completed • ${operation.deletedCount} ${
+        operation.deletedCount === 1 ? 'entry' : 'entries'
+      } banished from the tome`;
 
     case 'partial':
-      return `Partially completed • ${operation.deletedCount} deleted, ${operation.failedCount} failed`;
+      return `Rite partially completed • ${operation.deletedCount} banished, ${operation.failedCount} resisted`;
 
     case 'failed':
-      return operation.errorDetails || 'Operation failed';
+      return operation.errorDetails || 'The rite has failed';
 
     default:
-      return 'Unknown status';
+      return 'Status unknown — the tome is silent';
   }
 }
 
