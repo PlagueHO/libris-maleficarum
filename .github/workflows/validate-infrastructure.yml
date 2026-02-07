@@ -40,17 +40,9 @@ jobs:
     steps:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v7
-
-      - name: List downloaded artifacts (debug)
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Contents of current directory:"
-          ls -la
-          echo "Contents of infrastructure_bicep directory:"
-          ls -la infrastructure_bicep/ || echo "infrastructure_bicep directory not found"
-          echo "Full tree:"
-          find infrastructure_bicep -type f || echo "No files found"
+        with:
+          name: infrastructure_bicep
+          path: infrastructure_bicep
 
       - name: Azure Login
         uses: azure/login@v2
@@ -69,7 +61,7 @@ jobs:
           scope: subscription
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           location: ${{ inputs.AZURE_LOCATION }}
-          template-file: ./infrastructure_bicep/main.bicep
+          template-file: infrastructure_bicep/main.bicep
           parameters: >
             {
               "location": "${{ inputs.AZURE_LOCATION }}",
