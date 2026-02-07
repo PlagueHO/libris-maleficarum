@@ -58,6 +58,7 @@ var subnets = [  {
     name: 'container-apps'
     addressPrefix: '10.0.0.0/23'
     networkSecurityGroupResourceId: containerAppsNsg.outputs.resourceId
+    delegation: 'Microsoft.App/environments'
   }
   {
     // Backend subnet for private endpoints to data services

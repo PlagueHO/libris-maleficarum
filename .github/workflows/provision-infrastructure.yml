@@ -74,6 +74,13 @@ jobs:
             --federated-credential-provider "github" \
             --tenant-id "$AZURE_TENANT_ID"
 
+      - name: Authenticate Azure CLI (Federated Credentials)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Create Azure Developer CLI environment
         run: |
           azd env new "$AZURE_ENV_NAME" --location "$AZURE_LOCATION"
@@ -91,8 +98,16 @@ jobs:
         if: steps.provision.outcome == 'failure'
         run: |
           echo "Provisioning failed. Cleaning up partially deployed infrastructure..."
-          azd down --no-prompt --purge --force
-          echo "Cleanup completed."
+          
+          # Try azd down first
+          azd down --no-prompt --purge --force || true
+          
+          # Delete the resource group directly to ensure all resources are removed
+          RESOURCE_GROUP="rg-${{ inputs.AZURE_ENV_NAME }}"
+          echo "Deleting resource group: $RESOURCE_GROUP"
+          az group delete --name "$RESOURCE_GROUP" --yes --no-wait || true
+          
+          echo "Cleanup initiated. Resource group deletion is running in the background."
 
       - name: Fail if Provision Failed
         if: steps.provision.outcome == 'failure'

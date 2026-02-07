@@ -429,8 +429,11 @@
     {
       "label": "bicep: build",
       "type": "shell",
-      "command": "az",
-      "args": ["bicep", "build", "--file", "infra/main.bicep"],
+      "command": "powershell",
+      "args": [
+        "-Command",
+        "Get-ChildItem -Path infra -Filter *.bicep -Recurse | ForEach-Object { Write-Host \"Building $($_.FullName)...\"; az bicep build --file $($_.FullName) }"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },

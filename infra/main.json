@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.39.26.7824",
-      "templateHash": "8858900153646738829"
+      "version": "0.40.2.10011",
+      "templateHash": "4836280775948532293"
     }
   },
   "parameters": {
@@ -4579,7 +4579,8 @@
               {
                 "name": "container-apps",
                 "addressPrefix": "10.0.0.0/23",
-                "networkSecurityGroupResourceId": "[reference('containerAppsNsg').outputs.resourceId.value]"
+                "networkSecurityGroupResourceId": "[reference('containerAppsNsg').outputs.resourceId.value]",
+                "delegation": "Microsoft.App/environments"
               },
               {
                 "name": "backend",
