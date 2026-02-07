@@ -41,6 +41,17 @@ jobs:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v7
 
+      - name: List downloaded artifacts (debug)
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Contents of current directory:"
+          ls -la
+          echo "Contents of infrastructure_bicep directory:"
+          ls -la infrastructure_bicep/ || echo "infrastructure_bicep directory not found"
+          echo "Full tree:"
+          find infrastructure_bicep -type f || echo "No files found"
+
       - name: Azure Login
         uses: azure/login@v2
         with:
