@@ -17,7 +17,7 @@
  */
 
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
-import { Resource } from '@opentelemetry/resources';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
@@ -46,7 +46,7 @@ const APPINSIGHTS_CONNECTION_STRING = import.meta.env.APPLICATIONINSIGHTS_CONNEC
  */
 export function initializeTelemetry(): void {
   // Create resource with service identification
-  const resource = new Resource({
+  const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: SERVICE_NAME,
     [ATTR_SERVICE_VERSION]: SERVICE_VERSION,
     'deployment.environment': isDevelopment ? 'development' : 'production',
