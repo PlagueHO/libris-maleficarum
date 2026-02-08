@@ -55,7 +55,7 @@ jobs:
       BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
       AZURE_ENV_NAME: ${{ format('libmal-{0}', github.run_id) }}
-      BUILD_ARTIFACT_NAME: libris-maleficanum-app
+      BUILD_ARTIFACT_NAME: libris-maleficarum-app
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
