@@ -83,7 +83,7 @@ jobs:
         run: cat TestResults/CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
 
       - name: Add Coverage PR Comment
-        if: github.event_name == 'pull_request' && always()
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && always()
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           recreate: true
@@ -97,6 +97,7 @@ jobs:
           files: |
             libris-maleficarum-service/TestResults/**/*.trx
           comment_title: Unit Test Results (Backend Service)
+          comment_mode: ${{ github.actor == 'dependabot[bot]' && 'off' || 'always' }}
 
       - name: Upload Test Artifacts
         if: always()
