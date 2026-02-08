@@ -28,13 +28,13 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 # Create a non-root user for running the application
-RUN groupadd --gid 1000 appuser && \
-    useradd --uid 1000 --gid 1000 --create-home appuser
+RUN (getent group 1000 || groupadd --gid 1000 appuser) && \
+    (getent passwd 1000 || useradd --uid 1000 --gid 1000 --create-home appuser)
 
 COPY --from=build /app/publish .
 
-# Set the non-root user
-USER appuser
+# Set the non-root user (use numeric ID for compatibility)
+USER 1000
 
 EXPOSE 8080
 
