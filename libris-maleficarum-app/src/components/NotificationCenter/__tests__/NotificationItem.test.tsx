@@ -19,10 +19,25 @@ import type { DeleteOperationDto, DeleteOperationsState } from '@/services/types
 
 expect.extend(toHaveNoViolations);
 
+// Detect environment to determine base URL
+// In Node (tests), we need absolute URLs (http://localhost:5000) for MSW to match requests
+let isNode = false;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const globalAny = globalThis as any;
+  isNode = typeof globalAny.process !== 'undefined' && !!globalAny.process.versions && !!globalAny.process.versions.node;
+} catch {
+  // ignore
+}
+const baseUrl = isNode ? 'http://localhost:5000' : '';
+
 // MSW server for API mocking
 const server = setupServer(
   // Retry operation handler
-  http.post('/v1/worlds/:worldId/delete-operations/:operationId/retry', ({ params }) => {
+  http.post(`${baseUrl}/api/v1/worlds/:worldId/delete-operations/:operationId/retry`, async ({ params }) => {
+    // Add delay to ensure loading state is visible in tests
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     return HttpResponse.json({
       data: {
         id: params.operationId,
