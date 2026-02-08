@@ -1,0 +1,16 @@
+**/bin/
+**/obj/
+**/TestResults/
+**/tests/
+**/publish/
+**/*.md
+**/*.sln
+**/*.slnx
+**/global.json
+**/.git/
+**/.gitignore
+**/.vs/
+**/.vscode/
+**/docker-compose*.yml
+**/.dockerignore
+**/Dockerfile

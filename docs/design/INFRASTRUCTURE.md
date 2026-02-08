@@ -90,6 +90,8 @@ The following resources are always deployed as part of the Libris Maleficarum ar
 | Container Apps Environment | Managed environment for containerized applications | [avm/res/app/managed-environment](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/app/managed-environment) |
 | Static Web App | Frontend hosting for web applications | [avm/res/web/static-site](https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/web/static-site) |
 
+**Note:** Container images for the backend API are stored in [GitHub Container Registry (GHCR)](https://ghcr.io) rather than Azure Container Registry. As an open-source project, GHCR provides free public image hosting with zero additional Azure cost and no infrastructure lifecycle dependencies. Container Apps pulls images directly from `ghcr.io` using anonymous access for public packages.
+
 ## Optional Resources
 
 | Resource | When Deployed | Purpose | AVM Reference |

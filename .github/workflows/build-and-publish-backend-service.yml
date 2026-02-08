@@ -2,11 +2,30 @@ name: Build and Publish Backend Service
 
 on:
   workflow_call:
+    inputs:
+      push-to-ghcr:
+        description: Whether to push the Docker image to GitHub Container Registry
+        type: boolean
+        default: false
+        required: false
+      image-tag:
+        description: The tag for the Docker image
+        type: string
+        default: 'latest'
+        required: false
+      build-version:
+        description: The semantic version to embed in .NET assemblies (e.g. 1.2.3-beta.1)
+        type: string
+        default: ''
+        required: false
 
 jobs:
   build-and-publish-backend-service:
     name: Build and Publish Backend Service
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     defaults:
       run:
         working-directory: libris-maleficarum-service
@@ -23,7 +42,12 @@ jobs:
         run: dotnet restore LibrisMaleficarum.slnx
 
       - name: Build solution
-        run: dotnet build LibrisMaleficarum.slnx --no-restore --configuration Release
+        run: |
+          VERSION_ARGS=""
+          if [ -n "${{ inputs.build-version }}" ]; then
+            VERSION_ARGS="/p:Version=${{ inputs.build-version }} /p:InformationalVersion=${{ inputs.build-version }}"
+          fi
+          dotnet build LibrisMaleficarum.slnx --no-restore --configuration Release $VERSION_ARGS
 
       - name: Run linting (format check)
         run: dotnet format LibrisMaleficarum.slnx --verify-no-changes --severity error
@@ -99,10 +123,35 @@ jobs:
           retention-days: 7
 
       - name: Publish API
-        run: dotnet publish src/Api/LibrisMaleficarum.Api.csproj --no-build --configuration Release --output ./publish/api
+        run: |
+          VERSION_ARGS=""
+          if [ -n "${{ inputs.build-version }}" ]; then
+            VERSION_ARGS="/p:Version=${{ inputs.build-version }} /p:InformationalVersion=${{ inputs.build-version }}"
+          fi
+          dotnet publish src/Api/LibrisMaleficarum.Api.csproj --no-build --configuration Release --output ./publish/api $VERSION_ARGS
 
       - name: Upload API artifact
         uses: actions/upload-artifact@v6
         with:
           name: libris-maleficarum-api
           path: libris-maleficarum-service/publish/api
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg BUILD_VERSION=${{ inputs.build-version || '0.0.0' }} \
+            -t ghcr.io/${{ github.repository_owner }}/libris-maleficarum-api:${{ inputs.image-tag || 'latest' }} \
+            -f src/Api/Dockerfile \
+            .
+
+      - name: Login to GitHub Container Registry
+        if: inputs.push-to-ghcr == true
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker image to GHCR
+        if: inputs.push-to-ghcr == true
+        run: docker push ghcr.io/${{ github.repository_owner }}/libris-maleficarum-api:${{ inputs.image-tag || 'latest' }}

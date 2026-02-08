@@ -33,8 +33,15 @@ jobs:
     uses: ./.github/workflows/build-and-publish-frontend-app.yml
 
   build-and-publish-backend-service:
+    needs:
+      - set-build-variables
+
     name: Build and Publish Backend Service
     uses: ./.github/workflows/build-and-publish-backend-service.yml
+    with:
+      push-to-ghcr: true
+      image-tag: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
+      build-version: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
 
   e2e-test-v1:
     needs:
