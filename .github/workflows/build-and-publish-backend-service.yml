@@ -27,6 +27,7 @@ jobs:
       contents: read
       packages: write
       checks: write
+      pull-requests: write
     defaults:
       run:
         working-directory: libris-maleficarum-service
