@@ -5,33 +5,42 @@
 
 ## Summary
 
-Update the Libris Maleficarum UI from a neutral grey/brown palette to a fantasy D&D theme using gold (primary), royal blue (secondary), and light blue (accent) colours. Add the Cinzel font for headings (h1–h6), dialog titles, and panel/section headers. Update all Shadcn/UI design tokens in `index.css` for both light and dark modes. Migrate hardcoded Tailwind colour classes in components to use theme tokens. Add a dark/light mode toggle switch to the top toolbar (left of the notification button) so users can switch modes. All changes must maintain WCAG 2.2 Level AA contrast compliance.
+Update the frontend application UI to a fantasy D&D-themed visual design. The colour palette uses gold (primary: buttons, links, focus rings, highlights, hover, selection), royal blue (secondary: sidebar, cards, borders), and light blue (decorative accent only — not interactive states). A Cinzel fantasy font applies to headings (h1–h6), dialog titles, and panel headers. A dark/light mode toggle with localStorage persistence is added to the top toolbar. All changes are CSS-token-level via Shadcn/UI custom properties — no component replacements needed except the new ThemeToggle component.
+
+**Spec Update (latest clarification)**: Gold is now used for ALL interactive highlights, hover states, and selection backgrounds. The `--accent` and `--sidebar-accent` CSS tokens must be changed from light blue (hue 240) to a subtle gold tone (hue ~85) so that `bg-accent` and `hover:bg-accent` render gold across the entire UI. Light blue is retained only for decorative, non-interactive use.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x, CSS
-**Primary Dependencies**: React 19, TailwindCSS v4, Shadcn/UI, Radix UI, Lucide React
-**Storage**: N/A (CSS-only changes + localStorage for theme preference)
-**Testing**: Vitest + Testing Library + jest-axe (existing test suite validates a11y)
-**Target Platform**: Web (modern browsers with oklch support)
-**Project Type**: Web (frontend only)
-**Performance Goals**: Font loads with `font-display: swap` (zero FOIT), no layout shift from font loading
-**Constraints**: All text ≥ 4.5:1 contrast (AA normal), all large text ≥ 3:1 (AA large), all interactive boundaries ≥ 3:1
-**Scale/Scope**: ~8 files modified (index.css, index.html, dialog.tsx, drawer.tsx, card.tsx, tooltip.tsx, sonner.tsx, TopToolbar.tsx), ~22 UI components inherit tokens automatically, plus ~5 new files for the dark mode toggle component and theme hook
+**Language/Version**: TypeScript 5.x, React 19, ES2022 target
+**Primary Dependencies**: Vite 7.x, TailwindCSS v4, Shadcn/UI (Radix primitives), Lucide React icons, Redux Toolkit
+**Storage**: localStorage (theme preference key `theme`), no backend changes
+**Testing**: Vitest + Testing Library + jest-axe (accessibility), 600+ existing tests
+**Target Platform**: Modern browsers (desktop + mobile), HTTPS
+**Project Type**: Frontend web application (existing React SPA)
+**Performance Goals**: No layout shift from font loading (font-display: swap); theme toggle < 16ms (single class toggle)
+**Constraints**: WCAG 2.2 Level AA contrast (4.5:1 normal, 3:1 large text, 3:1 interactive boundaries)
+**Scale/Scope**: ~44 test files, ~22 Shadcn/UI components inherit theme tokens, ~8 files modified/created for this feature
 
 ## Constitution Check
 
-*GATE: PASS — no violations. Re-checked after Phase 1 design: still PASS.*
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 | Principle | Status | Notes |
 |-----------|--------|-------|
-| I. Cloud-Native Architecture | N/A | No infrastructure changes |
-| II. Clean Architecture | PASS | CSS-only changes + one React hook + one UI component; no architecture affected |
-| III. TDD (NON-NEGOTIABLE) | PASS | Existing jest-axe tests validate a11y compliance; new ThemeToggle and useTheme tests written before implementation (TDD) |
-| IV. Framework & Technology Standards | NOTE | Constitution references Fluent UI v9, but codebase already uses Shadcn/UI + Tailwind. No new deviation introduced by this feature. |
-| V. Developer Experience | PASS | No dev tooling changes |
-| VI. Security & Privacy | PASS | No secrets, auth, or network changes. localStorage stores only theme preference string. |
-| VII. Semantic Versioning | PASS | MINOR version bump — visual enhancement, backward-compatible |
+| I. Cloud-Native Architecture | N/A | Frontend-only CSS/component change — no infra impact |
+| II. Clean Architecture | PASS | UI styling isolated to CSS tokens + 1 new hook + 1 new component. No business logic changes. |
+| III. TDD (NON-NEGOTIABLE) | PASS | useTheme.test.ts (8 tests) written before useTheme.ts; ThemeToggle.test.tsx (7 tests) written before ThemeToggle.tsx. All 600 tests pass. |
+| IV. Framework & Technology Standards | PASS | React 19+ ✓, TypeScript ✓, Vitest ✓, Redux Toolkit ✓. Note: Constitution says "Fluent UI v9" but copilot-instructions.md and AGENTS.md override to Shadcn/UI — Shadcn/UI is the actual standard. |
+| V. Developer Experience | PASS | Vite hot-reload works with CSS token changes; no new build tooling |
+| VI. Security & Privacy | PASS | No secrets, no API changes, localStorage only (non-sensitive preference) |
+| VII. Semantic Versioning | PASS | Visual-only change — MINOR bump (backward-compatible feature) |
+
+**Frontend Standards sub-check:**
+
+- Functional components with hooks ✓ (useTheme is a custom hook)
+- ARIA roles and labels ✓ (ThemeToggle has dynamic aria-label)
+- Each component has corresponding test file ✓
+- State management: Theme uses local React state (not Redux) — appropriate since theme is a DOM-level concern, not application state
 
 ## Project Structure
 
@@ -41,124 +50,134 @@ Update the Libris Maleficarum UI from a neutral grey/brown palette to a fantasy 
 specs/013-fantasy-dnd-theme/
 ├── plan.md              # This file
 ├── spec.md              # Feature specification
-├── research.md          # Phase 0: font selection, colour values, audit, toggle design
-├── data-model.md        # Phase 1: design token taxonomy, state transitions
-├── quickstart.md        # Phase 1: verification guide
+├── research.md          # Phase 0 output (COMPLETE)
+├── data-model.md        # Phase 1 output (N/A — CSS-only feature)
+├── quickstart.md        # Phase 1 output (COMPLETE)
 ├── checklists/
-│   └── requirements.md  # Spec quality checklist
-└── tasks.md             # Phase 2 output (created by /speckit.tasks)
+│   └── requirements.md  # Requirements checklist (COMPLETE)
+└── tasks.md             # Phase 2 output (existing, needs update for accent change)
 ```
 
-### Source Code (files to modify)
+### Source Code (frontend only)
 
 ```text
 libris-maleficarum-app/
-├── index.html                                    # Font preload link + inline theme script
+├── index.html                                    # Theme flash prevention script, font preload (COMPLETE)
+├── public/fonts/
+│   ├── Cinzel-Latin.woff2                        # Self-hosted fantasy font (COMPLETE)
+│   └── Cinzel-LatinExt.woff2                     # Extended charset (COMPLETE)
 ├── src/
-│   ├── index.css                                 # PRIMARY: all theme tokens + font rules
+│   ├── index.css                                 # Design tokens: :root + .dark oklch values (NEEDS UPDATE: accent tokens)
 │   ├── hooks/
-│   │   ├── useTheme.ts                           # NEW: theme state management hook
-│   │   └── useTheme.test.ts                      # NEW: tests for theme hook
-│   ├── components/
-│   │   ├── TopToolbar/
-│   │   │   └── TopToolbar.tsx                    # Add ThemeToggle to toolbar
-│   │   ├── shared/
-│   │   │   └── ThemeToggle/                      # NEW: dark/light mode toggle
-│   │   │       ├── ThemeToggle.tsx               # Toggle button with sun/moon icon
-│   │   │       ├── ThemeToggle.test.tsx          # Tests for toggle behaviour + a11y
-│   │   │       └── index.ts                      # Barrel export
-│   │   └── ui/
-│   │       └── tooltip.tsx                       # Migrate hardcoded slate colours
-│   └── __tests__/                                # Existing test files (run for regression)
+│   │   ├── useTheme.ts                           # Theme hook (COMPLETE)
+│   │   └── useTheme.test.ts                      # 8 tests (COMPLETE)
+│   └── components/
+│       ├── shared/ThemeToggle/
+│       │   ├── ThemeToggle.tsx                    # Toggle component (COMPLETE)
+│       │   ├── ThemeToggle.test.tsx               # 7 tests (COMPLETE)
+│       │   └── index.ts                          # Barrel export (COMPLETE)
+│       ├── TopToolbar/TopToolbar.tsx              # ThemeToggle integrated (COMPLETE)
+│       └── ui/
+│           ├── dialog.tsx                         # font-heading on DialogTitle (COMPLETE)
+│           ├── drawer.tsx                         # font-heading on DrawerTitle (COMPLETE)
+│           ├── card.tsx                           # font-heading on CardTitle (COMPLETE)
+│           ├── tooltip.tsx                        # Migrated to theme tokens (COMPLETE)
+│           └── sonner.tsx                         # Migrated to theme tokens (COMPLETE)
+└── vitest.setup.ts                               # matchMedia mock for tests (COMPLETE)
 ```
 
-**Structure Decision**: Frontend-only change. All theme tokens live in `index.css` and propagate to all Shadcn/UI components via CSS custom properties. Only `tooltip.tsx` had hardcoded non-theme colours (already migrated). New files: `useTheme.ts` hook for theme state, `ThemeToggle/` component for the toolbar toggle. No backend changes.
+**Structure Decision**: Frontend-only change within existing `libris-maleficarum-app/` structure. No new directories needed beyond what already exists.
 
 ## Implementation Phases
 
-### Phase A: Font Setup (FR-003, FR-004, FR-005, FR-012) — COMPLETE
+### Phase A: Setup & Font Infrastructure (COMPLETE)
 
-**Goal**: Add Cinzel fantasy font for headings, dialog titles, and panel/section headers.
+All setup work from prior sessions:
 
-1. ~~Download Cinzel variable woff2 files (Latin + LatinExt) and place in `public/fonts/`~~
-2. ~~Add `@font-face` declarations in `index.css` with `font-display: swap`~~
-3. ~~Add CSS rule: `h1, h2, h3, h4, h5, h6 { font-family: 'Cinzel', Georgia, 'Times New Roman', serif; }`~~
-4. ~~Register `--font-heading` in `@theme inline` for the `font-heading` Tailwind utility~~
-5. ~~Add `<link rel="preload">` in `index.html`~~
-6. Apply `font-heading` utility class to dialog titles (`DrawerTitle`, `DialogTitle`), card titles (`CardTitle`), and panel/section headers that are not semantic heading elements
-7. Verify: headings use Cinzel, dialog titles and panel headers use Cinzel via `font-heading`, body text stays Inter
+- Removed legacy `@theme` block (HSL values) from index.css
+- Registered `--font-heading` and `--color-destructive-foreground` in `@theme inline`
+- Downloaded Cinzel woff2 files to `public/fonts/`
+- Added `<link rel="preload">` for font files in index.html
+- Added `@font-face` declarations with `font-display: swap`
+- Added heading font rule in `@layer base` for h1–h6
 
-### Phase B: Light Mode Colour Tokens (FR-001, FR-002, FR-006, FR-007, FR-011) — COMPLETE
+### Phase B: Colour Palette (COMPLETE — NEEDS PARTIAL UPDATE)
 
-**Goal**: Update `:root` block with fantasy palette and remove legacy `@theme` block.
+Prior sessions applied the full oklch fantasy palette to `:root` and `.dark`:
 
-1. ~~Remove the old `@theme { }` block (dead HSL values)~~
-2. ~~Replace all oklch values in `:root` with gold/royal-blue/light-blue palette~~
-3. ~~Add `--destructive-foreground` token~~
-4. ~~Run contrast checks on all token pairings~~
+- Gold primary, royal blue secondary, light blue accent, chart colours, sidebar tokens
+- All existing jest-axe tests pass with current values
 
-### Phase C: Dark Mode Colour Tokens (FR-001, FR-002, FR-006, FR-007, FR-011) — COMPLETE
+**UPDATE NEEDED**: The `--accent` and `--sidebar-accent` tokens currently use light blue (hue 240). Per the latest spec clarification (FR-001), these must change to gold-toned values so that `bg-accent` / `hover:bg-accent` renders gold for interactive highlights, hover, and selection everywhere. The `--accent-foreground` and `--sidebar-accent-foreground` must also be verified for contrast against the new gold background.
 
-**Goal**: Update `.dark` block with fantasy palette.
+### Phase C: Font Heading Propagation (COMPLETE)
 
-1. ~~Replace all oklch values in `.dark` with dark fantasy palette~~
-2. ~~Add `--destructive-foreground` token~~
-3. ~~Run contrast checks~~
+- Added `font-heading` class to DialogTitle, DrawerTitle, CardTitle
+- Headings (h1–h6) already use Cinzel via `@layer base` rule
 
-### Phase D: Chart Colours (FR-010) — COMPLETE
+### Phase D: Dark/Light Mode Toggle (COMPLETE)
 
-**Goal**: Update chart tokens to harmonise with fantasy palette. Done.
+- useTheme hook: reads localStorage, OS preference fallback, applies `.dark` class
+- ThemeToggle component: Sun/Moon icons (target-mode convention), ghost button, accessible label
+- Barrel export + TopToolbar integration (before NotificationBell)
+- Inline `<script>` in index.html for flash prevention
+- Full TDD: 8 hook tests + 7 component tests
 
-### Phase E: Hardcoded Colour Migration (FR-006) — COMPLETE
+### Phase E: Hardcoded Colour Migration (COMPLETE)
 
-**Goal**: Replace hardcoded Tailwind colours with theme tokens.
+- tooltip.tsx: Migrated `border-slate-200 bg-slate-950 text-slate-50` → theme tokens
+- sonner.tsx: Verified using theme tokens (no hardcoded colours found)
 
-1. ~~tooltip.tsx: migrated to `border-border bg-popover text-popover-foreground`~~
-2. ~~sonner.tsx: reviewed, no changes needed~~
+### Phase F: Accent Token Update — Gold for Interactive States (COMPLETE)
 
-### Phase F: Accessibility Validation (FR-007, FR-008, FR-009)
+**What**: Change `--accent` and `--sidebar-accent` from light blue (hue 240) to a subtle gold tone (hue ~85) so all interactive highlights, hover states, and selection backgrounds use gold.
 
-**Goal**: Confirm all contrast and accessibility requirements are met.
+**Why**: FR-001 clarification — gold serves as the primary colour for "buttons, links, focus rings, highlights, hover states, and selection backgrounds." The `bg-accent` class is used across ~20+ component locations for hover/selection/focus states (buttons, context menus, select items, calendar, entity tree nodes, entity type selector, dialog close buttons).
 
-1. Run full test suite: `pnpm test` — all jest-axe tests must pass
-2. Manually verify keyboard focus ring visibility (gold ring on both dark and light backgrounds)
-3. Spot-check contrast ratios with browser DevTools on key pairings
-4. Verify font fallback by temporarily blocking font load
+**Affected tokens** (8 token changes across 2 CSS blocks):
 
-### Phase G: Dark/Light Mode Toggle (FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, FR-019)
+| Token | Current (light blue) | New (gold-toned) |
+|-------|---------------------|-------------------|
+| `:root` `--accent` | `oklch(0.7 0.1 240)` | `oklch(0.92 0.04 85)` — subtle warm gold wash |
+| `:root` `--accent-foreground` | `oklch(0.18 0.02 255)` | `oklch(0.18 0.02 255)` — unchanged, ~11.6:1 contrast |
+| `:root` `--sidebar-accent` | `oklch(0.93 0.01 250)` | `oklch(0.92 0.04 85)` — matches accent |
+| `:root` `--sidebar-accent-foreground` | `oklch(0.18 0.02 255)` | `oklch(0.18 0.02 255)` — unchanged |
+| `.dark` `--accent` | `oklch(0.6 0.1 240)` | `oklch(0.30 0.04 85)` — dark warm gold-amber |
+| `.dark` `--accent-foreground` | `oklch(0.17 0.03 255)` | `oklch(0.93 0.01 80)` — warm cream, ~7.7:1 contrast |
+| `.dark` `--sidebar-accent` | `oklch(0.27 0.02 255)` | `oklch(0.30 0.04 85)` — matches accent |
+| `.dark` `--sidebar-accent-foreground` | `oklch(0.93 0.01 80)` | `oklch(0.93 0.01 80)` — unchanged |
 
-**Goal**: Add a visible toggle switch to the top toolbar so users can switch between dark and light mode.
+**Design constraints for new accent values**:
 
-1. Create a `useTheme` hook (`src/hooks/useTheme.ts`):
-   - Read initial preference from localStorage (key `theme`), falling back to `prefers-color-scheme`, falling back to light
-   - Apply/remove `.dark` class on `document.documentElement`
-   - Persist preference to localStorage on change
-   - Watch `prefers-color-scheme` media query for initial OS default detection
-2. Create a `ThemeToggle` component (`src/components/shared/ThemeToggle/ThemeToggle.tsx`):
-   - Renders as a ghost icon button (Sun icon in dark mode to indicate "switch to light," Moon icon in light mode to indicate "switch to dark")
-   - Uses `useTheme` hook to read current mode and toggle on click
-   - Has `aria-label` that communicates the action (e.g., "Switch to dark mode")
-   - Receives visible keyboard focus with gold focus ring
-3. Add `ThemeToggle` to `TopToolbar.tsx`:
-   - Position inside the `ml-auto` div, immediately before `NotificationBell`
-4. Add inline `<script>` to `index.html`:
-   - Reads localStorage synchronously before React mounts
-   - Applies `.dark` class to `<html>` to prevent flash of wrong theme
-5. Write tests (TDD — tests before implementation):
-   - `useTheme.test.ts`: localStorage read/write, `.dark` class application, OS preference fallback
-   - `ThemeToggle.test.tsx`: correct icon, toggle behaviour, accessible label, jest-axe, keyboard
-6. Run full test suite to confirm no regressions
+1. Must be visually gold (hue ~80–85) not blue
+2. Must be subtler/lighter than `--primary` (`oklch(0.75 0.15 85)`) to differentiate hover from active/focused
+3. Must maintain ≥ 4.5:1 contrast with `--accent-foreground` text
+4. Light mode: should be a very subtle warm gold tint that works as a hover/selection background
+5. Dark mode: should be a darker warm gold tone that works against dark backgrounds
+6. Must not clash with `--muted` (currently `oklch(0.93 0.01 250)` light / `oklch(0.27 0.02 255)` dark)
 
-## Risk Assessment
+**Approach**:
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| oklch values produce unexpected colours in some browsers | Low | Medium | Test in Chrome, Firefox, Safari; oklch has broad support since 2023 |
-| Cinzel font not readable at small heading sizes | Low | Low | h5/h6 are rarely used; fallback serif (Georgia) is highly readable |
-| Existing jest-axe tests fail with new contrast values | Medium | Low | Colour values chosen to exceed AA thresholds; fix any failures by adjusting tokens |
-| Toggle flash-of-wrong-theme on page load | Medium | Medium | Inline `<script>` in `index.html` reads localStorage synchronously before React hydrates |
-| localStorage unavailable (private browsing, disabled) | Low | Low | Graceful fallback: use OS `prefers-color-scheme`, default to light if that also fails |
+1. Research optimal oklch gold-toned accent values meeting all constraints
+2. Update research.md with new values and contrast verification
+3. Update `:root` and `.dark` blocks in `index.css`
+4. Update `--chart-3` if it was referencing old accent blue (currently `oklch(0.7 0.1 240)`)
+5. Run full test suite — all 600+ tests must pass
+6. Visual verification of hover/selection states across all components
+
+### Phase G: Validation (REMAINING — MANUAL)
+
+Visual and accessibility verification tasks:
+
+- Toggle both modes on all major screens — verify gold highlights everywhere
+- Spot-check contrast ratios (foreground-on-background, primary-on-primary, accent-on-accent)
+- Tab through interactive elements — verify gold focus ring visibility (≥ 3:1)
+- Verify hover states use gold (not blue) in: sidebar entity tree, buttons, context menus, select items, calendar
+- Verify disabled controls are distinguishable and not keyboard focusable
+- Verify narrow viewport toggle visibility
+- Verify font fallback by blocking custom font load in DevTools
+- Run quickstart.md walkthrough
 
 ## Complexity Tracking
 
-No constitution violations to justify. This feature adds one React hook, one UI component, and updates CSS custom property values. Zero new architectural patterns or abstractions.
+No constitution violations to justify. The feature is entirely CSS-token-level with one small React hook and component.
