@@ -34,3 +34,5 @@
 - All items pass validation. Spec is ready for `/speckit.clarify` or `/speckit.plan`.
 - FR-006 references design token names (--primary, --secondary, etc.) which are domain terminology for the theming system, not implementation details.
 - Assumptions section documents reasonable defaults for font licensing, component library retention, and body font preservation.
+- Updated 2026-02-17: Added User Story 6 (dark/light mode toggle), FR-013 through FR-019, SC-009 through SC-011, two new edge cases, and Mode Preference key entity. All new items pass checklist validation.
+- FR-019 references "prefers-color-scheme" in parentheses as a clarification of "operating system's preferred colour scheme" — this is acceptable domain terminology describing user-observable behaviour, not an implementation detail.
