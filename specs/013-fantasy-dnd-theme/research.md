@@ -46,8 +46,8 @@ The existing `index.css` uses oklch for all `:root` and `.dark` variables. The f
 | `--secondary-foreground` | White/cream | `oklch(0.97 0.008 80)` | ~7:1 on secondary |
 | `--muted` | Very light blue-grey | `oklch(0.93 0.01 250)` | Subtle bg |
 | `--muted-foreground` | Medium blue-grey | `oklch(0.5 0.03 255)` | ~5:1 on muted |
-| `--accent` | Light blue | `oklch(0.7 0.1 240)` | Highlights |
-| `--accent-foreground` | Dark navy | `oklch(0.18 0.02 255)` | ~8:1 on accent |
+| `--accent` | Subtle warm gold (hover/selection bg) | `oklch(0.92 0.04 85)` | Interactive highlights — gold per FR-001 |
+| `--accent-foreground` | Dark navy | `oklch(0.18 0.02 255)` | ~11.6:1 on accent |
 | `--destructive` | Red (unchanged role) | `oklch(0.577 0.245 27.325)` | Error states |
 | `--destructive-foreground` | White/cream (text on red bg) | `oklch(0.985 0 0)` | ~12:1 on destructive |
 | `--border` | Light blue-grey | `oklch(0.88 0.015 250)` | Subtle borders |
@@ -57,7 +57,7 @@ The existing `index.css` uses oklch for all `:root` and `.dark` variables. The f
 | `--sidebar-foreground` | Dark navy | `oklch(0.18 0.02 255)` | |
 | `--sidebar-primary` | Gold | `oklch(0.75 0.15 85)` | Active items |
 | `--sidebar-primary-foreground` | Dark navy | `oklch(0.18 0.02 255)` | |
-| `--sidebar-accent` | Light blue-grey | `oklch(0.93 0.01 250)` | Hover bg |
+| `--sidebar-accent` | Subtle warm gold (hover bg) | `oklch(0.92 0.04 85)` | Matches accent — gold per FR-001 |
 | `--sidebar-accent-foreground` | Dark navy | `oklch(0.18 0.02 255)` | |
 | `--sidebar-border` | Border | `oklch(0.88 0.015 250)` | |
 | `--sidebar-ring` | Gold | `oklch(0.75 0.15 85)` | |
@@ -78,8 +78,8 @@ The existing `index.css` uses oklch for all `:root` and `.dark` variables. The f
 | `--secondary-foreground` | Warm cream | `oklch(0.93 0.01 80)` | ~5:1 on secondary |
 | `--muted` | Dark desaturated blue | `oklch(0.27 0.02 255)` | Subtle bg |
 | `--muted-foreground` | Light blue-grey | `oklch(0.65 0.03 250)` | ~4.5:1 on muted |
-| `--accent` | Medium light blue | `oklch(0.6 0.1 240)` | Highlights |
-| `--accent-foreground` | Deep navy | `oklch(0.17 0.03 255)` | ~6:1 on accent |
+| `--accent` | Dark warm gold-amber tint | `oklch(0.30 0.04 85)` | Interactive highlights — gold per FR-001 |
+| `--accent-foreground` | Warm cream | `oklch(0.93 0.01 80)` | ~7.7:1 on accent |
 | `--destructive` | Bright red | `oklch(0.704 0.191 22.216)` | Error states |
 | `--destructive-foreground` | Warm cream | `oklch(0.985 0 0)` | ~12:1 on destructive |
 | `--border` | Dark blue-grey translucent | `oklch(1 0 0 / 12%)` | Subtle borders |
@@ -89,7 +89,7 @@ The existing `index.css` uses oklch for all `:root` and `.dark` variables. The f
 | `--sidebar-foreground` | Warm cream | `oklch(0.93 0.01 80)` | |
 | `--sidebar-primary` | Bright gold | `oklch(0.8 0.16 85)` | |
 | `--sidebar-primary-foreground` | Warm cream | `oklch(0.93 0.01 80)` | |
-| `--sidebar-accent` | Muted blue | `oklch(0.27 0.02 255)` | |
+| `--sidebar-accent` | Dark warm gold-amber tint | `oklch(0.30 0.04 85)` | Matches accent — gold per FR-001 |
 | `--sidebar-accent-foreground` | Warm cream | `oklch(0.93 0.01 80)` | |
 | `--sidebar-border` | Translucent white | `oklch(1 0 0 / 12%)` | |
 | `--sidebar-ring` | Gold | `oklch(0.8 0.16 85)` | |
@@ -100,7 +100,7 @@ The existing `index.css` uses oklch for all `:root` and `.dark` variables. The f
 |-------|-----------|-----------|-------------|
 | `--chart-1` | `oklch(0.75 0.15 85)` | `oklch(0.8 0.16 85)` | Gold |
 | `--chart-2` | `oklch(0.45 0.15 260)` | `oklch(0.55 0.14 260)` | Royal blue |
-| `--chart-3` | `oklch(0.7 0.1 240)` | `oklch(0.6 0.1 240)` | Light blue |
+| `--chart-3` | `oklch(0.65 0.12 220)` | `oklch(0.55 0.12 220)` | Teal-blue (decorative, distinct from gold accent) |
 | `--chart-4` | `oklch(0.577 0.245 27)` | `oklch(0.65 0.2 27)` | Ruby red |
 | `--chart-5` | `oklch(0.6 0.12 155)` | `oklch(0.65 0.12 155)` | Forest green |
 

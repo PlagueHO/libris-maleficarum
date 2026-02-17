@@ -17,8 +17,8 @@ A person using the application sees a cohesive fantasy-inspired visual design th
 
 **Acceptance Scenarios**:
 
-1. **Given** a user opens the application in dark mode, **When** they view any page, **Then** backgrounds use deep blue-toned dark colours, primary interactive elements use gold, and secondary/accent elements use royal blue and light blue tones.
-1. **Given** a user opens the application in light mode, **When** they view any page, **Then** backgrounds use subtle warm off-white tones (slight cream tint evoking parchment), primary interactive elements use gold, and accent elements use royal blue and light blue.
+1. **Given** a user opens the application in dark mode, **When** they view any page, **Then** backgrounds use deep blue-toned dark colours, primary interactive elements (including highlights, hover states, and selection) use gold, and secondary elements use royal blue tones.
+1. **Given** a user opens the application in light mode, **When** they view any page, **Then** backgrounds use subtle warm off-white tones (slight cream tint evoking parchment), primary interactive elements (including highlights, hover states, and selection) use gold, and secondary elements use royal blue.
 1. **Given** a user navigates between the sidebar, main panel, and chat panel, **When** they compare the visual styling, **Then** the fantasy colour palette is applied uniformly with no sections appearing unstyled or using the previous theme.
 
 ---
@@ -120,7 +120,7 @@ A person with colour vision deficiency uses the application. Visual indicators s
 
 ### Functional Requirements
 
-- **FR-001**: The application MUST use a colour palette based on royal blue, light blue, and gold as the three primary theme colours. Gold serves as the primary colour (buttons, links, focus rings), royal blue as the secondary colour (sidebar, cards, borders), and light blue as the accent colour (highlights, hover states).
+- **FR-001**: The application MUST use a colour palette based on royal blue, light blue, and gold as the three primary theme colours. Gold serves as the primary colour (buttons, links, focus rings, highlights, hover states, and selection backgrounds), royal blue as the secondary colour (sidebar, cards, borders), and light blue as a decorative accent colour (subtle backgrounds, info badges — not used for interactive states).
 - **FR-002**: The application MUST provide both a light mode and a dark mode theme, each using the fantasy colour palette.
 - **FR-003**: HTML heading elements (h1–h6), dialog titles, and panel/section header text MUST render in a modern fantasy-style web font. Toolbar labels, navigation text, sidebar item labels, and all other non-heading text MUST use the body font.
 - **FR-004**: Body text, form labels, toolbar labels, navigation text, sidebar item labels, and all non-heading/non-title text MUST remain in the current Inter sans-serif font.
@@ -142,7 +142,7 @@ A person with colour vision deficiency uses the application. Visual indicators s
 
 ### Key Entities
 
-- **Theme Colour Palette**: The set of CSS custom properties (design tokens) that define all colours used throughout the application. Gold maps to the primary role (buttons, links, focus rings), royal blue to the secondary role (sidebar, cards, borders), and light blue to the accent role (highlights, hover states). Each has light and dark mode variations.
+- **Theme Colour Palette**: The set of CSS custom properties (design tokens) that define all colours used throughout the application. Gold maps to the primary role (buttons, links, focus rings, highlights, hover states, selection backgrounds), royal blue to the secondary role (sidebar, cards, borders), and light blue to a decorative accent role (subtle backgrounds, info badges — not interactive states). Each has light and dark mode variations.
 - **Typography Scale**: The heading font stack (fantasy font + fallbacks) applied to h1–h6, dialog titles, and panel/section headers; the body font stack applied to all other text.
 - **Mode Preference**: The user's selected colour mode (dark or light). Persisted in the browser so the choice survives page reloads. Defaults to the operating system preference on first visit.
 
@@ -166,9 +166,10 @@ A person with colour vision deficiency uses the application. Visual indicators s
 
 ### Session 2026-02-17
 
-- Q: Which colour maps to which design role (primary, secondary, accent)? → A: Gold = primary (buttons, links, focus rings), Royal blue = secondary (sidebar, cards, borders), Light blue = accent (highlights, hover states).
+- Q: Which colour maps to which design role (primary, secondary, accent)? → A: Gold = primary (buttons, links, focus rings, highlights, hover states, selection), Royal blue = secondary (sidebar, cards, borders), Light blue = decorative accent only (subtle backgrounds, info badges — not interactive states).
 - Q: How pronounced should the parchment aesthetic be for light mode backgrounds? → A: Subtle warm off-white — backgrounds have a very slight warm/cream tint evoking parchment, but remain essentially flat modern surfaces.
 - Q: Should dialog titles, toolbar labels, and sidebar headers also use the fantasy font, or only h1–h6? → A: Headings + dialog/panel titles — h1–h6 plus dialog titles and panel/section header text use the fantasy font; toolbar labels and navigation text use the body font.
+- Q: Should gold or light blue be used for interactive highlights, hover states, and selection across the app? → A: Gold for all interactive highlights, hover states, and selection everywhere. Light blue becomes a decorative accent only (subtle backgrounds, info badges) — not used for interactive states.
 
 ## Assumptions
 

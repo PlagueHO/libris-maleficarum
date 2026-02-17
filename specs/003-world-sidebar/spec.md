@@ -122,7 +122,7 @@ A user needs an intuitive, visually appealing sidebar that clearly communicates 
 1. **Given** the sidebar displays entity hierarchy, **When** entities have children, **Then** clear expand/collapse icons (chevrons or arrows) appear beside entity names
 1. **Given** entities are nested, **When** displayed in the hierarchy, **Then** visual indentation and connecting lines clearly show parent-child relationships
 1. **Given** different entity types exist (Continents, Countries, Characters, etc.), **When** displayed in the hierarchy, **Then** distinctive icons represent each type for quick recognition
-1. **Given** a user hovers over interactive elements, **When** the cursor moves over entities, selectors, or buttons, **Then** appropriate hover states and tooltips provide visual feedback
+1. **Given** a user hovers over interactive elements, **When** the cursor moves over entities, selectors, or buttons, **Then** gold-toned hover states and tooltips provide visual feedback consistent with the fantasy theme (no blue highlighting)
 1. **Given** the sidebar contains many entities, **When** the list exceeds viewport height, **Then** smooth scrolling with sticky positioning for the world selector maintains context
 1. **Given** the application supports light and dark themes, **When** users switch themes, **Then** the sidebar adapts with appropriate contrast and readability
 
@@ -165,7 +165,7 @@ A user needs an intuitive, visually appealing sidebar that clearly communicates 
 ### Functional Requirements
 
 - **FR-001**: System MUST display all worlds owned by the authenticated user in a dropdown selector at the top of the sidebar
-- **FR-002**: System MUST highlight the currently selected world in the world selector dropdown
+- **FR-002**: System MUST highlight the currently selected world in the world selector dropdown using the gold primary color (not blue/accent)
 - **FR-003**: System MUST display a prominent "Create Your First World" call-to-action when the user has no existing worlds
 - **FR-004**: System MUST provide a world creation form in the main panel with fields for world name (required, max 100 characters) and description (optional, max 500 characters), with the ChatWindow remaining accessible alongside the form
 - **FR-005**: System MUST validate that world name is not empty before allowing form submission
@@ -189,16 +189,16 @@ A user needs an intuitive, visually appealing sidebar that clearly communicates 
 - **FR-022**: System MUST sort worlds in the selector dropdown alphabetically by name
 - **FR-023**: System MUST support smooth scrolling for long entity lists that exceed viewport height
 - **FR-024**: System MUST maintain world selector visibility (sticky positioning) when scrolling through long entity hierarchies
-- **FR-025**: System MUST provide hover states and visual feedback for all interactive elements (entities, buttons, selector)
+- **FR-025**: System MUST provide hover states and visual feedback for all interactive elements (entities, buttons, selector) using gold primary color tones for backgrounds and highlights
 - **FR-026**: System MUST support keyboard navigation for accessibility (tab through elements, arrow keys for hierarchy, enter to expand/collapse)
-- **FR-027**: System MUST visually highlight the currently selected entity in the hierarchy
+- **FR-027**: System MUST visually highlight the currently selected entity in the hierarchy using a gold primary background color (not blue/accent)
 - **FR-028**: System MUST display selected entity details in the main panel (outside sidebar) when an entity is clicked
 - **FR-029**: System MUST provide context menu (right-click or action button) for entities with actions: add child entity, edit entity, delete entity, and move entity to different parent
   - Add child, edit entity → Main panel forms with ChatWindow accessible for real-time creative assistance
   - Delete entity → Modal confirmation dialog (blocking UX for destructive operation)
   - Move entity → Modal dialog for now (may become main panel form in future when AI-driven entity placement is available)
   - **Rationale**: Delete is modal (destructive, requires explicit confirmation), but creation/editing are main panel forms (allow ChatWindow reference during decision-making)
-- **FR-030**: System MUST display inline "+" button next to entities when hovered to allow quick child entity creation
+- **FR-030**: System MUST display inline "+" button next to entities when hovered to allow quick child entity creation; action buttons in the codex hierarchy (edit, delete, add child) MUST use gold primary background on hover to maintain visual consistency with the fantasy theme
 - **FR-031**: System MUST provide "Add Root Entity" button or action at the world level for creating top-level entities
 - **FR-032**: System MUST present entity type selector in the entity creation form (displayed in main panel) with context-aware suggestions prioritized based on parent entity type (e.g., Country/Region suggested for Continent parent)
 - **FR-033**: System MUST allow selection of any entity type regardless of parent, while providing intelligent suggestions for common patterns

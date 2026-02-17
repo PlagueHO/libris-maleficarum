@@ -1,4 +1,4 @@
-﻿# libris-maleficarum Development Guidelines
+# libris-maleficarum Development Guidelines
 
 Auto-generated from all feature plans. Last updated: 2026-01-21
 
@@ -19,6 +19,8 @@ Auto-generated from all feature plans. Last updated: 2026-01-21
 - N/A (CSS-only changes, no persistent data) (013-fantasy-dnd-theme)
 - TypeScript 5.x, CSS + React 19, TailwindCSS v4, Shadcn/UI, Radix UI, Lucide React (013-fantasy-dnd-theme)
 - N/A (CSS-only changes + localStorage for theme preference) (013-fantasy-dnd-theme)
+- TypeScript 5.x, React 19, ES2022 target + Vite 7.x, TailwindCSS v4, Shadcn/UI (Radix primitives), Lucide React icons, Redux Toolkit (013-fantasy-dnd-theme)
+- localStorage (theme preference key `theme`), no backend changes (013-fantasy-dnd-theme)
 
 
 
@@ -39,9 +41,9 @@ tests/
 General: Follow standard conventions
 
 ## Recent Changes
+- 013-fantasy-dnd-theme: Added TypeScript 5.x, React 19, ES2022 target + Vite 7.x, TailwindCSS v4, Shadcn/UI (Radix primitives), Lucide React icons, Redux Toolkit
+- 013-fantasy-dnd-theme: Added TypeScript 5.x, React 19, ES2022 target + Vite 7.x, TailwindCSS v4, Shadcn/UI (Radix primitives), Lucide React icons, Redux Toolkit
 - 013-fantasy-dnd-theme: Added TypeScript 5.x, CSS + React 19, TailwindCSS v4, Shadcn/UI, Radix UI, Lucide React
-- 013-fantasy-dnd-theme: Added TypeScript 5.x, CSS + React 19, TailwindCSS v4, Shadcn/UI, Radix UI
-- 013-fantasy-dnd-theme: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 
 
 

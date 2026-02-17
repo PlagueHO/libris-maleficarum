@@ -44,9 +44,9 @@
 
 ## Phase 3: User Story 1 - Consistent Fantasy Theme Across Pages (Priority: P1) :dart: MVP
 
-**Goal**: Replace all colour tokens in `:root` and `.dark` with the fantasy D&D palette (gold primary, royal blue secondary, light blue accent). All ~22 Shadcn/UI components inherit the new theme automatically.
+**Goal**: Replace all colour tokens in `:root` and `.dark` with the fantasy D&D palette (gold primary, royal blue secondary, gold accent for interactive states). All ~22 Shadcn/UI components inherit the new theme automatically.
 
-**Independent Test**: Navigate every screen (world sidebar, main panel, chat panel, toolbar) in both modes and confirm the fantasy colour palette is applied consistently. Run `pnpm test` - all jest-axe tests pass.
+**Independent Test**: Navigate every screen (world sidebar, main panel, chat panel, toolbar) in both modes and confirm the fantasy colour palette is applied consistently. All hover/selection states render gold (not blue). Run `pnpm test` - all jest-axe tests pass.
 
 ### Implementation for User Story 1
 
@@ -58,7 +58,20 @@
 - [X] T013 [US1] Update `--chart-1` through `--chart-5` in the `.dark` block with fantasy-harmonised dark-mode chart colours in `libris-maleficarum-app/src/index.css`
 - [X] T014 [US1] Run `pnpm test` in `libris-maleficarum-app/` - all existing jest-axe a11y tests must pass with the new colour tokens
 
-**Checkpoint**: User Story 1 complete - the full fantasy colour palette is active in both modes, all components display themed colours, all a11y tests pass
+### Accent Token Update - Gold for Interactive States (FR-001 Clarification)
+
+- [X] T040 [US1] Research optimal oklch gold-toned accent values for `--accent` and `--sidebar-accent` tokens — must be subtle warm gold (hue ~80-85), lighter/less saturated than `--primary` (`oklch(0.75 0.15 85)`), with >=4.5:1 contrast against `--accent-foreground` text
+- [X] T041 [US1] Update research.md Section 2 tables to replace light blue accent values with new gold-toned accent values and document contrast verification results in `specs/013-fantasy-dnd-theme/research.md`
+- [X] T042 [P] [US1] Update `--accent` from `oklch(0.7 0.1 240)` to gold-toned value and `--accent-foreground` from `oklch(0.18 0.02 255)` (verify contrast) in the `:root` block of `libris-maleficarum-app/src/index.css`
+- [X] T043 [P] [US1] Update `--sidebar-accent` from `oklch(0.93 0.01 250)` to gold-toned value and `--sidebar-accent-foreground` from `oklch(0.18 0.02 255)` (verify contrast) in the `:root` block of `libris-maleficarum-app/src/index.css`
+- [X] T044 [P] [US1] Update `--accent` from `oklch(0.6 0.1 240)` to dark gold-toned value and `--accent-foreground` from `oklch(0.17 0.03 255)` (verify contrast) in the `.dark` block of `libris-maleficarum-app/src/index.css`
+- [X] T045 [P] [US1] Update `--sidebar-accent` from `oklch(0.27 0.02 255)` to dark gold-toned value and `--sidebar-accent-foreground` from `oklch(0.93 0.01 80)` (verify contrast) in the `.dark` block of `libris-maleficarum-app/src/index.css`
+- [X] T046 [US1] Update `--chart-3` from `oklch(0.7 0.1 240)` (light) and `oklch(0.6 0.1 240)` (dark) to a distinct decorative blue or teal value that differentiates from the gold accent in `libris-maleficarum-app/src/index.css`
+- [X] T047 [US1] Run `pnpm test` in `libris-maleficarum-app/` - all 600+ tests must pass with gold accent tokens
+- [X] T048 [US1] Run `pnpm build` in `libris-maleficarum-app/` - TypeScript compilation and Vite build must succeed
+- [ ] T049 [US1] Verify hover/selection states render gold (not blue) across all components using `bg-accent`/`hover:bg-accent`: buttons, context menus, select items, calendar, entity tree nodes, entity type selector, dialog close buttons in both modes
+
+**Checkpoint**: User Story 1 complete - the full fantasy colour palette is active with gold accent for all interactive states in both modes, all a11y tests pass
 
 ---
 
@@ -108,14 +121,14 @@
 
 ## Phase 6: User Story 2 + User Story 4 - Mode Harmony & Interactive Accessibility (P1/P2 Validation)
 
-**Goal**: Confirm both modes present a harmonious fantasy theme with proper contrast, and that all interactive elements have visible focus indicators meeting accessibility requirements.
+**Goal**: Confirm both modes present a harmonious fantasy theme with proper contrast, and that all interactive elements have visible focus indicators meeting accessibility requirements. Gold accent tokens must render correctly for hover/selection in both modes.
 
 **Independent Test**: Toggle between dark and light mode on every screen. Tab through all interactive elements. Verify focus ring visibility (gold ring) and hover state distinguishability in both modes.
 
-**Note**: These are validation-only stories - the colour token work in Phase 3 and toggle in Phase 5 deliver both. No new source code tasks expected unless issues are found.
+**Note**: These are validation-only stories - the colour token work in Phase 3 (including accent update) and toggle in Phase 5 deliver both. No new source code tasks expected unless issues are found.
 
 - [ ] T029 [US2] Toggle between dark and light mode on all major screens and verify no elements appear invisible, unreadable, or mismatched
-- [ ] T030 [US2] Spot-check contrast ratios with browser DevTools: foreground-on-background, primary-foreground-on-primary, muted-foreground-on-muted in both modes - all must meet WCAG AA (4.5:1 normal, 3:1 large)
+- [ ] T030 [US2] Spot-check contrast ratios with browser DevTools: foreground-on-background, primary-foreground-on-primary, accent-foreground-on-accent, muted-foreground-on-muted in both modes - all must meet WCAG AA (4.5:1 normal, 3:1 large)
 - [ ] T031 [US4] Tab through all interactive elements and verify gold focus ring is clearly visible with >=3:1 contrast against adjacent colours in both modes
 - [ ] T032 [US4] Verify hover states on buttons are visually distinguishable from default state without relying on colour alone
 - [ ] T032a [US4] Verify disabled controls are visually distinguishable from enabled controls and are not keyboard focusable
@@ -153,33 +166,35 @@
 
 ### Phase Dependencies
 
-- **Setup (Phase 1)**: No dependencies - start immediately
-- **Foundational (Phase 2)**: Depends on T001 (legacy `@theme` removal)
-- **User Story 1 (Phase 3)**: Depends on Phase 1 completion (clean `index.css`)
-- **User Story 3 (Phase 4)**: Depends on Phase 2 completion (font files and `font-heading` in place)
-- **User Story 6 (Phase 5)**: Depends on Phase 3 completion (colour tokens applied for both modes)
-- **User Stories 2 & 4 (Phase 6)**: Depends on Phase 5 completion (toggle enables mode switching for validation)
-- **User Story 5 (Phase 7)**: Depends on Phase 3 completion (new theme active)
-- **Polish (Phase 8)**: Tooltip/sonner migration can start after Phase 3; quickstart validation after all phases
+- **Setup (Phase 1)**: No dependencies - start immediately ✅ COMPLETE
+- **Foundational (Phase 2)**: Depends on T001 (legacy `@theme` removal) ✅ COMPLETE
+- **User Story 1 (Phase 3)**: Depends on Phase 1 completion (clean `index.css`). Initial palette ✅ COMPLETE; accent update T040-T049 REMAINING
+- **User Story 3 (Phase 4)**: Depends on Phase 2 completion (font files and `font-heading` in place). Implementation ✅ COMPLETE; verification T018-T019 REMAINING
+- **User Story 6 (Phase 5)**: Depends on Phase 3 completion (colour tokens applied for both modes). Implementation ✅ COMPLETE; verification T028-T028a REMAINING
+- **User Stories 2 & 4 (Phase 6)**: Depends on Phase 3 accent update (T040-T049) and Phase 5 toggle — validates gold hover/selection in both modes
+- **User Story 5 (Phase 7)**: Depends on Phase 3 completion (new theme active including gold accent)
+- **Polish (Phase 8)**: Tooltip/sonner migration ✅ COMPLETE; quickstart validation after all phases
 
 ### Within Each Phase
 
-- T015, T016, T017 are parallel (different files: dialog.tsx, drawer.tsx, card.tsx)
-- T020 (test) must precede T021 (implementation) per TDD
-- T022 (test) must precede T023 (implementation) per TDD
-- T024 depends on T023 (barrel export needs component)
-- T025 depends on T023+T024 (toolbar integration needs component)
-- T026 is independent of T020-T025 (index.html change)
+- T040 (research) must precede T041 (update research.md) must precede T042-T045 (token updates)
+- T042, T043, T044, T045 are parallel (different token groups, same file but non-overlapping lines)
+- T046 depends on accent colour decision (T040) to pick a distinct chart-3 value
+- T047, T048 depend on T042-T046 (test/build after all token changes)
+- T049 depends on T047 passing (visual verification after tests confirm no regressions)
 
 ### Parallel Opportunities
 
 ```text
-Phase 1:  T001 --> T002 + T003 (parallel after @theme removal)
-Phase 2:  T004 || T005 (different files) --> T006 --> T007
-Phase 3:  T008 --> T009 --> T010 --> T011 --> T012 --> T013 --> T014
-Phase 4:  T015 || T016 || T017 (different files) --> T018 --> T019
-Phase 5:  T020 --> T021 --> T022 --> T023 --> T024 --> T025 + T026 (parallel) --> T027 --> T028
-Phase 8:  T035 --> T036 || T037 (different files) --> T038 --> T039
+Phase 1:  T001 --> T002 + T003 (parallel after @theme removal) ✅ COMPLETE
+Phase 2:  T004 || T005 (different files) --> T006 --> T007 ✅ COMPLETE
+Phase 3a: T008-T014 (sequential palette application) ✅ COMPLETE
+Phase 3b: T040 --> T041 --> T042 || T043 || T044 || T045 (parallel accent updates) --> T046 --> T047 --> T048 --> T049
+Phase 4:  T015 || T016 || T017 (different files) ✅ COMPLETE --> T018 --> T019
+Phase 5:  T020-T027 ✅ COMPLETE --> T028 --> T028a
+Phase 6:  T029 --> T030 --> T031 --> T032 --> T032a
+Phase 7:  T033 --> T034
+Phase 8:  T035-T038 ✅ COMPLETE --> T039
 ```
 
 ---
@@ -188,20 +203,23 @@ Phase 8:  T035 --> T036 || T037 (different files) --> T038 --> T039
 
 ### MVP First (Phase 1 + Phase 2 + Phase 3)
 
-1. Complete Phase 1: Remove legacy CSS, register missing tokens
-2. Complete Phase 2: Font setup
-3. Complete Phase 3: Full colour palette in both modes
-4. **STOP and VALIDATE**: Run `pnpm test`, visually verify all screens
-5. This delivers the core fantasy theme - users see gold/blue/light-blue palette + Cinzel headings
+1. ✅ Complete Phase 1: Remove legacy CSS, register missing tokens
+2. ✅ Complete Phase 2: Font setup
+3. ✅ Complete Phase 3a: Initial colour palette in both modes
+4. **NEXT**: Complete Phase 3b: Accent token update (blue → gold) for interactive states
+5. **VALIDATE**: Run `pnpm test`, `pnpm build`, visually verify gold hover/selection across all screens
 
 ### Incremental Delivery
 
-1. Phases 1-3 --> MVP: Fantasy colour palette + font (COMPLETE)
-2. Phase 4 --> Typography on titles: font-heading on dialog/drawer/card
-3. Phase 5 --> Toggle: useTheme hook + ThemeToggle component + toolbar integration (TDD)
-4. Phase 6 --> Validate dark/light mode harmony + interactive accessibility
-5. Phase 7 --> Validate colour-independence of indicators
-6. Phase 8 --> Polish: hardcoded migration (COMPLETE) + quickstart validation
+1. ✅ Phases 1-3a → MVP: Fantasy colour palette + font (COMPLETE)
+2. ✅ Phase 4 → Typography on titles: font-heading on dialog/drawer/card (implementation COMPLETE)
+3. ✅ Phase 5 → Toggle: useTheme hook + ThemeToggle component + toolbar integration (implementation COMPLETE)
+4. **NEXT** Phase 3b → Accent token update: `--accent` and `--sidebar-accent` blue → gold (T040-T049)
+5. Phase 4-5 verification → Manual verification of typography and toggle (T018-T019, T028-T028a)
+6. Phase 6 → Validate dark/light mode harmony + interactive accessibility (T029-T032a)
+7. Phase 7 → Validate colour-independence of indicators (T033-T034)
+8. ✅ Phase 8a → Hardcoded migration (COMPLETE)
+9. Phase 8b → Quickstart validation (T039)
 
 ---
 
@@ -209,9 +227,12 @@ Phase 8:  T035 --> T036 || T037 (different files) --> T038 --> T039
 
 - All colour values reference `specs/013-fantasy-dnd-theme/research.md` Section 2 (oklch format)
 - ~22 Shadcn/UI components inherit theme changes automatically via CSS custom properties
-- Phases 1-3 and T035-T038 are COMPLETE from prior implementation sessions
-- Remaining work: 7 tasks (T018-T019, T028-T034, T028a, T032a, T039) across visual verification, validation, and quickstart
-- New files for toggle: `useTheme.ts`, `useTheme.test.ts`, `ThemeToggle.tsx`, `ThemeToggle.test.tsx`, `index.ts`
-- Modified files for toggle: `TopToolbar.tsx`, `index.html`
+- **24 of 39 original tasks COMPLETE** (T001-T017, T020-T027, T035-T038)
+- **10 new tasks added** (T040-T049) for accent token update per FR-001 clarification (gold for all interactive states)
+- **Total remaining**: 20 tasks — 10 implementation (T040-T049), 10 manual validation (T018-T019, T028-T034, T028a, T032a, T039)
+- `bg-accent`/`hover:bg-accent` is used in ~20+ component locations (buttons, context menus, select items, calendar, entity tree, entity type selector, dialog close)
+- `--accent` currently `oklch(0.7 0.1 240)` (light) / `oklch(0.6 0.1 240)` (dark) — hue 240 is BLUE, must become hue ~85 (GOLD)
+- `--sidebar-accent` currently `oklch(0.93 0.01 250)` (light) / `oklch(0.27 0.02 255)` (dark) — must also become gold-toned
+- New accent values must be subtler/less saturated than `--primary` to differentiate hover bg from active/focused states
 - Constitution Principle III (TDD): Tests written before implementation for ThemeToggle and useTheme
 - Commit after each phase for clean rollback points
