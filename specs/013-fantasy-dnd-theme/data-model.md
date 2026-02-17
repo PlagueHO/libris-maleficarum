@@ -33,12 +33,22 @@ All colour tokens live as CSS custom properties in `:root` (light) and `.dark` (
 
 | Token | Application | Value |
 |-------|------------|-------|
-| `font-family` (body) | All non-heading text | `'Inter', system-ui, -apple-system, sans-serif` |
-| `font-family` (headings) | h1–h6 only | `'Cinzel', Georgia, 'Times New Roman', serif` |
+| `font-family` (body) | All non-heading/non-title text | `'Inter', system-ui, -apple-system, sans-serif` |
+| `font-family` (headings) | h1–h6, dialog titles, panel/section headers | `'Cinzel', Georgia, 'Times New Roman', serif` |
 
 ## State Transitions
 
-N/A — no stateful entities. Dark/light mode toggling is handled by the existing `.dark` class mechanism.
+### Mode Preference State
+
+The user's dark/light mode preference is a client-side state with the following transitions:
+
+| From | Trigger | To | Side Effect |
+|------|---------|----|---------|
+| No preference (first visit) | Page load | OS-preferred mode (or light) | `.dark` class applied if dark; preference not yet persisted |
+| Light mode | User clicks toggle | Dark mode | `.dark` class added to root; preference saved to browser storage |
+| Dark mode | User clicks toggle | Light mode | `.dark` class removed from root; preference saved to browser storage |
+| Persisted preference | Page reload | Persisted mode | `.dark` class applied before first paint |
+| Persisted preference | User clears browser data | No preference | Falls back to OS preference on next load |
 
 ## Validation Rules
 

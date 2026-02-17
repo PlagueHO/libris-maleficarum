@@ -114,11 +114,34 @@ Components using hardcoded Tailwind colours that need migration:
 
 ## 4. Dark Mode Mechanism
 
-**Decision**: Existing `.dark` class mechanism is preserved.
+**Decision**: Existing `.dark` class mechanism is preserved. A toggle switch is added to the top toolbar.
 
 **Current implementation**: `@custom-variant dark (&:is(.dark *))` in index.css with TailwindCSS v4 syntax. Dark mode is toggled by adding/removing the `.dark` class on the root element.
 
-**No changes needed** to the toggle mechanism.
+**Current gap**: There is no UI control to toggle dark mode. The `.dark` class CSS definitions exist, but no JavaScript manages the toggle. A toggle switch must be added.
+
+### Toggle Component Placement
+
+The toggle should be placed in the `TopToolbar` component, inside the `ml-auto flex items-center gap-2` container, immediately before the `NotificationBell` component.
+
+### Theme Persistence Strategy
+
+- **Storage**: `localStorage` with key `theme` and values `"dark"`, `"light"`, or `"system"`.
+- **Initial load**: Read `localStorage` first. If no preference, check `prefers-color-scheme` media query. Fall back to light mode.
+- **Flash prevention**: Apply `.dark` class early (either via inline `<script>` in `index.html` before React mounts, or synchronously in a React hook before first paint) to avoid a flash of the wrong theme.
+
+### Icon Convention
+
+- Lucide `Sun` icon when light mode is active (clicking switches to dark).
+- Lucide `Moon` icon when dark mode is active (clicking switches to light).
+- This follows the convention of showing the current state, which aligns with common icon toggle patterns.
+
+### Accessibility Requirements
+
+- The toggle button must use `aria-label` describing the action: "Switch to dark mode" (when light) or "Switch to light mode" (when dark).
+- It must be in the tab order and activatable via Enter or Space.
+- Focus indicator must be the gold ring consistent with the theme.
+- The toggle must not use colour alone to indicate state — the sun/moon icons provide a non-colour indicator.
 
 ## 5. Existing Theme Structure
 

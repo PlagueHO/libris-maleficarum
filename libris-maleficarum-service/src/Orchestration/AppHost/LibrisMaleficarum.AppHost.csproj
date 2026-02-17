@@ -1,13 +1,13 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.1.0">
+<Project Sdk="Aspire.AppHost.Sdk/13.1.1">
 
   <ItemGroup>
     <ProjectReference Include="..\..\Api\LibrisMaleficarum.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" Version="13.1.0" />
-    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.1.0" />
-    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" Version="13.1.1" />
+    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.1.1" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.1.1" />
   </ItemGroup>
 
   <PropertyGroup>
