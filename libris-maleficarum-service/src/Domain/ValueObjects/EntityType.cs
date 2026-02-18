@@ -48,6 +48,11 @@ public enum EntityType
     Character,
 
     /// <summary>
+    /// A player-controlled character distinct from NPC Character entities.
+    /// </summary>
+    PlayerCharacter,
+
+    /// <summary>
     /// A faction, organization, guild, or political group.
     /// </summary>
     Faction,

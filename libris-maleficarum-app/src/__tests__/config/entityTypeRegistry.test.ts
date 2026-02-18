@@ -143,6 +143,7 @@ describe('Entity Type Registry - Helper Functions', () => {
       const expectedRootTypes = [
         'Continent',
         'Campaign',
+        'PlayerCharacter',
         'Folder',
         'Locations',
         'People',
@@ -186,10 +187,10 @@ describe('Entity Type Registry - Helper Functions', () => {
       expect(allTypes).toBe(ENTITY_TYPE_REGISTRY);
     });
 
-    it('should return 29 entity type configurations', () => {
+    it('should return 30 entity type configurations', () => {
       const allTypes = getAllEntityTypes();
 
-      expect(allTypes).toHaveLength(29);
+      expect(allTypes).toHaveLength(30);
     });
 
     it('should return readonly array', () => {

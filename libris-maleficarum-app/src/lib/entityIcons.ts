@@ -14,6 +14,7 @@ import {
   Building,
   Home,
   User,
+  UserCheck,
   Users,
   Calendar,
   Package,
@@ -45,6 +46,7 @@ export type EntityType =
   | 'Location'
   // Character & faction types
   | 'Character'
+  | 'PlayerCharacter'
   | 'Faction'
   // Event & quest types
   | 'Event'
@@ -88,6 +90,7 @@ export const entityIconMap: Record<EntityType, LucideIcon> = {
   
   // Character & faction types
   Character: User,
+  PlayerCharacter: UserCheck,
   Faction: Users,
   
   // Event & quest types
