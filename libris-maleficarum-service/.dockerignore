@@ -14,3 +14,7 @@
 **/docker-compose*.yml
 **/.dockerignore
 **/Dockerfile
+**/node_modules/
+**/coverage/
+**/*.log*
+**/.env*

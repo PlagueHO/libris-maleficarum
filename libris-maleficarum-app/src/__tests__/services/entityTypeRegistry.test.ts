@@ -100,12 +100,12 @@ describe('Entity Type Registry - Validation', () => {
   });
 
   /**
-   * T026: Validation test for completeness (all 29 types present)
+   * T026: Validation test for completeness (all 30 types present)
    * Ensures registry contains expected number of entity types
    */
   describe('T026: Registry Completeness', () => {
-    it('should contain exactly 29 entity types', () => {
-      expect(ENTITY_TYPE_REGISTRY).toHaveLength(29);
+    it('should contain exactly 30 entity types', () => {
+      expect(ENTITY_TYPE_REGISTRY).toHaveLength(30);
     });
 
     it('should have all required properties for each entity type', () => {

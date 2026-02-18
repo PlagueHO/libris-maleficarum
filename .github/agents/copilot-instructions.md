@@ -1,4 +1,4 @@
-# libris-maleficarum Development Guidelines
+﻿# libris-maleficarum Development Guidelines
 
 Auto-generated from all feature plans. Last updated: 2026-01-21
 
@@ -15,6 +15,8 @@ Auto-generated from all feature plans. Last updated: 2026-01-21
 - Session-only (in-memory Redux state), no persistence across browser sessions (012-async-entity-operations)
 - TypeScript 5.x, React 19, ES2022 target + Vite 7.x, TailwindCSS v4, Shadcn/UI (Radix primitives), Lucide React icons, Redux Toolkit (013-fantasy-dnd-theme)
 - localStorage (theme preference key `theme`), no backend changes (013-fantasy-dnd-theme)
+- TypeScript 5.x (React 19+ frontend) + C# 14 (.NET 10 backend) + React 19, Redux Toolkit, lucide-react, Vitest, Testing Library, jest-axe (frontend) | EF Core Cosmos DB, FluentValidation, Aspire.NET (backend) (014-player-character-entity)
+- Azure Cosmos DB (partition key `/WorldId`, `Attributes` stored as JSON string) (014-player-character-entity)
 
 
 
@@ -35,6 +37,7 @@ tests/
 General: Follow standard conventions
 
 ## Recent Changes
+- 014-player-character-entity: Added TypeScript 5.x (React 19+ frontend) + C# 14 (.NET 10 backend) + React 19, Redux Toolkit, lucide-react, Vitest, Testing Library, jest-axe (frontend) | EF Core Cosmos DB, FluentValidation, Aspire.NET (backend)
 - 013-fantasy-dnd-theme: Added TypeScript 5.x, React 19, ES2022 target + Vite 7.x, TailwindCSS v4, Shadcn/UI (Radix primitives), Lucide React icons, Redux Toolkit
 
 
