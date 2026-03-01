@@ -102,7 +102,7 @@ jobs:
 
       - name: Upload Test Artifacts
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dotnet-test-results
           path: |
@@ -111,7 +111,7 @@ jobs:
 
       - name: Upload Coverage Report (HTML)
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report-html
           path: libris-maleficarum-service/TestResults/CoverageReport/
@@ -119,7 +119,7 @@ jobs:
 
       - name: Upload Code Coverage (Cobertura)
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: code-coverage-cobertura
           path: libris-maleficarum-service/TestResults/**/*.cobertura.xml
@@ -134,7 +134,7 @@ jobs:
           dotnet publish src/Api/LibrisMaleficarum.Api.csproj --no-build --configuration Release --output ./publish/api $VERSION_ARGS
 
       - name: Upload API artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: libris-maleficarum-api
           path: libris-maleficarum-service/publish/api
