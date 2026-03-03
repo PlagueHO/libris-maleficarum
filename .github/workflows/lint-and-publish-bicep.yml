@@ -33,5 +33,6 @@ jobs:
           name: infrastructure_bicep
           path: |
             ./infra/main.bicep
+            ./infra/main.bicepparam
             ./infra/*.json
             ./infra/**/*
