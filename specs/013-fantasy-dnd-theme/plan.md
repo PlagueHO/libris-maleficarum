@@ -150,20 +150,20 @@ Prior sessions applied the full oklch fantasy palette to `:root` and `.dark`:
 **Design constraints for new accent values**:
 
 1. Must be visually gold (hue ~80–85) not blue
-2. Must be subtler/lighter than `--primary` (`oklch(0.75 0.15 85)`) to differentiate hover from active/focused
-3. Must maintain ≥ 4.5:1 contrast with `--accent-foreground` text
-4. Light mode: should be a very subtle warm gold tint that works as a hover/selection background
-5. Dark mode: should be a darker warm gold tone that works against dark backgrounds
-6. Must not clash with `--muted` (currently `oklch(0.93 0.01 250)` light / `oklch(0.27 0.02 255)` dark)
+1. Must be subtler/lighter than `--primary` (`oklch(0.75 0.15 85)`) to differentiate hover from active/focused
+1. Must maintain ≥ 4.5:1 contrast with `--accent-foreground` text
+1. Light mode: should be a very subtle warm gold tint that works as a hover/selection background
+1. Dark mode: should be a darker warm gold tone that works against dark backgrounds
+1. Must not clash with `--muted` (currently `oklch(0.93 0.01 250)` light / `oklch(0.27 0.02 255)` dark)
 
 **Approach**:
 
 1. Research optimal oklch gold-toned accent values meeting all constraints
-2. Update research.md with new values and contrast verification
-3. Update `:root` and `.dark` blocks in `index.css`
-4. Update `--chart-3` if it was referencing old accent blue (currently `oklch(0.7 0.1 240)`)
-5. Run full test suite — all 600+ tests must pass
-6. Visual verification of hover/selection states across all components
+1. Update research.md with new values and contrast verification
+1. Update `:root` and `.dark` blocks in `index.css`
+1. Update `--chart-3` if it was referencing old accent blue (currently `oklch(0.7 0.1 240)`)
+1. Run full test suite — all 600+ tests must pass
+1. Visual verification of hover/selection states across all components
 
 ### Phase G: Validation (REMAINING — MANUAL)
 

@@ -94,15 +94,18 @@
 ### Within Each Phase
 
 **Phase 2** (Backend):
+
 - T001 and T002 can run in parallel (different files: `EntityType.cs` vs `appsettings.json`)
 - T003 runs after T001 and T002 (validation step)
 
 **Phase 3** (Frontend — US1–US5):
+
 - T004 first (adds the registry entry that T005, T006, T007 reference)
 - T005 and T006 can run in parallel (different files: `entityIcons.ts` vs `EntityTypeSelector.tsx`)
 - T007 after T004 (updates test counts to match new registry size)
 
 **Phase 4** (Frontend — US6):
+
 - T008 after T004 (adds to suggestedChildren in same file as registry entry)
 
 ### Parallel Opportunities
@@ -131,16 +134,16 @@ Phase 5 — parallel batch:
 ### MVP First (User Stories 1–5)
 
 1. Complete Phase 2: Backend foundational (T001–T003)
-2. Complete Phase 3: Registry entry + icons + tests (T004–T007)
-3. **STOP and VALIDATE**: PlayerCharacter is creatable with all 18 fields
-4. Deploy backend, then frontend
+1. Complete Phase 3: Registry entry + icons + tests (T004–T007)
+1. **STOP and VALIDATE**: PlayerCharacter is creatable with all 18 fields
+1. Deploy backend, then frontend
 
 ### Incremental Delivery
 
 1. Phase 2 → Backend ready (PlayerCharacter accepted by API)
-2. Phase 3 → MVP: PC entity type fully functional (create, edit, save, load)
-3. Phase 4 → Full hierarchy integration (PC appears under parent types)
-4. Phase 5 → Validated delivery
+1. Phase 3 → MVP: PC entity type fully functional (create, edit, save, load)
+1. Phase 4 → Full hierarchy integration (PC appears under parent types)
+1. Phase 5 → Validated delivery
 
 ### Suggested MVP Scope
 

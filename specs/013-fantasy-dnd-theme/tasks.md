@@ -204,22 +204,22 @@ Phase 8:  T035-T038 ✅ COMPLETE --> T039
 ### MVP First (Phase 1 + Phase 2 + Phase 3)
 
 1. ✅ Complete Phase 1: Remove legacy CSS, register missing tokens
-2. ✅ Complete Phase 2: Font setup
-3. ✅ Complete Phase 3a: Initial colour palette in both modes
-4. **NEXT**: Complete Phase 3b: Accent token update (blue → gold) for interactive states
-5. **VALIDATE**: Run `pnpm test`, `pnpm build`, visually verify gold hover/selection across all screens
+1. ✅ Complete Phase 2: Font setup
+1. ✅ Complete Phase 3a: Initial colour palette in both modes
+1. **NEXT**: Complete Phase 3b: Accent token update (blue → gold) for interactive states
+1. **VALIDATE**: Run `pnpm test`, `pnpm build`, visually verify gold hover/selection across all screens
 
 ### Incremental Delivery
 
 1. ✅ Phases 1-3a → MVP: Fantasy colour palette + font (COMPLETE)
-2. ✅ Phase 4 → Typography on titles: font-heading on dialog/drawer/card (implementation COMPLETE)
-3. ✅ Phase 5 → Toggle: useTheme hook + ThemeToggle component + toolbar integration (implementation COMPLETE)
-4. **NEXT** Phase 3b → Accent token update: `--accent` and `--sidebar-accent` blue → gold (T040-T049)
-5. Phase 4-5 verification → Manual verification of typography and toggle (T018-T019, T028-T028a)
-6. Phase 6 → Validate dark/light mode harmony + interactive accessibility (T029-T032a)
-7. Phase 7 → Validate colour-independence of indicators (T033-T034)
-8. ✅ Phase 8a → Hardcoded migration (COMPLETE)
-9. Phase 8b → Quickstart validation (T039)
+1. ✅ Phase 4 → Typography on titles: font-heading on dialog/drawer/card (implementation COMPLETE)
+1. ✅ Phase 5 → Toggle: useTheme hook + ThemeToggle component + toolbar integration (implementation COMPLETE)
+1. **NEXT** Phase 3b → Accent token update: `--accent` and `--sidebar-accent` blue → gold (T040-T049)
+1. Phase 4-5 verification → Manual verification of typography and toggle (T018-T019, T028-T028a)
+1. Phase 6 → Validate dark/light mode harmony + interactive accessibility (T029-T032a)
+1. Phase 7 → Validate colour-independence of indicators (T033-T034)
+1. ✅ Phase 8a → Hardcoded migration (COMPLETE)
+1. Phase 8b → Quickstart validation (T039)
 
 ---
 

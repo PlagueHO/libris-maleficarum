@@ -56,12 +56,14 @@ Add `'PlayerCharacter'` to `suggestedChildren` arrays for: Campaign, Session, Fa
 ### Step 6: Frontend — Add icon mapping
 
 **Files**:
+
 - `libris-maleficarum-app/src/lib/entityIcons.ts` — add `PlayerCharacter` to `EntityType` union and `entityIconMap`
 - `libris-maleficarum-app/src/components/shared/EntityTypeSelector/EntityTypeSelector.tsx` — import `UserCheck` and add to `iconMap`
 
 ### Step 7: Frontend — Update tests
 
 **Files**:
+
 - `src/__tests__/services/entityTypeRegistry.test.ts` — update count from 29 to 30
 - `src/__tests__/config/entityTypeRegistry.test.ts` — update count from 29 to 30, add `'PlayerCharacter'` to expected root types
 
@@ -75,9 +77,9 @@ pnpm test
 ## Verification
 
 1. All backend unit tests pass
-2. All frontend tests pass (including a11y)
-3. Dev server shows "Player Character" in entity type selector under "Characters & Factions"
-4. Player Character has UserCheck icon, distinct from NPC Character's User icon
-5. Player Character appears as suggested child under Campaign, Session, Faction, City, People, Folder
-6. All 18 property fields render in the entity form
-7. Entity saves and round-trips all field values correctly
+1. All frontend tests pass (including a11y)
+1. Dev server shows "Player Character" in entity type selector under "Characters & Factions"
+1. Player Character has UserCheck icon, distinct from NPC Character's User icon
+1. Player Character appears as suggested child under Campaign, Session, Faction, City, People, Folder
+1. All 18 property fields render in the entity form
+1. Entity saves and round-trips all field values correctly

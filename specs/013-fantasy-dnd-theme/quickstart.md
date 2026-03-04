@@ -26,14 +26,14 @@ Updates the Libris Maleficarum UI from a neutral grey/brown theme to a fantasy D
 ## How to Verify
 
 1. Run `pnpm dev` in `libris-maleficarum-app/`
-2. Open https://127.0.0.1:4000
-3. Verify dark mode: deep navy backgrounds, gold buttons/links, royal blue sidebar accents
-4. Toggle to light mode using the sun/moon toggle in the toolbar (left of notification bell): warm off-white backgrounds, gold buttons, royal blue accents
-5. Verify the toggle shows a moon icon in light mode (click to switch to dark) and a sun icon in dark mode (click to switch to light)
-6. Reload the page and confirm the selected mode persists
-7. Inspect any h1–h6 element, dialog title, or panel header: should use Cinzel font
-8. Tab through interactive elements (including the toggle): focus rings should be gold and clearly visible
-9. Run `pnpm test` — all existing tests (including jest-axe a11y checks) should pass
+1. Open <https://127.0.0.1:4000>
+1. Verify dark mode: deep navy backgrounds, gold buttons/links, royal blue sidebar accents
+1. Toggle to light mode using the sun/moon toggle in the toolbar (left of notification bell): warm off-white backgrounds, gold buttons, royal blue accents
+1. Verify the toggle shows a moon icon in light mode (click to switch to dark) and a sun icon in dark mode (click to switch to light)
+1. Reload the page and confirm the selected mode persists
+1. Inspect any h1–h6 element, dialog title, or panel header: should use Cinzel font
+1. Tab through interactive elements (including the toggle): focus rings should be gold and clearly visible
+1. Run `pnpm test` — all existing tests (including jest-axe a11y checks) should pass
 
 ## Key Design Decisions
 

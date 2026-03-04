@@ -10,6 +10,7 @@
 **Task**: Verify that the "UserCheck" icon exists in the lucide-react package.
 
 **Finding**: The project uses lucide-react for all entity icons. Icon names in the registry are strings (e.g., `'User'`, `'Globe'`) mapped to Lucide components in two locations:
+
 - `src/components/shared/EntityTypeSelector/EntityTypeSelector.tsx` — `iconMap: Record<string, LucideIcon>`
 - `src/lib/entityIcons.ts` — `entityIconMap: Record<EntityType, LucideIcon>` + `EntityType` union type
 
@@ -26,10 +27,11 @@
 **Task**: Determine how to add `PlayerCharacter` to the backend `EntityType` enum and related config.
 
 **Finding**: The backend uses:
+
 1. `Domain/ValueObjects/EntityType.cs` — C# enum with all entity types grouped by category
-2. `Api/appsettings.json` — `EntitySchemaVersions.EntityTypes` section mapping entity type names to `{ MinVersion, MaxVersion }` ranges
-3. `Domain/Configuration/EntitySchemaVersionConfig.cs` — Reads the appsettings config, defaults to `{ Min: 1, Max: 1 }` for unconfigured types
-4. `Api/Validators/CreateWorldEntityRequestValidator.cs` — Validates `EntityType` via `.IsInEnum()`
+1. `Api/appsettings.json` — `EntitySchemaVersions.EntityTypes` section mapping entity type names to `{ MinVersion, MaxVersion }` ranges
+1. `Domain/Configuration/EntitySchemaVersionConfig.cs` — Reads the appsettings config, defaults to `{ Min: 1, Max: 1 }` for unconfigured types
+1. `Api/Validators/CreateWorldEntityRequestValidator.cs` — Validates `EntityType` via `.IsInEnum()`
 
 Entity type is stored as a **string** in Cosmos DB (via `HasConversion<string>()` in `WorldEntityConfiguration.cs`). Adding a new enum value is additive and non-breaking: existing documents are unaffected, the validator uses `IsInEnum()` which automatically includes new values.
 
@@ -44,6 +46,7 @@ Entity type is stored as a **string** in Cosmos DB (via `HasConversion<string>()
 **Task**: Confirm the registry-driven pattern for adding entity types and what derived constants update automatically.
 
 **Finding**: The Entity Type Registry (`entityTypeRegistry.ts`) is the single source of truth. Adding a new entry to `ENTITY_TYPE_REGISTRY` automatically:
+
 - Adds to `WorldEntityType` union type (derived via `reduce()` in `worldEntity.types.ts`)
 - Adds to `ENTITY_SCHEMA_VERSIONS` map
 - Adds to `ENTITY_TYPE_META` lookup
@@ -64,12 +67,13 @@ No new component files are needed — the extensibility test (`entityTypeRegistr
 **Task**: Identify tests that will break when adding a new entity type.
 
 **Finding**: The following tests have hardcoded values that need updating:
+
 1. `src/__tests__/services/entityTypeRegistry.test.ts`:
    - T026: `expect(ENTITY_TYPE_REGISTRY).toHaveLength(29)` → must become 30
-2. `src/__tests__/config/entityTypeRegistry.test.ts`:
+1. `src/__tests__/config/entityTypeRegistry.test.ts`:
    - T033: `expect(allTypes).toHaveLength(29)` → must become 30
    - T032: `expectedRootTypes` array must include `'PlayerCharacter'` (since `canBeRoot: true`)
-3. `src/lib/entityIcons.ts`:
+1. `src/lib/entityIcons.ts`:
    - `EntityType` union type must include `'PlayerCharacter'`
    - `entityIconMap` must include `PlayerCharacter: UserCheck`
 
@@ -83,6 +87,7 @@ No new component files are needed — the extensibility test (`entityTypeRegistr
 **Task**: Identify all entity types whose `suggestedChildren` must include `PlayerCharacter`.
 
 **Finding**: Per spec FR-014/015/016 and reviewing the registry:
+
 - `Campaign` — currently suggests `['Session', 'Quest', 'Event', 'Character', 'Location', 'Faction']`
 - `Session` — currently suggests `['Event', 'Location']`
 - `Faction` — currently suggests `['Character', 'Location', 'Event', 'Quest']`
@@ -100,6 +105,7 @@ No new component files are needed — the extensibility test (`entityTypeRegistr
 **Task**: Determine if there's a deployment order concern.
 
 **Finding**: Per the Schema Version Matrix (`SCHEMA_VERSION_MATRIX.md`), backend should be deployed first. However, for this feature:
+
 - The backend stores `EntityType` as a string in Cosmos DB
 - The `IsInEnum()` validator means the backend must have `PlayerCharacter` in the enum before the frontend can create entities of this type
 - The `EntitySchemaVersionConfig` defaults to `{ Min: 1, Max: 1 }` for unconfigured types, so the appsettings entry is optional but recommended

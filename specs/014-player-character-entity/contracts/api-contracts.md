@@ -8,7 +8,7 @@
 No new API endpoints are required. The PlayerCharacter entity type uses the existing WorldEntity CRUD endpoints. The only backend changes are:
 
 1. Adding `PlayerCharacter` to the `EntityType` enum (enables validation)
-2. Adding schema version config to `appsettings.json`
+1. Adding schema version config to `appsettings.json`
 
 ## Existing Endpoints Used
 
@@ -123,6 +123,7 @@ DELETE /api/v1/worlds/{worldId}/entities/{entityId}
 ## Validation Rules (Backend)
 
 No additional validation beyond standard WorldEntity rules:
+
 - `Name`: 1-200 characters, required
 - `Description`: max 5000 characters, optional
 - `EntityType`: must be valid enum value (`PlayerCharacter`)

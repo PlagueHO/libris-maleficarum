@@ -109,8 +109,8 @@ The existing `index.css` uses oklch for all `:root` and `.dark` variables. The f
 Components using hardcoded Tailwind colours that need migration:
 
 1. **tooltip.tsx** — Uses `border-slate-200`, `bg-slate-950`, `text-slate-50`, `dark:border-slate-800`, `dark:bg-slate-50`, `dark:text-slate-900`. Should migrate to theme tokens (`bg-popover`, `text-popover-foreground`, `border-border`).
-2. **EntityContextMenu.tsx** — Uses `text-red-600`, `focus:bg-red-50`, `dark:focus:bg-red-900/10`. These are for destructive actions (delete) and can stay as semantic red, or migrate to `text-destructive`.
-3. **NotificationItem.tsx** — Uses `text-blue-500`, `text-green-600`, `text-red-600` for status icons. These use colour alongside icons (Loader2, CheckCircle, XCircle), so colour is not the sole info indicator. Can stay as is or migrate to theme tokens for consistency.
+1. **EntityContextMenu.tsx** — Uses `text-red-600`, `focus:bg-red-50`, `dark:focus:bg-red-900/10`. These are for destructive actions (delete) and can stay as semantic red, or migrate to `text-destructive`.
+1. **NotificationItem.tsx** — Uses `text-blue-500`, `text-green-600`, `text-red-600` for status icons. These use colour alongside icons (Loader2, CheckCircle, XCircle), so colour is not the sole info indicator. Can stay as is or migrate to theme tokens for consistency.
 
 ## 4. Dark Mode Mechanism
 
@@ -148,8 +148,8 @@ The toggle should be placed in the `TopToolbar` component, inside the `ml-auto f
 The `index.css` has a dual-layer approach:
 
 1. **`@theme` block** (lines 6–40): HSL-based values from a previous theme attempt. **This must be REMOVED** — it is a dead legacy pattern that conflicts with the oklch `:root`/`.dark` values. Per Shadcn/UI Tailwind v4 best practices, only `@theme inline` with `var()` references should be used alongside `:root`/`.dark` oklch values.
-2. **`@theme inline` block** (lines 48–82): Maps CSS custom properties to Tailwind utilities (`--color-*: var(--*)`). This is the correct Tailwind v4 pattern and must be preserved.
-3. **`:root` block** (lines 84–119): oklch light mode values.
-4. **`.dark` block** (lines 121–152): oklch dark mode values.
+1. **`@theme inline` block** (lines 48–82): Maps CSS custom properties to Tailwind utilities (`--color-*: var(--*)`). This is the correct Tailwind v4 pattern and must be preserved.
+1. **`:root` block** (lines 84–119): oklch light mode values.
+1. **`.dark` block** (lines 121–152): oklch dark mode values.
 
 **Plan**: Remove the old `@theme` block entirely. Update `:root` and `.dark` blocks with new oklch values. The `@theme inline` block stays as-is since it just maps `var()` references. Additionally, register the heading font family in `@theme inline` as `--font-heading` to enable the `font-heading` Tailwind utility class.
