@@ -141,3 +141,36 @@ In the Aspire AppHost, the API service receives connection strings for:
 | `src/Api/Controllers/WorldEntitiesController.cs` | Search endpoint action (modified) |
 | `src/Orchestration/AppHost/AppHost.cs` | Aspire resources for AI Search (modified) |
 | `infra/main.bicep` | AI Search SKU update to basic (modified) |
+
+## Index Extensibility (FR-011)
+
+Azure AI Search supports **additive schema changes** without reindexing. To add a new field:
+
+1. Add the field definition in `AzureAISearchService.EnsureIndexExistsAsync()`
+2. Add the property to `SearchIndexDocument`
+3. Map the field in `SearchIndexSyncService.MapToSearchDocument()`
+4. Call `EnsureIndexExistsAsync()` — it uses `CreateOrUpdateIndex`, which adds new fields to an existing index without affecting existing documents
+5. New documents will have the field populated; existing documents will have `null` until re-indexed
+
+**No reindex required** for additive fields. To backfill existing documents, trigger a re-sync by resetting the Change Feed lease checkpoint.
+
+## Knowledge Base Registration (Azure AI Foundry)
+
+The search index schema is designed to be compatible with Azure AI Search as a Knowledge Source for Azure AI Foundry agents.
+
+### Compatibility Checklist
+
+- ✅ Vector field (`contentVector`) uses HNSW algorithm with cosine metric
+- ✅ Text-searchable fields (`name`, `description`, `tags`, `attributes`) support full-text search
+- ✅ Semantic search configuration defined with `name` as title, `description`/`attributes` as content
+- ✅ Metadata fields (`entityType`, `worldId`, `tags`) support filtering
+- ✅ Standard index schema compatible with Knowledge Store connector
+
+### Future Registration Steps
+
+1. In Azure AI Foundry portal, navigate to **Knowledge** → **Add Knowledge Source**
+2. Select **Azure AI Search** as the source type
+3. Provide the search service endpoint and index name (`worldentity-index`)
+4. Map fields: content=`description`, title=`name`, vector=`contentVector`
+5. Configure filtering on `worldId` for tenant isolation
+6. The index is ready for use with Foundry IQ agents

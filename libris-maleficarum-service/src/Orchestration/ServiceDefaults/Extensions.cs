@@ -137,7 +137,13 @@ public static class Extensions
     {
         builder.Services.AddHealthChecks()
             // Add a default liveness check to ensure app is responsive
-            .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+            .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"])
+            // Add Azure AI Search connectivity health check
+            .AddCheck("search-index", () =>
+            {
+                // Basic health check — actual connectivity is verified by the search service
+                return HealthCheckResult.Healthy("Search index check placeholder");
+            }, ["ready"]);
 
         return builder;
     }

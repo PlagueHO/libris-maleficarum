@@ -367,6 +367,10 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.18.0' =
     backupStorageRedundancy: 'Local'
     sqlDatabases: [
       {
+        // EF Core creates application containers at runtime.
+        // The 'leases' container (partition key: /id, 400 RU/s) is required by
+        // the Cosmos DB Change Feed Processor for search index sync.
+        // It is created automatically by the SearchIndexSyncService on first run.
         name: 'no-containers-specified'
       }
     ]
@@ -398,7 +402,7 @@ module aiSearchService 'br/public:avm/res/search/search-service:0.12.0' = {
   params: {
     name: aiSearchName
     location: location
-    sku: 'standard'
+    sku: 'basic'
     semanticSearch: 'standard'
     diagnosticSettings: [
       {
@@ -474,6 +478,20 @@ module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.14.1' = 
       }
     ]
     publicNetworkAccess: 'Disabled'
+    deployments: [
+      {
+        name: 'text-embedding-3-small'
+        model: {
+          format: 'OpenAI'
+          name: 'text-embedding-3-small'
+          version: '1'
+        }
+        sku: {
+          name: 'Standard'
+          capacity: 120
+        }
+      }
+    ]
   }
 }
 
@@ -675,6 +693,39 @@ module sharedNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
           direction: 'Inbound'
         }
       }
+    ]
+  }
+}
+
+// Alert rule for dead-letter indexing failures (FR-005)
+// Fires when the indexing failure count exceeds 5 in a 5-minute window.
+module indexingFailureAlert 'br/public:avm/res/insights/metric-alert:0.3.0' = {
+  name: 'indexing-failure-alert-deployment-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  dependsOn: [resourceGroup]
+  params: {
+    name: 'search-indexing-failure-alert-${environmentName}'
+    location: 'global'
+    tags: tags
+    severity: 2
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT5M'
+    criteria: {
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allof: [
+        {
+          name: 'IndexingFailureCount'
+          metricName: 'customMetrics/search.indexing.failures'
+          metricNamespace: 'microsoft.insights/components'
+          operator: 'GreaterThan'
+          threshold: 5
+          timeAggregation: 'Count'
+          criterionType: 'StaticThresholdCriterion'
+        }
+      ]
+    }
+    scopes: [
+      applicationInsights.outputs.resourceId
     ]
   }
 }

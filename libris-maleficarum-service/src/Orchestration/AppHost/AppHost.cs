@@ -56,6 +56,13 @@ var cosmosDb = builder.AddAzureCosmosDB("cosmosdb")
 var cosmosDbDatabase = cosmosDb.AddCosmosDatabase("LibrisMaleficarum");
 #pragma warning restore ASPIRECOSMOSDB001
 
+// Azure AI Search connection string (from user secrets or environment variables for local dev)
+// Azure AI Search does not have a local emulator — use a cloud Basic-tier instance or mock for testing
+var search = builder.AddConnectionString("search");
+
+// Azure AI Services connection string (from user secrets or environment variables)
+var aiServices = builder.AddConnectionString("aiservices");
+
 // Add Azure Storage (Azurite emulator) for local development
 // Azurite provides blob, queue, and table storage emulation
 // 
@@ -84,6 +91,8 @@ var blobs = storage.AddBlobs("blobs");
 var apiService = builder.AddProject<Projects.LibrisMaleficarum_Api>("api")
     .WithReference(cosmosDb)
     .WithReference(blobs)
+    .WithReference(search)
+    .WithReference(aiServices)
     .WaitFor(cosmosDb)
     .WaitFor(cosmosDbDatabase)
     .WaitFor(storage);

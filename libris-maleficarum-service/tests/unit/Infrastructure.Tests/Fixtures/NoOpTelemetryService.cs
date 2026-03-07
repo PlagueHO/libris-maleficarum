@@ -34,6 +34,54 @@ public class NoOpTelemetryService : ITelemetryService
     }
 
     /// <inheritdoc />
+    public void RecordDocumentIndexed(string entityType)
+    {
+        // No-op
+    }
+
+    /// <inheritdoc />
+    public void RecordIndexingFailure(string entityType)
+    {
+        // No-op
+    }
+
+    /// <inheritdoc />
+    public void RecordSearchQuery(string searchMode)
+    {
+        // No-op
+    }
+
+    /// <inheritdoc />
+    public void RecordSyncLag(double lagSeconds)
+    {
+        // No-op
+    }
+
+    /// <inheritdoc />
+    public void RecordEmbeddingLatency(double latencyMs)
+    {
+        // No-op
+    }
+
+    /// <inheritdoc />
+    public void RecordSearchLatency(double latencyMs)
+    {
+        // No-op
+    }
+
+    /// <inheritdoc />
+    public Activity? StartIndexingActivity(string entityId, string entityType)
+    {
+        return null;
+    }
+
+    /// <inheritdoc />
+    public Activity? StartSearchActivity(string worldId, string searchMode)
+    {
+        return null;
+    }
+
+    /// <inheritdoc />
     public Activity? StartActivity(string operationName, Dictionary<string, object>? tags = null)
     {
         // Return null activity to indicate tracing is not enabled

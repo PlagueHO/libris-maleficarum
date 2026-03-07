@@ -14,6 +14,12 @@ public class TelemetryService : ITelemetryService
     private readonly Counter<int> _worldsDeleted;
     private readonly Counter<int> _entitiesCreated;
     private readonly Counter<int> _entitiesDeleted;
+    private readonly Counter<int> _documentsIndexed;
+    private readonly Counter<int> _indexingFailures;
+    private readonly Counter<int> _searchQueries;
+    private readonly Histogram<double> _syncLagSeconds;
+    private readonly Histogram<double> _embeddingLatencyMs;
+    private readonly Histogram<double> _searchLatencyMs;
     private readonly ActivitySource _activitySource;
 
     /// <summary>
@@ -27,6 +33,12 @@ public class TelemetryService : ITelemetryService
         _worldsDeleted = meter.CreateCounter<int>("worlds.deleted", description: "Counts the number of worlds deleted");
         _entitiesCreated = meter.CreateCounter<int>("entities.created", description: "Counts the number of entities created");
         _entitiesDeleted = meter.CreateCounter<int>("entities.deleted", description: "Counts the number of entities deleted");
+        _documentsIndexed = meter.CreateCounter<int>("search.documents.indexed", description: "Counts the number of documents indexed in search");
+        _indexingFailures = meter.CreateCounter<int>("search.indexing.failures", description: "Counts the number of indexing failures");
+        _searchQueries = meter.CreateCounter<int>("search.queries.executed", description: "Counts the number of search queries executed");
+        _syncLagSeconds = meter.CreateHistogram<double>("search.sync.lag.seconds", "s", "Index sync lag in seconds");
+        _embeddingLatencyMs = meter.CreateHistogram<double>("search.embedding.latency.ms", "ms", "Embedding generation latency in milliseconds");
+        _searchLatencyMs = meter.CreateHistogram<double>("search.query.latency.ms", "ms", "Search query latency in milliseconds");
         _activitySource = activitySource;
     }
 
@@ -52,6 +64,60 @@ public class TelemetryService : ITelemetryService
     public void RecordEntityDeleted(string entityType)
     {
         _entitiesDeleted.Add(1, new KeyValuePair<string, object?>("entity.type", entityType));
+    }
+
+    /// <inheritdoc />
+    public void RecordDocumentIndexed(string entityType)
+    {
+        _documentsIndexed.Add(1, new KeyValuePair<string, object?>("entity.type", entityType));
+    }
+
+    /// <inheritdoc />
+    public void RecordIndexingFailure(string entityType)
+    {
+        _indexingFailures.Add(1, new KeyValuePair<string, object?>("entity.type", entityType));
+    }
+
+    /// <inheritdoc />
+    public void RecordSearchQuery(string searchMode)
+    {
+        _searchQueries.Add(1, new KeyValuePair<string, object?>("search.mode", searchMode));
+    }
+
+    /// <inheritdoc />
+    public void RecordSyncLag(double lagSeconds)
+    {
+        _syncLagSeconds.Record(lagSeconds);
+    }
+
+    /// <inheritdoc />
+    public void RecordEmbeddingLatency(double latencyMs)
+    {
+        _embeddingLatencyMs.Record(latencyMs);
+    }
+
+    /// <inheritdoc />
+    public void RecordSearchLatency(double latencyMs)
+    {
+        _searchLatencyMs.Record(latencyMs);
+    }
+
+    /// <inheritdoc />
+    public Activity? StartIndexingActivity(string entityId, string entityType)
+    {
+        var activity = _activitySource.StartActivity("SearchIndex.IndexDocument");
+        activity?.SetTag("entity.id", entityId);
+        activity?.SetTag("entity.type", entityType);
+        return activity;
+    }
+
+    /// <inheritdoc />
+    public Activity? StartSearchActivity(string worldId, string searchMode)
+    {
+        var activity = _activitySource.StartActivity("SearchIndex.SearchQuery");
+        activity?.SetTag("world.id", worldId);
+        activity?.SetTag("search.mode", searchMode);
+        return activity;
     }
 
     /// <inheritdoc />

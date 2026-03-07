@@ -6,6 +6,7 @@ using LibrisMaleficarum.Api.Validators;
 using LibrisMaleficarum.Domain.Configuration;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
+using LibrisMaleficarum.Infrastructure.Configuration;
 using LibrisMaleficarum.Infrastructure.Persistence;
 using LibrisMaleficarum.Infrastructure.Repositories;
 using LibrisMaleficarum.Infrastructure.Services;
@@ -14,6 +15,12 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Azure;
+using Azure.AI.OpenAI;
+using Azure.Search.Documents;
+using Azure.Search.Documents.Indexes;
+using Microsoft.Azure.Cosmos;
+using AppSearchOptions = LibrisMaleficarum.Infrastructure.Configuration.SearchOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +38,10 @@ builder.Services.Configure<EntitySchemaVersionConfig>(
 // Configure delete operation options
 builder.Services.Configure<DeleteOperationOptions>(
     builder.Configuration.GetSection(DeleteOperationOptions.SectionName));
+
+// Configure search options
+builder.Services.Configure<AppSearchOptions>(
+    builder.Configuration.GetSection(AppSearchOptions.SectionName));
 
 // Configure DbContext with Cosmos DB provider
 var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb")
@@ -69,7 +80,77 @@ builder.Services.AddScoped<IWorldEntityRepository, WorldEntityRepository>();
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<IDeleteOperationRepository, DeleteOperationRepository>();
 builder.Services.AddScoped<IDeleteService, DeleteService>();
-builder.Services.AddScoped<ISearchService, SearchService>();
+
+// Configure Azure AI Search clients
+var searchConnectionString = builder.Configuration.GetConnectionString("search");
+if (!string.IsNullOrEmpty(searchConnectionString))
+{
+    // Parse the search connection string (expected format: "Endpoint=https://...;ApiKey=...")
+    var searchEndpoint = new Uri(searchConnectionString.Split(';')
+        .FirstOrDefault(s => s.StartsWith("Endpoint=", StringComparison.OrdinalIgnoreCase))
+        ?.Substring("Endpoint=".Length) ?? throw new InvalidOperationException("Search connection string missing Endpoint"));
+    var searchApiKey = searchConnectionString.Split(';')
+        .FirstOrDefault(s => s.StartsWith("ApiKey=", StringComparison.OrdinalIgnoreCase))
+        ?.Substring("ApiKey=".Length) ?? "";
+    var searchCredential = new AzureKeyCredential(searchApiKey);
+
+    var searchOptions = builder.Configuration.GetSection(AppSearchOptions.SectionName).Get<AppSearchOptions>() ?? new AppSearchOptions();
+
+    builder.Services.AddSingleton(new SearchIndexClient(searchEndpoint, searchCredential));
+    builder.Services.AddSingleton(new SearchClient(searchEndpoint, searchOptions.IndexName, searchCredential));
+}
+else
+{
+    // Fallback: register placeholder clients for environments without search configured
+    builder.Services.AddSingleton(sp => new SearchIndexClient(new Uri("https://placeholder.search.windows.net"), new AzureKeyCredential("placeholder")));
+    builder.Services.AddSingleton(sp =>
+    {
+        var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AppSearchOptions>>().Value;
+        return new SearchClient(new Uri("https://placeholder.search.windows.net"), opts.IndexName, new AzureKeyCredential("placeholder"));
+    });
+}
+
+// Configure Azure AI Services embedding client
+var aiServicesConnectionString = builder.Configuration.GetConnectionString("aiservices");
+if (!string.IsNullOrEmpty(aiServicesConnectionString))
+{
+    var aiEndpoint = new Uri(aiServicesConnectionString.Split(';')
+        .FirstOrDefault(s => s.StartsWith("Endpoint=", StringComparison.OrdinalIgnoreCase))
+        ?.Substring("Endpoint=".Length) ?? throw new InvalidOperationException("AI Services connection string missing Endpoint"));
+    var aiApiKey = aiServicesConnectionString.Split(';')
+        .FirstOrDefault(s => s.StartsWith("ApiKey=", StringComparison.OrdinalIgnoreCase))
+        ?.Substring("ApiKey=".Length) ?? "";
+
+    var searchOpts = builder.Configuration.GetSection(AppSearchOptions.SectionName).Get<AppSearchOptions>() ?? new AppSearchOptions();
+    var azureOpenAIClient = new AzureOpenAIClient(aiEndpoint, new AzureKeyCredential(aiApiKey));
+    builder.Services.AddSingleton(azureOpenAIClient.GetEmbeddingClient(searchOpts.EmbeddingModelName));
+}
+else
+{
+    // Fallback: register a placeholder embedding client
+    var placeholderClient = new AzureOpenAIClient(new Uri("https://placeholder.openai.azure.com"), new AzureKeyCredential("placeholder"));
+    builder.Services.AddSingleton(placeholderClient.GetEmbeddingClient("text-embedding-3-small"));
+}
+
+// Register Cosmos DB client for Change Feed Processor
+builder.Services.AddSingleton(sp =>
+{
+    var connStr = builder.Configuration.GetConnectionString("cosmosdb")
+        ?? throw new InvalidOperationException("Cosmos DB connection string 'cosmosdb' not found for Change Feed Processor");
+    return new CosmosClient(connStr, new CosmosClientOptions
+    {
+        ConnectionMode = ConnectionMode.Gateway,
+        RequestTimeout = TimeSpan.FromSeconds(60)
+    });
+});
+
+// Register search services
+builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
+builder.Services.AddScoped<ISearchIndexService, AzureAISearchService>();
+builder.Services.AddScoped<ISearchService, AzureAISearchService>();
+
+// Register Change Feed sync background service
+builder.Services.AddHostedService<SearchIndexSyncService>();
 
 // Register validators
 builder.Services.AddScoped<SchemaVersionValidator>();
