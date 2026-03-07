@@ -79,7 +79,7 @@ libris-maleficarum-service/
 │   │       ├── AzureAISearchService.cs         # NEW: Azure AI Search impl
 │   │       ├── SearchIndexSyncService.cs       # NEW: index sync processor
 │   │       ├── EmbeddingService.cs             # NEW: embedding generation
-│   │       └── SearchService.cs                # MODIFIED: delegates to AI Search
+│   │       └── SearchService.cs                # REMOVED: replaced by AzureAISearchService (T042)
 │   └── Orchestration/
 │       ├── AppHost/
 │       │   └── AppHost.cs                      # MODIFIED: add AI Search + AI Services

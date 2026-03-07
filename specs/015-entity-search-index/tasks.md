@@ -41,7 +41,6 @@ All paths are relative to `libris-maleficarum-service/` unless prefixed with `in
 - [ ] T007 [P] Create SearchResult and SearchResultSet domain models in src/Domain/Models/SearchResult.cs per data-model.md
 - [ ] T008 [P] Create ISearchIndexService interface (IndexDocumentAsync, IndexDocumentsBatchAsync, RemoveDocumentAsync, RemoveDocumentsBatchAsync) in src/Domain/Interfaces/Services/ISearchIndexService.cs per data-model.md
 - [ ] T009 [P] Create IEmbeddingService interface (GenerateEmbeddingAsync, GenerateEmbeddingsBatchAsync) in src/Domain/Interfaces/Services/IEmbeddingService.cs per data-model.md
-- [ ] T010 Update ISearchService interface: replace SearchEntitiesAsync with SearchAsync(SearchRequest) returning SearchResultSet in src/Domain/Interfaces/Services/ISearchService.cs per data-model.md (breaking change — all consumers updated in US2 phase)
 - [ ] T011 [P] Create SearchEntitiesRequest API model (query params: q, mode, entityType, tags, name, parentId, limit, offset) in src/Api/Models/Requests/SearchEntitiesRequest.cs per contracts/search-api.yaml
 - [ ] T012 [P] Create SearchResultResponse API model (SearchResultItem + SearchMeta) in src/Api/Models/Responses/SearchResultResponse.cs per contracts/search-api.yaml
 - [ ] T013 Add search-related metric and tracing methods to ITelemetryService interface (RecordDocumentIndexed, RecordIndexingFailure, RecordSearchQuery, RecordSyncLag, RecordEmbeddingLatency, RecordSearchLatency, StartIndexingActivity, StartSearchActivity) in src/Domain/Interfaces/Services/ITelemetryService.cs per FR-022/FR-023
@@ -90,12 +89,15 @@ All paths are relative to `libris-maleficarum-service/` unless prefixed with `in
 
 ### Implementation for User Story 2
 
+- [ ] T010 [US2] Update ISearchService interface: replace SearchEntitiesAsync with SearchAsync(SearchRequest) returning SearchResultSet in src/Domain/Interfaces/Services/ISearchService.cs per data-model.md (breaking change — applied atomically with consumer updates below)
 - [ ] T027 [US2] Implement SearchAsync in AzureAISearchService: build search query with world filter, apply entityType/tags/name/parentId filters, support hybrid/text/vector modes via SearchOptions, generate query vector via IEmbeddingService for vector/hybrid modes, map results to SearchResultSet in src/Infrastructure/Services/AzureAISearchService.cs (implements ISearchService)
 - [ ] T028 [US2] Update WorldEntitiesController: refactor existing list endpoint (HttpGet) to use IWorldEntityRepository directly instead of ISearchService.SearchEntitiesAsync. Add new search endpoint action `[HttpGet("search")]` that accepts SearchEntitiesRequest, validates world access (FR-020), maps to SearchRequest, calls ISearchService.SearchAsync, returns SearchResultResponse in src/Api/Controllers/WorldEntitiesController.cs per contracts/search-api.yaml
+- [ ] T028b [US2] Refactor WorldsController search endpoint (~line 143) to call ISearchService.SearchAsync(SearchRequest) instead of SearchEntitiesAsync; update constructor injection and any response mapping in src/Api/Controllers/WorldsController.cs
 - [ ] T029 [US2] Update DI registration: register AzureAISearchService as ISearchService (replacing old SearchService registration) in src/Api/Program.cs (line ~72)
 - [ ] T030 [US2] Add search query OpenTelemetry instrumentation: counter (search queries executed), histogram (search query latency), distributed tracing activity for search execution via ITelemetryService in src/Infrastructure/Services/AzureAISearchService.cs per FR-022/FR-023
 - [ ] T031 [US2] Add structured logging for search queries: Information level with worldId, query text length (not raw query content), filters applied, search mode, result count, latency; Debug level for raw query text per FR-024 in src/Infrastructure/Services/AzureAISearchService.cs
 - [ ] T032 [US2] Update existing SearchServiceTests for new ISearchService.SearchAsync signature: update mocks and assertions to use SearchRequest/SearchResultSet in tests/unit/Infrastructure.Tests/Services/SearchServiceTests.cs
+- [ ] T032b [US2] Update WorldsControllerTests: update mocked ISearchService calls to use SearchAsync(SearchRequest) signature and verify WorldsController search endpoint works with new interface in tests/unit/Api.Tests/Controllers/WorldsControllerTests.cs
 
 **Checkpoint**: Full search API operational — hybrid, text, and vector search modes work through `GET /api/v1/worlds/{worldId}/search`. World isolation enforced. Existing list endpoint unbroken.
 
@@ -135,9 +137,11 @@ All paths are relative to `libris-maleficarum-service/` unless prefixed with `in
 - [ ] T038 [P] Update infra/main.bicep: change Azure AI Search SKU from `standard` to `basic` per research.md decision (note: in-place SKU downgrade is not supported — new resource may be needed if standard is already deployed) in infra/main.bicep
 - [ ] T039 [P] Add Cosmos DB leases container provisioning to infra/main.bicep: container name `leases`, partition key `/id`, 400 RU/s in infra/main.bicep per research.md
 - [ ] T040 [P] Add AI Services embedding model deployment configuration to infra/main.bicep or infra/cognitive-services/ if not already provisioned (text-embedding-3-small) in infra/
+- [ ] T040b [P] Add Azure Monitor alert rule for dead-letter indexing failures (FR-005): provision metric alert that fires when indexing failures exceed threshold, targeting Application Insights or custom metric, using AVM module `br/public:avm/res/insights/metric-alert` in infra/main.bicep
 - [ ] T041 Update Aspire AppHost: add Azure AI Search resource (connection string injection), add Azure AI Services resource (connection string injection), add leases container to Cosmos DB emulator provisioning in src/Orchestration/AppHost/AppHost.cs per quickstart.md
 - [ ] T042 [P] Remove or archive old SearchService.cs (LINQ-based implementation replaced by AzureAISearchService) in src/Infrastructure/Services/SearchService.cs — ensure no remaining references
 - [ ] T043 Run quickstart.md end-to-end validation: start Aspire AppHost, create entities, verify index sync, execute search queries, validate filters and pagination in specs/015-entity-search-index/quickstart.md
+- [ ] T043b Create relevance evaluation test set (minimum 20 query/expected-result pairs) and execute manual evaluation against deployed index to validate SC-003 (80% semantic relevance in top 5). Document results in specs/015-entity-search-index/quickstart.md
 - [ ] T044 [P] Update quickstart with corrections discovered during implementation in specs/015-entity-search-index/quickstart.md
 
 ---
@@ -192,8 +196,7 @@ T009: Create IEmbeddingService in src/Domain/Interfaces/Services/IEmbeddingServi
 T011: Create SearchEntitiesRequest in src/Api/Models/Requests/SearchEntitiesRequest.cs
 T012: Create SearchResultResponse in src/Api/Models/Responses/SearchResultResponse.cs
 
-# Then sequential:
-T010: Update ISearchService (depends on T007 for SearchRequest/SearchResultSet types)
+# Then sequential (Phase 2):
 T013: Update ITelemetryService (depends on domain model awareness)
 
 # US1 test parallel batch:
@@ -257,8 +260,9 @@ With multiple developers:
 
 - [P] tasks = different files, no dependencies on incomplete tasks in same phase
 - [Story] label maps task to specific user story for traceability (US1-US4)
-- The ISearchService breaking change (T010) is an internal change — all consumers are updated together in US2 (T028, T029, T032)
+- The ISearchService breaking change (T010) is in Phase 4 (US2) — applied atomically with all consumer updates (T027, T028, T028b, T029, T032, T032b) to keep the project compilable between phases
 - The old LINQ-based SearchService.cs is archived/removed in Polish (T042) after AzureAISearchService fully replaces it
 - AzureAISearchService implements BOTH ISearchIndexService (for index push, US1) and ISearchService (for search queries, US2)
+- WorldsController.cs (~line 143) also consumes ISearchService — updated in T028b, tested in T032b
 - Index schema creation (T018 EnsureIndexExistsAsync) happens on first sync service startup, not as a separate migration step
 - Commit after each task or logical group. Stop at any checkpoint to validate independently.
