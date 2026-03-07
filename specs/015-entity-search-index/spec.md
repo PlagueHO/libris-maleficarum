@@ -9,7 +9,7 @@
 
 ### User Story 1 - Entity Changes Automatically Indexed (Priority: P1)
 
-When a user creates, updates, or soft-deletes a WorldEntity through the API, the search index is automatically updated to reflect the change. This happens asynchronously so the user does not experience additional latency on write operations. The index contains vector embeddings of entity content (Name, Description, Tags) alongside filterable metadata fields.
+When a user creates, updates, or soft-deletes a WorldEntity through the API, the search index is automatically updated to reflect the change. This happens asynchronously so the user does not experience additional latency on write operations. The index contains vector embeddings of entity content (Name, Description, Tags, Attributes) alongside filterable metadata fields.
 
 **Why this priority**: Without index synchronization, search results become stale and unreliable. This is the foundational capability that all search features depend on.
 
@@ -92,7 +92,7 @@ The search index is structured and configured so that it can be registered as an
 
 - **FR-001**: System MUST asynchronously update the Azure AI Search index when a WorldEntity is created, updated, or soft-deleted.
 - **FR-002**: System MUST NOT add additional latency to entity write operations — indexing happens out of band from the API response.
-- **FR-003**: System MUST generate vector embeddings for entity content (Name, Description, Tags, and Properties concatenated) using an Azure AI Services embedding model. SystemProperties are excluded from the embedding to avoid indexing highly system-specific mechanical data with low semantic search value.
+- **FR-003**: System MUST generate vector embeddings for entity content (Name, Description, Tags, and Attributes concatenated) using an Azure AI Services embedding model. SystemProperties are excluded from the embedding to avoid indexing highly system-specific mechanical data with low semantic search value.
 - **FR-004**: System MUST remove soft-deleted entities from the search index so they do not appear in search results.
 - **FR-005**: System MUST handle transient failures in index synchronization with automatic retries and dead-letter handling for persistent failures. Dead-lettered items MUST be logged to Application Insights and trigger an Azure Monitor alert to operators for investigation.
 - **FR-006**: System MUST support eventual consistency — the search index may lag behind Cosmos DB by a bounded amount of time, but all changes must eventually be reflected.
@@ -159,7 +159,7 @@ The search index is structured and configured so that it can be registered as an
 
 - **SC-001**: When an entity is created, updated, or soft-deleted, the search index reflects the change within a defined synchronization window (target: under 60 seconds for the chosen approach, documented with actual measured latency).
 - **SC-002**: Search queries scoped to a world with 1,000 entities return results in under 2 seconds.
-- **SC-003**: Search results for natural language queries return semantically relevant entities in the top 5 results at least 80% of the time (measured by manual relevance evaluation on a representative test set).
+- **SC-003**: Search results for natural language queries return semantically relevant entities in the top 5 results at least 80% of the time (measured by manual relevance evaluation on a representative test set). **Validation**: Requires a curated test set of at least 20 query/expected-result pairs evaluated post-deployment. See tasks.md T043b for the evaluation task.
 - **SC-004**: No entity write operation (create/update/delete) experiences more than 50ms of added latency due to indexing (indexing is fully asynchronous).
 - **SC-005**: The monthly cost of the search indexing infrastructure (excluding the Azure AI Search service itself, which is already provisioned) remains proportional to update volume — idle worlds incur minimal to no indexing cost.
 - **SC-006**: The search index is registered as a valid Knowledge Source in an Azure AI Search Knowledge Base without modification to the index schema.
