@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.40.2.10011",
-      "templateHash": "12350850528596767611"
+      "version": "0.41.2.15936",
+      "templateHash": "169729528599924889"
     },
     "name": "Microsoft Foundry Role Assignments",
     "description": "Creates role assignments on a Microsoft Foundry account."

@@ -33,6 +33,58 @@ public interface ITelemetryService
     void RecordEntityDeleted(string entityType);
 
     /// <summary>
+    /// Records that a document was successfully indexed in the search index.
+    /// </summary>
+    /// <param name="entityType">The entity type of the indexed document.</param>
+    void RecordDocumentIndexed(string entityType);
+
+    /// <summary>
+    /// Records an indexing failure.
+    /// </summary>
+    /// <param name="entityType">The entity type that failed to index.</param>
+    void RecordIndexingFailure(string entityType);
+
+    /// <summary>
+    /// Records a search query execution.
+    /// </summary>
+    /// <param name="searchMode">The search mode used (text, vector, hybrid).</param>
+    void RecordSearchQuery(string searchMode);
+
+    /// <summary>
+    /// Records the sync lag between entity change and index update.
+    /// </summary>
+    /// <param name="lagSeconds">The lag in seconds.</param>
+    void RecordSyncLag(double lagSeconds);
+
+    /// <summary>
+    /// Records the latency of embedding generation.
+    /// </summary>
+    /// <param name="latencyMs">The latency in milliseconds.</param>
+    void RecordEmbeddingLatency(double latencyMs);
+
+    /// <summary>
+    /// Records the latency of a search query.
+    /// </summary>
+    /// <param name="latencyMs">The latency in milliseconds.</param>
+    void RecordSearchLatency(double latencyMs);
+
+    /// <summary>
+    /// Starts a new activity for indexing operations.
+    /// </summary>
+    /// <param name="entityId">The entity identifier being indexed.</param>
+    /// <param name="entityType">The entity type being indexed.</param>
+    /// <returns>An activity that should be disposed after the operation completes.</returns>
+    Activity? StartIndexingActivity(string entityId, string entityType);
+
+    /// <summary>
+    /// Starts a new activity for search operations.
+    /// </summary>
+    /// <param name="worldId">The world being searched.</param>
+    /// <param name="searchMode">The search mode being used.</param>
+    /// <returns>An activity that should be disposed after the operation completes.</returns>
+    Activity? StartSearchActivity(string worldId, string searchMode);
+
+    /// <summary>
     /// Starts a new activity with the given name and tags.
     /// </summary>
     /// <param name="operationName">The name of the operation being traced.</param>

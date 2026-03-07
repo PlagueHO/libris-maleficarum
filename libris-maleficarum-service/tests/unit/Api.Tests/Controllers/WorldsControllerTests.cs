@@ -9,6 +9,7 @@ using LibrisMaleficarum.Api.Models.Responses;
 using LibrisMaleficarum.Domain.Entities;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
+using LibrisMaleficarum.Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
@@ -319,31 +320,51 @@ public class WorldsControllerTests
     public async Task SearchEntities_WithValidQuery_ReturnsOkWithResults()
     {
         // Arrange
-        var query = "test";
-        var entities = new List<WorldEntity>
+        var request = new SearchEntitiesRequest { Q = "test" };
+        var resultSet = new SearchResultSet
         {
-            WorldEntity.Create(_worldId, Domain.ValueObjects.EntityType.Character, "Test Character", TestOwnerId, "Description")
+            Results =
+            [
+                new SearchResult
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Test Character",
+                    EntityType = "Character",
+                    RelevanceScore = 0.95,
+                    WorldId = _worldId,
+                    Tags = ["npc"],
+                    OwnerId = TestOwnerId,
+                    CreatedDate = DateTimeOffset.UtcNow,
+                    ModifiedDate = DateTimeOffset.UtcNow
+                }
+            ],
+            TotalCount = 1,
+            Offset = 0,
+            Limit = 50
         };
 
-        _searchService.SearchEntitiesAsync(_worldId, query, null, null, 50, null, Arg.Any<CancellationToken>())
-            .Returns((entities, (string?)null));
+        _searchService.SearchAsync(Arg.Any<SearchRequest>(), Arg.Any<CancellationToken>())
+            .Returns(resultSet);
 
         // Act
-        var result = await _controller.SearchEntities(_worldId, query);
+        var result = await _controller.SearchEntities(_worldId, request, CancellationToken.None);
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var response = okResult.Value.Should().BeOfType<PaginatedApiResponse<EntityResponse>>().Subject;
+        var response = okResult.Value.Should().BeOfType<SearchResponse>().Subject;
         response.Data.Should().HaveCount(1);
         response.Data.First().Name.Should().Be("Test Character");
-        response.Meta.Count.Should().Be(1);
+        response.Meta.TotalCount.Should().Be(1);
     }
 
     [TestMethod]
     public async Task SearchEntities_WithEmptyQuery_ReturnsBadRequest()
     {
+        // Arrange
+        var request = new SearchEntitiesRequest { Q = "" };
+
         // Act
-        var result = await _controller.SearchEntities(_worldId, "");
+        var result = await _controller.SearchEntities(_worldId, request, CancellationToken.None);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -355,8 +376,11 @@ public class WorldsControllerTests
     [TestMethod]
     public async Task SearchEntities_WithNullQuery_ReturnsBadRequest()
     {
+        // Arrange
+        var request = new SearchEntitiesRequest { Q = null! };
+
         // Act
-        var result = await _controller.SearchEntities(_worldId, null!);
+        var result = await _controller.SearchEntities(_worldId, request, CancellationToken.None);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -365,19 +389,33 @@ public class WorldsControllerTests
     }
 
     [TestMethod]
-    public async Task SearchEntities_WithSortingParameters_PassesToSearchService()
+    public async Task SearchEntities_WithFilters_PassesToSearchService()
     {
         // Arrange
-        var query = "test";
-        _searchService.SearchEntitiesAsync(_worldId, query, "name", "asc", 100, "cursor", Arg.Any<CancellationToken>())
-            .Returns((new List<WorldEntity>(), (string?)null));
+        var request = new SearchEntitiesRequest
+        {
+            Q = "test",
+            EntityType = "Character",
+            Limit = 100,
+            Offset = 10
+        };
+        var resultSet = new SearchResultSet
+        {
+            Results = [],
+            TotalCount = 0,
+            Offset = 10,
+            Limit = 100
+        };
+
+        _searchService.SearchAsync(Arg.Any<SearchRequest>(), Arg.Any<CancellationToken>())
+            .Returns(resultSet);
 
         // Act
-        await _controller.SearchEntities(_worldId, query, "name", "asc", 100, "cursor");
+        await _controller.SearchEntities(_worldId, request, CancellationToken.None);
 
         // Assert
-        await _searchService.Received(1).SearchEntitiesAsync(
-            _worldId, query, "name", "asc", 100, "cursor", Arg.Any<CancellationToken>());
+        await _searchService.Received(1).SearchAsync(
+            Arg.Any<SearchRequest>(), Arg.Any<CancellationToken>());
     }
 
     #endregion

@@ -4,6 +4,8 @@ using LibrisMaleficarum.Api.Models.Responses;
 using LibrisMaleficarum.Domain.Entities;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
+using LibrisMaleficarum.Domain.Models;
+using LibrisMaleficarum.Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibrisMaleficarum.Api.Controllers;
@@ -99,36 +101,28 @@ public class WorldsController : ControllerBase
     }
 
     /// <summary>
-    /// Searches for entities within a world by query string.
-    /// Performs case-insensitive partial matching on Name, Description, and Tags.
+    /// Searches for entities within a world using AI-powered hybrid search.
+    /// Supports text, vector, and hybrid search modes with filtering.
     /// </summary>
     /// <param name="worldId">The world identifier.</param>
-    /// <param name="q">The search query string.</param>
-    /// <param name="sortBy">Field to sort by (name, createdDate, modifiedDate). Default: modifiedDate.</param>
-    /// <param name="sortOrder">Sort order (asc, desc). Default: desc.</param>
-    /// <param name="limit">Maximum number of results to return (default 50, max 200).</param>
-    /// <param name="cursor">Continuation cursor from previous response.</param>
+    /// <param name="request">The search request parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Paginated search results.</returns>
+    /// <returns>Search results with relevance scores.</returns>
     /// <response code="200">Search results retrieved successfully.</response>
     /// <response code="400">Invalid search query.</response>
     /// <response code="403">Forbidden - user does not own this world.</response>
     /// <response code="404">World not found.</response>
     [HttpGet("{worldId:guid}/search")]
-    [ProducesResponseType(typeof(PaginatedApiResponse<EntityResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SearchResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> SearchEntities(
         Guid worldId,
-        [FromQuery] string q,
-        [FromQuery] string? sortBy = null,
-        [FromQuery] string? sortOrder = null,
-        [FromQuery] int limit = 50,
-        [FromQuery] string? cursor = null,
+        [FromQuery] SearchEntitiesRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(q))
+        if (string.IsNullOrWhiteSpace(request.Q))
         {
             return BadRequest(new ErrorResponse
             {
@@ -140,26 +134,88 @@ public class WorldsController : ControllerBase
             });
         }
 
-        var (entities, nextCursor) = await _searchService.SearchEntitiesAsync(
-            worldId,
-            q,
-            sortBy,
-            sortOrder,
-            limit,
-            cursor,
-            cancellationToken);
-
-        var responses = entities.Select(MapToEntityResponse).ToList();
-
-        return Ok(new PaginatedApiResponse<EntityResponse>
+        // Parse search mode
+        var searchMode = Domain.Models.SearchMode.Hybrid;
+        if (!string.IsNullOrEmpty(request.Mode))
         {
-            Data = responses,
-            Meta = new PaginationMeta
+            if (!Enum.TryParse<Domain.Models.SearchMode>(request.Mode, ignoreCase: true, out searchMode))
             {
-                Count = responses.Count,
-                NextCursor = nextCursor
+                return BadRequest(new ErrorResponse
+                {
+                    Error = new ErrorDetail
+                    {
+                        Code = "INVALID_SEARCH_MODE",
+                        Message = "Search mode must be 'hybrid', 'text', or 'vector'."
+                    }
+                });
             }
-        });
+        }
+
+        // Parse entity type filter
+        EntityType? entityTypeFilter = null;
+        if (!string.IsNullOrEmpty(request.EntityType))
+        {
+            if (!Enum.TryParse<EntityType>(request.EntityType, ignoreCase: true, out var parsedType))
+            {
+                return BadRequest(new ErrorResponse
+                {
+                    Error = new ErrorDetail
+                    {
+                        Code = "INVALID_ENTITY_TYPE",
+                        Message = $"Entity type '{request.EntityType}' is not valid."
+                    }
+                });
+            }
+            entityTypeFilter = parsedType;
+        }
+
+        // Parse tags filter
+        List<string>? tagsFilter = null;
+        if (!string.IsNullOrEmpty(request.Tags))
+        {
+            tagsFilter = request.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        }
+
+        var domainRequest = new Domain.Models.SearchRequest
+        {
+            WorldId = worldId,
+            Query = request.Q,
+            Mode = searchMode,
+            EntityTypeFilter = entityTypeFilter,
+            TagsFilter = tagsFilter,
+            NameFilter = request.Name,
+            ParentIdFilter = request.ParentId,
+            Limit = request.Limit,
+            Offset = request.Offset
+        };
+
+        var resultSet = await _searchService.SearchAsync(domainRequest, cancellationToken);
+
+        var response = new SearchResponse
+        {
+            Data = resultSet.Results.Select(r => new SearchResultItem
+            {
+                Id = r.Id,
+                Name = r.Name,
+                EntityType = r.EntityType,
+                DescriptionSnippet = r.DescriptionSnippet,
+                RelevanceScore = r.RelevanceScore,
+                WorldId = r.WorldId,
+                ParentId = r.ParentId,
+                Tags = r.Tags,
+                OwnerId = r.OwnerId,
+                CreatedDate = r.CreatedDate,
+                ModifiedDate = r.ModifiedDate
+            }).ToList(),
+            Meta = new SearchMeta
+            {
+                TotalCount = resultSet.TotalCount,
+                Offset = resultSet.Offset,
+                Limit = resultSet.Limit
+            }
+        };
+
+        return Ok(response);
     }
 
     /// <summary>

@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.40.2.10011",
-      "templateHash": "8969433151508086852"
+      "version": "0.41.2.15936",
+      "templateHash": "15256628134197953851"
     },
     "name": "Azure AI Search Role Assignments",
     "description": "Creates role assignments on an Azure AI Search service."

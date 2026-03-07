@@ -9,6 +9,7 @@ using LibrisMaleficarum.Domain.Exceptions;
 using LibrisMaleficarum.Domain.Extensions;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
+using LibrisMaleficarum.Domain.Models;
 using LibrisMaleficarum.Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 
@@ -199,6 +200,122 @@ public class WorldEntitiesController : ControllerBase
                 NextCursor = nextCursor
             }
         });
+    }
+
+    /// <summary>
+    /// Searches entities within a world using Azure AI Search (hybrid, text, or vector).
+    /// </summary>
+    /// <param name="worldId">The world identifier.</param>
+    /// <param name="request">The search query parameters.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Search results with relevance scores.</returns>
+    [HttpGet("search")]
+    [ProducesResponseType<SearchResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SearchEntities(
+        Guid worldId,
+        [FromQuery] SearchEntitiesRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Q))
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Error = new ErrorDetail
+                {
+                    Code = "VALIDATION_ERROR",
+                    Message = "The 'q' query parameter is required."
+                }
+            });
+        }
+
+        var userId = await _userContextService.GetCurrentUserIdAsync();
+        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+
+        if (world is null)
+        {
+            return NotFound(new ErrorResponse
+            {
+                Error = new ErrorDetail
+                {
+                    Code = "NOT_FOUND",
+                    Message = $"World {worldId} not found."
+                }
+            });
+        }
+
+        if (world.OwnerId != userId)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new ErrorResponse
+            {
+                Error = new ErrorDetail
+                {
+                    Code = "FORBIDDEN",
+                    Message = "Access denied."
+                }
+            });
+        }
+
+        var searchMode = request.Mode?.ToLowerInvariant() switch
+        {
+            "text" => Domain.Models.SearchMode.Text,
+            "vector" => Domain.Models.SearchMode.Vector,
+            _ => Domain.Models.SearchMode.Hybrid
+        };
+
+        EntityType? entityTypeFilter = null;
+        if (!string.IsNullOrEmpty(request.EntityType) &&
+            Enum.TryParse<EntityType>(request.EntityType, ignoreCase: true, out var parsedType))
+        {
+            entityTypeFilter = parsedType;
+        }
+
+        var tagsList = request.Tags?
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+
+        var searchRequest = new SearchRequest
+        {
+            Query = request.Q,
+            WorldId = worldId,
+            Mode = searchMode,
+            EntityTypeFilter = entityTypeFilter,
+            TagsFilter = tagsList,
+            NameFilter = request.Name,
+            ParentIdFilter = request.ParentId,
+            Limit = request.Limit,
+            Offset = request.Offset
+        };
+
+        var resultSet = await _searchService.SearchAsync(searchRequest, cancellationToken);
+
+        var response = new SearchResponse
+        {
+            Data = resultSet.Results.Select(r => new SearchResultItem
+            {
+                Id = r.Id,
+                Name = r.Name,
+                EntityType = r.EntityType,
+                DescriptionSnippet = r.DescriptionSnippet,
+                RelevanceScore = r.RelevanceScore,
+                WorldId = r.WorldId,
+                ParentId = r.ParentId,
+                Tags = r.Tags,
+                OwnerId = r.OwnerId,
+                CreatedDate = r.CreatedDate,
+                ModifiedDate = r.ModifiedDate
+            }).ToList(),
+            Meta = new SearchMeta
+            {
+                TotalCount = resultSet.TotalCount,
+                Offset = resultSet.Offset,
+                Limit = resultSet.Limit
+            }
+        };
+
+        return Ok(response);
     }
 
     /// <summary>
