@@ -1,0 +1,280 @@
+openapi: 3.0.3
+info:
+  title: Libris Maleficarum - Entity Search API
+  description: Search endpoint for WorldEntity documents using Azure AI Search with hybrid (text + vector) search.
+  version: 1.0.0
+
+servers:
+  - url: https://api.librismaleficarum.com/api/v1
+    description: Production
+  - url: https://127.0.0.1:4000/api/v1
+    description: Local development
+
+paths:
+  /worlds/{worldId}/search:
+    get:
+      operationId: searchEntities
+      summary: Search entities within a world
+      description: |
+        Searches for entities within a specific world using natural language queries.
+        Supports hybrid (text + vector), pure text, and pure vector search modes.
+        Results are ranked by relevance and can be filtered by entity type, tags, name, and parent ID.
+        Requires the requesting user to have access to the specified world (owner-only).
+      tags:
+        - Search
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          description: The world identifier. Only entities belonging to this world are searchable.
+          schema:
+            type: string
+            format: uuid
+        - name: q
+          in: query
+          required: true
+          description: The search query string (natural language). Used for both text and vector search.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 500
+        - name: mode
+          in: query
+          required: false
+          description: |
+            Search mode:
+            - `hybrid` (default): Combined text + vector search for best relevance
+            - `text`: Full-text search only
+            - `vector`: Vector similarity search only
+          schema:
+            type: string
+            enum: [hybrid, text, vector]
+            default: hybrid
+        - name: entityType
+          in: query
+          required: false
+          description: Filter results by entity type.
+          schema:
+            type: string
+            enum:
+              - Continent
+              - Country
+              - Region
+              - City
+              - Building
+              - Room
+              - Location
+              - Character
+              - PlayerCharacter
+              - Faction
+              - Event
+              - Quest
+              - Item
+              - Campaign
+              - Session
+              - Folder
+              - Locations
+              - Characters
+              - Campaigns
+              - Quests
+              - Items
+              - Events
+              - Lore
+              - Notes
+        - name: tags
+          in: query
+          required: false
+          description: Filter results by tags (comma-separated). Entities matching any of the specified tags are returned.
+          schema:
+            type: string
+          example: "ancient,dragon"
+        - name: name
+          in: query
+          required: false
+          description: Filter results by name (prefix match).
+          schema:
+            type: string
+        - name: parentId
+          in: query
+          required: false
+          description: Filter results by parent entity ID.
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of results to return.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          description: Number of results to skip for pagination.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Search results returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+              example:
+                data:
+                  - id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                    name: "Eldoria"
+                    entityType: "City"
+                    descriptionSnippet: "A sprawling city of ancient towers and winding streets..."
+                    relevanceScore: 0.92
+                    worldId: "11111111-2222-3333-4444-555555555555"
+                    parentId: "66666666-7777-8888-9999-000000000000"
+                    tags: ["capital", "ancient", "elven"]
+                    ownerId: "user-123"
+                    createdDate: "2026-01-15T10:30:00Z"
+                    modifiedDate: "2026-03-01T14:22:00Z"
+                meta:
+                  totalCount: 42
+                  offset: 0
+                  limit: 50
+        "400":
+          description: Invalid request parameters.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: User does not have access to the specified world.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: World not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    SearchResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchResultItem"
+        meta:
+          $ref: "#/components/schemas/SearchMeta"
+
+    SearchResultItem:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+        - relevanceScore
+        - worldId
+        - tags
+        - ownerId
+        - createdDate
+        - modifiedDate
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The entity unique identifier.
+        name:
+          type: string
+          description: The entity name.
+        entityType:
+          type: string
+          description: The entity type.
+        descriptionSnippet:
+          type: string
+          nullable: true
+          description: A snippet of the entity description relevant to the query. May be truncated.
+        relevanceScore:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          description: Relevance score between 0 and 1, where 1 is the highest relevance.
+        worldId:
+          type: string
+          format: uuid
+          description: The world this entity belongs to.
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The parent entity ID (null for root-level entities).
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags associated with the entity.
+        ownerId:
+          type: string
+          description: The user who owns this entity.
+        createdDate:
+          type: string
+          format: date-time
+          description: UTC timestamp when the entity was created.
+        modifiedDate:
+          type: string
+          format: date-time
+          description: UTC timestamp when the entity was last modified.
+
+    SearchMeta:
+      type: object
+      required:
+        - totalCount
+        - offset
+        - limit
+      properties:
+        totalCount:
+          type: integer
+          description: Total number of matching results (for pagination).
+        offset:
+          type: integer
+          description: Current offset in the result set.
+        limit:
+          type: integer
+          description: Maximum results per page.
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code.
+            message:
+              type: string
+              description: Human-readable error message.
+            validationErrors:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  message:
+                    type: string
