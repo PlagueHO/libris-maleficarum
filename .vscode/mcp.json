@@ -1,18 +1,6 @@
 {
   "inputs": [],
   "servers": {
-    "agent-framework-docs": {
-      "url": "https://gitmcp.io/microsoft/agent-framework",
-      "type": "sse"
-    },
-    "aspire": {
-      "type": "stdio",
-      "command": "aspire",
-      "args": [
-        "mcp",
-        "start"
-      ]
-    },
     "azure-verified-module-bicep-docs": {
       "type": "sse",
       "url": "https://gitmcp.io/Azure/bicep-registry-modules"
@@ -29,9 +17,25 @@
       "url": "https://api.githubcopilot.com/mcp/",
       "type": "http"
     },
-    "microsoft-learn": {
+    "microsoft/agent-framework-docs": {
+      "url": "https://gitmcp.io/microsoft/agent-framework",
+      "type": "sse"
+    },
+    "microsoft/aspire": {
+      "type": "stdio",
+      "command": "aspire",
+      "args": [
+        "mcp",
+        "start"
+      ]
+    },
+    "microsoft/learn": {
       "url": "https://learn.microsoft.com/api/mcp",
       "type": "http"
+    },
+    "microsoft/typescript-docs": {
+      "url": "https://gitmcp.io/microsoft/TypeScript",
+      "type": "sse"
     },
     "nodejs-docs": {
       "url": "https://gitmcp.io/nodejs/node",
@@ -43,10 +47,6 @@
     },
     "shadcnui-docs": {
       "url": "https://gitmcp.io/shadcn-ui/ui",
-      "type": "sse"
-    },
-    "typescript-docs": {
-      "url": "https://gitmcp.io/microsoft/TypeScript",
       "type": "sse"
     },
     "playwright": {
