@@ -118,13 +118,13 @@ public static class Extensions
     /// These are registered as singletons so they can be injected into services.
     /// The Meter creates its own counters on demand.
     /// </summary>
-    public static TBuilder AddApplicationTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    public static TBuilder AddApplicationTelemetry<TBuilder>(this TBuilder builder, string serviceName = "LibrisMaleficarum.Api") where TBuilder : IHostApplicationBuilder
     {
         // Create custom application meter - counters will be created by TelemetryService as needed
-        var applicationMeter = new Meter("LibrisMaleficarum.Api", "1.0.0");
+        var applicationMeter = new Meter(serviceName, "1.0.0");
 
         // Create custom activity source for distributed tracing
-        var applicationActivitySource = new ActivitySource("LibrisMaleficarum.Api");
+        var applicationActivitySource = new ActivitySource(serviceName);
 
         // Register as singletons for dependency injection
         builder.Services.AddSingleton(applicationMeter);

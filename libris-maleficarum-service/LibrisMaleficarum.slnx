@@ -15,6 +15,10 @@
     <Project Path="src/Infrastructure/LibrisMaleficarum.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Orchestration/" />
+  <Folder Name="/src/Worker/" />
+  <Folder Name="/src/Worker/SearchIndexWorker/">
+    <Project Path="src/Worker/SearchIndexWorker/LibrisMaleficarum.SearchIndexWorker.csproj" />
+  </Folder>
   <Folder Name="/src/Orchestration/AppHost/">
     <Project DefaultStartup="true" Path="src/Orchestration/AppHost/LibrisMaleficarum.AppHost.csproj" />
   </Folder>
@@ -31,6 +35,9 @@
   </Folder>
   <Folder Name="/tests/unit/Infrastructure.Tests/">
     <Project Path="tests/unit/Infrastructure.Tests/LibrisMaleficarum.Infrastructure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/unit/Worker.Tests/">
+    <Project Path="tests/unit/Worker.Tests/LibrisMaleficarum.Worker.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/integration/" />
   <Folder Name="/tests/integration/Api.IntegrationTests/">

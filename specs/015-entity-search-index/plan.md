@@ -80,9 +80,15 @@ libris-maleficarum-service/
 │   │       ├── SearchIndexSyncService.cs       # NEW: index sync processor
 │   │       ├── EmbeddingService.cs             # NEW: embedding generation
 │   │       └── SearchService.cs                # REMOVED: replaced by AzureAISearchService (T042)
+│   ├── Worker/
+│   │   └── SearchIndexWorker/
+│   │       ├── LibrisMaleficarum.SearchIndexWorker.csproj  # NEW: Worker Service project
+│   │       ├── Program.cs                          # NEW: Worker host with SearchIndexSyncService
+│   │       ├── appsettings.json                    # NEW: Worker configuration
+│   │       └── appsettings.Development.json        # NEW: Worker dev configuration
 │   └── Orchestration/
 │       ├── AppHost/
-│       │   └── AppHost.cs                      # MODIFIED: add AI Search + AI Services
+│       │   └── AppHost.cs                      # MODIFIED: add AI Search + AI Services + SearchIndexWorker
 │       └── ServiceDefaults/
 │           └── Extensions.cs                   # MODIFIED: search health checks + meters
 ├── tests/
@@ -100,13 +106,20 @@ libris-maleficarum-service/
     └── main.bicep                                 # MODIFIED: AI Search SKU + model deployment
 ```
 
-**Structure Decision**: Extends the existing Clean Architecture layout. New domain interfaces in `Domain/Interfaces/Services/`, new infrastructure implementations in `Infrastructure/Services/`, new API models in `Api/Models/`. No new projects required — all code fits within the existing Api, Domain, and Infrastructure projects.
+**Structure Decision**: Extends the existing Clean Architecture layout. New domain interfaces in `Domain/Interfaces/Services/`, new infrastructure implementations in `Infrastructure/Services/`, new API models in `Api/Models/`. A new **SearchIndexWorker** project is added under `src/Worker/SearchIndexWorker/` to host the `SearchIndexSyncService` as an independent worker process, decoupled from the API. This separation provides:
+
+- **Independent scaling**: The worker scales based on change volume; the API scales based on request load.
+- **Fault isolation**: Sync failures don't affect API request serving.
+- **Deployment independence**: API and indexing pipeline can be deployed separately.
+- **Resource isolation**: Embedding generation (I/O-heavy) doesn't compete with API request handling.
+
+The worker is orchestrated as a separate service in the Aspire AppHost and deployed as its own Container Apps instance.
 
 ## Phase 0: Research Summary
 
 **Output**: [research.md](research.md) — comprehensive sync method evaluation.
 
-### Sync Method Decision: Cosmos DB Change Feed Processor (BackgroundService)
+### Sync Method Decision: Cosmos DB Change Feed Processor (Dedicated Worker Service)
 
 Evaluated four candidate approaches per FR-008:
 
@@ -126,6 +139,7 @@ Evaluated four candidate approaches per FR-008:
 - **Lease container**: Dedicated `leases` container in Cosmos DB (partition key `/id`, 400 RU/s).
 - **Initial population**: Change Feed `StartFromBeginning()` on first deployment.
 - **Query vectorization**: Application-level (EmbeddingService generates query vector).
+- **Worker separation**: The Change Feed Processor runs in a dedicated `SearchIndexWorker` project, deployed as its own Container Apps instance. This provides independent scaling, fault isolation, and deployment independence from the API.
 
 ## Phase 1: Design Artifacts
 
@@ -147,17 +161,17 @@ Evaluated four candidate approaches per FR-008:
 
 4. **Search endpoint**: `GET /api/v1/worlds/{worldId}/search` with query params: `q` (required), `mode`, `entityType`, `tags`, `name`, `parentId`, `limit`, `offset`. Returns `SearchResponse` with results + pagination meta.
 
-5. **Background service**: `SearchIndexSyncService` implements `IHostedService`, uses Cosmos DB Change Feed Processor to monitor WorldEntity container. On change: maps to `SearchIndexDocument`, generates embedding via `IEmbeddingService`, pushes via `ISearchIndexService`. On soft-delete: removes from index.
+5. **Background service**: `SearchIndexSyncService` implements `IHostedService`, uses Cosmos DB Change Feed Processor to monitor WorldEntity container. On change: maps to `SearchIndexDocument`, generates embedding via `IEmbeddingService`, pushes via `ISearchIndexService`. On soft-delete: removes from index. **Hosted in a dedicated `SearchIndexWorker` project** (not in the API process) for independent scaling, fault isolation, and deployment independence.
 
 ## Constitution Re-Check (Post-Design)
 
 | Principle | Status | Notes |
 |-----------|--------|-------|
-| I. Cloud-Native Architecture | PASS | Azure AI Search + Cosmos DB Change Feed + Container Apps |
-| II. Clean Architecture | PASS | Domain interfaces → Infrastructure implementations. No domain dependency on Azure SDKs. |
+| I. Cloud-Native Architecture | PASS | Azure AI Search + Cosmos DB Change Feed + Container Apps; SearchIndexWorker as independent service |
+| II. Clean Architecture | PASS | Domain interfaces → Infrastructure implementations. No domain dependency on Azure SDKs. Worker project hosts Infrastructure services. |
 | III. Test-Driven Development | PASS | Unit tests for sync service, embedding service, search service. Integration tests for API endpoint. Mocking via interfaces. |
 | IV. Framework & Technology Standards | PASS | .NET 10, Azure.Search.Documents SDK, Microsoft.Azure.Cosmos Change Feed, OpenTelemetry |
-| V. Developer Experience | PASS | Aspire AppHost integration, single-command startup, connection string injection |
+| V. Developer Experience | PASS | Aspire AppHost integration for both API and SearchIndexWorker, single-command startup, connection string injection |
 | VI. Security & Privacy by Default | PASS | Private endpoints, managed identity, no secrets in code, world-scoped queries, owner-only access |
 | VII. Semantic Versioning | PASS | Additive change (new endpoint), ISearchService is internal — breaking change is acceptable |
 
@@ -165,4 +179,4 @@ All gates pass. No constitutional violations.
 
 ## Complexity Tracking
 
-No constitutional violations. All changes follow existing patterns. The ISearchService interface change is an internal breaking change; all consumers are within the same solution and will be updated together.
+No constitutional violations. All changes follow existing patterns. The ISearchService interface change is an internal breaking change; all consumers are within the same solution and will be updated together. The SearchIndexWorker is a new project but follows the same ServiceDefaults pattern and Clean Architecture boundaries as the API.

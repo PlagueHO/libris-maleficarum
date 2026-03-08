@@ -18,7 +18,8 @@ The AppHost provisions:
 
 - Cosmos DB emulator (Linux container) with WorldEntity and leases containers
 - Azurite (Azure Storage emulator)
-- API service with Change Feed Processor (BackgroundService)
+- API service with search query support
+- SearchIndexWorker with Change Feed Processor (index sync)
 - Frontend (Vite dev server)
 
 ### 2. Verify the Search Index Sync
@@ -93,36 +94,37 @@ In the Aspire AppHost, the API service receives connection strings for:
 ## Architecture Overview
 
 ```text
-┌─────────────────────────────────────────────────────┐
-│                   API Service                        │
-│                                                      │
-│  ┌──────────────────┐    ┌────────────────────────┐ │
-│  │ WorldEntities     │    │ SearchIndexSyncService  │ │
-│  │ Controller         │    │ (BackgroundService)     │ │
-│  │                    │    │                          │ │
-│  │ GET .../search    │    │ Cosmos DB Change Feed    │ │
-│  │   ↓               │    │   ↓                      │ │
-│  │ ISearchService    │    │ IEmbeddingService        │ │
-│  │   ↓               │    │   ↓                      │ │
-│  │ AzureAISearch     │    │ ISearchIndexService      │ │
-│  │ Service            │    │   ↓                      │ │
-│  └──────┬───────────┘    └──────┬─────────────────┘ │
-│          │                        │                    │
-└──────────┼────────────────────────┼────────────────────┘
-           │                        │
-           ▼                        ▼
-    ┌─────────────┐         ┌─────────────┐
-    │ Azure AI    │         │ Azure AI    │
-    │ Search      │◄────────│ Services    │
-    │ (Index)     │         │ (Embeddings)│
-    └─────────────┘         └─────────────┘
-           ▲
+┌─────────────────────────────────────┐
+│           API Service               │
+│                                     │
+│  ┌──────────────────┐              │
+│  │ WorldEntities     │              │
+│  │ Controller         │              │
+│  │                    │              │
+│  │ GET .../search    │              │
+│  │   ↓               │              │
+│  │ ISearchService    │              │
+│  │   ↓               │              │
+│  │ AzureAISearch     │              │
+│  │ Service            │              │
+│  └──────┬───────────┘              │
+│          │                           │
+└──────────┼───────────────────────────┘
            │
-    ┌──────┴──────┐
-    │ Cosmos DB   │
-    │ (WorldEntity│
-    │  container) │
-    └─────────────┘
+           ▼
+    ┌─────────────┐         ┌─────────────────────────────────┐
+    │ Azure AI    │         │     SearchIndexWorker Service    │
+    │ Search      │◄────────│     (Dedicated Worker Process)   │
+    │ (Index)     │         │                                   │
+    └─────────────┘         │  SearchIndexSyncService           │
+           ▲                │  (BackgroundService)              │
+           │                │                                   │
+    ┌──────┴──────┐         │  Cosmos DB Change Feed            │
+    │ Cosmos DB   │────────►│    ↓                              │
+    │ (WorldEntity│         │  IEmbeddingService ──► Azure AI   │
+    │  container) │         │    ↓                   Services   │
+    └─────────────┘         │  ISearchIndexService              │
+                            └───────────────────────────────────┘
 ```
 
 ## Key Files
@@ -138,8 +140,10 @@ In the Aspire AppHost, the API service receives connection strings for:
 | `src/Infrastructure/Services/AzureAISearchService.cs` | AI Search query implementation (new) |
 | `src/Infrastructure/Services/SearchIndexSyncService.cs` | Change Feed Processor + index push (new) |
 | `src/Infrastructure/Services/EmbeddingService.cs` | Azure AI Services embedding client (new) |
+| `src/Worker/SearchIndexWorker/Program.cs` | Worker host for SearchIndexSyncService (new) |
+| `src/Worker/SearchIndexWorker/LibrisMaleficarum.SearchIndexWorker.csproj` | Worker Service project (new) |
 | `src/Api/Controllers/WorldEntitiesController.cs` | Search endpoint action (modified) |
-| `src/Orchestration/AppHost/AppHost.cs` | Aspire resources for AI Search (modified) |
+| `src/Orchestration/AppHost/AppHost.cs` | Aspire resources for AI Search + SearchIndexWorker (modified) |
 | `infra/main.bicep` | AI Search SKU update to basic (modified) |
 
 ## Index Extensibility (FR-011)
