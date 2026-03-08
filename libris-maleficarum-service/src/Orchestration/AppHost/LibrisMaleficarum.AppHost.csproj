@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" Version="13.1.2" />
+    <PackageReference Include="Aspire.Hosting.Azure.AIFoundry" Version="13.1.2-preview.1.26125.13" />
     <PackageReference Include="Aspire.Hosting.Azure.Search" Version="13.1.2" />
     <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.1.2" />
     <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.1.2" />

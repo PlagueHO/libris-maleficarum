@@ -56,12 +56,19 @@ var cosmosDb = builder.AddAzureCosmosDB("cosmosdb")
 var cosmosDbDatabase = cosmosDb.AddCosmosDatabase("LibrisMaleficarum");
 #pragma warning restore ASPIRECOSMOSDB001
 
-// Azure AI Search connection string (from user secrets or environment variables for local dev)
-// Azure AI Search does not have a local emulator — use a cloud Basic-tier instance or mock for testing
-var search = builder.AddConnectionString("search");
+// Azure AI Search — uses Aspire hosting integration (Aspire.Hosting.Azure.Search)
+// Azure AI Search does not have a local emulator — uses Azure provisioning or an existing instance
+// See: https://aspire.dev/integrations/cloud/azure/azure-ai-search/azure-ai-search-host/
+var aiSearch = builder.AddAzureSearch("aisearch");
 
-// Azure AI Services connection string (from user secrets or environment variables)
-var aiServices = builder.AddConnectionString("aiservices");
+// Azure AI Foundry — uses Aspire hosting integration (Aspire.Hosting.Azure.AIFoundry)
+// Provides AI model hosting and inference capabilities (embeddings, chat, etc.)
+// See: https://aspire.dev/integrations/cloud/azure/azure-ai-foundry/azure-ai-foundry-host/
+var aiFoundry = builder.AddAzureAIFoundry("aiFoundry");
+
+// Add AI model deployments to the Foundry resource
+var chatDeployment = aiFoundry.AddDeployment("chat", "gpt-5.2-chat", "2026-02-10", "OpenAI");
+var embeddingDeployment = aiFoundry.AddDeployment("embedding", "text-embedding-3-large", "1", "OpenAI");
 
 // Add Azure Storage (Azurite emulator) for local development
 // Azurite provides blob, queue, and table storage emulation
@@ -91,11 +98,14 @@ var blobs = storage.AddBlobs("blobs");
 var apiService = builder.AddProject<Projects.LibrisMaleficarum_Api>("api")
     .WithReference(cosmosDb)
     .WithReference(blobs)
-    .WithReference(search)
-    .WithReference(aiServices)
+    .WithReference(aiSearch)
+    .WithReference(chatDeployment)
+    .WithReference(embeddingDeployment)
     .WaitFor(cosmosDb)
     .WaitFor(cosmosDbDatabase)
-    .WaitFor(storage);
+    .WaitFor(storage)
+    .WaitFor(chatDeployment)
+    .WaitFor(embeddingDeployment);
 
 // Add the React Vite frontend
 var frontend = builder.AddViteApp("frontend", "../../../../libris-maleficarum-app", "dev")
