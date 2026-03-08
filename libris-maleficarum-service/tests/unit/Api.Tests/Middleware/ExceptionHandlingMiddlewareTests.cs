@@ -205,6 +205,26 @@ public class ExceptionHandlingMiddlewareTests
 
     #endregion
 
+    #region OperationCanceledException Tests
+
+    [TestMethod]
+    public async Task InvokeAsync_WithOperationCanceledException_Returns499()
+    {
+        // Arrange
+        var exception = new OperationCanceledException("The operation was canceled.");
+
+        RequestDelegate next = (HttpContext hc) => throw exception;
+        var middleware = new ExceptionHandlingMiddleware(next, _logger);
+
+        // Act
+        await middleware.InvokeAsync(_context);
+
+        // Assert
+        _context.Response.StatusCode.Should().Be(499);
+    }
+
+    #endregion
+
     #region Generic Exception Tests
 
     [TestMethod]

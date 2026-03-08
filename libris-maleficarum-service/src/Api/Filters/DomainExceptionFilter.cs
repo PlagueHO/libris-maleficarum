@@ -98,6 +98,13 @@ public sealed class DomainExceptionFilter : IExceptionFilter
                 _logger.LogWarning(ex, "Validation error: {Message}", ex.Message);
                 break;
 
+            case OperationCanceledException:
+                // Client disconnected or request was canceled — not an error
+                _logger.LogDebug(context.Exception, "Request was canceled");
+                context.ExceptionHandled = true;
+                context.Result = new StatusCodeResult(499); // Client Closed Request
+                break;
+
             default:
                 // Let unhandled exceptions bubble up to global error handling
                 _logger.LogError(context.Exception, "Unhandled exception occurred");
