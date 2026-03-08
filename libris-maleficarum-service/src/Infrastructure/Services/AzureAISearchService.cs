@@ -237,13 +237,13 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                 break;
 
             case Domain.Models.SearchMode.Vector:
-            {
-                // Vector-only search
-                var queryVector = await _embeddingService.GenerateEmbeddingAsync(
-                    request.Query, cancellationToken);
-                searchOptions.VectorSearch = new VectorSearchOptions
                 {
-                    Queries =
+                    // Vector-only search
+                    var queryVector = await _embeddingService.GenerateEmbeddingAsync(
+                        request.Query, cancellationToken);
+                    searchOptions.VectorSearch = new VectorSearchOptions
+                    {
+                        Queries =
                     {
                         new VectorizedQuery(queryVector)
                         {
@@ -251,19 +251,19 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                             Fields = { "contentVector" }
                         }
                     }
-                };
-                break;
-            }
+                    };
+                    break;
+                }
 
             case Domain.Models.SearchMode.Hybrid:
             default:
-            {
-                // Hybrid search — text + vector
-                var queryVector = await _embeddingService.GenerateEmbeddingAsync(
-                    request.Query, cancellationToken);
-                searchOptions.VectorSearch = new VectorSearchOptions
                 {
-                    Queries =
+                    // Hybrid search — text + vector
+                    var queryVector = await _embeddingService.GenerateEmbeddingAsync(
+                        request.Query, cancellationToken);
+                    searchOptions.VectorSearch = new VectorSearchOptions
+                    {
+                        Queries =
                     {
                         new VectorizedQuery(queryVector)
                         {
@@ -271,9 +271,9 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                             Fields = { "contentVector" }
                         }
                     }
-                };
-                break;
-            }
+                    };
+                    break;
+                }
         }
 
         // For text and hybrid modes, use the query string
