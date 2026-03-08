@@ -65,8 +65,9 @@ export default defineConfig({
         : {
             '/api/v1': {
               target:
-                process.env.services__api__https__0 ||
+                // Prefer HTTP for local dev proxy (avoids TLS issues with Aspire dev certs)
                 process.env.services__api__http__0 ||
+                process.env.services__api__https__0 ||
                 process.env.VITE_API_BASE_URL ||
                 'http://localhost:5077', // Point to Aspire backend
               changeOrigin: true,

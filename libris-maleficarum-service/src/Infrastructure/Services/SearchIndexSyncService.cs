@@ -43,11 +43,38 @@ public class SearchIndexSyncService : BackgroundService
     {
         _logger.LogInformation("SearchIndexSyncService starting, ensuring search index exists");
 
-        // Ensure the search index exists before processing changes
-        using (var scope = _scopeFactory.CreateScope())
+        // Retry index creation with exponential backoff to handle transient auth/network failures
+        // without crashing the host (BackgroundServiceExceptionBehavior.StopHost is the default).
+        const int maxRetries = 5;
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
         {
-            var searchIndexService = scope.ServiceProvider.GetRequiredService<ISearchIndexService>();
-            await searchIndexService.EnsureIndexExistsAsync(stoppingToken);
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var searchIndexService = scope.ServiceProvider.GetRequiredService<ISearchIndexService>();
+                await searchIndexService.EnsureIndexExistsAsync(stoppingToken);
+                break; // success
+            }
+            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
+            {
+                if (attempt == maxRetries)
+                {
+                    _logger.LogCritical(
+                        ex,
+                        "Failed to ensure search index exists after {MaxRetries} attempts; stopping service",
+                        maxRetries);
+                    throw;
+                }
+
+                var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt)); // 2, 4, 8, 16, 32s
+                _logger.LogWarning(
+                    ex,
+                    "Failed to ensure search index exists (attempt {Attempt}/{MaxRetries}); retrying in {Delay}s",
+                    attempt,
+                    maxRetries,
+                    delay.TotalSeconds);
+                await Task.Delay(delay, stoppingToken);
+            }
         }
 
         var database = _cosmosClient.GetDatabase("LibrisMaleficarum");

@@ -24,6 +24,16 @@ param resourceGroupName string = ''
 @description('Should an Azure Bastion be created?')
 param createBastionHost bool = false
 
+@description('Id of the user or app to assign application roles.')
+param principalId string = ''
+
+@description('Type of the principal referenced by principalId.')
+@allowed([
+  'User'
+  'ServicePrincipal'
+])
+param principalIdType string = 'User'
+
 var abbrs = loadJsonContent('./abbreviations.json')
 
 // tags that should be applied to all resources.
@@ -404,6 +414,15 @@ module aiSearchService 'br/public:avm/res/search/search-service:0.12.0' = {
     location: location
     sku: 'basic'
     semanticSearch: 'standard'
+    disableLocalAuth: true
+    managedIdentities: {
+      systemAssigned: true
+    }
+    authOptions: {
+      aadOrApiKey: {
+        aadAuthFailureMode: 'http401WithBearerChallenge'
+      }
+    }
     diagnosticSettings: [
       {
         metricCategories: [
@@ -459,6 +478,10 @@ module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.14.1' = 
     name: aiFoundryName
     location: location
     customSubDomainName: aiFoundryCustomSubDomainName
+    disableLocalAuth: true
+    managedIdentities: {
+      systemAssigned: true
+    }
     sku: 'S0'
     diagnosticSettings: [
       {
@@ -694,6 +717,95 @@ module sharedNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
         }
       }
     ]
+  }
+}
+
+// ---------- AI SEARCH ROLE ASSIGNMENTS ----------
+// Role assignments for AI Search service to allow Foundry and developer access
+var aiSearchRoleAssignmentsArray = [
+  // Foundry service managed identity needs access to AI Search
+  {
+    roleDefinitionIdOrName: 'Search Index Data Contributor'
+    principalType: 'ServicePrincipal'
+    principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
+  }
+  {
+    roleDefinitionIdOrName: 'Search Index Data Reader'
+    principalType: 'ServicePrincipal'
+    principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
+  }
+  {
+    roleDefinitionIdOrName: 'Search Service Contributor'
+    principalType: 'ServicePrincipal'
+    principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
+  }
+  // Developer role assignments
+  ...(!empty(principalId) ? [
+    {
+      roleDefinitionIdOrName: 'Search Service Contributor'
+      principalType: principalIdType
+      principalId: principalId
+    }
+    {
+      roleDefinitionIdOrName: 'Search Index Data Contributor'
+      principalType: principalIdType
+      principalId: principalId
+    }
+  ] : [])
+]
+
+module aiSearchRoleAssignments './core/security/role_aisearch.bicep' = {
+  name: 'ai-search-role-assignments-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  dependsOn: [
+    resourceGroup
+    aiSearchService
+  ]
+  params: {
+    azureAiSearchName: aiSearchName
+    roleAssignments: aiSearchRoleAssignmentsArray
+  }
+}
+
+// ---------- FOUNDRY ROLE ASSIGNMENTS ----------
+// Role assignments for Foundry to allow AI Search and developer access
+var foundryRoleAssignmentsArray = [
+  // AI Search managed identity needs access to Foundry for vectorization
+  {
+    roleDefinitionIdOrName: 'Cognitive Services Contributor'
+    principalType: 'ServicePrincipal'
+    principalId: aiSearchService.outputs.systemAssignedMIPrincipalId
+  }
+  {
+    roleDefinitionIdOrName: 'Cognitive Services OpenAI Contributor'
+    principalType: 'ServicePrincipal'
+    principalId: aiSearchService.outputs.systemAssignedMIPrincipalId
+  }
+  // Developer role assignments
+  ...(!empty(principalId) ? [
+    {
+      roleDefinitionIdOrName: 'Contributor'
+      principalType: principalIdType
+      principalId: principalId
+    }
+    {
+      roleDefinitionIdOrName: 'Cognitive Services OpenAI Contributor'
+      principalType: principalIdType
+      principalId: principalId
+    }
+  ] : [])
+]
+
+module foundryRoleAssignments './core/security/role_foundry.bicep' = {
+  name: 'foundry-role-assignments-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  dependsOn: [
+    resourceGroup
+    aiFoundryAccount
+  ]
+  params: {
+    foundryName: aiFoundryName
+    roleAssignments: foundryRoleAssignmentsArray
   }
 }
 
