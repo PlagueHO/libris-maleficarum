@@ -5,9 +5,9 @@
 
 ## 1. Index Synchronization Method (FR-007 / FR-008)
 
-### Decision: Cosmos DB Change Feed Processor as a Background Service
+### Decision: Cosmos DB Change Feed Processor as a Dedicated Worker Service
 
-The Change Feed Processor running as an `IHostedService` (BackgroundService) within the existing API project is the recommended synchronization method. This approach scores highest across all three evaluation criteria in FR-007: (1) lowest operational cost, (2) simplicity, (3) reliability.
+The Change Feed Processor running as a `BackgroundService` in a dedicated `SearchIndexWorker` project is the recommended synchronization method. This approach scores highest across all three evaluation criteria in FR-007: (1) lowest operational cost, (2) simplicity, (3) reliability. Hosting the Change Feed Processor in its own service (rather than in the API process) provides independent scaling, fault isolation, and deployment independence.
 
 ### Evaluation Criteria (FR-007 Priority Order)
 
@@ -44,27 +44,30 @@ Azure AI Search provides a built-in Cosmos DB indexer that reads the Cosmos DB c
 
 #### Option B: Cosmos DB Change Feed Processor (Background Service) ★ RECOMMENDED
 
-The Cosmos DB SDK includes a Change Feed Processor that can be hosted as an `IHostedService` / `BackgroundService` within the existing ASP.NET Core API project. The processor reads changes from the WorldEntity container, generates embeddings via the Azure AI Services SDK, and pushes documents to the Azure AI Search index.
+The Cosmos DB SDK includes a Change Feed Processor that can be hosted as an `IHostedService` / `BackgroundService`. It is deployed as a dedicated `SearchIndexWorker` service, separate from the API. The processor reads changes from the WorldEntity container, generates embeddings via the Azure AI Services SDK, and pushes documents to the Azure AI Search index.
 
-**Architecture**: Cosmos DB Change Feed → Background Service (in API process) → Embedding Service → AI Search Index
+**Architecture**: Cosmos DB Change Feed → SearchIndexWorker Service → Embedding Service → AI Search Index
 
 **Pros**:
 
-- **Lowest operational cost** — no additional Azure compute (runs in existing Container Apps instance). No indexer processing charges. Change Feed reads cost ~1 RU per change (negligible). Only embedding API calls are an incremental cost (same as all other options).
+- **Lowest operational cost** — minimal additional Azure compute (dedicated Container Apps instance with low resource allocation). No indexer processing charges. Change Feed reads cost ~1 RU per change (negligible). Only embedding API calls are an incremental cost (same as all other options).
 - **Near-real-time sync** — Change Feed processor polls at configurable intervals (default: seconds), meeting the 60-second SC-001 target.
 - **Full observability** — emits custom OpenTelemetry metrics (FR-022: sync lag histogram, counters), distributed tracing activities (FR-023), structured logging (FR-024) via the existing `ITelemetryService` pattern.
 - **Full control over field concatenation** — application code concatenates Name + Description + Tags + Properties per FR-003, no need for external skills.
-- **Aspire integration** — Change Feed processor starts automatically in the Aspire AppHost developer inner loop. Lease container can be provisioned in the Cosmos DB emulator.
-- **Clean Architecture alignment** — `ISearchIndexService` interface in Domain, `SearchIndexSyncService` implementation in Infrastructure, following existing patterns.
+- **Aspire integration** — Change Feed processor runs as a separate project in the Aspire AppHost developer inner loop. Lease container can be provisioned in the Cosmos DB emulator.
+- **Clean Architecture alignment** — `ISearchIndexService` interface in Domain, `SearchIndexSyncService` implementation in Infrastructure, hosted in SearchIndexWorker, following existing patterns.
 - **Built-in fault tolerance** — Change Feed Processor provides at-least-once delivery with automatic retry from the last checkpoint. Dead-letter logic can write to Application Insights and trigger alerts per FR-005.
+- **Independent scaling** — Worker scales based on change volume independently from API request load.
+- **Fault isolation** — Sync failures or resource contention don't affect API availability.
+- **Deployment independence** — Indexing pipeline can be deployed, restarted, or rolled back without affecting the API.
 
 **Cons**:
 
 - More application code than the indexer approach (~200-300 lines for the sync service + embedding orchestration + error handling).
-- Runs in the API process — under extreme load, sync processing could compete with API request handling. Mitigated by using a separate thread pool and configurable concurrency limits. Can be extracted to a separate worker project later if needed.
+- Requires a dedicated Container Apps instance for the worker, though with minimal resource allocation (the worker is I/O-bound, not CPU-bound).
 - Requires a lease container in Cosmos DB (minimal additional storage cost).
 
-**Cost estimate**: Cosmos DB Change Feed reads (~1 RU/change) + embedding API calls. No additional compute, no additional Azure services.
+**Cost estimate**: Cosmos DB Change Feed reads (~1 RU/change) + embedding API calls + minimal Container Apps compute for worker. No additional messaging services.
 
 #### Option C: Application-Level Eventing (Queue-Based)
 
@@ -127,12 +130,12 @@ Option B (Change Feed Processor as Background Service) is recommended because:
 3. **Reliable** (FR-007 priority 3): Change Feed Processor provides at-least-once delivery with automatic checkpoint recovery. Dead-letter handling writes to Application Insights per FR-005.
 4. **Meets observability requirements** (FR-022/23/24): Full control over custom metrics, tracing, and structured logging via the existing `ITelemetryService` pattern. The indexer approach cannot meet these requirements.
 5. **Meets sync lag target** (SC-001): Near-real-time sync (seconds) vs. 5-10 minutes for the indexer approach.
-6. **Aspire developer experience** (Constitution V): Runs in-process, starts with `dotnet run --project AppHost`, no additional local services to configure.
+6. **Aspire developer experience** (Constitution V): Runs as a separate project in the AppHost, starts with `dotnet run --project AppHost`, full dashboard visibility.\n7. **Separation of concerns**: Dedicated worker ensures sync failures don't impact API availability, and enables independent scaling and deployment.
 
 ### Alternatives Considered
 
 - **Hybrid approach** (indexer for initial bulk load + Change Feed for incremental): Adds complexity without clear benefit. The Change Feed Processor supports `StartFromBeginning()` for initial population.
-- **Separate worker project**: Could be extracted later if the API process shows performance degradation under concurrent sync + request handling. For the initial implementation, in-process `BackgroundService` is simpler.
+- **Separate worker project**: The Change Feed Processor is hosted in a dedicated `SearchIndexWorker` project for fault isolation, independent scaling, and deployment independence. This is the chosen approach.
 
 ## 2. AI Search SKU Discrepancy
 

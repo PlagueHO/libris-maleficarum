@@ -69,8 +69,11 @@ All paths are relative to `libris-maleficarum-service/` unless prefixed with `in
 - [x] T020 [US1] Add sync-specific OpenTelemetry instrumentation to SearchIndexSyncService: counters (documents indexed, indexing failures), histogram (sync lag seconds, embedding latency), distributed tracing activities for change detection, embedding generation, index push via ITelemetryService in src/Infrastructure/Services/SearchIndexSyncService.cs per FR-022/FR-023
 - [x] T021 [US1] Add structured logging to SearchIndexSyncService: Information for document indexed events, Warning for retry attempts, Error for persistent failures and dead-lettering; include worldId, entityId, entityType structured properties per FR-024 in src/Infrastructure/Services/SearchIndexSyncService.cs
 - [x] T022 [US1] Implement search-related metrics in TelemetryService (counters and histograms for indexing, search, embedding, sync lag) in src/Infrastructure/Services/TelemetryService.cs per FR-022
-- [x] T023 [US1] Register DI services: EmbeddingService as IEmbeddingService (scoped), AzureAISearchService as ISearchIndexService (scoped), SearchIndexSyncService as IHostedService, bind SearchOptions from configuration in src/Api/Program.cs per existing DI pattern (line ~72)
-- [x] T024 [US1] Register health checks for Azure AI Search connectivity and embedding model endpoint availability in src/Orchestration/ServiceDefaults/Extensions.cs per FR-025
+- [x] T023 [US1] Register DI services in Api: EmbeddingService as IEmbeddingService (scoped), AzureAISearchService as ISearchIndexService (scoped), bind SearchOptions from configuration in src/Api/Program.cs per existing DI pattern (line ~72). **Note**: SearchIndexSyncService is NOT registered here — it runs in the dedicated SearchIndexWorker project.
+- [x] T023b [US1] Create SearchIndexWorker project: new Worker Service project at src/Worker/SearchIndexWorker/LibrisMaleficarum.SearchIndexWorker.csproj referencing Infrastructure and ServiceDefaults projects. Include Program.cs that registers SearchIndexSyncService as IHostedService, CosmosClient for Change Feed, EmbeddingService, AzureAISearchService, SearchOptions configuration, and AddServiceDefaults(). Include appsettings.json and appsettings.Development.json.
+- [x] T023c [US1] Add SearchIndexWorker to solution: add src/Worker/SearchIndexWorker/LibrisMaleficarum.SearchIndexWorker.csproj to LibrisMaleficarum.slnx
+- [x] T023d [US1] Remove Change Feed CosmosClient and SearchIndexSyncService registration from Api/Program.cs — these now live in the SearchIndexWorker. API retains only search query services (ISearchService, ISearchIndexService for EnsureIndexExists, IEmbeddingService for query vectorization).
+- [ ] T024 [US1] Register health checks for Azure AI Search connectivity and embedding model endpoint availability in src/Orchestration/ServiceDefaults/Extensions.cs per FR-025. **Current state**: placeholder returning `Healthy` without actual connectivity check. Must implement real `SearchIndexClient` probe and embedding endpoint probe.
 
 **Checkpoint**: Entity creates/updates/deletes trigger async index sync with embeddings. Index push verified via unit tests. The search index contains documents but search queries are not yet exposed via API.
 
@@ -138,7 +141,7 @@ All paths are relative to `libris-maleficarum-service/` unless prefixed with `in
 - [x] T039 [P] Add Cosmos DB leases container provisioning to infra/main.bicep: container name `leases`, partition key `/id`, 400 RU/s in infra/main.bicep per research.md
 - [x] T040 [P] Add AI Services embedding model deployment configuration to infra/main.bicep or infra/cognitive-services/ if not already provisioned (text-embedding-3-small) in infra/
 - [x] T040b [P] Add Azure Monitor alert rule for dead-letter indexing failures (FR-005): provision metric alert that fires when indexing failures exceed threshold, targeting Application Insights or custom metric, using AVM module `br/public:avm/res/insights/metric-alert` in infra/main.bicep
-- [x] T041 Update Aspire AppHost: add Azure AI Search resource (connection string injection), add Azure AI Services resource (connection string injection), add leases container to Cosmos DB emulator provisioning in src/Orchestration/AppHost/AppHost.cs per quickstart.md
+- [x] T041 Update Aspire AppHost: add Azure AI Search resource (connection string injection), add Azure AI Services resource (connection string injection), add leases container to Cosmos DB emulator provisioning. Add SearchIndexWorker as a separate project (`builder.AddProject<Projects.LibrisMaleficarum_SearchIndexWorker>("search-index-worker")`) with references to cosmosDb, aiSearch, and embeddingDeployment. Remove SearchIndexSyncService registration from the API service. in src/Orchestration/AppHost/AppHost.cs per quickstart.md. **Completed**: All Aspire AppHost changes applied — SearchIndexWorker at `src/Worker/SearchIndexWorker/` registered as `search-index-worker`.
 - [x] T042 [P] Remove or archive old SearchService.cs (LINQ-based implementation replaced by AzureAISearchService) in src/Infrastructure/Services/SearchService.cs — ensure no remaining references
 - [ ] T043 Run quickstart.md end-to-end validation: start Aspire AppHost, create entities, verify index sync, execute search queries, validate filters and pagination in specs/015-entity-search-index/quickstart.md
 - [ ] T043b Create relevance evaluation test set (minimum 20 query/expected-result pairs) and execute manual evaluation against deployed index to validate SC-003 (80% semantic relevance in top 5). Document results in specs/015-entity-search-index/quickstart.md
@@ -213,7 +216,10 @@ T019: SearchIndexSyncService (depends on IEmbeddingService + ISearchIndexService
 T020: Sync observability (same file as T019)
 T021: Sync structured logging (same file as T019)
 T022: TelemetryService metrics implementation
-T023: DI registration
+T023: API DI registration (search query services only)
+T023b: Create SearchIndexWorker project (hosts SearchIndexSyncService)
+T023c: Add SearchIndexWorker to solution
+T023d: Remove sync services from Api/Program.cs
 T024: Health checks
 ```
 
@@ -264,5 +270,7 @@ With multiple developers:
 - The old LINQ-based SearchService.cs is archived/removed in Polish (T042) after AzureAISearchService fully replaces it
 - AzureAISearchService implements BOTH ISearchIndexService (for index push, US1) and ISearchService (for search queries, US2)
 - WorldsController.cs (~line 143) also consumes ISearchService — updated in T028b, tested in T032b
-- Index schema creation (T018 EnsureIndexExistsAsync) happens on first sync service startup, not as a separate migration step
+- Index schema creation (T018 EnsureIndexExistsAsync) happens on SearchIndexWorker startup, not as a separate migration step
+- SearchIndexSyncService lives in Infrastructure but is hosted in the SearchIndexWorker project (not the API) for independent scaling, fault isolation, and deployment independence
+- The SearchIndexWorker (T023b) references Infrastructure and ServiceDefaults projects — it does NOT reference the Api project
 - Commit after each task or logical group. Stop at any checkpoint to validate independently.

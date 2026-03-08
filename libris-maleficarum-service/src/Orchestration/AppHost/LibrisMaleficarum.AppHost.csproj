@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Api\LibrisMaleficarum.Api.csproj" />
+    <ProjectReference Include="..\..\Worker\SearchIndexWorker\LibrisMaleficarum.SearchIndexWorker.csproj" />
   </ItemGroup>
 
   <ItemGroup>

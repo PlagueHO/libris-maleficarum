@@ -15,11 +15,11 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using Azure;
 using Azure.AI.OpenAI;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Azure.Cosmos;
+using OpenAI.Embeddings;
 using AppSearchOptions = LibrisMaleficarum.Infrastructure.Configuration.SearchOptions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,24 +43,12 @@ builder.Services.Configure<DeleteOperationOptions>(
 builder.Services.Configure<AppSearchOptions>(
     builder.Configuration.GetSection(AppSearchOptions.SectionName));
 
-// Configure DbContext with Cosmos DB provider
-var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb")
-    ?? throw new InvalidOperationException("Cosmos DB connection string 'cosmosdb' not found");
-
-// Log connection string endpoint for debugging (sanitized)
-var endpointMatch = System.Text.RegularExpressions.Regex.Match(cosmosConnectionString, @"AccountEndpoint=([^;]+)");
-if (endpointMatch.Success)
-{
-    Console.WriteLine($"Cosmos DB Endpoint: {endpointMatch.Groups[1].Value}");
-}
-
-// For Cosmos DB Emulator (HTTP or HTTPS), use Gateway mode and disable SSL validation
-// Aspire automatically adds DisableServerCertificateValidation=True for the preview emulator
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseCosmos(
-        connectionString: cosmosConnectionString,
-        databaseName: "LibrisMaleficarum",
-        cosmosOptionsAction: cosmosOptions =>
+// Configure DbContext with Cosmos DB via Aspire EF Core Cosmos client integration
+// Registers ApplicationDbContext using the "cosmosdb" connection from AppHost
+// Aspire handles connection string parsing, health checks, logging, tracing, and metrics
+builder.AddCosmosDbContext<ApplicationDbContext>("cosmosdb", "LibrisMaleficarum",
+    configureDbContextOptions: options =>
+        options.UseCosmos(cosmosOptions =>
         {
             // Gateway mode is required for the emulator (Direct mode is not supported)
             cosmosOptions.ConnectionMode(Microsoft.Azure.Cosmos.ConnectionMode.Gateway);
@@ -81,76 +69,34 @@ builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<IDeleteOperationRepository, DeleteOperationRepository>();
 builder.Services.AddScoped<IDeleteService, DeleteService>();
 
-// Configure Azure AI Search clients
-var searchConnectionString = builder.Configuration.GetConnectionString("search");
-if (!string.IsNullOrEmpty(searchConnectionString))
-{
-    // Parse the search connection string (expected format: "Endpoint=https://...;ApiKey=...")
-    var searchEndpoint = new Uri(searchConnectionString.Split(';')
-        .FirstOrDefault(s => s.StartsWith("Endpoint=", StringComparison.OrdinalIgnoreCase))
-        ?.Substring("Endpoint=".Length) ?? throw new InvalidOperationException("Search connection string missing Endpoint"));
-    var searchApiKey = searchConnectionString.Split(';')
-        .FirstOrDefault(s => s.StartsWith("ApiKey=", StringComparison.OrdinalIgnoreCase))
-        ?.Substring("ApiKey=".Length) ?? "";
-    var searchCredential = new AzureKeyCredential(searchApiKey);
+// Configure Azure AI Search clients via Aspire client integration
+// Registers SearchIndexClient using the "aisearch" connection from AppHost
+// Uses DefaultAzureCredential (RBAC) — no API keys needed
+builder.AddAzureSearchClient("aisearch");
 
-    var searchOptions = builder.Configuration.GetSection(AppSearchOptions.SectionName).Get<AppSearchOptions>() ?? new AppSearchOptions();
-
-    builder.Services.AddSingleton(new SearchIndexClient(searchEndpoint, searchCredential));
-    builder.Services.AddSingleton(new SearchClient(searchEndpoint, searchOptions.IndexName, searchCredential));
-}
-else
+// Register SearchClient from SearchIndexClient for query operations
+builder.Services.AddSingleton<SearchClient>(sp =>
 {
-    // Fallback: register placeholder clients for environments without search configured
-    builder.Services.AddSingleton(sp => new SearchIndexClient(new Uri("https://placeholder.search.windows.net"), new AzureKeyCredential("placeholder")));
-    builder.Services.AddSingleton(sp =>
-    {
-        var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AppSearchOptions>>().Value;
-        return new SearchClient(new Uri("https://placeholder.search.windows.net"), opts.IndexName, new AzureKeyCredential("placeholder"));
-    });
-}
+    var indexClient = sp.GetRequiredService<SearchIndexClient>();
+    var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AppSearchOptions>>().Value;
+    return indexClient.GetSearchClient(opts.IndexName);
+});
 
-// Configure Azure AI Services embedding client
-var aiServicesConnectionString = builder.Configuration.GetConnectionString("aiservices");
-if (!string.IsNullOrEmpty(aiServicesConnectionString))
-{
-    var aiEndpoint = new Uri(aiServicesConnectionString.Split(';')
-        .FirstOrDefault(s => s.StartsWith("Endpoint=", StringComparison.OrdinalIgnoreCase))
-        ?.Substring("Endpoint=".Length) ?? throw new InvalidOperationException("AI Services connection string missing Endpoint"));
-    var aiApiKey = aiServicesConnectionString.Split(';')
-        .FirstOrDefault(s => s.StartsWith("ApiKey=", StringComparison.OrdinalIgnoreCase))
-        ?.Substring("ApiKey=".Length) ?? "";
+// Configure Azure AI Foundry OpenAI client via Aspire client integration
+// Registers AzureOpenAIClient using the "embedding" deployment connection from AppHost
+builder.AddAzureOpenAIClient("embedding");
 
-    var searchOpts = builder.Configuration.GetSection(AppSearchOptions.SectionName).Get<AppSearchOptions>() ?? new AppSearchOptions();
-    var azureOpenAIClient = new AzureOpenAIClient(aiEndpoint, new AzureKeyCredential(aiApiKey));
-    builder.Services.AddSingleton(azureOpenAIClient.GetEmbeddingClient(searchOpts.EmbeddingModelName));
-}
-else
+// Register EmbeddingClient from AzureOpenAIClient for vector embedding generation
+builder.Services.AddSingleton<EmbeddingClient>(sp =>
 {
-    // Fallback: register a placeholder embedding client
-    var placeholderClient = new AzureOpenAIClient(new Uri("https://placeholder.openai.azure.com"), new AzureKeyCredential("placeholder"));
-    builder.Services.AddSingleton(placeholderClient.GetEmbeddingClient("text-embedding-3-small"));
-}
-
-// Register Cosmos DB client for Change Feed Processor
-builder.Services.AddSingleton(sp =>
-{
-    var connStr = builder.Configuration.GetConnectionString("cosmosdb")
-        ?? throw new InvalidOperationException("Cosmos DB connection string 'cosmosdb' not found for Change Feed Processor");
-    return new CosmosClient(connStr, new CosmosClientOptions
-    {
-        ConnectionMode = ConnectionMode.Gateway,
-        RequestTimeout = TimeSpan.FromSeconds(60)
-    });
+    var openAIClient = sp.GetRequiredService<AzureOpenAIClient>();
+    var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AppSearchOptions>>().Value;
+    return openAIClient.GetEmbeddingClient(opts.EmbeddingModelName);
 });
 
 // Register search services
 builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
-builder.Services.AddScoped<ISearchIndexService, AzureAISearchService>();
 builder.Services.AddScoped<ISearchService, AzureAISearchService>();
-
-// Register Change Feed sync background service
-builder.Services.AddHostedService<SearchIndexSyncService>();
 
 // Register validators
 builder.Services.AddScoped<SchemaVersionValidator>();

@@ -107,6 +107,16 @@ var apiService = builder.AddProject<Projects.LibrisMaleficarum_Api>("api")
     .WaitFor(chatDeployment)
     .WaitFor(embeddingDeployment);
 
+// Add the Search Index Worker service (Change Feed Processor for AI Search sync)
+// Runs independently from the API for fault isolation, independent scaling, and deployment independence
+var searchWorker = builder.AddProject<Projects.LibrisMaleficarum_SearchIndexWorker>("search-index-worker")
+    .WithReference(cosmosDb)
+    .WithReference(aiSearch)
+    .WithReference(embeddingDeployment)
+    .WaitFor(cosmosDb)
+    .WaitFor(cosmosDbDatabase)
+    .WaitFor(embeddingDeployment);
+
 // Add the React Vite frontend
 var frontend = builder.AddViteApp("frontend", "../../../../libris-maleficarum-app", "dev")
     .WithPnpm()
