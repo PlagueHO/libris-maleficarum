@@ -138,17 +138,20 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
         var docList = documents.ToList();
         if (docList.Count == 0) return;
 
-        var actions = new IndexDocumentsBatch<SearchIndexDocument>();
-        foreach (var doc in docList)
+        foreach (var chunk in docList.Chunk(_options.MaxBatchSize))
         {
-            actions.Actions.Add(IndexDocumentsAction.MergeOrUpload(doc));
-        }
+            var actions = new IndexDocumentsBatch<SearchIndexDocument>();
+            foreach (var doc in chunk)
+            {
+                actions.Actions.Add(IndexDocumentsAction.MergeOrUpload(doc));
+            }
 
-        await _searchClient.IndexDocumentsAsync(actions, cancellationToken: cancellationToken);
+            await _searchClient.IndexDocumentsAsync(actions, cancellationToken: cancellationToken);
 
-        foreach (var doc in docList)
-        {
-            _telemetryService.RecordDocumentIndexed(doc.EntityType);
+            foreach (var doc in chunk)
+            {
+                _telemetryService.RecordDocumentIndexed(doc.EntityType);
+            }
         }
     }
 
@@ -203,14 +206,14 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
         if (request.TagsFilter is { Count: > 0 })
         {
             var tagFilters = request.TagsFilter
-                .Select(tag => $"tags/any(t: t eq '{tag}')")
+                .Select(tag => $"tags/any(t: t eq '{EscapeODataString(tag)}')")
                 .ToList();
             filters.Add($"({string.Join(" or ", tagFilters)})");
         }
 
         if (!string.IsNullOrEmpty(request.NameFilter))
         {
-            filters.Add($"search.ismatch('{request.NameFilter}*', 'name')");
+            filters.Add($"search.ismatch('{EscapeODataString(request.NameFilter)}*', 'name')");
         }
 
         if (request.ParentIdFilter.HasValue)
@@ -276,8 +279,8 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                 }
         }
 
-        // For text and hybrid modes, use the query string
-        var searchText = request.Mode == Domain.Models.SearchMode.Vector ? null : request.Query;
+        // For text and hybrid modes, use the query string; vector-only uses "*" for match-all
+        var searchText = request.Mode == Domain.Models.SearchMode.Vector ? "*" : request.Query;
 
         var response = await _searchClient.SearchAsync<SearchIndexDocument>(
             searchText,
@@ -329,4 +332,10 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
             Limit = limit
         };
     }
+
+    /// <summary>
+    /// Escapes single quotes in OData filter string values to prevent injection.
+    /// </summary>
+    private static string EscapeODataString(string value) =>
+        value.Replace("'", "''");
 }
