@@ -48,9 +48,9 @@
 
 - [ ] T009 [P] Create `ApiResponse<T>` generic wrapper model at `libris-maleficarum-service/src/Client/Api/Models/ApiResponse.cs` with `Data` property matching the API response envelope `{ "data": ... }`
 - [ ] T010 [P] Create `ApiError` model at `libris-maleficarum-service/src/Client/Api/Models/ApiError.cs` with `Message`, `Code`, and `Details` properties for error responses
-- [ ] T011 [P] Create `CreateWorldRequest` model at `libris-maleficarum-service/src/Client/Api/Models/CreateWorldRequest.cs` with `Name`, `Description`, `OwnerId` properties per contracts/import-api-contract.md
-- [ ] T012 [P] Create `WorldResponse` model at `libris-maleficarum-service/src/Client/Api/Models/WorldResponse.cs` with `Id`, `OwnerId`, `Name`, `Description`, `CreatedDate`, `ModifiedDate` properties per contracts/import-api-contract.md
-- [ ] T013 [P] Create `CreateEntityRequest` model at `libris-maleficarum-service/src/Client/Api/Models/CreateEntityRequest.cs` with `Name`, `Description`, `EntityType`, `ParentId`, `Tags`, `Attributes`, `OwnerId`, `SchemaVersion` properties per contracts/import-api-contract.md
+- [ ] T011 [P] Create `CreateWorldRequest` model at `libris-maleficarum-service/src/Client/Api/Models/CreateWorldRequest.cs` with `Name`, `Description` properties per contracts/import-api-contract.md (note: OwnerId is derived from auth token by the API, not sent in request body)
+- [ ] T012 [P] Create `WorldResponse` model at `libris-maleficarum-service/src/Client/Api/Models/WorldResponse.cs` with `Guid Id`, `Guid OwnerId`, `string Name`, `string? Description`, `DateTime CreatedDate`, `DateTime ModifiedDate` properties per contracts/import-api-contract.md (note: OwnerId is Guid type to match existing API)
+- [ ] T013 [P] Create `CreateEntityRequest` model at `libris-maleficarum-service/src/Client/Api/Models/CreateEntityRequest.cs` with `Name`, `Description`, `EntityType`, `ParentId`, `Tags`, `Attributes`, `SchemaVersion` properties per contracts/import-api-contract.md (note: OwnerId is derived from auth token by the API, not sent in request body)
 - [ ] T014 [P] Create `EntityResponse` model at `libris-maleficarum-service/src/Client/Api/Models/EntityResponse.cs` with `Id`, `WorldId`, `ParentId`, `EntityType`, `Name`, `Description`, `Tags`, `Path`, `Depth`, `HasChildren`, `OwnerId`, `Attributes`, `CreatedDate`, `ModifiedDate`, `IsDeleted`, `SchemaVersion` properties per contracts/import-api-contract.md
 
 ### API Client SDK Exceptions
@@ -76,7 +76,7 @@
 
 ## Phase 3: User Story 1 — Import World from Folder (Priority: P1) 🎯 MVP
 
-**Goal**: A developer can run `libris world import --source ./folder --api-url <url> --owner-id <id>` to import a complete world and all entities from a local folder of JSON files into the backend API.
+**Goal**: A developer can run `libris world import --source ./folder --api-url <url> --token <token>` to import a complete world and all entities from a local folder of JSON files into the backend API.
 
 **Independent Test**: Run the CLI against a sample folder containing `world.json` and entity JSON files, verify all entities created via API with correct parent-child relationships.
 
@@ -92,9 +92,8 @@
 - [ ] T030 [P] [US1] Create `ImportValidationWarning` model at `libris-maleficarum-service/src/Components/Import/Models/ImportValidationWarning.cs` with `FilePath`, `Code`, `Message` properties per data-model.md
 - [ ] T031 [P] [US1] Create `ImportResult` model at `libris-maleficarum-service/src/Components/Import/Models/ImportResult.cs` with `Success`, `WorldId`, `TotalEntitiesCreated`, `TotalEntitiesFailed`, `TotalEntitiesSkipped`, `CreatedByType`, `Errors`, `Duration` properties per data-model.md
 - [ ] T032 [P] [US1] Create `EntityImportError` model at `libris-maleficarum-service/src/Components/Import/Models/EntityImportError.cs` with `LocalId`, `EntityName`, `ErrorMessage`, `FilePath`, `SkippedDescendantLocalIds` properties per data-model.md
-- [ ] T033 [P] [US1] Create `ImportOptions` model at `libris-maleficarum-service/src/Components/Import/Models/ImportOptions.cs` with `ApiBaseUrl`, `OwnerId`, `AuthToken`, `MaxConcurrency` (default 10), `ValidateOnly`, `Verbose` properties per data-model.md
+- [ ] T033 [P] [US1] Create `ImportOptions` model at `libris-maleficarum-service/src/Components/Import/Models/ImportOptions.cs` with `ApiBaseUrl`, `AuthToken`, `MaxConcurrency` (default 10), `ValidateOnly`, `Verbose` properties per data-model.md
 - [ ] T034 [P] [US1] Create `ImportProgress` model and `ImportPhase` enum at `libris-maleficarum-service/src/Components/Import/Models/ImportProgress.cs` with `TotalEntities`, `CompletedEntities`, `CurrentDepth`, `CurrentEntityName`, `Phase` properties per data-model.md
-- [ ] T035 [P] [US1] Create `CreateEntityImportRequest` model at `libris-maleficarum-service/src/Components/Import/Models/CreateEntityImportRequest.cs` with `Name`, `Description`, `EntityType`, `ParentId`, `Tags`, `Attributes`, `OwnerId` properties per data-model.md
 - [ ] T036 [P] [US1] Create `ImportValidationErrorCodes` constants class at `libris-maleficarum-service/src/Components/Import/Validation/ImportValidationErrorCodes.cs` with all error code constants from data-model.md validation error codes table
 
 ### Import Library Interfaces (US1)
@@ -125,11 +124,11 @@
 
 ### Import Library Tests — World Import Service (US1)
 
-- [ ] T045 [P] [US1] Create `WorldImportServiceTests` at `libris-maleficarum-service/tests/unit/Import.Tests/Services/WorldImportServiceTests.cs` with tests for: successful import calls CreateWorldAsync then CreateEntityAsync in hierarchy order (FR-009/FR-010), assigns new GUIDs (FR-011), sets ownerId on all API calls (FR-012), computes correct path/depth/parentId (FR-013), parallel creation per depth level (FR-029), respects MaxConcurrency option (FR-030), failed entity skips descendants with error reporting (FR-027), reports progress through IProgress<ImportProgress>, returns ImportResult with correct counts and duration (FR-023), validate-only mode calls ValidateAsync without API calls (FR-017), API connection failure produces clear error (US1-AC4), cancellation token stops import
+- [ ] T045 [P] [US1] Create `WorldImportServiceTests` at `libris-maleficarum-service/tests/unit/Import.Tests/Services/WorldImportServiceTests.cs` with tests for: successful import calls CreateWorldAsync then CreateEntityAsync in hierarchy order (FR-009/FR-010), assigns new GUIDs (FR-011), computes correct path/depth/parentId (FR-013), maps EntityImportDefinition.Properties to CreateEntityRequest.Attributes (field mapping), sets SchemaVersion to 1 on all CreateEntityRequest calls (FR-039), parallel creation per depth level (FR-029), respects MaxConcurrency option (FR-030), failed entity skips descendants with error reporting (FR-027), reports progress through IProgress<ImportProgress>, returns ImportResult with correct counts and duration (FR-023), validate-only mode calls ValidateAsync without API calls (FR-017), API connection failure produces clear error (US1-AC4), cancellation token stops import
 
 ### Import Library Implementation — World Import Service (US1)
 
-- [ ] T046 [US1] Implement `WorldImportService` at `libris-maleficarum-service/src/Components/Import/Services/WorldImportService.cs` implementing `IWorldImportService`: orchestrate read → validate → execute flow, for `ImportAsync`: call reader, call validator, if invalid return early, call `ILibrisApiClient.CreateWorldAsync` (FR-009), iterate EntitiesByDepth from depth 0 to MaxDepth, at each depth level create entities in parallel using `SemaphoreSlim` with `MaxConcurrency` (FR-029/FR-030), map `ResolvedEntity` to `CreateEntityRequest` with assigned IDs/path/depth/parentId (FR-013), on entity failure record error and collect descendant localIds to skip (FR-027), report progress via `IProgress<ImportProgress>`, return `ImportResult` with counts, errors, duration (FR-023). For `ValidateAsync`: call reader then validator, return `ImportValidationResult` (FR-017).
+- [ ] T046 [US1] Implement `WorldImportService` at `libris-maleficarum-service/src/Components/Import/Services/WorldImportService.cs` implementing `IWorldImportService`: orchestrate read → validate → execute flow, for `ImportAsync`: call reader, call validator, if invalid return early, call `ILibrisApiClient.CreateWorldAsync` (FR-009), iterate EntitiesByDepth from depth 0 to MaxDepth, at each depth level create entities in parallel using `SemaphoreSlim` with `MaxConcurrency` (FR-029/FR-030), map `ResolvedEntity` to `CreateEntityRequest` with assigned IDs/path/depth/parentId (FR-013), map EntityImportDefinition.Properties to CreateEntityRequest.Attributes (field rename), set SchemaVersion to 1 on all CreateEntityRequest calls (FR-039), on entity failure record error and collect descendant localIds to skip (FR-027), report progress via `IProgress<ImportProgress>`, return `ImportResult` with counts, errors, duration (FR-023). For `ValidateAsync`: call reader then validator, return `ImportValidationResult` (FR-017).
 
 ### Import Library DI Registration (US1)
 
@@ -139,13 +138,13 @@
 
 - [ ] T048 [US1] Create `Program.cs` entry point at `libris-maleficarum-service/src/Tools/Cli/Program.cs` with DI container setup (`AddLibrisApiClient`, `AddWorldImportServices`), root `RootCommand` for `libris`, and `WorldCommand` registration using `System.CommandLine`
 - [ ] T049 [US1] Create `WorldCommand` at `libris-maleficarum-service/src/Tools/Cli/Commands/WorldCommand.cs` as the `world` area command grouping `WorldImportCommand` and `WorldValidateCommand` subcommands
-- [ ] T050 [US1] Create `WorldImportCommand` at `libris-maleficarum-service/src/Tools/Cli/Commands/WorldImportCommand.cs` with `--source` (required), `--api-url` (required), `--owner-id` (required), `--token` (optional, falls back to LIBRIS_API_TOKEN env var per FR-033/FR-034), `--validate-only` flag (FR-021), `--verbose` flag (FR-022), `--max-concurrency` (default 10, FR-031), `--log-file` (optional, FR-028) options. Handler: resolve auth token (FR-033/FR-034, never log per FR-035), build `ImportOptions`, call `IWorldImportService.ImportAsync`, format output via `ConsoleReporter`, set exit code per contract (0/1/2)
+- [ ] T050 [US1] Create `WorldImportCommand` at `libris-maleficarum-service/src/Tools/Cli/Commands/WorldImportCommand.cs` with `--source` (required), `--api-url` (required), `--token` (optional, falls back to LIBRIS_API_TOKEN env var per FR-033/FR-034), `--validate-only` flag (FR-021), `--verbose` flag (FR-022), `--max-concurrency` (default 10, FR-031), `--log-file` (optional, FR-028) options. Handler: resolve auth token (FR-033/FR-034, never log per FR-035), build `ImportOptions`, call `IWorldImportService.ImportAsync`, format output via `ConsoleReporter`, set exit code per contract (0/1/2)
 - [ ] T051 [US1] Create `WorldValidateCommand` at `libris-maleficarum-service/src/Tools/Cli/Commands/WorldValidateCommand.cs` with `--source` (required) and `--verbose` (optional) options. Handler: call `IWorldImportService.ValidateAsync`, format output via `ConsoleReporter`, set exit code per contract (0/3)
 - [ ] T052 [US1] Create `ConsoleReporter` at `libris-maleficarum-service/src/Tools/Cli/Output/ConsoleReporter.cs` with methods to format import success/failure output and validation output matching exact format from contracts/import-api-contract.md (entity counts by type, errors with file paths and skipped descendants, duration)
 
 ### CLI Tests (US1)
 
-- [ ] T053 [P] [US1] Create `WorldImportCommandTests` at `libris-maleficarum-service/tests/unit/Cli.Tests/Commands/WorldImportCommandTests.cs` with tests for: required options validated (--source, --api-url, --owner-id), --token takes precedence over env var (FR-033), falls back to LIBRIS_API_TOKEN env var (FR-034), --validate-only invokes ValidateAsync not ImportAsync, --max-concurrency passed to ImportOptions, exit code 0 on success, exit code 1 on partial failure, exit code 2 on total failure, --log-file creates log file (FR-028)
+- [ ] T053 [P] [US1] Create `WorldImportCommandTests` at `libris-maleficarum-service/tests/unit/Cli.Tests/Commands/WorldImportCommandTests.cs` with tests for: required options validated (--source, --api-url), --token takes precedence over env var (FR-033), falls back to LIBRIS_API_TOKEN env var (FR-034), --validate-only invokes ValidateAsync not ImportAsync, --max-concurrency passed to ImportOptions, exit code 0 on success, exit code 1 on partial failure, exit code 2 on total failure, --log-file creates log file (FR-028)
 - [ ] T054 [P] [US1] Create `WorldValidateCommandTests` at `libris-maleficarum-service/tests/unit/Cli.Tests/Commands/WorldValidateCommandTests.cs` with tests for: required --source option validated, exit code 0 on valid data, exit code 3 on validation errors, verbose output includes entity summary
 - [ ] T055 [US1] Verify full build and all unit tests pass by running `dotnet test --solution LibrisMaleficarum.slnx --filter TestCategory=Unit` from `libris-maleficarum-service/`
 
@@ -257,7 +256,7 @@
 
 **Phase 1**: T004, T005, T006 can run in parallel (test projects)
 **Phase 2**: T009–T016 can all run in parallel (models + exceptions); T020, T021 can run in parallel (test files)
-**Phase 3**: T023–T036 can all run in parallel (all import models); T037–T039 in parallel (interfaces); T040, T042, T044, T045 in parallel (test files); T053, T054 in parallel (CLI tests)
+**Phase 3**: T023–T034, T036 can all run in parallel (all import models); T037–T039 in parallel (interfaces); T040, T042, T044, T045 in parallel (test files); T053, T054 in parallel (CLI tests)
 **Phase 4**: T056 in parallel with other US2 work
 **Phase 5**: T059 standalone
 **Phase 6**: T061–T070 can all run in parallel (all sample data files)
@@ -281,7 +280,6 @@ T031: Create ImportResult
 T032: Create EntityImportError
 T033: Create ImportOptions
 T034: Create ImportProgress + ImportPhase
-T035: Create CreateEntityImportRequest
 T036: Create ImportValidationErrorCodes
 
 # Step 2 — Launch all interfaces in parallel:

@@ -94,8 +94,7 @@ src/
 │       │   ├── EntityImportError.cs
 │       │   ├── ImportOptions.cs
 │       │   ├── ImportSourceContent.cs
-│       │   ├── ImportProgress.cs
-│       │   └── CreateEntityImportRequest.cs
+│       │   └── ImportProgress.cs
 │       ├── Services/
 │       │   ├── WorldImportService.cs          # Orchestrates read → validate → execute
 │       │   ├── ImportSourceReader.cs          # Reads folder/zip into ImportSourceContent
