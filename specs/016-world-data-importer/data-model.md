@@ -225,7 +225,6 @@ namespace LibrisMaleficarum.Import.Models;
 public sealed class ImportOptions
 {
     public required string ApiBaseUrl { get; init; }
-    public required string OwnerId { get; init; }
     public required string AuthToken { get; init; }
     public int MaxConcurrency { get; init; } = 10;
     public bool ValidateOnly { get; init; }
@@ -356,22 +355,20 @@ public enum ImportPhase
 
 ### CreateEntityImportRequest
 
-Request model used by the import API client to create entities.
+> **REMOVED**: This model was identified as unused during cross-artifact analysis. The `WorldImportService` maps `ResolvedEntity` directly to the API client SDK's `CreateEntityRequest`. No intermediate import-specific request model is needed.
 
-```csharp
-namespace LibrisMaleficarum.Import.Models;
+## Field Mapping: Import Format → API Request
 
-public sealed class CreateEntityImportRequest
-{
-    public required string Name { get; init; }
-    public string? Description { get; init; }
-    public required string EntityType { get; init; }
-    public Guid? ParentId { get; init; }
-    public List<string>? Tags { get; init; }
-    public Dictionary<string, object>? Attributes { get; init; }
-    public required string OwnerId { get; init; }
-}
-```
+| Import Field (EntityImportDefinition) | API Field (CreateWorldEntityRequest) | Notes |
+|----------------------------------------|--------------------------------------|-------|
+| `localId` | — | Used for relationship resolution only; not sent to API |
+| `entityType` | `EntityType` | String → EntityType enum (case-insensitive) |
+| `name` | `Name` | Direct mapping |
+| `description` | `Description` | Direct mapping |
+| `parentLocalId` | `ParentId` | Resolved from localId → assigned GUID |
+| `tags` | `Tags` | Direct mapping |
+| `properties` | `Attributes` | **Renamed**: import `properties` maps to API `attributes` |
+| — | `SchemaVersion` | Always set to `1` by the import tool (FR-039) |
 
 ## Validation Error Codes
 

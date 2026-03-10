@@ -105,7 +105,7 @@ Content-Type: application/json
 Imports a world from a folder or zip archive into the backend API.
 
 ```text
-libris world import --source <path> --api-url <url> --owner-id <id> [options]
+libris world import --source <path> --api-url <url> [options]
 
 Arguments:
   (none)
@@ -113,7 +113,6 @@ Arguments:
 Options:
   --source <path>           Required. Path to import folder or zip file.
   --api-url <url>           Required. Backend API base URL (e.g., https://localhost:5001).
-  --owner-id <id>           Required. Owner identity for the created world and entities.
   --token <token>           Authentication token. Falls back to LIBRIS_API_TOKEN env var.
   --validate-only           Validate import data without making API calls.
   --verbose                 Enable detailed output during import.
@@ -242,12 +241,13 @@ Validation failed with 3 errors.
 
 ### Valid EntityType Values
 
-Matches the `LibrisMaleficarum.Domain.Entities.EntityType` enum:
+Matches the `LibrisMaleficarum.Domain.ValueObjects.EntityType` enum:
 
-- Geographic: `Continent`, `Country`, `Region`, `City`, `Building`, `Room`, `Location`, `GeographicRegion`, `PoliticalRegion`, `MilitaryRegion`
+- Geographic: `Continent`, `Country`, `Region`, `City`, `Building`, `Room`, `Location`, `GeographicRegion`, `PoliticalRegion`, `CulturalRegion`, `MilitaryRegion`
 - Character: `Character`, `PlayerCharacter`, `Faction`
 - Content: `Event`, `Quest`, `Item`, `Campaign`, `Session`
 - Container: `Folder`, `Locations`, `People`, `Events`, `History`, `Lore`, `Bestiary`, `Items`, `Adventures`, `Geographies`
+- Other: `Other`
 
 ### Folder Structure Example
 

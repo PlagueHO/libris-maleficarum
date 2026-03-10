@@ -32,35 +32,30 @@ libris world validate --source ./samples/worlds/grimhollow.zip
 libris world import \
   --source ./samples/worlds/grimhollow \
   --api-url https://localhost:5001 \
-  --owner-id "user-123" \
   --token "your-auth-token"
 
 # Import from folder (with token via environment variable)
 export LIBRIS_API_TOKEN="your-auth-token"
 libris world import \
   --source ./samples/worlds/grimhollow \
-  --api-url https://localhost:5001 \
-  --owner-id "user-123"
+  --api-url https://localhost:5001
 
 # Import from zip with verbose output
 libris world import \
   --source ./samples/worlds/grimhollow.zip \
   --api-url https://localhost:5001 \
-  --owner-id "user-123" \
   --verbose
 
 # Dry-run: validate only without importing
 libris world import \
   --source ./samples/worlds/grimhollow \
   --api-url https://localhost:5001 \
-  --owner-id "user-123" \
   --validate-only
 
 # Control concurrency and log to file
 libris world import \
   --source ./samples/worlds/grimhollow \
   --api-url https://localhost:5001 \
-  --owner-id "user-123" \
   --max-concurrency 5 \
   --log-file import-log.txt
 ```
@@ -144,7 +139,6 @@ if (!validationResult.IsValid)
 var result = await importService.ImportAsync("./my-world", new ImportOptions
 {
     ApiBaseUrl = "https://localhost:5001",
-    OwnerId = "user-123",
     AuthToken = "your-token",
     MaxConcurrency = 10
 });

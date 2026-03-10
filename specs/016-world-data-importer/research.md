@@ -37,7 +37,7 @@
 ```text
 libris
 ├── world
-│   ├── import   --source <path> --api-url <url> --owner-id <id> [--token <token>] [--validate-only] [--verbose] [--max-concurrency <n>] [--log-file <path>]
+│   ├── import   --source <path> --api-url <url> [--token <token>] [--validate-only] [--verbose] [--max-concurrency <n>] [--log-file <path>]
 │   └── validate --source <path> [--verbose]
 └── --version
 ```

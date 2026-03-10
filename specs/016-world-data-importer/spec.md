@@ -107,7 +107,7 @@ As a developer, I want the project to include a sample world dataset so that I h
 - **FR-009**: The tool MUST create the world via the backend REST API before creating any entities.
 - **FR-010**: The tool MUST create entities in hierarchy order (parents before children) to ensure valid parent references.
 - **FR-011**: The tool MUST assign new GUIDs for the world and all entities during import (import data does not dictate backend IDs).
-- **FR-012**: The tool MUST set the `ownerId` for the world and all entities based on a user identity provided as a command-line parameter.
+- **FR-012**: The tool MUST NOT set `ownerId` explicitly — the backend API derives ownership from the authenticated user token. The `--token` parameter (or `LIBRIS_API_TOKEN` env var) determines the owner.
 - **FR-013**: The tool MUST populate `path`, `depth`, and `parentId` fields correctly based on the resolved hierarchy from `localId`/`parentLocalId` references.
 - **FR-029**: The tool MUST create entities at the same hierarchy depth in parallel to improve import performance.
 - **FR-030**: The tool MUST support a configurable max concurrency limit for parallel API calls, with a sensible default.
@@ -124,13 +124,13 @@ As a developer, I want the project to include a sample world dataset so that I h
 
 - **FR-018**: The tool MUST accept the import source path as a required argument.
 - **FR-019**: The tool MUST accept the backend API base URL as a required argument.
-- **FR-020**: The tool MUST accept the owner identity as a required argument.
 - **FR-021**: The tool MUST support a `--validate-only` flag for dry-run validation.
 - **FR-022**: The tool MUST support a `--verbose` flag for detailed output during import.
-- **FR-031**: The tool MUST support a `--max-concurrency` parameter to control the number of parallel API calls (default value to be determined during planning).
+- **FR-031**: The tool MUST support a `--max-concurrency` parameter to control the number of parallel API calls (default: 10).
 - **FR-033**: The tool MUST accept an authentication token via a CLI parameter (e.g., `--token`), which takes precedence over an environment variable.
 - **FR-034**: The tool MUST fall back to reading an authentication token from a well-known environment variable if no CLI parameter is provided.
 - **FR-035**: The tool MUST NOT hardcode, log, or persist authentication credentials.
+- **FR-039**: The tool MUST set `schemaVersion` to `1` for all entities created during import. The import file format does not include a schema version field; versioning is managed by the backend.
 
 #### Output and Reporting
 
