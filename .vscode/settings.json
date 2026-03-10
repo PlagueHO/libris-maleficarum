@@ -62,6 +62,14 @@
         "/^powershell -File \"\\.specify/scripts/powershell/update-agent-context\\.ps1\" -AgentType copilot$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^powershell -File \"\\.specify/scripts/powershell/check-prerequisites\\.ps1\" -Json$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^powershell -File \"\\.specify/scripts/powershell/check-prerequisites\\.ps1\" -Json 2>&1$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }
