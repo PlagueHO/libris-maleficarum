@@ -46,6 +46,14 @@
         ".specify/scripts/powershell/": true,
         "Get-Job": true,
         "Receive-Job": true,
-        "libris-maleficarum-service\\tests\\integration\\Infrastructure.IntegrationTests\\bin\\Debug\\net10.0\\LibrisMaleficarum.Infrastructure.IntegrationTests.exe": true
+        "libris-maleficarum-service\\tests\\integration\\Infrastructure.IntegrationTests\\bin\\Debug\\net10.0\\LibrisMaleficarum.Infrastructure.IntegrationTests.exe": true,
+        "/^powershell -File \\.specify/scripts/powershell/check-prerequisites\\.ps1 -Json -PathsOnly$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^powershell -File \\.specify/scripts/powershell/check-prerequisites\\.ps1 -Json -PathsOnly 2>\\$null$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }
