@@ -1,0 +1,14 @@
+{
+  "localId": "investigate-the-marshes",
+  "entityType": "Quest",
+  "name": "Investigate the Marshes",
+  "description": "Merchant Gilda Goldweave reports that entire trade caravans are vanishing in the Blackmoor Marshes, and the survivors speak of shadowy figures that move against the wind. The players must venture into the swamp to uncover the source of the disappearances before Marshaven's economy collapses.",
+  "parentLocalId": "the-shadow-war",
+  "tags": ["quest", "investigation", "horror", "swamp-exploration"],
+  "properties": {
+    "recommendedLevel": "3-5",
+    "reward": "1,000 gold pieces and a favor from the Marshaven Consortium",
+    "difficulty": "Medium — survival, investigation, and a climactic ambush",
+    "keyNpc": "Merchant Gilda Goldweave"
+  }
+}

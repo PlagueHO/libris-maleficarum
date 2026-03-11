@@ -1,0 +1,14 @@
+{
+  "localId": "blackmoor-marshes",
+  "entityType": "Region",
+  "name": "Blackmoor Marshes",
+  "description": "A vast expanse of fetid swampland where will-o'-wisps dance above bottomless bogs and the dead do not always stay buried. The marshes serve as a natural barrier protecting the Iron Dominion's western flank, but the things that lurk within are no one's ally.",
+  "parentLocalId": "iron-dominion",
+  "tags": ["swamp", "undead", "dangerous", "frontier"],
+  "properties": {
+    "climate": "Humid and fog-choked year-round with acidic rainfall",
+    "population": "45,000 — mostly in fortified settlements",
+    "terrain": "Treacherous bog, stagnant rivers, and sinking islets",
+    "knownThreats": "Bog wraiths, marsh trolls, and plague miasma"
+  }
+}

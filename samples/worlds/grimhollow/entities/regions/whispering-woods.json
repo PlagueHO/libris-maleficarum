@@ -1,0 +1,14 @@
+{
+  "localId": "whispering-woods",
+  "entityType": "Region",
+  "name": "The Whispering Woods",
+  "description": "An ancient primeval forest where the trees themselves are said to be sentient and the boundaries between the Material Plane and the Feywild blur into nothing. Travelers who stray from the marked paths often vanish for years, returning aged not a single day — or never returning at all.",
+  "parentLocalId": "sylvan-reach",
+  "tags": ["enchanted-forest", "fey-crossing", "sentient-trees", "perilous"],
+  "properties": {
+    "climate": "Eternally autumnal with bioluminescent undergrowth",
+    "population": "15,000 — scattered across hidden groves and treeholmes",
+    "terrain": "Dense primeval forest with fey crossings and shifting paths",
+    "knownThreats": "Fey tricksters, awakened predators, and the Thornblight corruption"
+  }
+}

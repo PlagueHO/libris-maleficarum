@@ -1,0 +1,14 @@
+{
+  "localId": "shadow-assassin",
+  "entityType": "Character",
+  "name": "The Shadow Assassin",
+  "description": "A nameless killer who serves as the Shadow Court's deadliest operative within Ironhold itself. No one has seen their true face and lived to describe it. They move through the castle's secret passages like smoke, and their poisoned blade has ended more noble bloodlines than the plague.",
+  "parentLocalId": "ironhold",
+  "tags": ["assassin", "shadow-court", "mysterious", "deadly"],
+  "properties": {
+    "class": "Rogue (Assassin)",
+    "level": "14",
+    "alignment": "Neutral Evil",
+    "race": "Changeling"
+  }
+}

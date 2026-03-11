@@ -1,0 +1,14 @@
+{
+  "localId": "silverdale",
+  "entityType": "City",
+  "name": "Silverdale",
+  "description": "A mountain city carved into the living rock of the Crystalpeak range, where mana crystal light illuminates streets that have not seen true sunlight in centuries. The city serves as the Iron Dominion's center of arcane learning and crystal refinement.",
+  "parentLocalId": "crystalpeak-mountains",
+  "tags": ["mountain-city", "arcane", "mana-crystals", "scholarly"],
+  "properties": {
+    "population": "35,000",
+    "government": "Crystal Magisters reporting to the Iron Crown",
+    "defenses": "Mana-warded gates, crystal sentinel constructs, and mountain terrain",
+    "notableFeature": "The Prismatic Academy — the continent's foremost school of crystallomancy"
+  }
+}

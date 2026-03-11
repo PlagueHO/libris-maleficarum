@@ -1,0 +1,14 @@
+{
+  "localId": "iron-guard",
+  "entityType": "Faction",
+  "name": "The Iron Guard",
+  "description": "The elite military order sworn to protect the Iron Dominion at any cost. Clad in blacksteel plate and bound by blood oaths, the Iron Guard serves as judge, jury, and executioner across the Dominion's territories. Their loyalty to the crown is absolute, their methods ruthless.",
+  "parentLocalId": "iron-dominion",
+  "tags": ["military-order", "elite", "fanatical", "blacksteel"],
+  "properties": {
+    "memberCount": "12,000 sworn knights",
+    "alignment": "Lawful Neutral",
+    "headquarters": "The Black Bastion within Ironhold Castle",
+    "motto": "Iron endures where flesh fails"
+  }
+}

@@ -77,7 +77,7 @@ jobs:
             -reports:TestResults/**/*.cobertura.xml \
             -targetdir:TestResults/CoverageReport \
             -reporttypes:"Html;MarkdownSummaryGithub" \
-            -assemblyfilters:"+LibrisMaleficarum.*"
+            -assemblyfilters:"+LibrisMaleficarum.*;+libris"
 
       - name: Add Coverage to Job Summary
         if: always()
@@ -138,6 +138,20 @@ jobs:
         with:
           name: libris-maleficarum-api
           path: libris-maleficarum-service/publish/api
+
+      - name: Publish CLI tool
+        run: |
+          VERSION_ARGS=""
+          if [ -n "${{ inputs.build-version }}" ]; then
+            VERSION_ARGS="/p:Version=${{ inputs.build-version }} /p:InformationalVersion=${{ inputs.build-version }}"
+          fi
+          dotnet publish src/Tools/Cli/LibrisMaleficarum.Cli.csproj --no-build --configuration Release --output ./publish/cli $VERSION_ARGS
+
+      - name: Upload CLI artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: libris-maleficarum-cli
+          path: libris-maleficarum-service/publish/cli
 
       - name: Build Docker image
         run: |

@@ -1,0 +1,14 @@
+{
+  "localId": "crystalpeak-mountains",
+  "entityType": "Region",
+  "name": "Crystalpeak Mountains",
+  "description": "A towering mountain range whose peaks glitter with veins of raw mana crystal, drawing miners, mages, and monsters in equal measure. Ancient dwarven ruins honeycomb the mountains' interior, and something vast and patient stirs in the deepest shafts.",
+  "parentLocalId": "iron-dominion",
+  "tags": ["mountains", "mana-crystals", "dwarven-ruins", "mining"],
+  "properties": {
+    "climate": "Alpine cold with arcane storms near the summits",
+    "population": "28,000 — concentrated in mining settlements",
+    "terrain": "Jagged peaks, crystal caverns, and frozen passes",
+    "knownThreats": "Crystal golems, wyverns, and unstable mana surges"
+  }
+}

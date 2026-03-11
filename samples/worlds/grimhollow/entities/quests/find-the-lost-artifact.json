@@ -1,0 +1,14 @@
+{
+  "localId": "find-the-lost-artifact",
+  "entityType": "Quest",
+  "name": "Find the Lost Artifact",
+  "description": "The Fracture Lens has been stolen from the Temple of Fractured Light, and without it, the wards protecting Silverdale from the mana storms will fail within weeks. The players must track the thief through the Crystalpeak Mountains before the artifact falls into the Shadow Court's hands.",
+  "parentLocalId": "the-shadow-war",
+  "tags": ["quest", "artifact-recovery", "investigation", "time-sensitive"],
+  "properties": {
+    "recommendedLevel": "5-7",
+    "reward": "2,000 gold pieces and a crystal-forged weapon",
+    "difficulty": "Hard — combat, investigation, and environmental hazards",
+    "keyNpc": "Queen Elara of the Silver Peak"
+  }
+}

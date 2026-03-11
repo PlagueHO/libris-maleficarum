@@ -1,0 +1,14 @@
+{
+  "localId": "merchant-gilda",
+  "entityType": "Character",
+  "name": "Merchant Gilda Goldweave",
+  "description": "The shrewdest trader in Marshaven and unofficial leader of the Merchant Consortium, a halfling who built her empire from nothing and now controls half the trade flowing through the Blackmoor Marshes. She sells information as readily as goods, and her network of contacts rivals the Shadow Court's.",
+  "parentLocalId": "marshaven",
+  "tags": ["merchant", "information-broker", "cunning", "wealthy"],
+  "properties": {
+    "class": "Rogue (Mastermind)",
+    "level": "10",
+    "alignment": "True Neutral",
+    "race": "Halfling (Lightfoot)"
+  }
+}

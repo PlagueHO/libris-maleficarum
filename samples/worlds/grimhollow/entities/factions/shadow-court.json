@@ -1,0 +1,14 @@
+{
+  "localId": "shadow-court",
+  "entityType": "Faction",
+  "name": "The Shadow Court",
+  "description": "A clandestine network of spies, assassins, and power brokers that operates across every nation of the Grimhollow Continent. No one knows who leads the Shadow Court, but their influence is felt in every poisoned chalice and forged document that reshapes the political landscape.",
+  "parentLocalId": "grimhollow-continent",
+  "tags": ["secret-society", "espionage", "assassins", "political-intrigue"],
+  "properties": {
+    "memberCount": "Unknown — estimated 500-2,000 operatives",
+    "alignment": "Neutral Evil",
+    "headquarters": "Unknown — rumored to shift between safehouses",
+    "motto": "Every shadow has teeth"
+  }
+}

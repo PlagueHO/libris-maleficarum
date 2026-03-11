@@ -1,0 +1,14 @@
+{
+  "localId": "the-shadow-war",
+  "entityType": "Campaign",
+  "name": "The Shadow War",
+  "description": "A sprawling campaign of political intrigue, ancient horrors, and desperate alliances as the Shadow Court orchestrates a continent-wide conspiracy to shatter the fragile peace between the Iron Dominion and the Sylvan Reach. The players must uncover the truth before the Hollow consumes all.",
+  "parentLocalId": null,
+  "tags": ["campaign", "political-intrigue", "ancient-evil", "war"],
+  "properties": {
+    "recommendedLevel": "3-15",
+    "estimatedSessions": "20-30",
+    "themes": "Betrayal, sacrifice, the cost of power, and the nature of evil",
+    "startingLocation": "The Hollow Bough Tavern in Thornwall"
+  }
+}
