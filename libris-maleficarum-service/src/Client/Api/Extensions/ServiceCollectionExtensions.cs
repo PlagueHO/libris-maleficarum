@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
         var options = new LibrisApiClientOptions { BaseUrl = string.Empty };
         configure(options);
 
-        services.AddHttpClient<ILibrisApiClient, LibrisApiClient>(client =>
+        var builder = services.AddHttpClient<ILibrisApiClient, LibrisApiClient>(client =>
         {
             client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
 
@@ -34,8 +34,20 @@ public static class ServiceCollectionExtensions
                 client.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", options.AuthToken);
             }
-        })
-        .AddStandardResilienceHandler();
+        });
+
+        if (options.RequestTimeout.HasValue)
+        {
+            builder.AddStandardResilienceHandler(resilience =>
+            {
+                resilience.TotalRequestTimeout.Timeout = options.RequestTimeout.Value;
+                resilience.AttemptTimeout.Timeout = options.RequestTimeout.Value;
+            });
+        }
+        else
+        {
+            builder.AddStandardResilienceHandler();
+        }
 
         return services;
     }

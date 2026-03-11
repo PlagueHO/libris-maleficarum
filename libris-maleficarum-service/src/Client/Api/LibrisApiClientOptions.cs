@@ -14,4 +14,11 @@ public sealed class LibrisApiClientOptions
     /// Gets or sets the optional Bearer authentication token.
     /// </summary>
     public string? AuthToken { get; set; }
+
+    /// <summary>
+    /// Gets or sets the per-request timeout for the resilience handler.
+    /// When set, overrides the default 30-second total request timeout and 10-second attempt timeout.
+    /// Recommended for bulk import operations where backend cold-start may be slow.
+    /// </summary>
+    public TimeSpan? RequestTimeout { get; set; }
 }
