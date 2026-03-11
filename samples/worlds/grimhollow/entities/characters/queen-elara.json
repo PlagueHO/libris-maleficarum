@@ -1,0 +1,14 @@
+{
+  "localId": "queen-elara",
+  "entityType": "Character",
+  "name": "Queen Elara of the Silver Peak",
+  "description": "The Crystal Magister who rules Silverdale in the Iron Crown's name, a brilliant arcanist whose loyalty to King Aldric masks her own ambitions. She alone understands the true power of the mana crystals, and she guards that knowledge jealously — even from the king himself.",
+  "parentLocalId": "silverdale",
+  "tags": ["royalty", "arcanist", "ambitious", "crystal-magister"],
+  "properties": {
+    "class": "Wizard (School of Evocation)",
+    "level": "15",
+    "alignment": "Lawful Evil",
+    "race": "Half-Elf"
+  }
+}

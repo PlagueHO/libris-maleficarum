@@ -14,6 +14,18 @@
   <Folder Name="/src/Infrastructure/">
     <Project Path="src/Infrastructure/LibrisMaleficarum.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Client/" />
+  <Folder Name="/src/Client/Api/">
+    <Project Path="src/Client/Api/LibrisMaleficarum.Api.Client.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/" />
+  <Folder Name="/src/Components/Import/">
+    <Project Path="src/Components/Import/LibrisMaleficarum.Import.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/" />
+  <Folder Name="/src/Tools/Cli/">
+    <Project Path="src/Tools/Cli/LibrisMaleficarum.Cli.csproj" />
+  </Folder>
   <Folder Name="/src/Orchestration/" />
   <Folder Name="/src/Worker/" />
   <Folder Name="/src/Worker/SearchIndexWorker/">
@@ -38,6 +50,15 @@
   </Folder>
   <Folder Name="/tests/unit/Worker.Tests/">
     <Project Path="tests/unit/Worker.Tests/LibrisMaleficarum.Worker.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/unit/Api.Client.Tests/">
+    <Project Path="tests/unit/Api.Client.Tests/LibrisMaleficarum.Api.Client.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/unit/Import.Tests/">
+    <Project Path="tests/unit/Import.Tests/LibrisMaleficarum.Import.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/unit/Cli.Tests/">
+    <Project Path="tests/unit/Cli.Tests/LibrisMaleficarum.Cli.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/integration/" />
   <Folder Name="/tests/integration/Api.IntegrationTests/">

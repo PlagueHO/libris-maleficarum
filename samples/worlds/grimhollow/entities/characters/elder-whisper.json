@@ -1,0 +1,14 @@
+{
+  "localId": "elder-whisper",
+  "entityType": "Character",
+  "name": "Elder Whisper",
+  "description": "An ancient treant druid who serves as the eldest member of the Sylvan Council, having witnessed the rise and fall of empires from the roots of the Whispering Woods. Elder Whisper speaks in riddles and moves with the patience of centuries, but when roused to anger, entire forests march at their command.",
+  "parentLocalId": "whispering-woods",
+  "tags": ["elder", "druid", "treant", "ancient"],
+  "properties": {
+    "class": "Druid (Circle of the Land — Forest)",
+    "level": "20",
+    "alignment": "True Neutral",
+    "race": "Treant (Awakened)"
+  }
+}

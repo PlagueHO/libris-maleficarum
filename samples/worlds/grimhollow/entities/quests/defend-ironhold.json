@@ -1,0 +1,14 @@
+{
+  "localId": "defend-ironhold",
+  "entityType": "Quest",
+  "name": "Defend Ironhold",
+  "description": "An army of bog wraiths and undead marsh creatures surges from the Blackmoor Marshes toward Ironhold's western gate. The Iron Guard is spread thin, and King Aldric calls upon all able warriors to hold the wall. But the real threat may already be inside the city.",
+  "parentLocalId": "the-shadow-war",
+  "tags": ["quest", "siege-defense", "undead", "betrayal"],
+  "properties": {
+    "recommendedLevel": "8-10",
+    "reward": "Title of Defender of the Wall and 5,000 gold pieces",
+    "difficulty": "Deadly — mass combat with a hidden saboteur subplot",
+    "keyNpc": "King Aldric the Ironheart"
+  }
+}

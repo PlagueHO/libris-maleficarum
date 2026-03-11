@@ -1,0 +1,14 @@
+{
+  "localId": "captain-thorne",
+  "entityType": "Character",
+  "name": "Captain Thorne Blackbriar",
+  "description": "The grizzled captain of Thornwall's Briar Watch, a ranger who has patrolled the Whispering Woods for three decades and knows its paths better than any mortal alive. Haunted by the loss of his patrol to the Thornblight, he wages a personal war against the corruption spreading through the forest.",
+  "parentLocalId": "thornwall",
+  "tags": ["military", "ranger", "haunted", "guardian"],
+  "properties": {
+    "class": "Ranger (Gloom Stalker)",
+    "level": "12",
+    "alignment": "Chaotic Good",
+    "race": "Human"
+  }
+}

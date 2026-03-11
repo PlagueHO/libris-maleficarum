@@ -1,0 +1,14 @@
+{
+  "localId": "iron-dominion",
+  "entityType": "Country",
+  "name": "The Iron Dominion",
+  "description": "A militaristic empire forged in blood and steel, ruled by the Ironheart dynasty from atop the great fortress of Ironhold. The Dominion's legions hold back the encroaching darkness, but at a terrible cost to the freedoms of its people.",
+  "parentLocalId": "grimhollow-continent",
+  "tags": ["militaristic", "authoritarian", "fortified", "industrial"],
+  "properties": {
+    "government": "Absolute monarchy under martial law",
+    "population": "850,000",
+    "capital": "Ironhold",
+    "primaryExport": "Blacksteel arms and siege engines"
+  }
+}

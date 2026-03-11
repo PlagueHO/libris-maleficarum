@@ -1,0 +1,14 @@
+{
+  "localId": "thornwall",
+  "entityType": "City",
+  "name": "Thornwall",
+  "description": "The capital of the Sylvan Reach, grown rather than built from living thorns and ancient oak by centuries of druidic magic. The city's walls are a tangle of razor-sharp brambles that obey the Sylvan Council's will, opening for allies and crushing intruders.",
+  "parentLocalId": "whispering-woods",
+  "tags": ["living-city", "druidic", "capital", "nature-fortress"],
+  "properties": {
+    "population": "22,000",
+    "government": "The Sylvan Council from the Heartwood Throne",
+    "defenses": "Living thorn walls, awakened tree sentinels, and fey wards",
+    "notableFeature": "The Heartwood Throne — a sentient tree that serves as seat of power"
+  }
+}

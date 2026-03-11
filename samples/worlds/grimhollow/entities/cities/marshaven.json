@@ -1,0 +1,14 @@
+{
+  "localId": "marshaven",
+  "entityType": "City",
+  "name": "Marshaven",
+  "description": "A sprawling trade town built on stilts above the Blackmoor Marshes, where smugglers, merchants, and fugitives mingle in a lawless bazaar that the Iron Guard tolerates only because it serves as an invaluable intelligence hub. If it can be bought, sold, or fenced, Marshaven is the place.",
+  "parentLocalId": "blackmoor-marshes",
+  "tags": ["trade-hub", "lawless", "stilted-city", "smuggling"],
+  "properties": {
+    "population": "18,000 — fluctuates with trade seasons",
+    "government": "Merchant consortium with no official crown allegiance",
+    "defenses": "Retractable boardwalks, marsh gas traps, and mercenary companies",
+    "notableFeature": "The Floating Market — a bazaar on interconnected barges"
+  }
+}

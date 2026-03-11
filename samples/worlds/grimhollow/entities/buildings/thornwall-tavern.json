@@ -1,0 +1,14 @@
+{
+  "localId": "thornwall-tavern",
+  "entityType": "Building",
+  "name": "The Hollow Bough Tavern",
+  "description": "A legendary tavern carved into the trunk of a massive hollow oak, where adventurers, druids, and fey creatures share drinks brewed from enchanted berries. The tavern is neutral ground by ancient pact — violence here invokes a terrible curse.",
+  "parentLocalId": "thornwall",
+  "tags": ["tavern", "neutral-ground", "fey-pact", "adventurer-hub"],
+  "properties": {
+    "owner": "Bramblewise — a retired satyr bard",
+    "specialty": "Moonpetal Mead — induces vivid prophetic dreams",
+    "capacity": "60 patrons across three trunk levels",
+    "notableFeature": "A job board maintained by the Sylvan Council for quests and bounties"
+  }
+}

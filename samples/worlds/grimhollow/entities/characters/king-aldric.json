@@ -1,0 +1,14 @@
+{
+  "localId": "king-aldric",
+  "entityType": "Character",
+  "name": "King Aldric the Ironheart",
+  "description": "The aging but indomitable ruler of the Iron Dominion, a warrior-king who seized the throne by force forty years ago and has held it through sheer will and blacksteel ever since. His iron fist keeps the Dominion safe, but his growing paranoia threatens to tear the kingdom apart from within.",
+  "parentLocalId": "ironhold",
+  "tags": ["royalty", "warrior-king", "paranoid", "iron-dominion"],
+  "properties": {
+    "class": "Fighter (Champion)",
+    "level": "18",
+    "alignment": "Lawful Neutral",
+    "race": "Human"
+  }
+}

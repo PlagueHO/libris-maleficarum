@@ -1,0 +1,14 @@
+{
+  "localId": "ironhold",
+  "entityType": "City",
+  "name": "Ironhold",
+  "description": "The grim capital of the Iron Dominion, built upon a massive iron ore deposit at the edge of the Blackmoor Marshes. Its blacksteel walls have never been breached, but the city's heart rots from within as the Shadow Court's influence spreads through its noble houses.",
+  "parentLocalId": "blackmoor-marshes",
+  "tags": ["capital", "fortress-city", "blacksteel", "political-intrigue"],
+  "properties": {
+    "population": "120,000",
+    "government": "Royal court under King Aldric's martial authority",
+    "defenses": "Triple blacksteel walls, moat of alchemical fire, Iron Guard garrison",
+    "notableFeature": "The Eternal Forge — a volcanic vent harnessed to smelt blacksteel"
+  }
+}

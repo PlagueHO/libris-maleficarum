@@ -105,10 +105,23 @@ This service follows **Clean Architecture** principles with clear separation of 
   - Service definitions
   - Local development configuration
 
+- **`src/Client/Api/`** - Typed API client SDK
+  - `ILibrisApiClient` interface and `LibrisApiClient` implementation
+  - Request/Response models for API communication
+  - DI registration with resilience handlers
+
+- **`src/Components/Import/`** - Reusable import library
+  - Source readers (folder and zip archive)
+  - Validation engine with hierarchy cycle detection
+  - Parallel import orchestration with `SemaphoreSlim`
+
+- **`src/Tools/Cli/`** - CLI tool (`libris`)
+  - `libris world import` — Import worlds from folder/zip
+  - `libris world validate` — Validate import data
+
 - **`tests/`** - Unit and integration tests
-  - Api.Tests (Controller tests)
-  - Domain.Tests (Entity validation tests)
-  - Infrastructure.Tests (Repository tests)
+  - Api.Tests, Domain.Tests, Infrastructure.Tests
+  - Api.Client.Tests, Import.Tests, Cli.Tests
 
 ## Features Implemented
 
@@ -147,6 +160,13 @@ This service follows **Clean Architecture** principles with clear separation of 
   - Cosmos DB Emulator orchestration
   - Service discovery
   - Observability dashboard
+
+- **World Data Importer** (Feature 016)
+  - CLI tool: `libris world import --source <path> --api-url <url> --token <token>`
+  - Validate-only mode: `libris world validate --source <path>`
+  - Folder and zip archive import support
+  - Breadth-first parallel entity creation with configurable concurrency
+  - Sample world: `samples/worlds/grimhollow/` (26 entities, 9 types, 5 depth levels)
 
 ## Development
 

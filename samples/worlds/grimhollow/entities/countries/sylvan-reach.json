@@ -1,0 +1,14 @@
+{
+  "localId": "sylvan-reach",
+  "entityType": "Country",
+  "name": "The Sylvan Reach",
+  "description": "An ancient realm of enchanted forests and druidic circles, where the fey still walk among mortals and nature itself serves as both protector and prison. The Reach resists the Iron Dominion's expansion through guile, magic, and the impenetrable depths of its woodlands.",
+  "parentLocalId": "grimhollow-continent",
+  "tags": ["fey-touched", "druidic", "ancient-forest", "isolationist"],
+  "properties": {
+    "government": "Druidic council with hereditary wardens",
+    "population": "320,000",
+    "capital": "Thornwall",
+    "primaryExport": "Enchanted timber and alchemical reagents"
+  }
+}

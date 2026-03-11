@@ -1,0 +1,14 @@
+{
+  "localId": "ironhold-castle",
+  "entityType": "Building",
+  "name": "Ironhold Castle",
+  "description": "The seat of the Ironheart dynasty, a colossal fortress of blacksteel and volcanic stone that looms over the city like a clenched fist. Its deepest vaults are said to contain weapons from the Sundering War, sealed behind doors that no living smith can open.",
+  "parentLocalId": "ironhold",
+  "tags": ["castle", "royal-seat", "blacksteel", "ancient-vaults"],
+  "properties": {
+    "builtBy": "King Vorn Ironheart, first of his name",
+    "age": "Over 800 years",
+    "floors": "Seven above ground, unknown number below",
+    "secretPassages": "Rumored to connect to every noble house in the city"
+  }
+}

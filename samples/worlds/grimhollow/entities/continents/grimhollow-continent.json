@@ -1,0 +1,14 @@
+{
+  "localId": "grimhollow-continent",
+  "entityType": "Continent",
+  "name": "The Grimhollow Continent",
+  "description": "A vast landmass scarred by the Sundering War, where perpetual twilight blankets the sky and the boundary between the living and the dead grows thinner with each passing age. From the iron-clad fortresses of the north to the whispering forests of the south, every corner harbors secrets best left undisturbed.",
+  "parentLocalId": null,
+  "tags": ["dark-fantasy", "twilight-realm", "war-torn", "ancient-evil"],
+  "properties": {
+    "climate": "Perpetual twilight with ashen skies and frequent blood-red auroras",
+    "population": "Approximately 2.3 million souls, declining",
+    "knownThreats": "The Hollow — a creeping void that consumes the eastern borderlands",
+    "dominantReligion": "The Old Covenant of the Five Silent Gods"
+  }
+}
