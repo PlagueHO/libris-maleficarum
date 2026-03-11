@@ -24,11 +24,11 @@ public class WorldImportCommandTests
     }
 
     [TestMethod]
-    public void Create_HasRequiredApiUrlOption()
+    public void Create_HasOptionalApiUrlOption()
     {
         var option = _command.Options.SingleOrDefault(o => o.Name == "--api-url");
         option.Should().NotBeNull("the --api-url option should be defined");
-        option!.Required.Should().BeTrue("--api-url is a required option");
+        option!.Required.Should().BeFalse("--api-url falls back to LIBRIS_API_URL env var");
     }
 
     [TestMethod]
