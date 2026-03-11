@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -124,4 +125,23 @@ var frontend = builder.AddViteApp("frontend", "../../../../libris-maleficarum-ap
     .WithReference(apiService)
     .WaitFor(apiService);
 
+// Seed sample data: run CLI importer to import Grimhollow sample world after the API is healthy.
+// The frontend does NOT wait for this — it starts as soon as the API is ready.
+// On subsequent runs, the import may fail if the world already exists — this is expected.
+var sampleDataPath = Path.GetFullPath(
+    Path.Combine(GetSourceFileDirectory(), "..", "..", "..", "..", "samples", "worlds", "grimhollow"));
+
+var seedImporter = builder.AddProject<Projects.LibrisMaleficarum_Cli>("seed-importer")
+    .WithEnvironment("LIBRIS_API_URL", apiService.GetEndpoint("http"))
+    .WithEnvironment("LIBRIS_API_TOKEN", "development-seed")
+    .WithArgs("world", "import", "--source", sampleDataPath, "--verbose")
+    .WaitFor(apiService);
+
 builder.Build().Run();
+
+/// <summary>
+/// Returns the directory containing this source file at compile time.
+/// Used to resolve relative paths to sample data regardless of runtime working directory.
+/// </summary>
+static string GetSourceFileDirectory([CallerFilePath] string sourceFilePath = "")
+    => Path.GetDirectoryName(sourceFilePath)!;

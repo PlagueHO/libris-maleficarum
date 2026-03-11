@@ -24,10 +24,9 @@ public static class WorldImportCommand
             Required = true,
         };
 
-        var apiUrlOption = new Option<string>("--api-url")
+        var apiUrlOption = new Option<string?>("--api-url")
         {
-            Description = "Backend API base URL (e.g., https://localhost:5001).",
-            Required = true,
+            Description = "Backend API base URL. Falls back to LIBRIS_API_URL env var.",
         };
 
         var tokenOption = new Option<string?>("--token")
@@ -68,12 +67,20 @@ public static class WorldImportCommand
         command.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
         {
             var source = parseResult.GetRequiredValue(sourceOption);
-            var apiUrl = parseResult.GetRequiredValue(apiUrlOption);
+            var apiUrl = parseResult.GetValue(apiUrlOption);
             var token = parseResult.GetValue(tokenOption);
             var validateOnly = parseResult.GetValue(validateOnlyOption);
             var verbose = parseResult.GetValue(verboseOption);
             var maxConcurrency = parseResult.GetValue(maxConcurrencyOption);
             var logFile = parseResult.GetValue(logFileOption);
+
+            // Resolve API URL: --api-url param > LIBRIS_API_URL env var
+            apiUrl ??= Environment.GetEnvironmentVariable("LIBRIS_API_URL");
+            if (string.IsNullOrWhiteSpace(apiUrl))
+            {
+                Console.Error.WriteLine("Error: API URL is required. Use --api-url or set the LIBRIS_API_URL environment variable.");
+                return 2;
+            }
 
             // Resolve auth token: --token param > LIBRIS_API_TOKEN env var
             token ??= Environment.GetEnvironmentVariable("LIBRIS_API_TOKEN");
