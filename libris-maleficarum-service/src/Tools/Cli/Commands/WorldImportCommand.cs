@@ -96,6 +96,7 @@ public static class WorldImportCommand
             {
                 opt.BaseUrl = apiUrl;
                 opt.AuthToken = token;
+                opt.RequestTimeout = TimeSpan.FromMinutes(5);
             });
             services.AddWorldImportServices();
 
