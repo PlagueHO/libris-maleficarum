@@ -105,7 +105,7 @@ updates:
     schedule:
       interval: "weekly"
       time: "06:00"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
     labels:
@@ -121,26 +121,33 @@ updates:
           - "react-dom"
           - "react-redux"
           - "@reduxjs/toolkit"
+          - "react-day-picker"
         update-types:
           - "minor"
           - "patch"
-      fluentui:
+      radix-ui:
         patterns:
-          - "@fluentui/*"
+          - "@radix-ui/*"
         update-types:
           - "minor"
           - "patch"
-      copilotkit:
+      opentelemetry:
         patterns:
-          - "@copilotkit/*"
+          - "@opentelemetry/*"
         update-types:
           - "minor"
           - "patch"
-      vite-tooling:
+      vite-build:
         patterns:
           - "vite"
           - "vitest"
           - "@vitejs/*"
+          - "@vitest/*"
+          - "@tailwindcss/*"
+          - "tailwindcss"
+          - "postcss"
+          - "autoprefixer"
+          - "tw-animate-css"
         update-types:
           - "minor"
           - "patch"
@@ -149,22 +156,40 @@ updates:
           - "@testing-library/*"
           - "jest-axe"
           - "@axe-core/*"
+          - "msw"
+          - "jsdom"
+          - "@playwright/test"
         update-types:
           - "minor"
           - "patch"
-      typescript:
+      typescript-types:
         patterns:
           - "typescript"
+          - "typescript-eslint"
           - "@types/*"
         update-types:
           - "minor"
           - "patch"
-      eslint-prettier:
+      eslint:
         patterns:
           - "eslint"
           - "eslint-*"
-          - "prettier"
-          - "@typescript-eslint/*"
+          - "@eslint/*"
+        update-types:
+          - "minor"
+          - "patch"
+      ui-utilities:
+        patterns:
+          - "lucide-react"
+          - "class-variance-authority"
+          - "clsx"
+          - "tailwind-merge"
+          - "sonner"
+          - "vaul"
+          - "date-fns"
+          - "axios"
+          - "axios-retry"
+          - "globals"
         update-types:
           - "minor"
           - "patch"
