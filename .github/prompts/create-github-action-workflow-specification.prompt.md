@@ -1,7 +1,7 @@
 ---
 agent: 'agent'
 description: 'Create a formal specification for an existing GitHub Actions CI/CD workflow, optimized for AI consumption and workflow maintenance.'
-tools: ['edit', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'Microsoft Docs/*', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'todos', 'runSubagent']
+tools: [vscode, execute, read, agent, edit, search, web, browser, 'context7/*', 'github/*', todo]
 ---
 # Create GitHub Actions Workflow Specification
 
