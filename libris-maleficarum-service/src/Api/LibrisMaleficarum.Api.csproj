@@ -9,13 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="13.1.2-preview.1.26125.13" />
-    <PackageReference Include="Aspire.Azure.Search.Documents" Version="13.1.2" />
-    <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="13.1.2" />
-    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.Cosmos" Version="13.1.2" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.26.0" />
-    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" />
+    <PackageReference Include="Aspire.Azure.Search.Documents" />
+    <PackageReference Include="Aspire.Azure.Storage.Blobs" />
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.Cosmos" />
+    <PackageReference Include="Azure.Storage.Blobs" />
+    <PackageReference Include="FluentValidation.AspNetCore" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 
   <ItemGroup>

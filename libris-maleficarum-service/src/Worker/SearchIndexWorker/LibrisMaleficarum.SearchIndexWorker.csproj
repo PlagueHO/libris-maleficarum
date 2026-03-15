@@ -11,9 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="13.1.2-preview.1.26125.13" />
-    <PackageReference Include="Aspire.Azure.Search.Documents" Version="13.1.2" />
-    <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" Version="13.1.2" />
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" />
+    <PackageReference Include="Aspire.Azure.Search.Documents" />
+    <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" />
   </ItemGroup>
 
   <ItemGroup>

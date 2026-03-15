@@ -1,7 +1,7 @@
 {
   "inputs": [],
   "servers": {
-    "azure-verified-module-bicep-docs": {
+    "azure/verified-module-bicep-docs": {
       "type": "sse",
       "url": "https://gitmcp.io/Azure/bicep-registry-modules"
     },

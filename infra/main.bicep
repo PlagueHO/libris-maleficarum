@@ -151,7 +151,7 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = {
 }
 
 // Create the Private DNS Zone for the Key Vault to be used by Private Link using Azure Verified Module (AVM)
-module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0' = {
+module keyVaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1' = {
   name: 'keyvault-private-dns-zone-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -220,7 +220,7 @@ module staticSite 'br/public:avm/res/web/static-site:0.9.3' = {
 }
 
 // Create Azure Container Apps Environment in the frontend subnet using Azure Verified Module (AVM)
-module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.11.3' = {
+module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.1' = {
   name: 'container-apps-environment-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -230,10 +230,7 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.11.
     tags: tags
     appLogsConfiguration: {
       destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: logAnalyticsWorkspace.outputs.logAnalyticsWorkspaceId
-        sharedKey: logAnalyticsWorkspace.outputs.primarySharedKey
-      }
+      logAnalyticsWorkspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
     }
     infrastructureSubnetResourceId: virtualNetwork.outputs.subnetResourceIds[0] // container-apps subnet
     internal: true
@@ -242,7 +239,7 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.11.
 }
 
 // Create Private DNS Zone for the Storage Account blob service to be used by Private Link using Azure Verified Module (AVM)
-module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0' = {
+module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1' = {
   name: 'storage-blobservice-private-dns-zone-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -259,7 +256,7 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8
 }
 
 // Create a Storage Account with private endpoint in the backend subnet using Azure Verified Module (AVM)
-module storageAccount 'br/public:avm/res/storage/storage-account:0.31.0' = {
+module storageAccount 'br/public:avm/res/storage/storage-account:0.32.0' = {
   name: 'storage-account-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -312,7 +309,7 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.31.0' = {
 }
 
 // Create Private DNS Zone for the Cosmos DB account to be used by Private Link using Azure Verified Module (AVM)
-module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0' = {
+module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1' = {
   name: 'cosmosdb-private-dns-zone-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -329,7 +326,7 @@ module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0'
 }
 
 // Create a Cosmos DB account with private endpoint in the backend subnet using Azure Verified Module (AVM)
-module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.18.0' = {
+module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' = {
   name: 'cosmos-db-account-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -388,7 +385,7 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.18.0' =
 }
 
 // Create Private DNS Zone for Azure AI Search to be used by Private Link using Azure Verified Module (AVM)
-module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0' = {
+module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1' = {
   name: 'ai-search-private-dns-zone'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -452,7 +449,7 @@ module aiSearchService 'br/public:avm/res/search/search-service:0.12.0' = {
 }
 
 // Create Private DNS Zone for Azure AI Services to be used by Private Link using Azure Verified Module (AVM)
-module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.0' = {
+module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1' = {
   name: 'ai-services-private-dns-zone'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -811,7 +808,7 @@ module foundryRoleAssignments './core/security/role_foundry.bicep' = {
 
 // Alert rule for dead-letter indexing failures (FR-005)
 // Fires when the indexing failure count exceeds 5 in a 5-minute window.
-module indexingFailureAlert 'br/public:avm/res/insights/metric-alert:0.3.0' = {
+module indexingFailureAlert 'br/public:avm/res/insights/metric-alert:0.4.1' = {
   name: 'indexing-failure-alert-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
