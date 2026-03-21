@@ -126,11 +126,11 @@ Combines the Change Feed for reliable change detection with an intermediate queu
 Option B (Change Feed Processor as Background Service) is recommended because:
 
 1. **Lowest operational cost** (FR-007 priority 1): No additional Azure compute or services. Runs in the existing Container Apps instance. Only incremental cost is embedding API calls (common to all options).
-2. **Simplest overall** (FR-007 priority 2): Although it requires more application code than the indexer approach, it has fewer infrastructure components (zero new Azure services vs. Azure Function for Option A, queue + consumer for C/D). The code follows existing Clean Architecture patterns and is fully testable.
-3. **Reliable** (FR-007 priority 3): Change Feed Processor provides at-least-once delivery with automatic checkpoint recovery. Dead-letter handling writes to Application Insights per FR-005.
-4. **Meets observability requirements** (FR-022/23/24): Full control over custom metrics, tracing, and structured logging via the existing `ITelemetryService` pattern. The indexer approach cannot meet these requirements.
-5. **Meets sync lag target** (SC-001): Near-real-time sync (seconds) vs. 5-10 minutes for the indexer approach.
-6. **Aspire developer experience** (Constitution V): Runs as a separate project in the AppHost, starts with `dotnet run --project AppHost`, full dashboard visibility.\n7. **Separation of concerns**: Dedicated worker ensures sync failures don't impact API availability, and enables independent scaling and deployment.
+1. **Simplest overall** (FR-007 priority 2): Although it requires more application code than the indexer approach, it has fewer infrastructure components (zero new Azure services vs. Azure Function for Option A, queue + consumer for C/D). The code follows existing Clean Architecture patterns and is fully testable.
+1. **Reliable** (FR-007 priority 3): Change Feed Processor provides at-least-once delivery with automatic checkpoint recovery. Dead-letter handling writes to Application Insights per FR-005.
+1. **Meets observability requirements** (FR-022/23/24): Full control over custom metrics, tracing, and structured logging via the existing `ITelemetryService` pattern. The indexer approach cannot meet these requirements.
+1. **Meets sync lag target** (SC-001): Near-real-time sync (seconds) vs. 5-10 minutes for the indexer approach.
+1. **Aspire developer experience** (Constitution V): Runs as a separate project in the AppHost, starts with `dotnet run --project AppHost`, full dashboard visibility.\n7. **Separation of concerns**: Dedicated worker ensures sync failures don't impact API availability, and enables independent scaling and deployment.
 
 ### Alternatives Considered
 
@@ -196,9 +196,9 @@ When the feature is first deployed, all existing WorldEntity documents must be i
 **Workflow**:
 
 1. Deploy the API with the new `SearchIndexSyncService`
-2. On first startup, the Change Feed Processor starts from the beginning of the WorldEntity container
-3. All existing documents are processed (embeddings generated, pushed to index)
-4. Once caught up, the processor continues monitoring for new changes
+1. On first startup, the Change Feed Processor starts from the beginning of the WorldEntity container
+1. All existing documents are processed (embeddings generated, pushed to index)
+1. Once caught up, the processor continues monitoring for new changes
 
 **Consideration**: Initial population of large containers may take time. The processor handles backpressure naturally — it processes in batches and checkpoints progress. If interrupted, it resumes from the last checkpoint.
 

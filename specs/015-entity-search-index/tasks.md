@@ -230,33 +230,33 @@ T024: Health checks
 ### MVP First (User Story 1 Only)
 
 1. Complete Phase 1: Setup (NuGet packages, configuration)
-2. Complete Phase 2: Foundational (domain models, interfaces, API models)
-3. Complete Phase 3: User Story 1 (index sync pipeline)
-4. **STOP and VALIDATE**: Create entities via API, verify they appear in the search index within 60 seconds. Verify soft-deleted entities are removed.
-5. Deploy/demo if ready — index sync is operational.
+1. Complete Phase 2: Foundational (domain models, interfaces, API models)
+1. Complete Phase 3: User Story 1 (index sync pipeline)
+1. **STOP and VALIDATE**: Create entities via API, verify they appear in the search index within 60 seconds. Verify soft-deleted entities are removed.
+1. Deploy/demo if ready — index sync is operational.
 
 ### Incremental Delivery
 
 1. Complete Setup + Foundational → Foundation ready
-2. Add User Story 1 → Test independently → Deploy/Demo (MVP — index sync works)
-3. Add User Story 2 → Test independently → Deploy/Demo (search API operational)
-4. Add User Story 3 → Test independently → Deploy/Demo (all filters verified)
-5. Add User Story 4 → Test independently → Deploy/Demo (KB readiness documented)
-6. Complete Polish → Bicep + Aspire + documentation finalized
-7. Each story adds value without breaking previous stories
+1. Add User Story 1 → Test independently → Deploy/Demo (MVP — index sync works)
+1. Add User Story 2 → Test independently → Deploy/Demo (search API operational)
+1. Add User Story 3 → Test independently → Deploy/Demo (all filters verified)
+1. Add User Story 4 → Test independently → Deploy/Demo (KB readiness documented)
+1. Complete Polish → Bicep + Aspire + documentation finalized
+1. Each story adds value without breaking previous stories
 
 ### Parallel Team Strategy
 
 With multiple developers:
 
 1. Team completes Setup + Foundational together
-2. Once Foundational is done:
+1. Once Foundational is done:
    - Developer A: User Story 1 (index sync pipeline)
    - Developer B: User Story 4 (documentation — can start immediately)
-3. After US1 complete:
+1. After US1 complete:
    - Developer A: User Story 2 (search API)
    - Developer B: Polish Bicep/Aspire tasks (T038-T041)
-4. After US2 complete:
+1. After US2 complete:
    - Developer A: User Story 3 (filter validation)
    - Developer B: Remaining polish tasks
 
