@@ -131,7 +131,7 @@ var frontend = builder.AddViteApp("frontend", "../../../../libris-maleficarum-ap
 var sampleDataPath = Path.GetFullPath(
     Path.Combine(GetSourceFileDirectory(), "..", "..", "..", "..", "samples", "worlds", "grimhollow"));
 
-var seedImporter = builder.AddProject<Projects.LibrisMaleficarum_Cli>("seed-importer")
+builder.AddProject<Projects.LibrisMaleficarum_Cli>("seed-importer")
     .WithEnvironment("LIBRIS_API_URL", apiService.GetEndpoint("http"))
     .WithEnvironment("LIBRIS_API_TOKEN", "development-seed")
     .WithArgs("world", "import", "--source", sampleDataPath, "--verbose")
