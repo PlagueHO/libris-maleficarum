@@ -27,10 +27,10 @@ The AppHost provisions:
 Once the AppHost is running:
 
 1. Create a WorldEntity via the API (POST to `/api/v1/worlds/{worldId}/entities`)
-2. The Change Feed Processor detects the change within seconds
-3. An embedding is generated for the entity content
-4. The document is pushed to the Azure AI Search index
-5. The entity is now searchable via `GET /api/v1/worlds/{worldId}/search?q=your+query`
+1. The Change Feed Processor detects the change within seconds
+1. An embedding is generated for the entity content
+1. The document is pushed to the Azure AI Search index
+1. The entity is now searchable via `GET /api/v1/worlds/{worldId}/search?q=your+query`
 
 ### 3. Search API Usage
 
@@ -151,10 +151,10 @@ In the Aspire AppHost, the API service receives connection strings for:
 Azure AI Search supports **additive schema changes** without reindexing. To add a new field:
 
 1. Add the field definition in `AzureAISearchService.EnsureIndexExistsAsync()`
-2. Add the property to `SearchIndexDocument`
-3. Map the field in `SearchIndexSyncService.MapToSearchDocument()`
-4. Call `EnsureIndexExistsAsync()` — it uses `CreateOrUpdateIndex`, which adds new fields to an existing index without affecting existing documents
-5. New documents will have the field populated; existing documents will have `null` until re-indexed
+1. Add the property to `SearchIndexDocument`
+1. Map the field in `SearchIndexSyncService.MapToSearchDocument()`
+1. Call `EnsureIndexExistsAsync()` — it uses `CreateOrUpdateIndex`, which adds new fields to an existing index without affecting existing documents
+1. New documents will have the field populated; existing documents will have `null` until re-indexed
 
 **No reindex required** for additive fields. To backfill existing documents, trigger a re-sync by resetting the Change Feed lease checkpoint.
 
@@ -173,8 +173,8 @@ The search index schema is designed to be compatible with Azure AI Search as a K
 ### Future Registration Steps
 
 1. In Azure AI Foundry portal, navigate to **Knowledge** → **Add Knowledge Source**
-2. Select **Azure AI Search** as the source type
-3. Provide the search service endpoint and index name (`worldentity-index`)
-4. Map fields: content=`description`, title=`name`, vector=`contentVector`
-5. Configure filtering on `worldId` for tenant isolation
-6. The index is ready for use with Foundry IQ agents
+1. Select **Azure AI Search** as the source type
+1. Provide the search service endpoint and index name (`worldentity-index`)
+1. Map fields: content=`description`, title=`name`, vector=`contentVector`
+1. Configure filtering on `worldId` for tenant isolation
+1. The index is ready for use with Foundry IQ agents

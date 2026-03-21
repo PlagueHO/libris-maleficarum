@@ -323,34 +323,34 @@ T055: Build + test pass
 ### MVP First (User Story 1 Only)
 
 1. Complete Phase 1: Setup — project scaffolding
-2. Complete Phase 2: Foundational — API client SDK
-3. Complete Phase 3: User Story 1 — folder import + CLI
-4. **STOP and VALIDATE**: Run `libris world validate --source samples/worlds/grimhollow` (after creating minimal sample data)
-5. Deploy/demo if ready — folder import is the core value
+1. Complete Phase 2: Foundational — API client SDK
+1. Complete Phase 3: User Story 1 — folder import + CLI
+1. **STOP and VALIDATE**: Run `libris world validate --source samples/worlds/grimhollow` (after creating minimal sample data)
+1. Deploy/demo if ready — folder import is the core value
 
 ### Incremental Delivery
 
 1. Setup + Foundational → SDK ready
-2. Add User Story 1 → Folder import works → **MVP!**
-3. Add User Story 2 → Zip import works → Portable sharing enabled
-4. Add User Story 3 → Validate-only thoroughly tested → Quality-of-life improvement
-5. Add User Story 4 → Sample data bundled → Ready for demos and test automation
-6. Polish → Docs, zip archive, final validation
-7. Each story adds value without breaking previous stories
+1. Add User Story 1 → Folder import works → **MVP!**
+1. Add User Story 2 → Zip import works → Portable sharing enabled
+1. Add User Story 3 → Validate-only thoroughly tested → Quality-of-life improvement
+1. Add User Story 4 → Sample data bundled → Ready for demos and test automation
+1. Polish → Docs, zip archive, final validation
+1. Each story adds value without breaking previous stories
 
 ### Parallel Team Strategy
 
 With multiple developers:
 
 1. Team completes Setup + Foundational together
-2. Once Foundational (Phase 2) is done:
+1. Once Foundational (Phase 2) is done:
    - Developer A: US1 models + interfaces + services
    - Developer A (continued): US1 CLI commands
-3. After US1 core services exist:
+1. After US1 core services exist:
    - Developer A: US2 (extend source reader for zip)
    - Developer B: US3 (validation scenario tests)
    - Developer C: US4 (sample data creation — can start earlier in parallel)
-4. All converge on Phase 7: Polish
+1. All converge on Phase 7: Polish
 
 ---
 

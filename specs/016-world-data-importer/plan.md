@@ -196,8 +196,8 @@ samples/                                         # NEW — at repo root
 **Structure Decision**: Three new source projects under `libris-maleficarum-service/src/`:
 
 1. `src/Client/Api/` — API client SDK (`LibrisMaleficarum.Api.Client`). References `Domain` only. Provides strongly-typed, resilient HTTP access to all API endpoints. Shared by Import library and future consumers. `Client/` is a role-based category (like `Worker/`, `Tools/`) and `Api/` identifies the target service.
-2. `src/Components/Import/` — Reusable import library (`LibrisMaleficarum.Import`). References `Api.Client` and `Domain`. Contains all parsing, validation, and hierarchy resolution logic. No console dependencies, no direct HTTP logic.
-3. `src/Tools/Cli/` — CLI tool (`LibrisMaleficarum.Cli`). References `Import` only. Contains command definitions, argument parsing, and console output formatting. Produces `libris` executable via `<AssemblyName>libris</AssemblyName>`.
+1. `src/Components/Import/` — Reusable import library (`LibrisMaleficarum.Import`). References `Api.Client` and `Domain`. Contains all parsing, validation, and hierarchy resolution logic. No console dependencies, no direct HTTP logic.
+1. `src/Tools/Cli/` — CLI tool (`LibrisMaleficarum.Cli`). References `Import` only. Contains command definitions, argument parsing, and console output formatting. Produces `libris` executable via `<AssemblyName>libris</AssemblyName>`.
 
 This follows the existing project organization pattern:
 

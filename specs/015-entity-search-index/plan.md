@@ -155,13 +155,13 @@ Evaluated four candidate approaches per FR-008:
 
 1. **Index schema**: 16 fields including `contentVector` (1536-dim HNSW/cosine). Filterable: worldId, entityType, tags, parentId, ownerId, dates. Searchable: name, description, tags, attributes.
 
-2. **ISearchService breaking change**: Existing `SearchEntitiesAsync(worldId, query, sortBy, sortOrder, limit, cursor)` is replaced with `SearchAsync(SearchRequest)` returning `SearchResultSet`. The old LINQ-based `SearchService` implementation is replaced with `AzureAISearchService`.
+1. **ISearchService breaking change**: Existing `SearchEntitiesAsync(worldId, query, sortBy, sortOrder, limit, cursor)` is replaced with `SearchAsync(SearchRequest)` returning `SearchResultSet`. The old LINQ-based `SearchService` implementation is replaced with `AzureAISearchService`.
 
-3. **New domain interfaces**: `ISearchIndexService` (index push/remove), `IEmbeddingService` (embedding generation). Both in `Domain/Interfaces/Services/`.
+1. **New domain interfaces**: `ISearchIndexService` (index push/remove), `IEmbeddingService` (embedding generation). Both in `Domain/Interfaces/Services/`.
 
-4. **Search endpoint**: `GET /api/v1/worlds/{worldId}/search` with query params: `q` (required), `mode`, `entityType`, `tags`, `name`, `parentId`, `limit`, `offset`. Returns `SearchResponse` with results + pagination meta.
+1. **Search endpoint**: `GET /api/v1/worlds/{worldId}/search` with query params: `q` (required), `mode`, `entityType`, `tags`, `name`, `parentId`, `limit`, `offset`. Returns `SearchResponse` with results + pagination meta.
 
-5. **Background service**: `SearchIndexSyncService` implements `IHostedService`, uses Cosmos DB Change Feed Processor to monitor WorldEntity container. On change: maps to `SearchIndexDocument`, generates embedding via `IEmbeddingService`, pushes via `ISearchIndexService`. On soft-delete: removes from index. **Hosted in a dedicated `SearchIndexWorker` project** (not in the API process) for independent scaling, fault isolation, and deployment independence.
+1. **Background service**: `SearchIndexSyncService` implements `IHostedService`, uses Cosmos DB Change Feed Processor to monitor WorldEntity container. On change: maps to `SearchIndexDocument`, generates embedding via `IEmbeddingService`, pushes via `ISearchIndexService`. On soft-delete: removes from index. **Hosted in a dedicated `SearchIndexWorker` project** (not in the API process) for independent scaling, fault isolation, and deployment independence.
 
 ## Constitution Re-Check (Post-Design)
 
