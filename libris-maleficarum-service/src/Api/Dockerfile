@@ -3,6 +3,9 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_VERSION=0.0.0
 WORKDIR /src
 
+# Copy central package version props used by all projects.
+COPY Directory.Packages.props ./
+
 # Copy project files first for better layer caching
 COPY src/Domain/LibrisMaleficarum.Domain.csproj src/Domain/
 COPY src/Infrastructure/LibrisMaleficarum.Infrastructure.csproj src/Infrastructure/
