@@ -39,7 +39,7 @@ public sealed class ImportSourceReader : IImportSourceReader
             parseErrors.Add(new ImportValidationError
             {
                 FilePath = sourcePath,
-                Code = ImportValidationErrorCodes.WorldMissing,
+                Code = ImportValidationErrorCodes.SourceNotFound,
                 Message = $"ZIP archive does not exist: {sourcePath}"
             });
 
@@ -196,7 +196,7 @@ public sealed class ImportSourceReader : IImportSourceReader
             parseErrors.Add(new ImportValidationError
             {
                 FilePath = sourcePath,
-                Code = ImportValidationErrorCodes.WorldMissing,
+                Code = ImportValidationErrorCodes.SourceNotFound,
                 Message = $"Source folder does not exist: {sourcePath}"
             });
 

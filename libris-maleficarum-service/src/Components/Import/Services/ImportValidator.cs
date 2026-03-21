@@ -279,6 +279,7 @@ public sealed class ImportValidator : IImportValidator
             idMap[entity.LocalId] = Guid.NewGuid();
         }
 
+        var entityLookup = content.Entities.ToDictionary(e => e.LocalId, StringComparer.Ordinal);
         var resolvedMap = new Dictionary<string, ResolvedEntity>(StringComparer.Ordinal);
         var resolvedEntities = new List<ResolvedEntity>();
 
@@ -291,7 +292,7 @@ public sealed class ImportValidator : IImportValidator
             while (current?.ParentLocalId is not null && idMap.ContainsKey(current.ParentLocalId))
             {
                 ancestors.Add(idMap[current.ParentLocalId]);
-                current = content.Entities.FirstOrDefault(x => x.LocalId == current.ParentLocalId);
+                current = entityLookup.TryGetValue(current.ParentLocalId, out var parentEntity) ? parentEntity : null;
             }
 
             ancestors.Reverse();

@@ -63,7 +63,7 @@ public sealed class WorldImportService(
                 Success = false,
                 WorldId = Guid.Empty,
                 TotalEntitiesCreated = 0,
-                TotalEntitiesFailed = 0,
+                TotalEntitiesFailed = validationErrors.Count,
                 TotalEntitiesSkipped = 0,
                 CreatedByType = new Dictionary<string, int>(),
                 Errors = validationErrors,
@@ -118,6 +118,12 @@ public sealed class WorldImportService(
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                if (skippedLocalIds.Contains(entity.Definition.LocalId))
+                {
+                    // Already pre-counted as a skip from a parent's failure
+                    continue;
+                }
+
                 if (entity.Definition.ParentLocalId is not null &&
                     skippedLocalIds.Contains(entity.Definition.ParentLocalId))
                 {
@@ -130,7 +136,8 @@ public sealed class WorldImportService(
                 toProcess.Add(entity);
             }
 
-            using var semaphore = new SemaphoreSlim(options.MaxConcurrency);
+            var concurrency = Math.Max(1, options.MaxConcurrency);
+            using var semaphore = new SemaphoreSlim(concurrency);
             var tasks = toProcess.Select(async entity =>
             {
                 await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);

@@ -57,6 +57,11 @@ public static class ImportValidationErrorCodes
     /// <summary>An entity's custom properties exceed the maximum allowed size.</summary>
     public const string EntityPropsTooLarge = "ENTITY_PROPS_TOO_LARGE";
 
+    // Source-level errors
+
+    /// <summary>The import source path (file or folder) does not exist.</summary>
+    public const string SourceNotFound = "SOURCE_NOT_FOUND";
+
     // Archive-level errors
 
     /// <summary>The ZIP archive is invalid or corrupted.</summary>
