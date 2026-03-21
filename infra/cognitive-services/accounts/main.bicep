@@ -58,13 +58,14 @@ param kind string
   'S7'
   'S8'
   'S9'
+  'DC0'
 ])
 param sku string = 'S0'
 
 @description('Optional. Location for all Resources.')
 param location string = resourceGroup().location
 
-import { diagnosticSettingFullType } from 'br/public:avm/utl/types/avm-common-types:0.7.0'
+import { diagnosticSettingFullType } from 'br/public:avm/utl/types/avm-common-types:0.6.1'
 @description('Optional. The diagnostic settings of the service.')
 param diagnosticSettings diagnosticSettingFullType[]?
 
@@ -81,15 +82,18 @@ param customSubDomainName string?
 @description('Optional. A collection of rules governing the accessibility from specific network locations.')
 param networkAcls object?
 
-import { privateEndpointSingleServiceType } from 'br/public:avm/utl/types/avm-common-types:0.7.0'
+@description('Optional. Specifies in AI Foundry where virtual network injection occurs to secure scenarios like Agents entirely within a private network.')
+param networkInjections networkInjectionType?
+
+import { privateEndpointSingleServiceType } from 'br/public:avm/utl/types/avm-common-types:0.6.1'
 @description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.')
 param privateEndpoints privateEndpointSingleServiceType[]?
 
-import { lockType } from 'br/public:avm/utl/types/avm-common-types:0.7.0'
+import { lockType } from 'br/public:avm/utl/types/avm-common-types:0.6.1'
 @description('Optional. The lock settings of the service.')
 param lock lockType?
 
-import { roleAssignmentType } from 'br/public:avm/utl/types/avm-common-types:0.7.0'
+import { roleAssignmentType } from 'br/public:avm/utl/types/avm-common-types:0.6.1'
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType[]?
 
@@ -105,7 +109,7 @@ param apiProperties object?
 @description('Optional. Allow only Azure AD authentication. Should be enabled for security reasons.')
 param disableLocalAuth bool = true
 
-import { customerManagedKeyType } from 'br/public:avm/utl/types/avm-common-types:0.7.0'
+import { customerManagedKeyType } from 'br/public:avm/utl/types/avm-common-types:0.6.0'
 @description('Optional. The customer managed key definition.')
 param customerManagedKey customerManagedKeyType?
 
@@ -125,7 +129,7 @@ param restrictOutboundNetworkAccess bool = true
 @description('Optional. The storage accounts for this resource.')
 param userOwnedStorage array?
 
-import { managedIdentityAllType } from 'br/public:avm/utl/types/avm-common-types:0.7.0'
+import { managedIdentityAllType } from 'br/public:avm/utl/types/avm-common-types:0.6.0'
 @description('Optional. The managed identity definition for this resource.')
 param managedIdentities managedIdentityAllType?
 
@@ -135,11 +139,17 @@ param enableTelemetry bool = true
 @description('Optional. Array of deployments about cognitive service accounts to create.')
 param deployments deploymentType[]?
 
+@description('Optional. Array of RAI policies to create for the Cognitive Services account.')
+param raiPolicies raiPolicyType[]?
+
 @description('Optional. Key vault reference and secret settings for the module\'s secrets export.')
 param secretsExportConfiguration secretsExportConfigurationType?
 
 @description('Optional. Enable/Disable project management feature for Foundry.')
 param allowProjectManagement bool?
+
+@description('Optional. Commitment plans to deploy for the cognitive services account.')
+param commitmentPlans commitmentPlanType[]?
 
 @description('Optional. The Projects to create in the Cognitive Services account.')
 param projects projectType[]?
@@ -148,6 +158,13 @@ import { connectionType } from 'connection/main.bicep'
 @sys.description('Optional. Connections to create in the Cognitive Services account.')
 param connections connectionType[] = []
 
+import { capabilityHostType } from 'capabilityHost/main.bicep'
+@sys.description('Optional. Capability hosts to create in the Cognitive Services account. These enable AI agent functionality.')
+param capabilityHosts capabilityHostType[] = []
+
+import { applicationType, applicationOutputType } from 'project/application/main.bicep'
+import { projectCapabilityHostType, projectCapabilityHostOutputType } from 'project/capabilityHost/main.bicep'
+
 @sys.description('Optional. The flag to disable stored completions. When true, Azure OpenAI will not store prompts and completions for content filtering and abuse monitoring.')
 param storedCompletionsDisabled bool?
 
@@ -155,6 +172,8 @@ param storedCompletionsDisabled bool?
 param defaultProject string?
 
 var enableReferencedModulesTelemetry = false
+
+var isHSMManagedCMK = split(customerManagedKey.?keyVaultResourceId ?? '', '/')[?7] == 'managedHSMs'
 
 var formattedUserAssignedIdentities = reduce(
   map((managedIdentities.?userAssignedResourceIds ?? []), (id) => { '${id}': {} }),
@@ -334,19 +353,19 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource cMKKeyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
+resource cMKKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !isHSMManagedCMK) {
   name: last(split(customerManagedKey.?keyVaultResourceId!, '/'))
   scope: az.resourceGroup(
     split(customerManagedKey.?keyVaultResourceId!, '/')[2],
     split(customerManagedKey.?keyVaultResourceId!, '/')[4]
   )
 
-  resource cMKKey 'keys@2023-07-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !empty(customerManagedKey.?keyName)) {
+  resource cMKKey 'keys@2025-05-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !empty(customerManagedKey.?keyName) && !isHSMManagedCMK) {
     name: customerManagedKey.?keyName!
   }
 }
 
-resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = if (!empty(customerManagedKey.?userAssignedIdentityResourceId)) {
+resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = if (!empty(customerManagedKey.?userAssignedIdentityResourceId)) {
   name: last(split(customerManagedKey.?userAssignedIdentityResourceId!, '/'))
   scope: az.resourceGroup(
     split(customerManagedKey.?userAssignedIdentityResourceId!, '/')[2],
@@ -357,9 +376,9 @@ resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentiti
 resource cognitiveService 'Microsoft.CognitiveServices/accounts@2025-10-01-preview' = {
   name: name
   kind: kind
-  identity: identity ?? { type: 'None' }
+  identity: identity
   location: location
-  tags: tags ?? {}
+  tags: tags
   sku: {
     name: sku
   }
@@ -373,6 +392,16 @@ resource cognitiveService 'Microsoft.CognitiveServices/accounts@2025-10-01-previ
           ipRules: networkAcls.?ipRules ?? []
         }
       : null
+    #disable-next-line BCP036
+    networkInjections: !empty(networkInjections)
+      ? [
+          {
+            scenario: networkInjections.?scenario
+            subnetArmId: networkInjections.?subnetResourceId
+            useMicrosoftManagedNetwork: networkInjections.?useMicrosoftManagedNetwork ?? false
+          }
+        ]
+      : null
     publicNetworkAccess: publicNetworkAccess != null
       ? publicNetworkAccess
       : (!empty(networkAcls) ? 'Enabled' : 'Disabled')
@@ -384,31 +413,52 @@ resource cognitiveService 'Microsoft.CognitiveServices/accounts@2025-10-01-previ
           keySource: 'Microsoft.KeyVault'
           keyVaultProperties: {
             identityClientId: !empty(customerManagedKey.?userAssignedIdentityResourceId ?? '')
-              ? cMKUserAssignedIdentity.properties.clientId
+              ? cMKUserAssignedIdentity.?properties.clientId!
               : null
-            keyVaultUri: cMKKeyVault.properties.vaultUri
+            keyVaultUri: !isHSMManagedCMK
+              ? cMKKeyVault.?properties.vaultUri!
+              : 'https://${last(split((customerManagedKey!.keyVaultResourceId), '/'))}.managedhsm.azure.net/'
             keyName: customerManagedKey!.keyName
             keyVersion: !empty(customerManagedKey.?keyVersion ?? '')
               ? customerManagedKey!.?keyVersion
-              : last(split(cMKKeyVault::cMKKey.properties.keyUriWithVersion, '/'))
+              : (!isHSMManagedCMK
+                  ? last(split(cMKKeyVault::cMKKey.?properties.keyUriWithVersion!, '/'))
+                  : fail('Managed HSM CMK encryption requires specifying the \'keyVersion\'.'))
           }
         }
       : null
     migrationToken: migrationToken
     restore: restore
     restrictOutboundNetworkAccess: restrictOutboundNetworkAccess
-    userOwnedStorage: userOwnedStorage
+    userOwnedStorage: !empty(userOwnedStorage) ? userOwnedStorage : null
     dynamicThrottlingEnabled: dynamicThrottlingEnabled
     storedCompletionsDisabled: storedCompletionsDisabled
     defaultProject: defaultProject
   }
 }
 
+resource cognitiveService_raiPolicies 'Microsoft.CognitiveServices/accounts/raiPolicies@2025-10-01-preview' = [
+  for (raiPolicy, index) in (raiPolicies ?? []): {
+    parent: cognitiveService
+    name: raiPolicy.name
+    properties: {
+      basePolicyName: raiPolicy.?basePolicyName ?? 'Microsoft.Default'
+      mode: raiPolicy.?mode ?? 'Blocking'
+      contentFilters: raiPolicy.?contentFilters
+      customBlocklists: raiPolicy.?customBlocklists
+    }
+    tags: raiPolicy.?tags
+  }
+]
+
 @batchSize(1)
 resource cognitiveService_deployments 'Microsoft.CognitiveServices/accounts/deployments@2025-10-01-preview' = [
   for (deployment, index) in (deployments ?? []): {
     parent: cognitiveService
     name: deployment.?name ?? '${name}-deployments'
+    dependsOn: [
+      cognitiveService_raiPolicies
+    ]
     properties: {
       model: deployment.model
       raiPolicyName: deployment.?raiPolicyName
@@ -428,13 +478,22 @@ resource cognitiveService_lock 'Microsoft.Authorization/locks@2020-05-01' = if (
   name: lock.?name ?? 'lock-${name}'
   properties: {
     level: lock.?kind ?? ''
-    notes: lock.?kind == 'CanNotDelete'
+    notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
       ? 'Cannot delete resource or child resources.'
-      : 'Cannot delete or modify the resource or child resources.'
+      : 'Cannot delete or modify the resource or child resources.')
   }
   scope: cognitiveService
 }
 
+resource cognitiveService_commitmentPlans 'Microsoft.CognitiveServices/accounts/commitmentPlans@2025-10-01-preview' = [
+  for plan in (commitmentPlans ?? []): {
+    parent: cognitiveService
+    name: '${plan.hostingModel}-${plan.planType}'
+    properties: plan
+  }
+]
+
+#disable-next-line use-recent-api-versions
 resource cognitiveService_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = [
   for (diagnosticSetting, index) in (diagnosticSettings ?? []): {
     name: diagnosticSetting.?name ?? '${name}-diagnosticSettings'
@@ -465,7 +524,7 @@ resource cognitiveService_diagnosticSettings 'Microsoft.Insights/diagnosticSetti
 ]
 
 @batchSize(1)
-module cognitiveService_privateEndpoints 'br/public:avm/res/network/private-endpoint:0.12.0' = [
+module cognitiveService_privateEndpoints 'br/public:avm/res/network/private-endpoint:0.11.1' = [
   for (privateEndpoint, index) in (privateEndpoints ?? []): {
     name: take('${uniqueString(deployment().name, location)}-cognitiveService-PrivateEndpoint-${index}', 64)
     scope: az.resourceGroup(
@@ -524,6 +583,9 @@ module cognitiveService_privateEndpoints 'br/public:avm/res/network/private-endp
 module cognitiveService_projects './project/main.bicep' = [
   for (project, index) in (projects ?? []): {
     name: '${uniqueString(deployment().name, location)}-cognitiveService-project-${index}'
+    dependsOn: [
+      cognitiveService_deployments
+    ]
     scope: az.resourceGroup(
         split(project.?resourceGroupResourceId ?? resourceGroup().id, '/')[2],
         split(project.?resourceGroupResourceId ?? resourceGroup().id, '/')[4]
@@ -537,6 +599,8 @@ module cognitiveService_projects './project/main.bicep' = [
       managedIdentities: project.?managedIdentities ?? managedIdentities
       roleAssignments: project.?roleAssignments ?? roleAssignments
       tags: project.?tags ?? tags
+      applications: project.?applications ?? []
+      capabilityHosts: project.?capabilityHosts ?? []
     }
   }
 ]
@@ -564,6 +628,33 @@ module cognitiveServices_connections 'connection/main.bicep' = [
   }
 ]
 
+// Helper function to build connection resource ID from connection name
+func buildConnectionResourceId(accountId string, connectionName string) string =>
+  '${accountId}/connections/${connectionName}'
+
+@batchSize(1)
+module cognitiveServices_capabilityHosts 'capabilityHost/main.bicep' = [
+  for capabilityHost in capabilityHosts: {
+    name: '${take('${cognitiveService.name}-${capabilityHost.name}', 60)}-cph'
+    dependsOn: [
+      cognitiveServices_connections
+    ]
+    params: {
+      accountName: cognitiveService.name
+      name: capabilityHost.name
+      capabilityHostKind: capabilityHost.capabilityHostKind
+      threadStorageConnections: capabilityHost.?threadStorageConnectionNames != null
+        ? map(capabilityHost.threadStorageConnectionNames!, connName => buildConnectionResourceId(cognitiveService.id, connName))
+        : null
+      vectorStoreConnections: capabilityHost.?vectorStoreConnectionNames != null
+        ? map(capabilityHost.vectorStoreConnectionNames!, connName => buildConnectionResourceId(cognitiveService.id, connName))
+        : null
+      storageConnections: capabilityHost.?storageConnectionNames != null
+        ? map(capabilityHost.storageConnectionNames!, connName => buildConnectionResourceId(cognitiveService.id, connName))
+        : null
+    }
+  }
+]
 
 resource cognitiveService_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for (roleAssignment, index) in (formattedRoleAssignments ?? []): {
@@ -632,10 +723,10 @@ output systemAssignedMIPrincipalId string? = cognitiveService.?identity.?princip
 @description('The location the resource was deployed into.')
 output location string = cognitiveService.location
 
-import { secretsOutputType } from 'br/public:avm/utl/types/avm-common-types:0.7.0'
+import { secretsOutputType } from 'br/public:avm/utl/types/avm-common-types:0.6.0'
 @description('A hashtable of references to the secrets exported to the provided Key Vault. The key of each reference is each secret\'s name.')
 output exportedSecrets secretsOutputType = (secretsExportConfiguration != null)
-  ? toObject(secretsExport.outputs.secretsSet, secret => last(split(secret.secretResourceId, '/')), secret => secret)
+  ? toObject(secretsExport.?outputs.secretsSet!, secret => last(split(secret.secretResourceId, '/')), secret => secret)
   : {}
 
 @description('The private endpoints of the cognitive services account.')
@@ -649,12 +740,38 @@ output privateEndpoints privateEndpointOutputType[] = [
   }
 ]
 
+@secure()
+@description('The primary access key.')
+output primaryKey string? = !disableLocalAuth ? cognitiveService.listKeys().key1 : null
+
+@secure()
+@description('The secondary access key.')
+output secondaryKey string? = !disableLocalAuth ? cognitiveService.listKeys().key2 : null
+
 @description('The Foundry Projects created in the Cognitive Services account.')
 output projects projectOutputType[] = [
   for (project, index) in (projects ?? []): {
     name: cognitiveService_projects[index].outputs.projectResourceName
     resourceId: cognitiveService_projects[index].outputs.projectResourceId
     systemAssignedMIPrincipalId: cognitiveService_projects[index].outputs.?systemAssignedMIPrincipalId
+    applications: cognitiveService_projects[index].outputs.?applications ?? []
+    capabilityHosts: cognitiveService_projects[index].outputs.?capabilityHostsOutput ?? []
+  }
+]
+
+@description('The Capability Hosts created in the Cognitive Services account.')
+output capabilityHostsOutput capabilityHostOutputType[] = [
+  for (capabilityHost, index) in (capabilityHosts ?? []): {
+    name: cognitiveServices_capabilityHosts[index].outputs.name
+    resourceId: cognitiveServices_capabilityHosts[index].outputs.resourceId
+  }
+]
+
+@description('The RAI policies created in the Cognitive Services account.')
+output raiPoliciesOutput raiPolicyOutputType[] = [
+  for (raiPolicy, index) in (raiPolicies ?? []): {
+    name: cognitiveService_raiPolicies[index].name
+    resourceId: cognitiveService_raiPolicies[index].id
   }
 ]
 
@@ -698,6 +815,22 @@ type projectOutputType = {
 
   @description('The principal ID of the system assigned identity.')
   systemAssignedMIPrincipalId: string?
+
+  @description('The applications created in the project.')
+  applications: applicationOutputType[]?
+
+  @description('The capability hosts created in the project.')
+  capabilityHosts: projectCapabilityHostOutputType[]?
+}
+
+@export()
+@description('The type for the capability host output.')
+type capabilityHostOutputType = {
+  @description('The name of the capability host.')
+  name: string
+
+  @description('The resource ID of the capability host.')
+  resourceId: string
 }
 
 
@@ -786,6 +919,12 @@ type projectType = {
 
   @sys.description('Resource tags. This corresponds to the "tags" property of the Microsoft.CognitiveServices/accounts/projects resource.')
   tags: object?
+
+  @sys.description('Applications to deploy within this Foundry Project.')
+  applications: applicationType[]?
+
+  @sys.description('Capability hosts to deploy within this Foundry Project. These configure per-project storage backends for threads, vectors, and files.')
+  capabilityHosts: projectCapabilityHostType[]?
 }
 
 @sys.description('Defines the nested properties for an Azure Foundry Project, corresponding to the "properties" object of the Microsoft.CognitiveServices/accounts/projects resource.')
@@ -795,4 +934,115 @@ type foundryProjectPropertiesType = {
 
   @sys.description('A description for the Foundry Project. This corresponds to the "description" property within the "properties" of the Microsoft.CognitiveServices/accounts/projects resource.')
   description: string
+}
+
+@export()
+@description('The type for a cognitive services account RAI policy.')
+type raiPolicyType = {
+  @description('Required. The name of the RAI policy.')
+  name: string
+
+  @description('Optional. The base policy name. Defaults to Microsoft.Default.')
+  basePolicyName: string?
+
+  @description('Optional. The RAI policy mode.')
+  mode: ('Asynchronous_filter' | 'Blocking' | 'Default' | 'Deferred')?
+
+  @description('Optional. The list of content filters to apply.')
+  contentFilters: raiPolicyContentFilterType[]?
+
+  @description('Optional. The list of custom blocklists to apply.')
+  customBlocklists: raiPolicyCustomBlocklistType[]?
+
+  @description('Optional. Resource tags.')
+  tags: object?
+}
+
+@export()
+@description('The type for a RAI policy content filter.')
+type raiPolicyContentFilterType = {
+  @description('Required. The name of the content filter (e.g., Hate, Sexual, Violence, SelfHarm).')
+  name: string
+
+  @description('Required. Whether the content filter is enabled.')
+  enabled: bool
+
+  @description('Required. Whether blocking is enabled for this filter.')
+  blocking: bool
+
+  @description('Optional. The severity threshold level at which content is filtered.')
+  severityThreshold: ('High' | 'Low' | 'Medium')?
+
+  @description('Optional. The content source to apply the filter to.')
+  source: ('Completion' | 'Prompt')?
+}
+
+@export()
+@description('The type for a RAI policy custom blocklist configuration.')
+type raiPolicyCustomBlocklistType = {
+  @description('Required. The name of the blocklist.')
+  blocklistName: string
+
+  @description('Required. Whether blocking is enabled for this blocklist.')
+  blocking: bool
+
+  @description('Optional. The content source to apply the blocklist to.')
+  source: ('Completion' | 'Prompt')?
+}
+
+@export()
+@description('The type for the RAI policy output.')
+type raiPolicyOutputType = {
+  @description('The name of the RAI policy.')
+  name: string
+
+  @description('The resource ID of the RAI policy.')
+  resourceId: string
+}
+
+@export()
+@description('The type for a disconnected container commitment plan.')
+type commitmentPlanType = {
+  @description('Required. Whether the plan should auto-renew at the end of the current commitment period.')
+  autoRenew: bool
+
+  @description('Required. The current commitment configuration.')
+  current: {
+    @description('Required. The number of committed instances (e.g., number of containers or cores).')
+    count: int
+
+    @description('Required. The tier of the commitment plan (e.g., T1, T2).')
+    tier: string
+  }
+
+  @description('Required. The hosting model for the commitment plan. (e.g., DisconnectedContainer, ConnectedContainer, ProvisionedWeb, Web).')
+  hostingModel: string
+
+  @description('Required. The plan type indicating which capability the plan applies to (e.g., NTTS, STT, CUSTOMSTT, ADDON).')
+  planType: string
+
+  @description('Optional. The unique identifier of an existing commitment plan to update. Set to null to create a new plan.')
+  commitmentPlanGuid: string?
+
+  @description('Optional. The configuration of the next commitment period, if scheduled.')
+  next: {
+    @description('Required. The number of committed instances for the next period.')
+    count: int
+
+    @description('Required. The tier for the next commitment period.')
+    tier: string
+  }?
+}
+
+@export()
+@description('Type for network configuration in AI Foundry where virtual network injection occurs to secure scenarios like Agents entirely within a private network.')
+type networkInjectionType = {
+  @description('Required. The scenario for the network injection.')
+  scenario: 'agent' | 'none'
+
+  @description('Required. The Resource ID of the subnet on the Virtual Network on which to inject.')
+  subnetResourceId: string
+
+  @description('Optional. Whether to use Microsoft Managed Network. Defaults to false.')
+  useMicrosoftManagedNetwork: bool?
 }
