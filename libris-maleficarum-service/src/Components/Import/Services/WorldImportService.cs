@@ -127,9 +127,11 @@ public sealed class WorldImportService(
                 if (entity.Definition.ParentLocalId is not null &&
                     skippedLocalIds.Contains(entity.Definition.ParentLocalId))
                 {
-                    skippedLocalIds.Add(entity.Definition.LocalId);
-                    CollectDescendantLocalIds(entity, skippedLocalIds);
-                    skippedCount++;
+                    var descendantIds = new List<string>();
+                    CollectDescendantLocalIds(entity, descendantIds);
+                    skippedCount += AddSkippedLocalIds(
+                        skippedLocalIds,
+                        [entity.Definition.LocalId, .. descendantIds]);
                     continue;
                 }
 
@@ -181,11 +183,7 @@ public sealed class WorldImportService(
                     {
                         failedCount++;
                         skippedLocalIds.Add(entity.Definition.LocalId);
-                        foreach (var id in descendantIds)
-                        {
-                            skippedLocalIds.Add(id);
-                        }
-                        skippedCount += descendantIds.Count;
+                        skippedCount += AddSkippedLocalIds(skippedLocalIds, descendantIds);
 
                         errors.Add(new EntityImportError
                         {
@@ -242,6 +240,23 @@ public sealed class WorldImportService(
             CurrentEntityName = entityName,
             Phase = phase
         });
+    }
+
+    private static int AddSkippedLocalIds(
+        ISet<string> skippedLocalIds,
+        IEnumerable<string> localIds)
+    {
+        var addedCount = 0;
+
+        foreach (var localId in localIds)
+        {
+            if (skippedLocalIds.Add(localId))
+            {
+                addedCount++;
+            }
+        }
+
+        return addedCount;
     }
 
     private static void CollectDescendantLocalIds(ResolvedEntity entity, ICollection<string> ids)

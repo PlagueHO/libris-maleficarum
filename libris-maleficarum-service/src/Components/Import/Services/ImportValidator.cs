@@ -17,12 +17,21 @@ public sealed class ImportValidator : IImportValidator
 
         if (content.World is null)
         {
-            errors.Add(new ImportValidationError
+            var hasSourceOrWorldParseError = errors.Any(error => error.Code is
+                ImportValidationErrorCodes.SourceNotFound or
+                ImportValidationErrorCodes.ZipInvalid or
+                ImportValidationErrorCodes.WorldMissing or
+                ImportValidationErrorCodes.WorldInvalidJson);
+
+            if (!hasSourceOrWorldParseError)
             {
-                FilePath = "world.json",
-                Code = ImportValidationErrorCodes.WorldMissing,
-                Message = "The world definition is missing."
-            });
+                errors.Add(new ImportValidationError
+                {
+                    FilePath = "world.json",
+                    Code = ImportValidationErrorCodes.WorldMissing,
+                    Message = "The world definition is missing."
+                });
+            }
 
             return new ImportValidationResult
             {

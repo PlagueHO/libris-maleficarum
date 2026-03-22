@@ -1,9 +1,11 @@
 using System.CommandLine;
+using LibrisMaleficarum.Api.Client;
 using LibrisMaleficarum.Api.Client.Extensions;
 using LibrisMaleficarum.Cli.Output;
 using LibrisMaleficarum.Import.Extensions;
 using LibrisMaleficarum.Import.Interfaces;
 using LibrisMaleficarum.Import.Models;
+using LibrisMaleficarum.Api.Client.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LibrisMaleficarum.Cli.Commands;
@@ -74,30 +76,39 @@ public static class WorldImportCommand
             var maxConcurrency = parseResult.GetValue(maxConcurrencyOption);
             var logFile = parseResult.GetValue(logFileOption);
 
-            // Resolve API URL: --api-url param > LIBRIS_API_URL env var
-            apiUrl ??= Environment.GetEnvironmentVariable("LIBRIS_API_URL");
-            if (string.IsNullOrWhiteSpace(apiUrl))
-            {
-                Console.Error.WriteLine("Error: API URL is required. Use --api-url or set the LIBRIS_API_URL environment variable.");
-                return 2;
-            }
-
-            // Resolve auth token: --token param > LIBRIS_API_TOKEN env var
-            token ??= Environment.GetEnvironmentVariable("LIBRIS_API_TOKEN");
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                Console.Error.WriteLine("Error: Authentication token is required. Use --token or set the LIBRIS_API_TOKEN environment variable.");
-                return 2;
-            }
-
             // Set up DI container
             var services = new ServiceCollection();
-            services.AddLibrisApiClient(opt =>
+
+            if (validateOnly)
             {
-                opt.BaseUrl = apiUrl;
-                opt.AuthToken = token;
-                opt.RequestTimeout = TimeSpan.FromMinutes(5);
-            });
+                services.AddSingleton<ILibrisApiClient, ValidationOnlyApiClient>();
+            }
+            else
+            {
+                // Resolve API URL: --api-url param > LIBRIS_API_URL env var
+                apiUrl ??= Environment.GetEnvironmentVariable("LIBRIS_API_URL");
+                if (string.IsNullOrWhiteSpace(apiUrl))
+                {
+                    Console.Error.WriteLine("Error: API URL is required. Use --api-url or set the LIBRIS_API_URL environment variable.");
+                    return 2;
+                }
+
+                // Resolve auth token: --token param > LIBRIS_API_TOKEN env var
+                token ??= Environment.GetEnvironmentVariable("LIBRIS_API_TOKEN");
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    Console.Error.WriteLine("Error: Authentication token is required. Use --token or set the LIBRIS_API_TOKEN environment variable.");
+                    return 2;
+                }
+
+                services.AddLibrisApiClient(opt =>
+                {
+                    opt.BaseUrl = apiUrl!;
+                    opt.AuthToken = token;
+                    opt.RequestTimeout = TimeSpan.FromMinutes(5);
+                });
+            }
+
             services.AddWorldImportServices();
 
             await using var provider = services.BuildServiceProvider();
@@ -120,8 +131,8 @@ public static class WorldImportCommand
             // Build import options
             var options = new ImportOptions
             {
-                ApiBaseUrl = apiUrl,
-                AuthToken = token,
+                ApiBaseUrl = apiUrl!,
+                AuthToken = token!,
                 MaxConcurrency = maxConcurrency,
                 ValidateOnly = false,
                 Verbose = verbose,
@@ -135,7 +146,7 @@ public static class WorldImportCommand
             // Write log file if specified
             if (!string.IsNullOrWhiteSpace(logFile))
             {
-                await WriteLogFileAsync(logFile, result).ConfigureAwait(false);
+                await WriteLogFileAsync(logFile, result, cancellationToken).ConfigureAwait(false);
             }
 
             if (result.Success && result.TotalEntitiesFailed == 0)
@@ -157,8 +168,17 @@ public static class WorldImportCommand
         return command;
     }
 
-    private static async Task WriteLogFileAsync(string logFilePath, ImportResult result)
+    private static async Task WriteLogFileAsync(
+        string logFilePath,
+        ImportResult result,
+        CancellationToken cancellationToken)
     {
+        var directoryPath = Path.GetDirectoryName(logFilePath);
+        if (!string.IsNullOrWhiteSpace(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+
         var lines = new List<string>
         {
             $"Import Log - {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
@@ -194,6 +214,24 @@ public static class WorldImportCommand
             }
         }
 
-        await File.WriteAllLinesAsync(logFilePath, lines).ConfigureAwait(false);
+        await File.WriteAllLinesAsync(logFilePath, lines, cancellationToken).ConfigureAwait(false);
+    }
+
+    private sealed class ValidationOnlyApiClient : ILibrisApiClient
+    {
+        public Task<WorldResponse> CreateWorldAsync(
+            CreateWorldRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException("The API client must not be used during validate-only execution.");
+        }
+
+        public Task<EntityResponse> CreateEntityAsync(
+            Guid worldId,
+            CreateEntityRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException("The API client must not be used during validate-only execution.");
+        }
     }
 }

@@ -98,11 +98,28 @@ public sealed class LibrisApiClient : ILibrisApiClient
         HttpResponseMessage response,
         CancellationToken cancellationToken)
     {
+        var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return null;
+        }
+
         try
         {
-            return await response.Content
-                .ReadFromJsonAsync<ApiError>(_jsonOptions, cancellationToken)
-                .ConfigureAwait(false);
+            var envelope = JsonSerializer.Deserialize<ApiErrorResponse>(content, _jsonOptions);
+            if (envelope?.Error is not null)
+            {
+                return envelope.Error;
+            }
+        }
+        catch (JsonException)
+        {
+            // Fall back to legacy flat error payloads.
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<ApiError>(content, _jsonOptions);
         }
         catch (JsonException)
         {

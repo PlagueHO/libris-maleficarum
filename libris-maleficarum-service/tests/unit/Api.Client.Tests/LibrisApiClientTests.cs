@@ -71,7 +71,7 @@ public class LibrisApiClientTests
             Path = [],
             Depth = 0,
             HasChildren = false,
-            OwnerId = Guid.NewGuid(),
+            OwnerId = Guid.NewGuid().ToString(),
             Attributes = new Dictionary<string, object> { ["level"] = 5 },
             CreatedDate = DateTime.UtcNow,
             ModifiedDate = DateTime.UtcNow,
@@ -112,10 +112,10 @@ public class LibrisApiClientTests
         {
             Message = "Validation failed",
             Code = "VALIDATION_ERROR",
-            Details = "Name is required."
+            Details = new Dictionary<string, object?> { ["reason"] = "Name is required." }
         };
 
-        var client = CreateClient(HttpStatusCode.BadRequest, apiError);
+        var client = CreateClient(HttpStatusCode.BadRequest, new ApiErrorResponse { Error = apiError });
         var request = new CreateWorldRequest { Name = "" };
 
         // Act
@@ -138,7 +138,7 @@ public class LibrisApiClientTests
             Code = "UNAUTHORIZED"
         };
 
-        var client = CreateClient(HttpStatusCode.Unauthorized, apiError);
+        var client = CreateClient(HttpStatusCode.Unauthorized, new ApiErrorResponse { Error = apiError });
         var request = new CreateWorldRequest { Name = "Test" };
 
         // Act
@@ -159,7 +159,7 @@ public class LibrisApiClientTests
             Code = "FORBIDDEN"
         };
 
-        var client = CreateClient(HttpStatusCode.Forbidden, apiError);
+        var client = CreateClient(HttpStatusCode.Forbidden, new ApiErrorResponse { Error = apiError });
         var request = new CreateWorldRequest { Name = "Test" };
 
         // Act
@@ -189,7 +189,7 @@ public class LibrisApiClientTests
                 Path = [],
                 Depth = 0,
                 HasChildren = false,
-                OwnerId = Guid.NewGuid(),
+                OwnerId = Guid.NewGuid().ToString(),
                 CreatedDate = DateTime.UtcNow,
                 ModifiedDate = DateTime.UtcNow,
                 IsDeleted = false,
@@ -208,6 +208,27 @@ public class LibrisApiClientTests
 
         // Assert
         await act.Should().ThrowAsync<TaskCanceledException>();
+    }
+
+    [TestMethod]
+    public async Task CreateWorldAsync_FlatErrorPayload_IsStillSupported()
+    {
+        // Arrange
+        var apiError = new ApiError
+        {
+            Message = "Validation failed",
+            Code = "VALIDATION_ERROR"
+        };
+
+        var client = CreateClient(HttpStatusCode.BadRequest, apiError);
+
+        // Act
+        var act = () => client.CreateWorldAsync(new CreateWorldRequest { Name = "" });
+
+        // Assert
+        var exception = await act.Should().ThrowAsync<LibrisApiException>();
+        exception.Which.ApiError.Should().NotBeNull();
+        exception.Which.ApiError!.Code.Should().Be("VALIDATION_ERROR");
     }
 
     private static LibrisApiClient CreateClient<T>(HttpStatusCode statusCode, T responseBody)

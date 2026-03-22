@@ -61,6 +61,36 @@ public sealed class ImportValidatorTests
     }
 
     [TestMethod]
+    public void Validate_NullWorldWithParseError_DoesNotAddDuplicateWorldMissingError()
+    {
+        // Arrange
+        var content = new ImportSourceContent
+        {
+            World = null,
+            Entities = [],
+            ParseErrors =
+            [
+                new ImportValidationError
+                {
+                    FilePath = "world.json",
+                    Code = ImportValidationErrorCodes.WorldInvalidJson,
+                    Message = "The world.json file contains invalid JSON."
+                }
+            ],
+            SourcePath = "/test",
+            SourceType = ImportSourceType.Folder
+        };
+
+        // Act
+        var result = _validator.Validate(content);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().ContainSingle(e => e.Code == ImportValidationErrorCodes.WorldInvalidJson);
+        result.Errors.Should().NotContain(e => e.Code == ImportValidationErrorCodes.WorldMissing);
+    }
+
+    [TestMethod]
     public void Validate_EntityMissingLocalId_ReturnsError()
     {
         // Arrange

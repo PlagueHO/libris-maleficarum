@@ -52,4 +52,38 @@ public class ServiceCollectionExtensionsTests
         var client = provider.GetService<ILibrisApiClient>();
         client.Should().NotBeNull();
     }
+
+    [TestMethod]
+    public void AddLibrisApiClient_ThrowsForMissingBaseUrl()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        var act = () => services.AddLibrisApiClient(options =>
+        {
+            options.BaseUrl = string.Empty;
+        });
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*BaseUrl must be configured*");
+    }
+
+    [TestMethod]
+    public void AddLibrisApiClient_ThrowsForRelativeBaseUrl()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        var act = () => services.AddLibrisApiClient(options =>
+        {
+            options.BaseUrl = "/relative";
+        });
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*BaseUrl must be a valid absolute URI*");
+    }
 }
