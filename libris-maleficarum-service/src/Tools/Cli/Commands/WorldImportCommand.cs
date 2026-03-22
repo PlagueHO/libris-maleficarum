@@ -192,7 +192,7 @@ public static class WorldImportCommand
             "Created by type:",
         };
 
-        foreach (var (type, count) in result.CreatedByType)
+        foreach (var (type, count) in result.CreatedByType.OrderBy(kvp => kvp.Key))
         {
             lines.Add($"  {type,-15} {count}");
         }

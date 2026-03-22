@@ -15,6 +15,27 @@ cd libris-maleficarum-service
 dotnet build src/Tools/Cli/LibrisMaleficarum.Cli.csproj
 ```
 
+## Run the CLI
+
+After building, invoke the CLI using `dotnet run` (no install required):
+
+```bash
+# Using dotnet run (recommended for development)
+dotnet run --project src/Tools/Cli -- world import --source ./samples/worlds/grimhollow --api-url https://localhost:5001
+```
+
+Alternatively, invoke the compiled binary directly:
+
+```bash
+# Windows
+.\src\Tools\Cli\bin\Debug\net10.0\libris.exe world import --source ./samples/worlds/grimhollow --api-url https://localhost:5001
+
+# Linux / macOS
+./src/Tools/Cli/bin/Debug/net10.0/libris world import --source ./samples/worlds/grimhollow --api-url https://localhost:5001
+```
+
+> **Note**: The examples below use `libris` as a short-hand, assuming the binary is on your PATH or replaced with `dotnet run --project src/Tools/Cli --` as shown above.
+
 ## Validate Import Data
 
 ```bash

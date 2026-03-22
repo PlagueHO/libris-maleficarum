@@ -106,7 +106,7 @@ public static class ConsoleReporter
 
     private static void WriteCreatedByType(IReadOnlyDictionary<string, int> createdByType)
     {
-        foreach (var (type, count) in createdByType)
+        foreach (var (type, count) in createdByType.OrderBy(kvp => kvp.Key))
         {
             Console.WriteLine($"    {type,-12}{count}");
         }
@@ -114,7 +114,7 @@ public static class ConsoleReporter
 
     private static void WriteCountsByType(IReadOnlyDictionary<string, int> countsByType)
     {
-        foreach (var (type, count) in countsByType)
+        foreach (var (type, count) in countsByType.OrderBy(kvp => kvp.Key))
         {
             Console.WriteLine($"    {type,-12}{count}");
         }
