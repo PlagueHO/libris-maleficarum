@@ -476,7 +476,7 @@ public sealed class WorldImportServiceTests
             Path = [],
             Depth = 0,
             HasChildren = false,
-            OwnerId = Guid.NewGuid(),
+            OwnerId = Guid.NewGuid().ToString(),
             CreatedDate = DateTime.UtcNow,
             ModifiedDate = DateTime.UtcNow,
             IsDeleted = false,

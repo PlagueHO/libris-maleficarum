@@ -24,10 +24,19 @@ public static class ServiceCollectionExtensions
 
         var options = new LibrisApiClientOptions { BaseUrl = string.Empty };
         configure(options);
+        if (string.IsNullOrWhiteSpace(options.BaseUrl))
+        {
+            throw new ArgumentException("BaseUrl must be configured.", nameof(options));
+        }
+
+        if (!Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out var baseUri))
+        {
+            throw new ArgumentException("BaseUrl must be a valid absolute URI.", nameof(options));
+        }
 
         var builder = services.AddHttpClient<ILibrisApiClient, LibrisApiClient>(client =>
         {
-            client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
+            client.BaseAddress = new Uri(baseUri.AbsoluteUri.TrimEnd('/') + "/");
 
             if (!string.IsNullOrWhiteSpace(options.AuthToken))
             {

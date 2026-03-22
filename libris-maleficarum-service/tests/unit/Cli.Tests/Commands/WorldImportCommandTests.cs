@@ -68,4 +68,54 @@ public class WorldImportCommandTests
         option.Should().NotBeNull("the --log-file option should be defined");
         option!.Required.Should().BeFalse("--log-file is an optional option");
     }
+
+    [TestMethod]
+    public async Task Create_ValidateOnly_DoesNotRequireApiConfiguration()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), $"world-import-command-{Guid.NewGuid():N}");
+        var originalApiUrl = Environment.GetEnvironmentVariable("LIBRIS_API_URL");
+        var originalToken = Environment.GetEnvironmentVariable("LIBRIS_API_TOKEN");
+
+        Directory.CreateDirectory(tempDirectory);
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDirectory, "world.json"),
+                """
+                {
+                  "name": "Test World",
+                  "description": "Validation only"
+                }
+                """);
+
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDirectory, "entity.json"),
+                """
+                {
+                  "localId": "continent-1",
+                  "entityType": "Continent",
+                  "name": "Test Continent"
+                }
+                """);
+
+            Environment.SetEnvironmentVariable("LIBRIS_API_URL", null);
+            Environment.SetEnvironmentVariable("LIBRIS_API_TOKEN", null);
+
+            var exitCode = await new CommandLineConfiguration(_command)
+                .InvokeAsync(["--source", tempDirectory, "--validate-only"]);
+
+            exitCode.Should().Be(0);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("LIBRIS_API_URL", originalApiUrl);
+            Environment.SetEnvironmentVariable("LIBRIS_API_TOKEN", originalToken);
+
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, true);
+            }
+        }
+    }
 }

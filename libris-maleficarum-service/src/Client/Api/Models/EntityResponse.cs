@@ -58,7 +58,7 @@ public sealed class EntityResponse
     /// <summary>
     /// Gets the identifier of the user who owns this entity.
     /// </summary>
-    public required Guid OwnerId { get; init; }
+    public required string OwnerId { get; init; }
 
     /// <summary>
     /// Gets the custom attributes.
