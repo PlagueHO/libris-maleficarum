@@ -26,13 +26,13 @@ public static class ServiceCollectionExtensions
         configure(options);
         if (string.IsNullOrWhiteSpace(options.BaseUrl))
         {
-            throw new ArgumentException("BaseUrl must be configured.", nameof(options));
+            throw new ArgumentException("BaseUrl must be configured.", nameof(configure));
         }
 
         if (!Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out var baseUri) ||
             (baseUri.Scheme != Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps))
         {
-            throw new ArgumentException("BaseUrl must be a valid absolute HTTP or HTTPS URI.", nameof(options));
+            throw new ArgumentException("BaseUrl must be a valid absolute HTTP or HTTPS URI.", nameof(configure));
         }
 
         var builder = services.AddHttpClient<ILibrisApiClient, LibrisApiClient>(client =>
