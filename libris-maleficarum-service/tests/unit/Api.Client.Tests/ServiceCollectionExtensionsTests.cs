@@ -84,6 +84,6 @@ public class ServiceCollectionExtensionsTests
 
         // Assert
         act.Should().Throw<ArgumentException>()
-            .WithMessage("*BaseUrl must be a valid absolute URI*");
+            .WithMessage("*BaseUrl must be a valid absolute HTTP or HTTPS URI*");
     }
 }
