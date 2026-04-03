@@ -33,7 +33,7 @@
 | Layer | Technologies |
 |---|---|
 | **Frontend** | React 19, TypeScript, Vite, Redux Toolkit, TailwindCSS v4, Shadcn/UI, CopilotKit |
-| **Backend** | .NET 10, ASP.NET Core, EF Core (Cosmos DB), Aspire.NET, Microsoft Agent Framework |
+| **Backend** | .NET 10, ASP.NET Core, EF Core (Cosmos DB), Microsoft Aspire Clients, Microsoft Agent Framework |
 | **Infrastructure** | Azure Bicep (Azure Verified Modules), Cosmos DB, AI Search, Key Vault, Container Apps, Static Web App |
 | **CI/CD** | GitHub Actions, Azure Developer CLI (`azd`) |
 | **Testing** | Vitest, Testing Library, jest-axe, Playwright (frontend) · MSTest, FluentAssertions (backend) |
@@ -47,10 +47,11 @@
 - [Docker](https://www.docker.com/) (for Aspire orchestration and Cosmos DB Emulator)
 - [Azure Developer CLI (`azd`)](https://aka.ms/install-azd) (for Azure deployment)
 - [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) (optional, for manual Azure operations)
+- [Aspire CLI](https://aka.ms/aspire) (for local orchestration)
 
 ### Run Locally with Aspire
 
-The fastest way to run the full stack locally is with .NET Aspire, which orchestrates the backend services, Cosmos DB Emulator, and service discovery automatically.
+The fastest way to run the full stack locally is with Microsoft Aspire, which orchestrates the frontend and backend services, Cosmos DB Emulator, and service discovery automatically.
 
 1. **Clone the repository**
 
@@ -59,24 +60,13 @@ The fastest way to run the full stack locally is with .NET Aspire, which orchest
    cd libris-maleficarum
    ```
 
-1. **Start the backend with Aspire**
+2. **Start the entire application stack with Aspire**
 
    ```powershell
-   cd libris-maleficarum-service
-   dotnet run --project src/Orchestration/AppHost
+   aspire run
    ```
 
-   This starts all backend services with the Aspire Dashboard for observability (logs, traces, metrics).
-
-1. **Start the frontend dev server**
-
-   In a separate terminal:
-
-   ```powershell
-   cd libris-maleficarum-app
-   pnpm install
-   pnpm dev
-   ```
+   This starts all services and starts the Aspire Dashboard for observability (logs, traces, metrics).
 
    The app is served at `https://127.0.0.1:4000` (the first run generates a self-signed SSL certificate — your browser will warn).
 

@@ -9,3 +9,7 @@ param resourceGroupName = readEnvironmentVariable('AZURE_RESOURCE_GROUP', '')
 
 // Optional Components
 param createBastionHost = bool(readEnvironmentVariable('AZURE_CREATE_BASTION_HOST', 'false'))
+
+// Static Web App location override (must be one of: centralus, eastasia, eastus2, westeurope, westus2)
+// Leave empty to use the primary location.
+param staticWebAppLocation = readEnvironmentVariable('AZURE_STATIC_WEB_APP_LOCATION', '')

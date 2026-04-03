@@ -24,6 +24,17 @@ param resourceGroupName string = ''
 @description('Should an Azure Bastion be created?')
 param createBastionHost bool = false
 
+@description('Location for the Azure Static Web App. Must be one of the supported regions. Defaults to the primary location if not specified.')
+@allowed([
+  ''
+  'centralus'
+  'eastasia'
+  'eastus2'
+  'westeurope'
+  'westus2'
+])
+param staticWebAppLocation string = ''
+
 @description('Id of the user or app to assign application roles.')
 param principalId string = ''
 
@@ -48,6 +59,7 @@ var tags = {
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 
 var effectiveResourceGroupName = !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
+var effectiveStaticWebAppLocation = !empty(staticWebAppLocation) ? staticWebAppLocation : location
 var deploymentId = uniqueString(subscription().id, environmentName)
 var logAnalyticsName = '${abbrs.operationalInsightsWorkspaces}${environmentName}'
 var sendTologAnalyticsCustomSettingName = 'send-to-${logAnalyticsName}'
@@ -210,7 +222,7 @@ module staticSite 'br/public:avm/res/web/static-site:0.9.3' = {
   dependsOn: [resourceGroup]
   params: {
     name: staticSiteName
-    location: location
+    location: effectiveStaticWebAppLocation
     allowConfigFileUpdates: true
     enterpriseGradeCdnStatus: 'Disabled'
     sku: 'Standard'
