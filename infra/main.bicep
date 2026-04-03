@@ -806,6 +806,28 @@ module foundryRoleAssignments './core/security/role_foundry.bicep' = {
   }
 }
 
+// ---------- COSMOS DB ROLE ASSIGNMENTS ----------
+// Assigns Cosmos DB Built-in Data Contributor (data-plane RBAC) to the deploying principal
+// for local development access. Uses a separate module to avoid redeploying the Cosmos DB account.
+// The built-in Data Contributor role GUID is 00000000-0000-0000-0000-000000000002.
+module principalCosmosDbRoles './core/security/role_cosmosdb.bicep' = if (!empty(principalId)) {
+  name: 'principal-cosmos-db-roles-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  dependsOn: [
+    resourceGroup
+    cosmosDbAccount
+  ]
+  params: {
+    cosmosDbAccountName: cosmosDbAccountName
+    sqlRoleAssignments: [
+      {
+        principalId: principalId
+        roleDefinitionId: '00000000-0000-0000-0000-000000000002'
+      }
+    ]
+  }
+}
+
 // Alert rule for dead-letter indexing failures (FR-005)
 // Fires when the indexing failure count exceeds 5 in a 5-minute window.
 module indexingFailureAlert 'br/public:avm/res/insights/metric-alert:0.4.1' = {
