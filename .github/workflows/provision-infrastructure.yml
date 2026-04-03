@@ -21,15 +21,15 @@ on:
         type: string
 
     outputs:
-      STATIC_WEB_APP_URI:
-        description: "The URI of the Static Web App"
-        value: ${{ jobs.provision-infrastructure.outputs.STATIC_WEB_APP_URI }}
-      STATIC_WEB_APP_NAME:
-        description: "The name of the Static Web App"
-        value: ${{ jobs.provision-infrastructure.outputs.STATIC_WEB_APP_NAME }}
-      STATIC_WEB_APP_TOKEN:
-        description: "The deployment token for the Static Web App"
-        value: ${{ jobs.provision-infrastructure.outputs.STATIC_WEB_APP_TOKEN }}
+      AZURE_RESOURCE_GROUP:
+        description: "The Azure resource group name"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_RESOURCE_GROUP }}
+      AZURE_STATIC_WEB_APP_NAME:
+        description: "The Azure Static Web App resource name"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_STATIC_WEB_APP_NAME }}
+      AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME:
+        description: "The default hostname of the deployed Azure Static Web App"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
 
     secrets:
       AZURE_TENANT_ID:
@@ -59,9 +59,9 @@ jobs:
       AZURE_PRINCIPAL_ID_TYPE: "ServicePrincipal"
 
     outputs:
-      STATIC_WEB_APP_URI: ${{ steps.get_endpoints.outputs.STATIC_WEB_APP_URI }}
-      STATIC_WEB_APP_NAME: ${{ steps.get_endpoints.outputs.STATIC_WEB_APP_NAME }}
-      STATIC_WEB_APP_TOKEN: ${{ steps.get_endpoints.outputs.STATIC_WEB_APP_TOKEN }}
+      AZURE_RESOURCE_GROUP: ${{ steps.get_endpoints.outputs.AZURE_RESOURCE_GROUP }}
+      AZURE_STATIC_WEB_APP_NAME: ${{ steps.get_endpoints.outputs.AZURE_STATIC_WEB_APP_NAME }}
+      AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ steps.get_endpoints.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
 
     steps:
       - name: Checkout
@@ -116,13 +116,13 @@ jobs:
       - name: Get Output Endpoints
         id: get_endpoints
         run: |
-          STATIC_WEB_APP_URI=$(azd env get-values | grep STATIC_WEB_APP_URI | cut -d'=' -f2- | xargs)
-          echo "STATIC_WEB_APP_URI=$STATIC_WEB_APP_URI" >> $GITHUB_OUTPUT
-          
+          AZURE_RESOURCE_GROUP="rg-${{ inputs.AZURE_ENV_NAME }}"
+          echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP" >> $GITHUB_OUTPUT
+
           # Get Static Web App name from the resource group
-          STATIC_WEB_APP_NAME=$(az staticwebapp list --resource-group "rg-${{ inputs.AZURE_ENV_NAME }}" --query "[0].name" -o tsv)
-          echo "STATIC_WEB_APP_NAME=$STATIC_WEB_APP_NAME" >> $GITHUB_OUTPUT
-          
-          # Get deployment token for the Static Web App
-          STATIC_WEB_APP_TOKEN=$(az staticwebapp secrets list --name "$STATIC_WEB_APP_NAME" --resource-group "rg-${{ inputs.AZURE_ENV_NAME }}" --query "properties.apiKey" -o tsv)
-          echo "STATIC_WEB_APP_TOKEN=$STATIC_WEB_APP_TOKEN" >> $GITHUB_OUTPUT
+          AZURE_STATIC_WEB_APP_NAME=$(az staticwebapp list --resource-group "$AZURE_RESOURCE_GROUP" --query "[0].name" -o tsv)
+          echo "AZURE_STATIC_WEB_APP_NAME=$AZURE_STATIC_WEB_APP_NAME" >> $GITHUB_OUTPUT
+
+          # Get default hostname of the Static Web App
+          AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME=$(az staticwebapp show --name "$AZURE_STATIC_WEB_APP_NAME" --resource-group "$AZURE_RESOURCE_GROUP" --query "defaultHostname" -o tsv)
+          echo "AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME=$AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME" >> $GITHUB_OUTPUT
