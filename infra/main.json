@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "18111056007949810356"
+      "templateHash": "16790432929894160040"
     }
   },
   "parameters": {
@@ -37,6 +37,21 @@
       "defaultValue": false,
       "metadata": {
         "description": "Should an Azure Bastion be created?"
+      }
+    },
+    "staticWebAppLocation": {
+      "type": "string",
+      "defaultValue": "",
+      "allowedValues": [
+        "",
+        "centralus",
+        "eastasia",
+        "eastus2",
+        "westeurope",
+        "westus2"
+      ],
+      "metadata": {
+        "description": "Location for the Azure Static Web App. Must be one of the supported regions. Defaults to the primary location if not specified."
       }
     },
     "principalId": {
@@ -199,6 +214,7 @@
     },
     "resourceToken": "[toLower(uniqueString(subscription().id, parameters('environmentName'), parameters('location')))]",
     "effectiveResourceGroupName": "[if(not(empty(parameters('resourceGroupName'))), parameters('resourceGroupName'), format('{0}{1}', variables('abbrs').resourcesResourceGroups, parameters('environmentName')))]",
+    "effectiveStaticWebAppLocation": "[if(not(empty(parameters('staticWebAppLocation'))), parameters('staticWebAppLocation'), parameters('location'))]",
     "deploymentId": "[uniqueString(subscription().id, parameters('environmentName'))]",
     "logAnalyticsName": "[format('{0}{1}', variables('abbrs').operationalInsightsWorkspaces, parameters('environmentName'))]",
     "sendTologAnalyticsCustomSettingName": "[format('send-to-{0}', variables('logAnalyticsName'))]",
@@ -13138,7 +13154,7 @@
             "value": "[variables('staticSiteName')]"
           },
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[variables('effectiveStaticWebAppLocation')]"
           },
           "allowConfigFileUpdates": {
             "value": true
@@ -43900,13 +43916,6 @@
               "systemAssigned": true
             }
           },
-          "authOptions": {
-            "value": {
-              "aadOrApiKey": {
-                "aadAuthFailureMode": "http401WithBearerChallenge"
-              }
-            }
-          },
           "diagnosticSettings": {
             "value": [
               {
@@ -56984,11 +56993,20 @@
               "allof": [
                 {
                   "name": "IndexingFailureCount",
-                  "metricName": "customMetrics/search.indexing.failures",
-                  "metricNamespace": "microsoft.insights/components",
+                  "metricName": "DocumentsProcessedCount",
+                  "metricNamespace": "microsoft.search/searchservices",
+                  "dimensions": [
+                    {
+                      "name": "Status",
+                      "operator": "Include",
+                      "values": [
+                        "Failed"
+                      ]
+                    }
+                  ],
                   "operator": "GreaterThan",
                   "threshold": 5,
-                  "timeAggregation": "Count",
+                  "timeAggregation": "Total",
                   "criterionType": "StaticThresholdCriterion"
                 }
               ]
@@ -56996,7 +57014,7 @@
           },
           "scopes": {
             "value": [
-              "[reference('applicationInsights').outputs.resourceId.value]"
+              "[reference('aiSearchService').outputs.resourceId.value]"
             ]
           }
         },
@@ -57520,7 +57538,7 @@
         }
       },
       "dependsOn": [
-        "applicationInsights",
+        "aiSearchService",
         "resourceGroup"
       ]
     }

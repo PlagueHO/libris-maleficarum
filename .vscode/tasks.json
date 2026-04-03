@@ -427,21 +427,25 @@
       }
     },
     {
-      "label": "bicep: build",
+      "label": "infra: build (bicep)",
       "type": "shell",
-      "command": "powershell",
+      "command": "pwsh",
       "args": [
+        "-NoProfile",
         "-Command",
-        "Get-ChildItem -Path infra -Filter *.bicep -Recurse | ForEach-Object { Write-Host \"Building $($_.FullName)...\"; az bicep build --file $($_.FullName) }"
+        "Get-ChildItem -Path infra -Recurse -Filter '*.bicep' | ForEach-Object { Write-Host \"Building $($_.FullName)...\"; az bicep build --file $($_.FullName) }"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
       "problemMatcher": [],
-      "group": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
       "icon": {
-        "id": "file-code",
-        "color": "terminal.ansiBlue"
+        "id": "cloud",
+        "color": "terminal.ansiYellow"
       }
     },
     {
