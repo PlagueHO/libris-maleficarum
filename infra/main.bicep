@@ -415,11 +415,6 @@ module aiSearchService 'br/public:avm/res/search/search-service:0.12.0' = {
     managedIdentities: {
       systemAssigned: true
     }
-    authOptions: {
-      aadOrApiKey: {
-        aadAuthFailureMode: 'http401WithBearerChallenge'
-      }
-    }
     diagnosticSettings: [
       {
         metricCategories: [
@@ -846,17 +841,24 @@ module indexingFailureAlert 'br/public:avm/res/insights/metric-alert:0.4.1' = {
       allof: [
         {
           name: 'IndexingFailureCount'
-          metricName: 'customMetrics/search.indexing.failures'
-          metricNamespace: 'microsoft.insights/components'
+          metricName: 'DocumentsProcessedCount'
+          metricNamespace: 'microsoft.search/searchservices'
+          dimensions: [
+            {
+              name: 'Status'
+              operator: 'Include'
+              values: ['Failed']
+            }
+          ]
           operator: 'GreaterThan'
           threshold: 5
-          timeAggregation: 'Count'
+          timeAggregation: 'Total'
           criterionType: 'StaticThresholdCriterion'
         }
       ]
     }
     scopes: [
-      applicationInsights.outputs.resourceId
+      aiSearchService.outputs.resourceId
     ]
   }
 }
