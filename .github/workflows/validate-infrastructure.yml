@@ -19,6 +19,11 @@ on:
         description: "The name of the Azure environment"
         required: true
         type: string
+      AZURE_STATIC_WEB_APP_LOCATION:
+        description: "The Azure region for the Static Web App (must be one of: centralus, eastasia, eastus2, westeurope, westus2)"
+        required: false
+        type: string
+        default: ''
 
     secrets:
       AZURE_TENANT_ID:
@@ -43,6 +48,7 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_ENV_NAME: ${{ inputs.AZURE_ENV_NAME }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
+      AZURE_STATIC_WEB_APP_LOCATION: ${{ inputs.AZURE_STATIC_WEB_APP_LOCATION }}
 
     steps:
       - name: Checkout Repository
