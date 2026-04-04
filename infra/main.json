@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "4149394559825194551"
+      "templateHash": "10799161411487314136"
     }
   },
   "parameters": {
@@ -56448,7 +56448,7 @@
             "value": "[variables('aiSearchName')]"
           },
           "roleAssignments": {
-            "value": "[flatten(createArray(createArray(createObject('roleDefinitionIdOrName', 'Search Index Data Contributor', 'principalType', 'ServicePrincipal', 'principalId', reference('aiFoundryAccount').outputs.systemAssignedMIPrincipalId.value), createObject('roleDefinitionIdOrName', 'Search Index Data Reader', 'principalType', 'ServicePrincipal', 'principalId', reference('aiFoundryAccount').outputs.systemAssignedMIPrincipalId.value), createObject('roleDefinitionIdOrName', 'Search Service Contributor', 'principalType', 'ServicePrincipal', 'principalId', reference('aiFoundryAccount').outputs.systemAssignedMIPrincipalId.value)), if(not(empty(parameters('principalId'))), createArray(createObject('roleDefinitionIdOrName', 'Search Service Contributor', 'principalType', parameters('principalIdType'), 'principalId', parameters('principalId')), createObject('roleDefinitionIdOrName', 'Search Index Data Contributor', 'principalType', parameters('principalIdType'), 'principalId', parameters('principalId'))), createArray())))]"
+            "value": "[flatten(createArray(if(not(empty(reference('aiFoundryAccount').outputs.systemAssignedMIPrincipalId.value)), createArray(createObject('roleDefinitionIdOrName', 'Search Index Data Contributor', 'principalType', 'ServicePrincipal', 'principalId', reference('aiFoundryAccount').outputs.systemAssignedMIPrincipalId.value), createObject('roleDefinitionIdOrName', 'Search Index Data Reader', 'principalType', 'ServicePrincipal', 'principalId', reference('aiFoundryAccount').outputs.systemAssignedMIPrincipalId.value), createObject('roleDefinitionIdOrName', 'Search Service Contributor', 'principalType', 'ServicePrincipal', 'principalId', reference('aiFoundryAccount').outputs.systemAssignedMIPrincipalId.value)), createArray()), if(not(empty(parameters('principalId'))), createArray(createObject('roleDefinitionIdOrName', 'Search Service Contributor', 'principalType', parameters('principalIdType'), 'principalId', parameters('principalId')), createObject('roleDefinitionIdOrName', 'Search Index Data Contributor', 'principalType', parameters('principalIdType'), 'principalId', parameters('principalId'))), createArray())))]"
           }
         },
         "template": {
@@ -56648,7 +56648,7 @@
             "value": "[variables('aiFoundryName')]"
           },
           "roleAssignments": {
-            "value": "[flatten(createArray(createArray(createObject('roleDefinitionIdOrName', 'Cognitive Services Contributor', 'principalType', 'ServicePrincipal', 'principalId', reference('aiSearchService').outputs.systemAssignedMIPrincipalId.value), createObject('roleDefinitionIdOrName', 'Cognitive Services OpenAI Contributor', 'principalType', 'ServicePrincipal', 'principalId', reference('aiSearchService').outputs.systemAssignedMIPrincipalId.value)), if(not(empty(parameters('principalId'))), createArray(createObject('roleDefinitionIdOrName', 'Contributor', 'principalType', parameters('principalIdType'), 'principalId', parameters('principalId')), createObject('roleDefinitionIdOrName', 'Cognitive Services OpenAI Contributor', 'principalType', parameters('principalIdType'), 'principalId', parameters('principalId'))), createArray())))]"
+            "value": "[flatten(createArray(if(not(empty(reference('aiSearchService').outputs.systemAssignedMIPrincipalId.value)), createArray(createObject('roleDefinitionIdOrName', 'Cognitive Services Contributor', 'principalType', 'ServicePrincipal', 'principalId', reference('aiSearchService').outputs.systemAssignedMIPrincipalId.value), createObject('roleDefinitionIdOrName', 'Cognitive Services OpenAI Contributor', 'principalType', 'ServicePrincipal', 'principalId', reference('aiSearchService').outputs.systemAssignedMIPrincipalId.value)), createArray()), if(not(empty(parameters('principalId'))), createArray(createObject('roleDefinitionIdOrName', 'Contributor', 'principalType', parameters('principalIdType'), 'principalId', parameters('principalId')), createObject('roleDefinitionIdOrName', 'Cognitive Services OpenAI Contributor', 'principalType', parameters('principalIdType'), 'principalId', parameters('principalId'))), createArray())))]"
           }
         },
         "template": {

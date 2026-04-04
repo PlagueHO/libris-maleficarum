@@ -728,21 +728,23 @@ module sharedNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
 // Role assignments for AI Search service to allow Foundry and developer access
 var aiSearchRoleAssignmentsArray = [
   // Foundry service managed identity needs access to AI Search
-  {
-    roleDefinitionIdOrName: 'Search Index Data Contributor'
-    principalType: 'ServicePrincipal'
-    principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
-  }
-  {
-    roleDefinitionIdOrName: 'Search Index Data Reader'
-    principalType: 'ServicePrincipal'
-    principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
-  }
-  {
-    roleDefinitionIdOrName: 'Search Service Contributor'
-    principalType: 'ServicePrincipal'
-    principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
-  }
+  ...(!empty(aiFoundryAccount.outputs.systemAssignedMIPrincipalId) ? [
+    {
+      roleDefinitionIdOrName: 'Search Index Data Contributor'
+      principalType: 'ServicePrincipal'
+      principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
+    }
+    {
+      roleDefinitionIdOrName: 'Search Index Data Reader'
+      principalType: 'ServicePrincipal'
+      principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
+    }
+    {
+      roleDefinitionIdOrName: 'Search Service Contributor'
+      principalType: 'ServicePrincipal'
+      principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
+    }
+  ] : [])
   // Developer role assignments
   ...(!empty(principalId) ? [
     {
@@ -775,16 +777,18 @@ module aiSearchRoleAssignments './core/security/role_aisearch.bicep' = {
 // Role assignments for Foundry to allow AI Search and developer access
 var foundryRoleAssignmentsArray = [
   // AI Search managed identity needs access to Foundry for vectorization
-  {
-    roleDefinitionIdOrName: 'Cognitive Services Contributor'
-    principalType: 'ServicePrincipal'
-    principalId: aiSearchService.outputs.systemAssignedMIPrincipalId
-  }
-  {
-    roleDefinitionIdOrName: 'Cognitive Services OpenAI Contributor'
-    principalType: 'ServicePrincipal'
-    principalId: aiSearchService.outputs.systemAssignedMIPrincipalId
-  }
+  ...(!empty(aiSearchService.outputs.systemAssignedMIPrincipalId) ? [
+    {
+      roleDefinitionIdOrName: 'Cognitive Services Contributor'
+      principalType: 'ServicePrincipal'
+      principalId: aiSearchService.outputs.systemAssignedMIPrincipalId
+    }
+    {
+      roleDefinitionIdOrName: 'Cognitive Services OpenAI Contributor'
+      principalType: 'ServicePrincipal'
+      principalId: aiSearchService.outputs.systemAssignedMIPrincipalId
+    }
+  ] : [])
   // Developer role assignments
   ...(!empty(principalId) ? [
     {
