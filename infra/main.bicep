@@ -514,7 +514,7 @@ module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.14.1' = 
           version: '1'
         }
         sku: {
-          name: 'Standard'
+          name: 'GlobalStandard'
           capacity: 120
         }
       }
@@ -855,13 +855,6 @@ module indexingFailureAlert 'br/public:avm/res/insights/metric-alert:0.4.1' = {
           name: 'IndexingFailureCount'
           metricName: 'DocumentsProcessedCount'
           metricNamespace: 'microsoft.search/searchservices'
-          dimensions: [
-            {
-              name: 'Status'
-              operator: 'Include'
-              values: ['Failed']
-            }
-          ]
           operator: 'GreaterThan'
           threshold: 5
           timeAggregation: 'Total'

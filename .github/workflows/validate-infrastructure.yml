@@ -41,6 +41,9 @@ jobs:
     name: Validate Infrastructure ${{ inputs.ENVIRONMENT }}
     environment: ${{ inputs.ENVIRONMENT }}
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
 
     env:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -49,27 +52,50 @@ jobs:
       AZURE_ENV_NAME: ${{ inputs.AZURE_ENV_NAME }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
       AZURE_STATIC_WEB_APP_LOCATION: ${{ inputs.AZURE_STATIC_WEB_APP_LOCATION }}
+      AZURE_PRINCIPAL_ID_TYPE: "ServicePrincipal"
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Azure Login
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: latest
+
+      - name: Install Azure Developer CLI
+        uses: Azure/setup-azd@v2.2.1
+
+      - name: Authenticate Azure Developer CLI (Federated Credentials)
+        run: |
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider "github" \
+            --tenant-id "$AZURE_TENANT_ID"
+
+      - name: Authenticate Azure CLI (Federated Credentials)
         uses: azure/login@v3
         with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
 
-      - name: Validate
-        id: validate-azure-infrastructure
-        uses: azure/bicep-deploy@v2
-        with:
-          type: deployment
-          operation: whatIf
-          name: ${{ inputs.AZURE_ENV_NAME }}-${{inputs.AZURE_LOCATION}}-${{ inputs.ENVIRONMENT }}-${{ github.action_ref }}-${{ github.run_number }}
-          scope: subscription
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          location: ${{ inputs.AZURE_LOCATION }}
-          template-file: ./infra/main.bicep
-          parameters-file: ./infra/main.bicepparam
+      - name: Create Azure Developer CLI environment
+        run: |
+          azd env new "$AZURE_ENV_NAME" --location "$AZURE_LOCATION"
+
+      - name: Set Azure Developer CLI environment variables
+        run: |
+          azd env set AZURE_PRINCIPAL_ID_TYPE "$AZURE_PRINCIPAL_ID_TYPE"
+          azd env set AZURE_RESOURCE_GROUP "rg-${AZURE_ENV_NAME}"
+          if [ -n "$AZURE_STATIC_WEB_APP_LOCATION" ]; then
+            azd env set AZURE_STATIC_WEB_APP_LOCATION "$AZURE_STATIC_WEB_APP_LOCATION"
+          fi
+
+      - name: Preview Infrastructure using Azure Developer CLI
+        run: azd provision --preview --no-prompt
