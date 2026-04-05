@@ -52,7 +52,7 @@ public class WorldRepository : IWorldRepository
 
     /// <inheritdoc />
     public async Task<(IEnumerable<World> Worlds, string? NextCursor)> GetAllByOwnerAsync(
-        Guid ownerId,
+        string ownerId,
         int limit = 50,
         string? cursor = null,
         CancellationToken cancellationToken = default)

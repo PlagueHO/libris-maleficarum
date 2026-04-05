@@ -11,6 +11,7 @@ using LibrisMaleficarum.Infrastructure.Persistence;
 using LibrisMaleficarum.Infrastructure.Repositories;
 using LibrisMaleficarum.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Reflection;
@@ -26,6 +27,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add Aspire service defaults (OpenTelemetry, health checks, resilience, service discovery)
 builder.AddServiceDefaults();
+
+// Add HttpContextAccessor for accessing HttpContext in services
+builder.Services.AddHttpContextAccessor();
+
+// Detect authentication mode from configuration
+var azureAdClientId = builder.Configuration["AzureAd:ClientId"];
+var isMultiUserMode = !string.IsNullOrEmpty(azureAdClientId);
+
+if (isMultiUserMode)
+{
+    // Multi-user mode: Configure JWT bearer authentication with Entra ID
+    builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
+}
+else
+{
+    // Single-user mode: Add authentication services with a default scheme
+    // The anonymous middleware will inject claims on each request
+    builder.Services.AddAuthentication().AddJwtBearer();
+}
 
 // Add custom application telemetry (meters, activity sources, and counters)
 // Must be called after AddServiceDefaults to ensure OpenTelemetry is configured
@@ -194,11 +214,30 @@ if (!app.Environment.IsDevelopment())
 // Enable CORS (must be before Authorization)
 app.UseCors();
 
+// Authentication and authorization pipeline
+app.UseAuthentication();
+
+if (!isMultiUserMode)
+{
+    // In single-user mode, inject anonymous claims for unauthenticated requests
+    app.UseMiddleware<AnonymousClaimsMiddleware>();
+}
+
 app.UseAuthorization();
 
 app.MapControllers();
 
 // Map default Aspire endpoints (health checks)
 app.MapDefaultEndpoints();
+
+// Log authentication mode at startup
+if (isMultiUserMode)
+{
+    app.Logger.LogInformation("Authentication mode: Multi-user (Entra ID configured)");
+}
+else
+{
+    app.Logger.LogWarning("Authentication mode: Single-user anonymous (no AzureAd:ClientId configured)");
+}
 
 app.Run();

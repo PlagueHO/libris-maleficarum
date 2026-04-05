@@ -22,8 +22,8 @@ public class WorldRepositoryTests
     private IUserContextService _userContextService = null!;
     private ITelemetryService _telemetryService = null!;
     private WorldRepository _repository = null!;
-    private readonly Guid _userId = Guid.NewGuid();
-    private readonly Guid _otherUserId = Guid.NewGuid();
+    private readonly string _userId = "test-user-id";
+    private readonly string _otherUserId = "other-user-id";
     private readonly string _testDatabaseName = $"TestDb_{Guid.NewGuid()}";
 
     [TestInitialize]

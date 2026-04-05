@@ -60,7 +60,7 @@ The fastest way to run the full stack locally is with Microsoft Aspire, which or
    cd libris-maleficarum
    ```
 
-2. **Start the entire application stack with Aspire**
+1. **Start the entire application stack with Aspire**
 
    ```powershell
    aspire run

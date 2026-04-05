@@ -14,7 +14,7 @@ public interface IAssetRepository
     /// <returns>Asset if found and user is authorized.</returns>
     /// <exception cref="Exceptions.AssetNotFoundException">Thrown when asset not found.</exception>
     /// <exception cref="Exceptions.UnauthorizedWorldAccessException">Thrown when user does not own the world.</exception>
-    Task<Entities.Asset> GetByIdAsync(Guid assetId, Guid userId, CancellationToken cancellationToken = default);
+    Task<Entities.Asset> GetByIdAsync(Guid assetId, string userId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves all assets attached to a specific entity with pagination.
@@ -30,7 +30,7 @@ public interface IAssetRepository
     Task<(IReadOnlyList<Entities.Asset> Assets, string? NextCursor)> GetAllByEntityAsync(
         Guid entityId,
         Guid worldId,
-        Guid userId,
+        string userId,
         int limit = 50,
         string? cursor = null,
         CancellationToken cancellationToken = default);
@@ -64,7 +64,7 @@ public interface IAssetRepository
         List<string>? tags,
         string? description,
         Entities.ImageDimensions? imageDimensions,
-        Guid userId,
+        string userId,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -82,7 +82,7 @@ public interface IAssetRepository
         Guid assetId,
         List<string>? tags,
         string? description,
-        Guid userId,
+        string userId,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -93,5 +93,5 @@ public interface IAssetRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <exception cref="Exceptions.AssetNotFoundException">Thrown when asset not found.</exception>
     /// <exception cref="Exceptions.UnauthorizedWorldAccessException">Thrown when user does not own the world.</exception>
-    Task DeleteAsync(Guid assetId, Guid userId, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid assetId, string userId, CancellationToken cancellationToken = default);
 }

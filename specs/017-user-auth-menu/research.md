@@ -10,10 +10,12 @@
 **Rationale**: This is the exact pattern used in `PlagueHO/prompt-babbler` (see `Program.cs`). It requires zero additional configuration flags — the presence of the Entra ID app registration details is the switch. The `AzureAd:*` configuration section follows the standard `Microsoft.Identity.Web` convention.
 
 **Alternatives considered**:
+
 - Explicit `AuthMode` toggle (e.g., `AuthMode:Enabled = true`): Rejected because it adds a redundant config value that must be kept in sync with the actual Entra ID configuration.
 - Environment variable `AUTH_MODE=single|multi`: Rejected for the same reason — the Entra ID client ID presence is sufficient and self-documenting.
 
 **Implementation pattern (from prompt-babbler)**:
+
 ```csharp
 var azureAdClientId = builder.Configuration["AzureAd:ClientId"];
 var isAuthEnabled = !string.IsNullOrEmpty(azureAdClientId);
@@ -48,6 +50,7 @@ else
 **Rationale**: Controllers already use `IUserContextService.GetCurrentUserIdAsync()` to get the current user. The updated `UserContextService` will read from `HttpContext.User` claims. In anonymous mode, the middleware injects claims so the same code path works in both modes.
 
 **Alternatives considered**:
+
 - Keep using `IUserContextService` with a stub returning `_anonymous` string: Viable but doesn't support the multi-user path. The claims-based approach unifies both modes.
 - Check auth mode in every controller action: Rejected — duplicates logic across all controllers and is error-prone.
 
@@ -62,10 +65,12 @@ else
 **Rationale**: Aspire AppHost sets environment variables on the frontend process. Vite's `define` makes them available at build time. If the MSAL client ID is empty/undefined, auth is not configured.
 
 **Alternatives considered**:
+
 - Runtime API call to check auth mode: Rejected — adds a bootstrap dependency and loading state before the app can render.
 - Environment variable checked at runtime (`VITE_AUTH_ENABLED`): Viable but redundant when the MSAL client ID presence is sufficient.
 
 **Implementation pattern**:
+
 ```typescript
 // vite.config.ts define additions
 '__MSAL_CLIENT_ID__': JSON.stringify(process.env.ENTRA_CLIENT_ID || ''),
@@ -85,10 +90,12 @@ export const isAuthConfigured = !!clientId;
 **Rationale**: MSAL React is the official Microsoft library for Entra ID in React apps. The prompt-babbler pattern of conditional wrapping ensures the app works without MSAL when not configured (no import errors, no provider requirement).
 
 **Alternatives considered**:
+
 - Always import MSAL and use a no-op provider: Rejected — adds unnecessary bundle size in single-user mode.
 - Custom OAuth implementation: Rejected — MSAL handles token lifecycle, refresh, and popup/redirect flows.
 
 **Key pattern (from prompt-babbler `main.tsx`)**:
+
 ```typescript
 function renderApp() {
   const app = isAuthConfigured ? (
@@ -119,6 +126,7 @@ if (isAuthConfigured) {
 **New dependency**: `dropdown-menu.tsx` must be added to `src/components/ui/` via `npx shadcn@latest add dropdown-menu`. This component is not yet installed.
 
 **Alternatives considered**:
+
 - Custom dropdown: Rejected — would need to reimplement keyboard navigation and ARIA from scratch.
 - Use existing `select.tsx` or `dialog.tsx`: Rejected — wrong semantic for a user menu.
 
@@ -133,6 +141,7 @@ if (isAuthConfigured) {
 **Migration impact**: All controller code already passes the result to repository methods that accept `string` OwnerId. The main change is removing `.ToString()` calls if any exist.
 
 **Alternatives considered**:
+
 - Use a well-known GUID for anonymous (e.g., `00000000-0000-0000-0000-00000000ANON`): Rejected — `_anonymous` is more readable and matches the prompt-babbler convention.
 - Keep `Guid` return type and use a constant GUID for anonymous: Rejected — loses the semantic of `_anonymous` when inspecting Cosmos DB data.
 
@@ -145,6 +154,7 @@ if (isAuthConfigured) {
 **Rationale**: The user menu needs a settings destination. Currently the theme toggle lives in the header toolbar. The settings page centralizes user preferences and provides room for future settings (language, notification preferences, etc.).
 
 **Alternatives considered**:
+
 - Dialog-based settings: Rejected — `/settings` route is more typical for React apps and supports deep linking.
 - Keep settings only in the header: Rejected — the user menu needs a settings link target.
 
@@ -157,6 +167,7 @@ if (isAuthConfigured) {
 **Rationale**: The World repository already queries by `OwnerId` in the `ListWorldsAsync` method. WorldEntity queries are scoped by `WorldId`, which is owned by a user. The data isolation boundary is at the World level.
 
 **Alternatives considered**:
+
 - No filtering (all users see everything): Rejected — violates data isolation requirement.
 - Per-entity RBAC: Deferred — adds significant complexity without immediate need.
 

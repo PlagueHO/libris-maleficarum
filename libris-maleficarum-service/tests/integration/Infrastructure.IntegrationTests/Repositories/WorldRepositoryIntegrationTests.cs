@@ -57,7 +57,7 @@ public class WorldRepositoryIntegrationTests
     public async Task CreateAsync_CreatesWorldWithCurrentUser()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -68,7 +68,7 @@ public class WorldRepositoryIntegrationTests
         var telemetryService = new NoOpTelemetryService();
         var repository = new WorldRepository(context, userContextService, telemetryService);
 
-        var worldToCreate = World.Create(Guid.NewGuid(), "Test World", "Test Description");
+        var worldToCreate = World.Create("test-owner-rnd", "Test World", "Test Description");
 
         // Act
         var createdWorld = await repository.CreateAsync(worldToCreate);
@@ -88,7 +88,7 @@ public class WorldRepositoryIntegrationTests
     public async Task GetByIdAsync_WithValidId_ReturnsWorld()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -119,8 +119,8 @@ public class WorldRepositoryIntegrationTests
     public async Task GetByIdAsync_WithUnauthorizedUser_ThrowsUnauthorizedWorldAccessException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
-        var unauthorizedUserId = Guid.NewGuid();
+        var ownerId = "test-owner-" + Guid.NewGuid().ToString("N")[..8];
+        var unauthorizedUserId = "unauth-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -147,7 +147,7 @@ public class WorldRepositoryIntegrationTests
     public async Task GetByIdAsync_WithDeletedWorld_ReturnsNull()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -178,7 +178,7 @@ public class WorldRepositoryIntegrationTests
     public async Task GetAllByOwnerAsync_WithoutCursor_ReturnsAllWorlds()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -212,7 +212,7 @@ public class WorldRepositoryIntegrationTests
     public async Task GetAllByOwnerAsync_WithCursor_ReturnsNextPage()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -248,7 +248,7 @@ public class WorldRepositoryIntegrationTests
     public async Task GetAllByOwnerAsync_WithLimit_ReturnsLimitedResults()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -282,7 +282,7 @@ public class WorldRepositoryIntegrationTests
     public async Task GetAllByOwnerAsync_ExcludesDeletedWorlds()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -314,7 +314,7 @@ public class WorldRepositoryIntegrationTests
     public async Task UpdateAsync_WithValidData_UpdatesWorld()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -351,8 +351,8 @@ public class WorldRepositoryIntegrationTests
     public async Task UpdateAsync_WithUnauthorizedUser_ThrowsUnauthorizedWorldAccessException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
-        var unauthorizedUserId = Guid.NewGuid();
+        var ownerId = "test-owner-" + Guid.NewGuid().ToString("N")[..8];
+        var unauthorizedUserId = "unauth-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -383,7 +383,7 @@ public class WorldRepositoryIntegrationTests
     public async Task DeleteAsync_WithValidId_SoftDeletesWorld()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -414,8 +414,8 @@ public class WorldRepositoryIntegrationTests
     public async Task DeleteAsync_WithUnauthorizedUser_ThrowsUnauthorizedWorldAccessException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
-        var unauthorizedUserId = Guid.NewGuid();
+        var ownerId = "test-owner-" + Guid.NewGuid().ToString("N")[..8];
+        var unauthorizedUserId = "unauth-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -442,7 +442,7 @@ public class WorldRepositoryIntegrationTests
     public async Task DeleteAsync_WithNonExistentWorld_ThrowsWorldNotFoundException()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var nonExistentWorldId = Guid.NewGuid();
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 

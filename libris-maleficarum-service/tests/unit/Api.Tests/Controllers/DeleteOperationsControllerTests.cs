@@ -24,7 +24,7 @@ public class DeleteOperationsControllerTests
     private DeleteOperationsController _controller = null!;
 
     private readonly Guid _worldId = Guid.NewGuid();
-    private readonly Guid _userId = Guid.NewGuid();
+    private readonly string _userId = "test-user-id";
     private readonly Guid _operationId = Guid.NewGuid();
     private readonly Guid _entityId = Guid.NewGuid();
     private const string TestUserId = "test-user-id";

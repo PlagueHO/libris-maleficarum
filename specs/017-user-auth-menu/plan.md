@@ -11,6 +11,7 @@ Add dual-mode authentication (single-user anonymous / multi-user Entra ID) acros
 
 **Language/Version**: TypeScript 5.9 (frontend), C# / .NET 10 (backend)
 **Primary Dependencies**:
+
 - Frontend: React 19, Redux Toolkit, Shadcn/UI (Radix), TailwindCSS v4, `@azure/msal-browser`, `@azure/msal-react`
 - Backend: ASP.NET Core 10, Aspire.NET, EF Core (Cosmos), `Microsoft.Identity.Web`
 **Storage**: Azure Cosmos DB (World container `/Id`, WorldEntity container `[/WorldId, /id]`, Asset container `[/WorldId, /EntityId]`)

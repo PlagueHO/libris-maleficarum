@@ -23,7 +23,7 @@ public class AssetRepositoryTests
     private IWorldRepository _worldRepository = null!;
     private IBlobStorageService _blobStorageService = null!;
     private AssetRepository _repository = null!;
-    private readonly Guid _userId = Guid.NewGuid();
+    private readonly string _userId = "test-user-id";
     private readonly Guid _worldId = Guid.NewGuid();
     private readonly Guid _entityId = Guid.NewGuid();
     private const string ValidBlobUrl = "https://storage.azure.com/container/blob";
@@ -322,7 +322,7 @@ public class AssetRepositoryTests
 
     private void ConfigureUnauthorizedWorld()
     {
-        var differentUserId = Guid.NewGuid();
+        var differentUserId = "different-user-id";
         _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>())
             .Returns(CreateWorld(_worldId, differentUserId));
     }
@@ -345,7 +345,7 @@ public class AssetRepositoryTests
         return asset;
     }
 
-    private World CreateWorld(Guid worldId, Guid ownerId)
+    private World CreateWorld(Guid worldId, string ownerId)
     {
         var world = World.Create(ownerId, "Test World");
         // Use reflection to set the Id since World.Create doesn't accept a worldId parameter

@@ -34,6 +34,7 @@ ClaimsIdentity("Anonymous"):
 ### Authenticated Mode
 
 JWT bearer tokens validated against Entra ID. Token must include:
+
 - `aud` = `api://libris-maleficarum-api`
 - `scp` = `access_as_user`
 - `oid` = user's Entra ID object ID
@@ -49,6 +50,7 @@ string GetUserIdOrAnonymous(this ClaimsPrincipal user)
 ### Health Check Endpoints
 
 The following endpoints remain publicly accessible regardless of auth mode:
+
 - `GET /health`
 - `GET /alive`
 
@@ -107,6 +109,7 @@ Else:
 ### No Auth Configuration = Anonymous Mode
 
 When AppHost has no Entra ID values in config/secrets:
+
 - API receives empty `AzureAd:ClientId` → anonymous mode
 - Frontend receives empty `__MSAL_CLIENT_ID__` → anonymous mode
 
@@ -122,6 +125,7 @@ export function UserMenu(): JSX.Element;
 ```
 
 **Renders**:
+
 - `AnonymousUserMenu` when `!isAuthConfigured`
 - `AuthenticatedUserMenu` when `isAuthConfigured` (handles both signed-in and not-signed-in states)
 
@@ -137,6 +141,7 @@ export function AuthGuard({ children, message }: AuthGuardProps): JSX.Element;
 ```
 
 **Behavior**:
+
 - If `!isAuthConfigured` → render children (bypass)
 - If authenticated → render children
 - If not authenticated → render sign-in prompt

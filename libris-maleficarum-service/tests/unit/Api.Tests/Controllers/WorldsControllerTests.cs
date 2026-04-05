@@ -29,7 +29,7 @@ public class WorldsControllerTests
     private IValidator<UpdateWorldRequest> _updateValidator = null!;
     private WorldsController _controller = null!;
 
-    private readonly Guid _userId = Guid.NewGuid();
+    private readonly string _userId = "test-user-id";
     private readonly Guid _worldId = Guid.NewGuid();
     private const string TestOwnerId = "test-owner-id";
 

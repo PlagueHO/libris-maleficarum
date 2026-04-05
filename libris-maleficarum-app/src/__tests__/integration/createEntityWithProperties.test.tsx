@@ -14,6 +14,7 @@ import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
+import { MemoryRouter } from 'react-router-dom';
 import { store } from '@/store/store';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
@@ -125,9 +126,11 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     );
 
     render(
-      <Provider store={store}>
-        <App />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </MemoryRouter>
     );
 
     const user = userEvent.setup();
@@ -289,9 +292,11 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
     );
 
     render(
-      <Provider store={store}>
-        <App />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </MemoryRouter>
     );
 
     const user = userEvent.setup();
@@ -391,9 +396,11 @@ describe('T040: DynamicPropertiesForm - Empty Fields for New Entities', () => {
     );
 
     render(
-      <Provider store={store}>
-        <App />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </MemoryRouter>
     );
 
     const user = userEvent.setup();

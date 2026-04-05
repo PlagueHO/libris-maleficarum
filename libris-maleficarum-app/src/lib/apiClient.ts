@@ -10,6 +10,7 @@
 import axios, { type AxiosInstance } from 'axios';
 import axiosRetry from 'axios-retry';
 import { logger } from './logger';
+import { isAuthConfigured, msalInstance, loginRequest } from '@/auth/authConfig';
 
 /**
  * Base URL for API requests
@@ -101,7 +102,23 @@ axiosRetry(apiClient, {
 
 // Add request interceptor for logging outgoing API calls
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    // Attach bearer token when multi-user auth is configured
+    if (isAuthConfigured) {
+      const accounts = msalInstance.getAllAccounts();
+      if (accounts.length > 0) {
+        try {
+          const tokenResponse = await msalInstance.acquireTokenSilent({
+            ...loginRequest,
+            account: accounts[0],
+          });
+          config.headers.Authorization = `Bearer ${tokenResponse.accessToken}`;
+        } catch (error) {
+          logger.warn('API', 'Failed to acquire token silently', { error });
+        }
+      }
+    }
+
     // Log all outgoing API requests
     logger.apiRequest(
       config.method?.toUpperCase() || 'UNKNOWN',

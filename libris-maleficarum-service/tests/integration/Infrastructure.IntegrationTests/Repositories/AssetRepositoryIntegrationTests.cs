@@ -88,7 +88,7 @@ public class AssetRepositoryIntegrationTests
     public async Task CreateAsync_CreatesAssetWithBlobStorage()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -164,8 +164,8 @@ public class AssetRepositoryIntegrationTests
     public async Task CreateAsync_WithUnauthorizedUser_ThrowsUnauthorizedWorldAccessException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
-        var unauthorizedUserId = Guid.NewGuid();
+        var ownerId = "test-owner-id-2";
+        var unauthorizedUserId = "unauthorized-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -212,7 +212,7 @@ public class AssetRepositoryIntegrationTests
     public async Task CreateAsync_WithNonExistentEntity_ThrowsEntityNotFoundException()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -255,7 +255,7 @@ public class AssetRepositoryIntegrationTests
     public async Task GetByIdAsync_WithValidId_ReturnsAsset()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -304,8 +304,8 @@ public class AssetRepositoryIntegrationTests
     public async Task GetByIdAsync_WithUnauthorizedUser_ThrowsUnauthorizedWorldAccessException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
-        var unauthorizedUserId = Guid.NewGuid();
+        var ownerId = "test-owner-id-2";
+        var unauthorizedUserId = "unauthorized-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -349,7 +349,7 @@ public class AssetRepositoryIntegrationTests
     public async Task GetByIdAsync_WithNonExistentAsset_ThrowsAssetNotFoundException()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -375,7 +375,7 @@ public class AssetRepositoryIntegrationTests
     public async Task GetByIdAsync_WithDeletedAsset_ThrowsAssetNotFoundException()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -421,7 +421,7 @@ public class AssetRepositoryIntegrationTests
     public async Task GetAllByEntityAsync_ReturnsAllAssets()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -466,7 +466,7 @@ public class AssetRepositoryIntegrationTests
     public async Task GetAllByEntityAsync_WithLimit_ReturnsLimitedResults()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -519,7 +519,7 @@ public class AssetRepositoryIntegrationTests
     public async Task GetAllByEntityAsync_WithCursor_ReturnsNextPage()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -585,7 +585,7 @@ public class AssetRepositoryIntegrationTests
     public async Task GetAllByEntityAsync_ExcludesDeletedAssets()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -631,8 +631,8 @@ public class AssetRepositoryIntegrationTests
     public async Task GetAllByEntityAsync_WithUnauthorizedUser_ThrowsUnauthorizedWorldAccessException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
-        var unauthorizedUserId = Guid.NewGuid();
+        var ownerId = "test-owner-id-2";
+        var unauthorizedUserId = "unauthorized-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -669,7 +669,7 @@ public class AssetRepositoryIntegrationTests
     public async Task DeleteAsync_SoftDeletesAssetAndDeletesBlob()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -719,8 +719,8 @@ public class AssetRepositoryIntegrationTests
     public async Task DeleteAsync_WithUnauthorizedUser_ThrowsUnauthorizedWorldAccessException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
-        var unauthorizedUserId = Guid.NewGuid();
+        var ownerId = "test-owner-id-2";
+        var unauthorizedUserId = "unauthorized-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -764,7 +764,7 @@ public class AssetRepositoryIntegrationTests
     public async Task DeleteAsync_WithNonExistentAsset_ThrowsAssetNotFoundException()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);

@@ -61,7 +61,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task CreateAsync_CreatesEntityWithCurrentUser()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var worldId = Guid.NewGuid();
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
@@ -104,7 +104,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetByIdAsync_WithValidId_ReturnsEntity()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -144,8 +144,8 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetByIdAsync_WithUnauthorizedUser_ThrowsUnauthorizedWorldAccessException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
-        var unauthorizedUserId = Guid.NewGuid();
+        var ownerId = "test-owner-" + Guid.NewGuid().ToString("N")[..8];
+        var unauthorizedUserId = "unauth-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -181,7 +181,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetByIdAsync_WithDeletedEntity_ReturnsNull()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -221,7 +221,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetAllByWorldAsync_WithoutFilters_ReturnsAllEntities()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -264,7 +264,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetAllByWorldAsync_WithEntityTypeFilter_ReturnsMatchingEntities()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -304,7 +304,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetAllByWorldAsync_WithTagsFilter_ReturnsMatchingEntities()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -344,7 +344,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetAllByWorldAsync_WithCursor_ReturnsNextPage()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -391,7 +391,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetAllByWorldAsync_WithLimit_ReturnsLimitedResults()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -434,7 +434,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetAllByWorldAsync_ExcludesDeletedEntities()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -475,7 +475,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetChildrenAsync_ReturnsChildEntities()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -520,7 +520,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetChildrenAsync_ExcludesDeletedChildren()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -565,7 +565,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task UpdateAsync_WithValidData_UpdatesEntity()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -611,8 +611,8 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task UpdateAsync_WithUnauthorizedUser_ThrowsUnauthorizedWorldAccessException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
-        var unauthorizedUserId = Guid.NewGuid();
+        var ownerId = "test-owner-" + Guid.NewGuid().ToString("N")[..8];
+        var unauthorizedUserId = "unauth-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -652,7 +652,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task DeleteAsync_WithValidId_SoftDeletesEntity()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -691,7 +691,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task DeleteAsync_WithCascade_DeletesChildrenRecursively()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -743,7 +743,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task DeleteAsync_WithoutCascade_ThrowsWhenChildrenExist()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -784,8 +784,8 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task DeleteAsync_WithUnauthorizedUser_ThrowsUnauthorizedWorldAccessException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
-        var unauthorizedUserId = Guid.NewGuid();
+        var ownerId = "test-owner-" + Guid.NewGuid().ToString("N")[..8];
+        var unauthorizedUserId = "unauth-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -821,7 +821,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task DeleteAsync_WithNonExistentEntity_ThrowsEntityNotFoundException()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -859,7 +859,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task CreateAsync_SchemaVersionPersistedToCosmosDb()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);
@@ -902,7 +902,7 @@ public class WorldEntityRepositoryIntegrationTests
     public async Task GetByIdAsync_MissingSchemaVersionDefaultsToOne()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
         var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
 
         await using var context = CreateDbContext(testDatabaseName);

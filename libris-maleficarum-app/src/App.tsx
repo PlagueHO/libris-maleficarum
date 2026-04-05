@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { TopToolbar } from './components/TopToolbar/TopToolbar'
 import { WorldSidebar } from './components/WorldSidebar/WorldSidebar'
 import { MainPanel } from './components/MainPanel/MainPanel'
@@ -12,6 +13,8 @@ import { WorldProvider } from './contexts'
 import { OptimisticDeleteProvider } from './components/WorldSidebar/OptimisticDeleteContext';
 import { selectHasPendingOperations } from './store/notificationSelectors';
 import { Toaster } from './components/ui/sonner';
+import { SettingsPage } from './components/SettingsPage';
+import { AuthGuard } from './components/AuthGuard';
 import { logger } from './lib/logger';
 
 function App() {
@@ -139,19 +142,26 @@ function App() {
       <Toaster position="bottom-right" />
       <div className="h-screen flex flex-col bg-background text-foreground">
         <TopToolbar />
-        {/* WorldProvider wraps entire app tree; key ensures context resets when world changes */}
-        <WorldProvider
-          key={selectedWorldId || 'no-world-selected'}
-          initialWorldId={selectedWorldId || ''}
-          initialWorldName=""
-        >
-          <div className="flex-1 flex overflow-hidden">
-            <WorldSidebar optimisticallyDeletedIds={optimisticallyDeletedIds} />
-            <MainPanel />
-            <ChatPanel />
-          </div>
-          <DeleteConfirmationModal />
-        </WorldProvider>
+        <Routes>
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="*" element={
+            <AuthGuard>
+              {/* WorldProvider wraps entire app tree; key ensures context resets when world changes */}
+              <WorldProvider
+                key={selectedWorldId || 'no-world-selected'}
+                initialWorldId={selectedWorldId || ''}
+                initialWorldName=""
+              >
+                <div className="flex-1 flex overflow-hidden">
+                  <WorldSidebar optimisticallyDeletedIds={optimisticallyDeletedIds} />
+                  <MainPanel />
+                  <ChatPanel />
+                </div>
+                <DeleteConfirmationModal />
+              </WorldProvider>
+            </AuthGuard>
+          } />
+        </Routes>
       </div>
     </OptimisticDeleteProvider>
   )

@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { toggle } from '@/store/store';
 import { NotificationBell, NotificationCenter } from '@/components/NotificationCenter';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
+import { UserMenu } from '@/components/UserMenu';
 
 export function TopToolbar() {
   const dispatch = useDispatch();
@@ -34,6 +35,7 @@ export function TopToolbar() {
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
             <NotificationBell onClick={() => setNotificationCenterOpen(true)} />
+            <UserMenu />
           </div>
         </div>
       </header>

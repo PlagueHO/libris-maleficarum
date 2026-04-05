@@ -1,8 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
+import { BrowserRouter } from 'react-router-dom'
+import { MsalProvider } from '@azure/msal-react'
 import { store } from './store/store'
 import { initializeTelemetry } from './lib/telemetry'
+import { isAuthConfigured, msalInstance } from './auth/authConfig'
 import './index.css'
 import App from './App.tsx'
 
@@ -34,10 +37,20 @@ async function initializeApp() {
   }
 
   // Render the app after MSW is ready
+  const appTree = isAuthConfigured ? (
+    <MsalProvider instance={msalInstance}>
+      <App />
+    </MsalProvider>
+  ) : (
+    <App />
+  );
+
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <Provider store={store}>
-        <App />
+        <BrowserRouter>
+          {appTree}
+        </BrowserRouter>
       </Provider>
     </StrictMode>,
   );
