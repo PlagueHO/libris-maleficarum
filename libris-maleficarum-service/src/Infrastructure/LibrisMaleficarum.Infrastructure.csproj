@@ -11,7 +11,10 @@
     <PackageReference Include="Microsoft.Azure.Cosmos" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" />
     <PackageReference Include="Microsoft.Extensions.AI" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <PropertyGroup>

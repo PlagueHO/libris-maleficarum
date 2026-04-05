@@ -18,7 +18,7 @@ public class UnauthorizedWorldAccessException : UnauthorizedAccessException
     /// </summary>
     /// <param name="worldId">The unique identifier of the world.</param>
     /// <param name="userId">The unique identifier of the user attempting access.</param>
-    public UnauthorizedWorldAccessException(Guid worldId, Guid userId)
+    public UnauthorizedWorldAccessException(Guid worldId, string userId)
         : base($"User '{userId}' does not have permission to access world '{worldId}'.")
     {
         WorldId = worldId;
@@ -52,5 +52,5 @@ public class UnauthorizedWorldAccessException : UnauthorizedAccessException
     /// <summary>
     /// Gets the unique identifier of the user.
     /// </summary>
-    public Guid? UserId { get; }
+    public string? UserId { get; }
 }

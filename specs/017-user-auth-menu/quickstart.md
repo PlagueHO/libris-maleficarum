@@ -39,6 +39,7 @@ The user menu shows "Anonymous". All data is owned by `_anonymous`.
 ### 1. Create Entra ID App Registration
 
 Register an app in Microsoft Entra ID:
+
 - **Name**: libris-maleficarum-api
 - **Supported account types**: Single tenant (or your choice)
 - **Redirect URI**: `http://localhost:4000` (SPA)
@@ -88,17 +89,20 @@ dotnet test --solution LibrisMaleficarum.slnx --filter "TestCategory=Unit"
 ### Check Backend Mode
 
 Look for startup log messages:
+
 - Anonymous: `"AzureAd:ClientId is not configured. Running in anonymous single-user mode."`
 - Authenticated: Standard Microsoft.Identity.Web startup messages
 
 ### Check Frontend Mode
 
 Open browser dev console:
+
 - Anonymous: No MSAL-related logs
 - Authenticated: MSAL initialization logs from `@azure/msal-browser`
 
 ### Check Data Identity
 
 Query Cosmos DB or inspect API responses:
+
 - Anonymous: `ownerId: "_anonymous"` on all records
 - Authenticated: `ownerId: "<entra-object-id>"` on records created by that user

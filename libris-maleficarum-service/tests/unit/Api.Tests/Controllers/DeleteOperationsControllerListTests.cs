@@ -28,7 +28,7 @@ public class DeleteOperationsControllerListTests
         _controller = new DeleteOperationsController(_deleteService, _worldRepository);
 
         // Setup default world ownership (authorized) for all tests
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var world = World.Create(userId, "Test World", null);
         _worldRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(world);

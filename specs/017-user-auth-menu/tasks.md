@@ -17,10 +17,10 @@
 
 **Purpose**: Install dependencies and add shared UI components needed by multiple stories
 
-- [ ] T001 Install `@azure/msal-browser` and `@azure/msal-react` packages in `libris-maleficarum-app/`
-- [ ] T001b [P] Install `react-router-dom` package in `libris-maleficarum-app/`
-- [ ] T002 [P] Add Shadcn dropdown-menu component via `npx shadcn@latest add dropdown-menu` generating `libris-maleficarum-app/src/components/ui/dropdown-menu.tsx`
-- [ ] T003 [P] Add `Microsoft.Identity.Web` and `Microsoft.Identity.Web.UI` package references to `libris-maleficarum-service/Directory.Packages.props` and add `PackageReference` to `libris-maleficarum-service/src/Api/LibrisMaleficarum.Api.csproj`
+- [X] T001 Install `@azure/msal-browser` and `@azure/msal-react` packages in `libris-maleficarum-app/`
+- [X] T001b [P] Install `react-router-dom` package in `libris-maleficarum-app/`
+- [X] T002 [P] Add Shadcn dropdown-menu component via `npx shadcn@latest add dropdown-menu` generating `libris-maleficarum-app/src/components/ui/dropdown-menu.tsx`
+- [X] T003 [P] Add `Microsoft.Identity.Web` and `Microsoft.Identity.Web.UI` package references to `libris-maleficarum-service/Directory.Packages.props` and add `PackageReference` to `libris-maleficarum-service/src/Api/LibrisMaleficarum.Api.csproj`
 
 ---
 
@@ -30,14 +30,14 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Change `IUserContextService.GetCurrentUserIdAsync()` return type from `Task<Guid>` to `Task<string>` in `libris-maleficarum-service/src/Domain/Interfaces/Services/IUserContextService.cs`
-- [ ] T005 Update all call sites for `Guid` → `string` user ID change: (a) `IAssetRepository` — 5 methods with `Guid userId` parameter in `src/Domain/Interfaces/Repositories/IAssetRepository.cs`, (b) `UnauthorizedWorldAccessException` — constructor `Guid userId` and property `Guid? UserId` in `src/Domain/Exceptions/UnauthorizedWorldAccessException.cs`, (c) corresponding implementations in `src/Infrastructure/Repositories/AssetRepository.cs`, (d) `IDeleteOperationRepository.CountActiveByUserAsync` already uses `string userId` — verify no regression, (e) all test mocks returning `Guid` from `IUserContextService` across `libris-maleficarum-service/tests/`
-- [ ] T005b [US6] Change `World.OwnerId` from `Guid` to `string`, update `World.Create()` signature from `Guid ownerId` to `string ownerId`, and update all `World` repository interfaces/implementations that reference `Guid ownerId` in `libris-maleficarum-service/src/Domain/Entities/World.cs` and `libris-maleficarum-service/src/Domain/Interfaces/Repositories/IWorldRepository.cs`
-- [ ] T007 [P] Add `AzureAd` configuration section with empty `Instance`, `TenantId`, `ClientId`, `Audience`, and `Scopes` values to `libris-maleficarum-service/src/Api/appsettings.json`
-- [ ] T008 [P] Create `authConfig.ts` with MSAL `PublicClientApplication` instance, `isAuthConfigured` flag (checks `__MSAL_CLIENT_ID__`), and `loginRequest` (scopes: `api://libris-maleficarum-api/access_as_user`) in `libris-maleficarum-app/src/auth/authConfig.ts`
-- [ ] T009 [P] Add `__MSAL_CLIENT_ID__` and `__MSAL_TENANT_ID__` to the Vite `define` block, reading from `process.env.ENTRA_CLIENT_ID` and `process.env.ENTRA_TENANT_ID` in `libris-maleficarum-app/vite.config.ts`
-- [ ] T010 [P] Add TypeScript global type declarations for `__MSAL_CLIENT_ID__` and `__MSAL_TENANT_ID__` as `string` in `libris-maleficarum-app/src/vite-env.d.ts`
-- [ ] T010b Wrap the app root in `<BrowserRouter>` in `libris-maleficarum-app/src/main.tsx` (or `App.tsx`) to enable URL-based routing for `/settings` and future routes
+- [X] T004 Change `IUserContextService.GetCurrentUserIdAsync()` return type from `Task<Guid>` to `Task<string>` in `libris-maleficarum-service/src/Domain/Interfaces/Services/IUserContextService.cs`
+- [X] T005 Update all call sites for `Guid` → `string` user ID change: (a) `IAssetRepository` — 5 methods with `Guid userId` parameter in `src/Domain/Interfaces/Repositories/IAssetRepository.cs`, (b) `UnauthorizedWorldAccessException` — constructor `Guid userId` and property `Guid? UserId` in `src/Domain/Exceptions/UnauthorizedWorldAccessException.cs`, (c) corresponding implementations in `src/Infrastructure/Repositories/AssetRepository.cs`, (d) `IDeleteOperationRepository.CountActiveByUserAsync` already uses `string userId` — verify no regression, (e) all test mocks returning `Guid` from `IUserContextService` across `libris-maleficarum-service/tests/`
+- [X] T005b [US6] Change `World.OwnerId` from `Guid` to `string`, update `World.Create()` signature from `Guid ownerId` to `string ownerId`, and update all `World` repository interfaces/implementations that reference `Guid ownerId` in `libris-maleficarum-service/src/Domain/Entities/World.cs` and `libris-maleficarum-service/src/Domain/Interfaces/Repositories/IWorldRepository.cs`
+- [X] T007 [P] Add `AzureAd` configuration section with empty `Instance`, `TenantId`, `ClientId`, `Audience`, and `Scopes` values to `libris-maleficarum-service/src/Api/appsettings.json`
+- [X] T008 [P] Create `authConfig.ts` with MSAL `PublicClientApplication` instance, `isAuthConfigured` flag (checks `__MSAL_CLIENT_ID__`), and `loginRequest` (scopes: `api://libris-maleficarum-api/access_as_user`) in `libris-maleficarum-app/src/auth/authConfig.ts`
+- [X] T009 [P] Add `__MSAL_CLIENT_ID__` and `__MSAL_TENANT_ID__` to the Vite `define` block, reading from `process.env.ENTRA_CLIENT_ID` and `process.env.ENTRA_TENANT_ID` in `libris-maleficarum-app/vite.config.ts`
+- [X] T010 [P] Add TypeScript global type declarations for `__MSAL_CLIENT_ID__` and `__MSAL_TENANT_ID__` as `string` in `libris-maleficarum-app/src/vite-env.d.ts`
+- [X] T010b Wrap the app root in `<BrowserRouter>` in `libris-maleficarum-app/src/main.tsx` (or `App.tsx`) to enable URL-based routing for `/settings` and future routes
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
 
@@ -51,16 +51,16 @@
 
 ### Tests for User Story 3
 
-- [ ] T011 [P] [US3] Create unit tests for `GetUserIdOrAnonymous()` extension method (authenticated and anonymous paths) in `libris-maleficarum-service/tests/unit/Api.Tests/Extensions/ClaimsPrincipalExtensionsTests.cs`
-- [ ] T012 [P] [US3] Create unit tests for anonymous claims middleware verifying synthetic `_anonymous` identity injection in `libris-maleficarum-service/tests/unit/Api.Tests/Middleware/AnonymousClaimsMiddlewareTests.cs`
+- [X] T011 [P] [US3] Create unit tests for `GetUserIdOrAnonymous()` extension method (authenticated and anonymous paths) in `libris-maleficarum-service/tests/unit/Api.Tests/Extensions/ClaimsPrincipalExtensionsTests.cs`
+- [X] T012 [P] [US3] Create unit tests for anonymous claims middleware verifying synthetic `_anonymous` identity injection in `libris-maleficarum-service/tests/unit/Api.Tests/Middleware/AnonymousClaimsMiddlewareTests.cs`
 
 ### Implementation for User Story 3
 
-- [ ] T006 [US3] Create `ClaimsPrincipalExtensions.cs` with `GetUserIdOrAnonymous()` extension method returning the `oid` claim value or `_anonymous` in `libris-maleficarum-service/src/Api/Extensions/ClaimsPrincipalExtensions.cs`
-- [ ] T013 [US3] Add auth mode detection to `Program.cs` — when `AzureAd:ClientId` is present and non-empty, call `AddMicrosoftIdentityWebApiAuthentication()` and add `app.UseAuthentication()` + `app.UseAuthorization()`; otherwise register anonymous middleware in `libris-maleficarum-service/src/Api/Program.cs`
-- [ ] T014 [US3] Implement `AnonymousClaimsMiddleware` that injects a synthetic `ClaimsPrincipal` with `oid = _anonymous` and `scp = access_as_user` claims on every request in `libris-maleficarum-service/src/Api/Middleware/AnonymousClaimsMiddleware.cs`
-- [ ] T015 [US3] Ensure health check endpoints (`/health`, `/alive`) mapped by `MapDefaultEndpoints()` remain publicly accessible with `.AllowAnonymous()` in `libris-maleficarum-service/src/Api/Program.cs`
-- [ ] T016 [US3] Add startup log messages — log warning for anonymous single-user mode when `AzureAd:ClientId` is absent, log info for authenticated mode when present in `libris-maleficarum-service/src/Api/Program.cs`
+- [X] T006 [US3] Create `ClaimsPrincipalExtensions.cs` with `GetUserIdOrAnonymous()` extension method returning the `oid` claim value or `_anonymous` in `libris-maleficarum-service/src/Api/Extensions/ClaimsPrincipalExtensions.cs`
+- [X] T013 [US3] Add auth mode detection to `Program.cs` — when `AzureAd:ClientId` is present and non-empty, call `AddMicrosoftIdentityWebApiAuthentication()` and add `app.UseAuthentication()` + `app.UseAuthorization()`; otherwise register anonymous middleware in `libris-maleficarum-service/src/Api/Program.cs`
+- [X] T014 [US3] Implement `AnonymousClaimsMiddleware` that injects a synthetic `ClaimsPrincipal` with `oid = _anonymous` and `scp = access_as_user` claims on every request in `libris-maleficarum-service/src/Api/Middleware/AnonymousClaimsMiddleware.cs`
+- [X] T015 [US3] Ensure health check endpoints (`/health`, `/alive`) mapped by `MapDefaultEndpoints()` remain publicly accessible with `.AllowAnonymous()` in `libris-maleficarum-service/src/Api/Program.cs`
+- [X] T016 [US3] Add startup log messages — log warning for anonymous single-user mode when `AzureAd:ClientId` is absent, log info for authenticated mode when present in `libris-maleficarum-service/src/Api/Program.cs`
 
 **Checkpoint**: Backend correctly detects auth mode and processes requests accordingly
 
@@ -74,16 +74,16 @@
 
 ### Tests for User Story 6
 
-- [ ] T017 [P] [US6] Create unit tests for `UserContextService` reading user ID from `ClaimsPrincipal` via `IHttpContextAccessor` (anonymous claims, authenticated claims, missing claims) in `libris-maleficarum-service/tests/unit/Infrastructure.Tests/Services/UserContextServiceTests.cs`
-- [ ] T018 [P] [US6] Update existing test mocks for `IUserContextService` to return `string` (e.g., `_anonymous`) instead of `Guid` across all test projects in `libris-maleficarum-service/tests/`
+- [X] T017 [P] [US6] Create unit tests for `UserContextService` reading user ID from `ClaimsPrincipal` via `IHttpContextAccessor` (anonymous claims, authenticated claims, missing claims) in `libris-maleficarum-service/tests/unit/Infrastructure.Tests/Services/UserContextServiceTests.cs`
+- [X] T018 [P] [US6] Update existing test mocks for `IUserContextService` to return `string` (e.g., `_anonymous`) instead of `Guid` across all test projects in `libris-maleficarum-service/tests/`
 
 ### Implementation for User Story 6
 
-- [ ] T019 [US6] Update `UserContextService` to inject `IHttpContextAccessor`, read `ClaimsPrincipal` from `HttpContext.User`, and return user ID using `GetUserIdOrAnonymous()` in `libris-maleficarum-service/src/Infrastructure/Services/UserContextService.cs`
-- [ ] T020 [US6] Register `IHttpContextAccessor` in DI container via `builder.Services.AddHttpContextAccessor()` in `libris-maleficarum-service/src/Api/Program.cs`
-- [ ] T020b [US6] Add `CreatedBy` (`string?`) and `ModifiedBy` (`string?`) properties to `WorldEntity` domain entity, update `WorldEntity.Create()` factory to accept and set `createdBy`, and add an `UpdateModifiedBy(string modifiedBy)` method in `libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs`
-- [ ] T021 [US6] Ensure `CreatedBy` is populated from `IUserContextService` on entity creation and `ModifiedBy` on entity update in repository methods across `libris-maleficarum-service/src/Infrastructure/Repositories/`
-- [ ] T021b [US6] Verify/implement OwnerId-based query filtering in `IWorldRepository.ListWorldsAsync()` and related methods to ensure multi-user mode returns only the caller's data — review `libris-maleficarum-service/src/Infrastructure/Repositories/WorldRepository.cs` and `WorldEntityRepository.cs`
+- [X] T019 [US6] Update `UserContextService` to inject `IHttpContextAccessor`, read `ClaimsPrincipal` from `HttpContext.User`, and return user ID using `GetUserIdOrAnonymous()` in `libris-maleficarum-service/src/Infrastructure/Services/UserContextService.cs`
+- [X] T020 [US6] Register `IHttpContextAccessor` in DI container via `builder.Services.AddHttpContextAccessor()` in `libris-maleficarum-service/src/Api/Program.cs`
+- [X] T020b [US6] Add `CreatedBy` (`string?`) and `ModifiedBy` (`string?`) properties to `WorldEntity` domain entity, update `WorldEntity.Create()` factory to accept and set `createdBy`, and add an `UpdateModifiedBy(string modifiedBy)` method in `libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs`
+- [X] T021 [US6] Ensure `CreatedBy` is populated from `IUserContextService` on entity creation and `ModifiedBy` on entity update in repository methods across `libris-maleficarum-service/src/Infrastructure/Repositories/`
+- [X] T021b [US6] Verify/implement OwnerId-based query filtering in `IWorldRepository.ListWorldsAsync()` and related methods to ensure multi-user mode returns only the caller's data — review `libris-maleficarum-service/src/Infrastructure/Repositories/WorldRepository.cs` and `WorldEntityRepository.cs`
 
 **Checkpoint**: All data operations correctly populate user identity fields from claims; query filtering enforces data isolation
 
@@ -97,17 +97,17 @@
 
 ### Tests for User Story 2
 
-- [ ] T022 [P] [US2] Create `UserMenu.test.tsx` with rendering tests (anonymous mode display, authenticated mode display), keyboard navigation, ARIA attribute assertions, and jest-axe accessibility checks in `libris-maleficarum-app/src/components/UserMenu/UserMenu.test.tsx`
-- [ ] T023 [P] [US2] Create `SettingsPage.test.tsx` with rendering tests (ThemeToggle present, heading, layout) and jest-axe accessibility checks in `libris-maleficarum-app/src/components/SettingsPage/SettingsPage.test.tsx`
+- [X] T022 [P] [US2] Create `UserMenu.test.tsx` with rendering tests (anonymous mode display, authenticated mode display), keyboard navigation, ARIA attribute assertions, and jest-axe accessibility checks in `libris-maleficarum-app/src/components/UserMenu/UserMenu.test.tsx`
+- [X] T023 [P] [US2] Create `SettingsPage.test.tsx` with rendering tests (ThemeToggle present, heading, layout) and jest-axe accessibility checks in `libris-maleficarum-app/src/components/SettingsPage/SettingsPage.test.tsx`
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Create `UserMenu.tsx` component using Shadcn `DropdownMenu` with three display modes: (1) anonymous (user icon + "Anonymous", disabled sign-in, settings link, Entra ID not configured note per FR-007), (2) authenticated (initials avatar, display name, email, sign-out, settings link per FR-008), and (3) unauthenticated-multi-user (sign-in button, settings link per FR-009) in `libris-maleficarum-app/src/components/UserMenu/UserMenu.tsx`
-- [ ] T025 [P] [US2] Create barrel export `index.ts` in `libris-maleficarum-app/src/components/UserMenu/index.ts`
-- [ ] T026 [US2] Create `SettingsPage.tsx` component with page heading, dark/light mode toggle (reusing existing `ThemeToggle` component), and accessible layout in `libris-maleficarum-app/src/components/SettingsPage/SettingsPage.tsx`
-- [ ] T027 [P] [US2] Create barrel export `index.ts` in `libris-maleficarum-app/src/components/SettingsPage/index.ts`
-- [ ] T028 [US2] Integrate `UserMenu` into `TopToolbar.tsx` — add to the right side after ThemeToggle and NotificationBell in `libris-maleficarum-app/src/components/TopToolbar/TopToolbar.tsx`
-- [ ] T029 [US2] Add `/settings` route to `App.tsx` rendering `SettingsPage` component in `libris-maleficarum-app/src/App.tsx`
+- [X] T024 [US2] Create `UserMenu.tsx` component using Shadcn `DropdownMenu` with three display modes: (1) anonymous (user icon + "Anonymous", disabled sign-in, settings link, Entra ID not configured note per FR-007), (2) authenticated (initials avatar, display name, email, sign-out, settings link per FR-008), and (3) unauthenticated-multi-user (sign-in button, settings link per FR-009) in `libris-maleficarum-app/src/components/UserMenu/UserMenu.tsx`
+- [X] T025 [P] [US2] Create barrel export `index.ts` in `libris-maleficarum-app/src/components/UserMenu/index.ts`
+- [X] T026 [US2] Create `SettingsPage.tsx` component with page heading, dark/light mode toggle (reusing existing `ThemeToggle` component), and accessible layout in `libris-maleficarum-app/src/components/SettingsPage/SettingsPage.tsx`
+- [X] T027 [P] [US2] Create barrel export `index.ts` in `libris-maleficarum-app/src/components/SettingsPage/index.ts`
+- [X] T028 [US2] Integrate `UserMenu` into `TopToolbar.tsx` — add to the right side after ThemeToggle and NotificationBell in `libris-maleficarum-app/src/components/TopToolbar/TopToolbar.tsx`
+- [X] T029 [US2] Add `/settings` route to `App.tsx` rendering `SettingsPage` component in `libris-maleficarum-app/src/App.tsx`
 
 **Checkpoint**: User menu renders in header with correct content for both modes, keyboard accessible, settings page at /settings
 
@@ -123,8 +123,8 @@
 
 ### Implementation for User Story 1
 
-- [ ] T030 [US1] Create integration test verifying anonymous mode renders correctly in the full app context (user menu shows "Anonymous", settings link navigates to /settings) in `libris-maleficarum-app/src/__tests__/anonymous-mode.test.tsx`
-- [ ] T031 [US1] Verify all existing frontend tests pass with anonymous user context — fix any tests broken by auth-related changes across `libris-maleficarum-app/src/`
+- [X] T030 [US1] Create integration test verifying anonymous mode renders correctly in the full app context (user menu shows "Anonymous", settings link navigates to /settings) in `libris-maleficarum-app/src/__tests__/anonymous-mode.test.tsx`
+- [X] T031 [US1] Verify all existing frontend tests pass with anonymous user context — fix any tests broken by auth-related changes across `libris-maleficarum-app/src/`
 
 **Checkpoint**: Anonymous single-user mode works end-to-end without any Entra ID configuration
 
@@ -138,14 +138,14 @@
 
 ### Tests for User Story 4
 
-- [ ] T032 [P] [US4] Create `AuthGuard.test.tsx` with rendering tests (bypassed in anonymous mode, shows sign-in prompt in multi-user unauthenticated mode, renders children when authenticated) and jest-axe accessibility checks in `libris-maleficarum-app/src/components/AuthGuard/AuthGuard.test.tsx`
+- [X] T032 [P] [US4] Create `AuthGuard.test.tsx` with rendering tests (bypassed in anonymous mode, shows sign-in prompt in multi-user unauthenticated mode, renders children when authenticated) and jest-axe accessibility checks in `libris-maleficarum-app/src/components/AuthGuard/AuthGuard.test.tsx`
 
 ### Implementation for User Story 4
 
-- [ ] T033 [US4] Modify `main.tsx` to conditionally wrap `<App />` with `<MsalProvider instance={msalInstance}>` when `isAuthConfigured` is true, otherwise render `<App />` directly in `libris-maleficarum-app/src/main.tsx`
-- [ ] T034 [US4] Create `AuthGuard.tsx` component that checks `isAuthConfigured` and `useIsAuthenticated()` — when multi-user and unauthenticated, display "Sign in to continue" prompt; when single-user or authenticated, render children in `libris-maleficarum-app/src/components/AuthGuard/AuthGuard.tsx`
-- [ ] T035 [P] [US4] Create barrel export `index.ts` in `libris-maleficarum-app/src/components/AuthGuard/index.ts`
-- [ ] T036 [US4] Wrap data-bearing content area in `App.tsx` with `<AuthGuard>` so layout/header remain visible but data pages require auth in multi-user mode in `libris-maleficarum-app/src/App.tsx`
+- [X] T033 [US4] Modify `main.tsx` to conditionally wrap `<App />` with `<MsalProvider instance={msalInstance}>` when `isAuthConfigured` is true, otherwise render `<App />` directly in `libris-maleficarum-app/src/main.tsx`
+- [X] T034 [US4] Create `AuthGuard.tsx` component that checks `isAuthConfigured` and `useIsAuthenticated()` — when multi-user and unauthenticated, display "Sign in to continue" prompt; when single-user or authenticated, render children in `libris-maleficarum-app/src/components/AuthGuard/AuthGuard.tsx`
+- [X] T035 [P] [US4] Create barrel export `index.ts` in `libris-maleficarum-app/src/components/AuthGuard/index.ts`
+- [X] T036 [US4] Wrap data-bearing content area in `App.tsx` with `<AuthGuard>` so layout/header remain visible but data pages require auth in multi-user mode in `libris-maleficarum-app/src/App.tsx`
 
 **Checkpoint**: Frontend correctly detects auth mode, MSAL provider conditionally active, data pages gated when unauthenticated
 
@@ -159,9 +159,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T037 [US5] Add MSAL popup sign-in handler to `UserMenu.tsx` — call `instance.loginPopup(loginRequest)` on sign-in action in `libris-maleficarum-app/src/components/UserMenu/UserMenu.tsx`
-- [ ] T038 [US5] Add MSAL sign-out handler to `UserMenu.tsx` — call `instance.logoutPopup()` on sign-out action in `libris-maleficarum-app/src/components/UserMenu/UserMenu.tsx`
-- [ ] T039 [P] [US5] Add bearer token acquisition interceptor for API calls — use `msalInstance.acquireTokenSilent()` to attach `Authorization: Bearer <token>` to Axios requests when authenticated in `libris-maleficarum-app/src/services/apiClient.ts` or equivalent
+- [X] T037 [US5] Add MSAL popup sign-in handler to `UserMenu.tsx` — call `instance.loginPopup(loginRequest)` on sign-in action in `libris-maleficarum-app/src/components/UserMenu/UserMenu.tsx`
+- [X] T038 [US5] Add MSAL sign-out handler to `UserMenu.tsx` — call `instance.logoutPopup()` on sign-out action in `libris-maleficarum-app/src/components/UserMenu/UserMenu.tsx`
+- [X] T039 [P] [US5] Add bearer token acquisition interceptor for API calls — use `msalInstance.acquireTokenSilent()` to attach `Authorization: Bearer <token>` to Axios requests when authenticated in `libris-maleficarum-app/src/services/apiClient.ts` or equivalent
 
 **Checkpoint**: Full sign-in/sign-out flow works with Entra ID; API calls include bearer tokens when authenticated
 
@@ -175,8 +175,8 @@
 
 ### Implementation for User Story 7
 
-- [ ] T040 [US7] Update `AppHost.cs` to read optional Entra ID config from AppHost configuration/user secrets and pass via `.WithEnvironment()` to API service (`AzureAd__ClientId`, `AzureAd__TenantId`, `AzureAd__Audience`) in `libris-maleficarum-service/src/Orchestration/AppHost/AppHost.cs`
-- [ ] T041 [US7] Update `AppHost.cs` to pass `ENTRA_CLIENT_ID` and `ENTRA_TENANT_ID` environment variables to frontend Vite app resource via `.WithEnvironment()` in `libris-maleficarum-service/src/Orchestration/AppHost/AppHost.cs`
+- [X] T040 [US7] Update `AppHost.cs` to read optional Entra ID config from AppHost configuration/user secrets and pass via `.WithEnvironment()` to API service (`AzureAd__ClientId`, `AzureAd__TenantId`, `AzureAd__Audience`) in `libris-maleficarum-service/src/Orchestration/AppHost/AppHost.cs`
+- [X] T041 [US7] Update `AppHost.cs` to pass `ENTRA_CLIENT_ID` and `ENTRA_TENANT_ID` environment variables to frontend Vite app resource via `.WithEnvironment()` in `libris-maleficarum-service/src/Orchestration/AppHost/AppHost.cs`
 
 **Checkpoint**: Both API and frontend services receive correct auth configuration from Aspire AppHost
 
@@ -186,11 +186,11 @@
 
 **Purpose**: Documentation, cleanup, and full validation across all stories
 
-- [ ] T042 [P] Update `CHANGELOG.md` with feature entry for user authentication mode and user menu under the next version
-- [ ] T043 [P] Run `pnpm lint` in `libris-maleficarum-app/` and fix any linting issues introduced by new code
-- [ ] T044 Run all frontend tests (`pnpm test`) in `libris-maleficarum-app/` and fix any failures
-- [ ] T045 Run all backend unit tests (`dotnet test --solution LibrisMaleficarum.slnx --filter "TestCategory=Unit"`) in `libris-maleficarum-service/` and fix any failures
-- [ ] T046 Run quickstart.md validation — verify single-user mode startup and multi-user mode startup instructions both work end-to-end
+- [X] T042 [P] Update `CHANGELOG.md` with feature entry for user authentication mode and user menu under the next version
+- [X] T043 [P] Run `pnpm lint` in `libris-maleficarum-app/` and fix any linting issues introduced by new code
+- [X] T044 Run all frontend tests (`pnpm test`) in `libris-maleficarum-app/` and fix any failures
+- [X] T045 Run all backend unit tests (`dotnet test --solution LibrisMaleficarum.slnx --filter "TestCategory=Unit"`) in `libris-maleficarum-service/` and fix any failures
+- [X] T046 Run quickstart.md validation — verify single-user mode startup and multi-user mode startup instructions both work end-to-end
 
 ---
 
@@ -245,8 +245,8 @@
 ### Incremental Delivery
 
 1. **MVP**: Phases 1–6 — Anonymous mode + user menu + settings page + backend identity
-2. **Multi-user support**: Phases 7–9 — MSAL provider wrapping + auth guard + Entra ID sign-in/sign-out + Aspire config propagation
-3. **Polish**: Phase 10 — CHANGELOG, lint, full test suite, quickstart validation
+1. **Multi-user support**: Phases 7–9 — MSAL provider wrapping + auth guard + Entra ID sign-in/sign-out + Aspire config propagation
+1. **Polish**: Phase 10 — CHANGELOG, lint, full test suite, quickstart validation
 
 ### Task Count Summary
 

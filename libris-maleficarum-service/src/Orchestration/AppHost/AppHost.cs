@@ -108,6 +108,20 @@ var apiService = builder.AddProject<Projects.LibrisMaleficarum_Api>("api")
     .WaitFor(chatDeployment)
     .WaitFor(embeddingDeployment);
 
+// Propagate optional Entra ID auth configuration to API service
+// When set, the API switches from anonymous single-user mode to multi-user Entra ID auth
+var entraClientId = builder.Configuration["EntraId:ClientId"];
+var entraTenantId = builder.Configuration["EntraId:TenantId"];
+var entraAudience = builder.Configuration["EntraId:Audience"];
+
+if (!string.IsNullOrEmpty(entraClientId))
+{
+    apiService
+        .WithEnvironment("AzureAd__ClientId", entraClientId)
+        .WithEnvironment("AzureAd__TenantId", entraTenantId ?? "common")
+        .WithEnvironment("AzureAd__Audience", entraAudience ?? $"api://{entraClientId}");
+}
+
 // Add the Search Index Worker service (Change Feed Processor for AI Search sync)
 // Runs independently from the API for fault isolation, independent scaling, and deployment independence
 var searchWorker = builder.AddProject<Projects.LibrisMaleficarum_SearchIndexWorker>("search-index-worker")
@@ -124,6 +138,15 @@ var frontend = builder.AddViteApp("frontend", "../../../../libris-maleficarum-ap
     .WithExternalHttpEndpoints()
     .WithReference(apiService)
     .WaitFor(apiService);
+
+// Propagate optional Entra ID auth configuration to frontend
+// Vite reads these as process.env vars and injects via define block (see vite.config.ts)
+if (!string.IsNullOrEmpty(entraClientId))
+{
+    frontend
+        .WithEnvironment("ENTRA_CLIENT_ID", entraClientId)
+        .WithEnvironment("ENTRA_TENANT_ID", entraTenantId ?? "common");
+}
 
 // Seed sample data: run CLI importer to import Grimhollow sample world after the API is healthy.
 // The frontend does NOT wait for this — it starts as soon as the API is ready.

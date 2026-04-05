@@ -39,6 +39,9 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
 
+    <!-- Authentication packages -->
+    <PackageVersion Include="Microsoft.Identity.Web" Version="3.11.0" />
+
     <!-- Other Azure packages -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.54.0" />
 

@@ -27,7 +27,7 @@ public class AssetsControllerTests
     private ILogger<AssetsController> _logger = null!;
     private AssetsController _controller = null!;
 
-    private readonly Guid _userId = Guid.NewGuid();
+    private readonly string _userId = "test-user-id";
     private readonly Guid _worldId = Guid.NewGuid();
     private readonly Guid _entityId = Guid.NewGuid();
     private readonly Guid _assetId = Guid.NewGuid();

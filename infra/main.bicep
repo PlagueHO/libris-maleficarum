@@ -245,8 +245,21 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.
       logAnalyticsWorkspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
     }
     infrastructureSubnetResourceId: virtualNetwork.outputs.subnetResourceIds[0] // container-apps subnet
-    internal: true
+    // internal: false means the environment remains publicly accessible (external ingress)
+    internal: false
+    // Allow public network access so the frontend SWA and external clients can reach the container app APIs
+    publicNetworkAccess: 'Enabled'
     zoneRedundant: false
+  }
+}
+
+// --------- ASPIRE DASHBOARD ---------
+module aspireDashboard 'aspire-dashboard.bicep' = {
+  name: 'aspire-dashboard-deployment-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  dependsOn: [containerAppsEnvironment]
+  params: {
+    containerAppsEnvironmentName: containerAppsEnvironmentName
   }
 }
 

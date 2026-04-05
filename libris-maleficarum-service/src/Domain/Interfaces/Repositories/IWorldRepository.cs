@@ -24,7 +24,7 @@ public interface IWorldRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A tuple containing the list of worlds and an optional continuation token.</returns>
     Task<(IEnumerable<World> Worlds, string? NextCursor)> GetAllByOwnerAsync(
-        Guid ownerId,
+        string ownerId,
         int limit = 50,
         string? cursor = null,
         CancellationToken cancellationToken = default);

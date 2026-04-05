@@ -97,6 +97,16 @@ public class WorldEntity
     public string? DeletedBy { get; private set; }
 
     /// <summary>
+    /// Gets the user ID who created this entity.
+    /// </summary>
+    public string? CreatedBy { get; private set; }
+
+    /// <summary>
+    /// Gets the user ID who last modified this entity.
+    /// </summary>
+    public string? ModifiedBy { get; private set; }
+
+    /// <summary>
     /// Gets the schema version for this entity type's property structure.
     /// Indicates which version of the entity type's schema was used when created/last migrated.
     /// Enables forward schema evolution without requiring bulk updates.
@@ -183,7 +193,8 @@ public class WorldEntity
             CreatedDate = DateTime.UtcNow,
             ModifiedDate = DateTime.UtcNow,
             IsDeleted = false,
-            SchemaVersion = schemaVersion
+            SchemaVersion = schemaVersion,
+            CreatedBy = ownerId
         };
 
         entity.Validate();
@@ -219,6 +230,15 @@ public class WorldEntity
         ModifiedDate = DateTime.UtcNow;
 
         Validate();
+    }
+
+    /// <summary>
+    /// Updates the ModifiedBy field to track who last modified this entity.
+    /// </summary>
+    /// <param name="modifiedBy">The user ID performing the modification.</param>
+    public void UpdateModifiedBy(string modifiedBy)
+    {
+        ModifiedBy = modifiedBy;
     }
 
     /// <summary>

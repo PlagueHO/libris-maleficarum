@@ -16,6 +16,7 @@
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="FluentValidation.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Identity.Web" />
   </ItemGroup>
 
   <ItemGroup>

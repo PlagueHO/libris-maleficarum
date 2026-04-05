@@ -27,9 +27,8 @@ public class DeleteServiceCascadeTests
     private IOptions<DeleteOperationOptions> _options = null!;
     private DeleteService _deleteService = null!;
 
-    private readonly Guid _userId = Guid.NewGuid();
+    private readonly string _userId = "test-user-id";
     private readonly Guid _worldId = Guid.NewGuid();
-    private readonly string _userIdString = "test-user-id";
 
     [TestInitialize]
     public void Setup()
@@ -69,13 +68,13 @@ public class DeleteServiceCascadeTests
         var parentId = Guid.NewGuid();
         var parentEntity = CreateWorldEntity(parentId, "Parent", EntityType.Continent);
 
-        _deleteOperationRepository.CountActiveByUserAsync(_worldId, _userIdString, Arg.Any<CancellationToken>())
+        _deleteOperationRepository.CountActiveByUserAsync(_worldId, _userId, Arg.Any<CancellationToken>())
             .Returns(0);
 
         _worldEntityRepository.GetByIdIncludingDeletedAsync(_worldId, parentId, Arg.Any<CancellationToken>())
             .Returns(parentEntity);
 
-        var createdOperation = DeleteOperation.Create(_worldId, parentId, "Parent", _userIdString, cascade: true);
+        var createdOperation = DeleteOperation.Create(_worldId, parentId, "Parent", _userId, cascade: true);
         _deleteOperationRepository.CreateAsync(Arg.Any<DeleteOperation>(), Arg.Any<CancellationToken>())
             .Returns(createdOperation);
 
@@ -108,7 +107,7 @@ public class DeleteServiceCascadeTests
         var child1Id = Guid.NewGuid();
         var child2Id = Guid.NewGuid();
 
-        var operation = DeleteOperation.Create(_worldId, parentId, "Parent", _userIdString, cascade: true);
+        var operation = DeleteOperation.Create(_worldId, parentId, "Parent", _userId, cascade: true);
         var operationType = typeof(DeleteOperation);
         var idProperty = operationType.GetProperty("Id")!;
         var operationId = Guid.NewGuid();
@@ -156,7 +155,7 @@ public class DeleteServiceCascadeTests
         var grandchildId = Guid.NewGuid();
         var greatGrandchildId = Guid.NewGuid();
 
-        var operation = DeleteOperation.Create(_worldId, parentId, "Parent", _userIdString, cascade: true);
+        var operation = DeleteOperation.Create(_worldId, parentId, "Parent", _userId, cascade: true);
         var operationType = typeof(DeleteOperation);
         var idProperty = operationType.GetProperty("Id")!;
         var operationId = Guid.NewGuid();
@@ -211,7 +210,7 @@ public class DeleteServiceCascadeTests
         var child1Id = Guid.NewGuid();
         var child2Id = Guid.NewGuid();
 
-        var operation = DeleteOperation.Create(_worldId, parentId, "Parent", _userIdString, cascade: true);
+        var operation = DeleteOperation.Create(_worldId, parentId, "Parent", _userId, cascade: true);
         var operationType = typeof(DeleteOperation);
         var idProperty = operationType.GetProperty("Id")!;
         var operationId = Guid.NewGuid();
@@ -222,7 +221,7 @@ public class DeleteServiceCascadeTests
 
         // Setup descendants: child1 is already deleted (IsDeleted=true), child2 is not
         var child1 = CreateWorldEntity(child1Id, "Child1", EntityType.Country, parentId);
-        child1.SoftDelete(_userIdString); // Mark as already deleted
+        child1.SoftDelete(_userId); // Mark as already deleted
 
         var child2 = CreateWorldEntity(child2Id, "Child2", EntityType.Country, parentId);
         var descendants = new List<WorldEntity> { child1, child2 };
@@ -260,7 +259,7 @@ public class DeleteServiceCascadeTests
         // Arrange
         var parentId = Guid.NewGuid();
 
-        var operation = DeleteOperation.Create(_worldId, parentId, "Parent", _userIdString, cascade: true);
+        var operation = DeleteOperation.Create(_worldId, parentId, "Parent", _userId, cascade: true);
         var operationType = typeof(DeleteOperation);
         var idProperty = operationType.GetProperty("Id")!;
         var operationId = Guid.NewGuid();
@@ -299,7 +298,7 @@ public class DeleteServiceCascadeTests
             _worldId,
             entityType,
             name,
-            _userIdString,
+            _userId,
             null,  // description
             parentId,
             null,  // tags

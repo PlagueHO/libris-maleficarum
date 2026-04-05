@@ -64,6 +64,7 @@ public interface IUserContextService
 **Reason**: `_anonymous` is not a valid GUID. The return type must accommodate both string-based user identifiers.
 
 **Impact**: All call sites in controllers currently call `.GetCurrentUserIdAsync()` and pass the result to repository methods. The cascading changes include:
+
 - `World.OwnerId`: Change from `Guid` to `string`, update `World.Create()` signature
 - `IAssetRepository`: 5 methods accepting `Guid userId` must change to `string`
 - `UnauthorizedWorldAccessException`: Constructor `Guid userId` and property `Guid? UserId` must change to `string`

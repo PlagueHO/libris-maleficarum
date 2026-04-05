@@ -90,7 +90,7 @@ public class WorldEntitiesController : ControllerBase
 
         // Get current user ID
         var userId = await _userContextService.GetCurrentUserIdAsync();
-        var ownerId = userId.ToString();
+        var ownerId = userId;
 
         // Validate schema version
         _schemaVersionValidator.ValidateCreate(request.EntityType.ToString(), request.SchemaVersion);
@@ -246,7 +246,7 @@ public class WorldEntitiesController : ControllerBase
             });
         }
 
-        if (world.OwnerId != userId)
+        if (!string.Equals(world.OwnerId, userId, StringComparison.Ordinal))
         {
             return StatusCode(StatusCodes.Status403Forbidden, new ErrorResponse
             {

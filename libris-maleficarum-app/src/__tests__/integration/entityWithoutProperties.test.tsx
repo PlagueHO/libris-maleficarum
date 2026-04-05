@@ -12,6 +12,7 @@ import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
+import { MemoryRouter } from 'react-router-dom';
 import { store } from '@/store/store';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
@@ -116,9 +117,11 @@ describe('T053: Integration - Entity Without propertySchema (Character)', () => 
 
     // Render app
     render(
-      <Provider store={store}>
-        <App />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </MemoryRouter>
     );
 
    // Select world first
@@ -244,9 +247,11 @@ describe('T053: Integration - Entity Without propertySchema (Character)', () => 
 
     // Render app
     render(
-      <Provider store={store}>
-        <App />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </MemoryRouter>
     );
 
     // Wait for world to load

@@ -15,7 +15,7 @@ public class WorldTests
     public void Create_WithValidParameters_ShouldCreateWorld()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
+        var ownerId = "test-owner-id";
         var name = "Test World";
         var description = "A test world description";
 
@@ -37,7 +37,7 @@ public class WorldTests
     public void Create_WithoutDescription_ShouldCreateWorld()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
+        var ownerId = "test-owner-id";
         var name = "Test World";
 
         // Act
@@ -52,7 +52,7 @@ public class WorldTests
     public void Validate_WithValidData_ShouldNotThrow()
     {
         // Arrange
-        var world = World.Create(Guid.NewGuid(), "Valid Name", "Valid description");
+        var world = World.Create("test-owner-id", "Valid Name", "Valid description");
 
         // Act
         Action act = () => world.Validate();
@@ -65,7 +65,7 @@ public class WorldTests
     public void Validate_WithEmptyName_ShouldThrowArgumentException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
+        var ownerId = "test-owner-id";
 
         // Act
         Action act = () => World.Create(ownerId, string.Empty, null);
@@ -79,7 +79,7 @@ public class WorldTests
     public void Validate_WithNameTooLong_ShouldThrowArgumentException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
+        var ownerId = "test-owner-id";
         var longName = new string('A', 101);
 
         // Act
@@ -94,7 +94,7 @@ public class WorldTests
     public void Validate_WithDescriptionTooLong_ShouldThrowArgumentException()
     {
         // Arrange
-        var ownerId = Guid.NewGuid();
+        var ownerId = "test-owner-id";
         var longDescription = new string('A', 2001);
 
         // Act
@@ -109,7 +109,7 @@ public class WorldTests
     public void Update_WithValidData_ShouldUpdateWorld()
     {
         // Arrange
-        var world = World.Create(Guid.NewGuid(), "Original Name", "Original Description");
+        var world = World.Create("test-owner-id", "Original Name", "Original Description");
         var originalModifiedDate = world.ModifiedDate;
         Thread.Sleep(10); // Ensure time difference
 
@@ -129,7 +129,7 @@ public class WorldTests
     public void Update_WithInvalidName_ShouldThrowArgumentException()
     {
         // Arrange
-        var world = World.Create(Guid.NewGuid(), "Valid Name", null);
+        var world = World.Create("test-owner-id", "Valid Name", null);
         var longName = new string('A', 101);
 
         // Act
@@ -144,7 +144,7 @@ public class WorldTests
     public void SoftDelete_ShouldMarkWorldAsDeleted()
     {
         // Arrange
-        var world = World.Create(Guid.NewGuid(), "Test World", null);
+        var world = World.Create("test-owner-id", "Test World", null);
         var originalModifiedDate = world.ModifiedDate;
         Thread.Sleep(10); // Ensure time difference
 

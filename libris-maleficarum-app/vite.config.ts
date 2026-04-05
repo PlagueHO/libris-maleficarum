@@ -46,6 +46,9 @@ export default defineConfig({
     'import.meta.env.APPLICATIONINSIGHTS_CONNECTION_STRING': JSON.stringify(
       process.env.APPLICATIONINSIGHTS_CONNECTION_STRING || process.env.VITE_APPLICATIONINSIGHTS_CONNECTION_STRING || ''
     ),
+    // Entra ID authentication (injected by Aspire AppHost or environment)
+    __MSAL_CLIENT_ID__: JSON.stringify(process.env.ENTRA_CLIENT_ID || ''),
+    __MSAL_TENANT_ID__: JSON.stringify(process.env.ENTRA_TENANT_ID || ''),
   },
   resolve: {
     alias: {

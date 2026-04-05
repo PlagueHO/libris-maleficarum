@@ -90,7 +90,7 @@ public class ExceptionHandlingMiddlewareTests
     {
         // Arrange
         var worldId = Guid.NewGuid();
-        var userId = Guid.NewGuid();
+        var userId = "test-user-id";
         var exception = new UnauthorizedWorldAccessException(worldId, userId);
 
         RequestDelegate next = (HttpContext hc) => throw exception;

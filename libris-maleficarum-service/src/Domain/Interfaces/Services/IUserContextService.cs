@@ -9,7 +9,7 @@ public interface IUserContextService
     /// Gets the unique identifier of the currently authenticated user.
     /// </summary>
     /// <returns>
-    /// A <see cref="Task"/> representing the asynchronous operation, containing the user's unique identifier.
+    /// A <see cref="Task"/> representing the asynchronous operation, containing the user's unique identifier as a string.
     /// </returns>
-    Task<Guid> GetCurrentUserIdAsync();
+    Task<string> GetCurrentUserIdAsync();
 }

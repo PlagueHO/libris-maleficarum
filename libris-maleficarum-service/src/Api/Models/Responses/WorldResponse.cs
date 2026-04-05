@@ -13,7 +13,7 @@ public class WorldResponse
     /// <summary>
     /// Gets or sets the unique identifier of the world owner.
     /// </summary>
-    public required Guid OwnerId { get; set; }
+    public required string OwnerId { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the world.

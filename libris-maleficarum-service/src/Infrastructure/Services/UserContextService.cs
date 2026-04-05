@@ -1,25 +1,33 @@
 using LibrisMaleficarum.Domain.Interfaces.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace LibrisMaleficarum.Infrastructure.Services;
 
 /// <summary>
-/// Stubbed implementation of <see cref="IUserContextService"/> for local development.
-/// Returns a hardcoded GUID for the current user.
+/// Implementation of <see cref="IUserContextService"/> that reads the current user identity
+/// from the <see cref="HttpContext.User"/> claims principal via <see cref="IHttpContextAccessor"/>.
 /// </summary>
 /// <remarks>
-/// In production, this will be replaced with a real implementation that retrieves
-/// the authenticated user ID from Azure Entra ID (formerly Azure AD) claims.
+/// In single-user anonymous mode, the <see cref="Api.Middleware.AnonymousClaimsMiddleware"/>
+/// injects synthetic claims with oid = _anonymous, so this service consistently returns
+/// the user identity regardless of auth mode.
 /// </remarks>
-public class UserContextService : IUserContextService
+public class UserContextService(IHttpContextAccessor httpContextAccessor) : IUserContextService
 {
-    /// <summary>
-    /// Hardcoded user ID for local development and testing.
-    /// </summary>
-    private static readonly Guid StubUserId = new("00000000-0000-0000-0000-000000000001");
+    private const string AnonymousUserId = "_anonymous";
 
     /// <inheritdoc />
-    public Task<Guid> GetCurrentUserIdAsync()
+    public Task<string> GetCurrentUserIdAsync()
     {
-        return Task.FromResult(StubUserId);
+        var principal = httpContextAccessor.HttpContext?.User;
+        if (principal is null)
+        {
+            return Task.FromResult(AnonymousUserId);
+        }
+
+        var oid = principal.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value
+                  ?? principal.FindFirst("oid")?.Value;
+
+        return Task.FromResult(string.IsNullOrEmpty(oid) ? AnonymousUserId : oid);
     }
 }

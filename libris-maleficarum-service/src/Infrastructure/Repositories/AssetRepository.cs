@@ -33,7 +33,7 @@ public sealed class AssetRepository : IAssetRepository
     }
 
     /// <inheritdoc/>
-    public async Task<Asset> GetByIdAsync(Guid assetId, Guid userId, CancellationToken cancellationToken = default)
+    public async Task<Asset> GetByIdAsync(Guid assetId, string userId, CancellationToken cancellationToken = default)
     {
         // Query asset from Cosmos DB - cross-partition query required since we don't have WorldId
         var asset = await _context.Assets
@@ -59,7 +59,7 @@ public sealed class AssetRepository : IAssetRepository
     public async Task<(IReadOnlyList<Asset> Assets, string? NextCursor)> GetAllByEntityAsync(
         Guid entityId,
         Guid worldId,
-        Guid userId,
+        string userId,
         int limit = 50,
         string? cursor = null,
         CancellationToken cancellationToken = default)
@@ -114,7 +114,7 @@ public sealed class AssetRepository : IAssetRepository
         List<string>? tags,
         string? description,
         ImageDimensions? imageDimensions,
-        Guid userId,
+        string userId,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(fileStream);
@@ -184,7 +184,7 @@ public sealed class AssetRepository : IAssetRepository
         Guid assetId,
         List<string>? tags,
         string? description,
-        Guid userId,
+        string userId,
         CancellationToken cancellationToken = default)
     {
         // Retrieve asset with authorization check
@@ -201,7 +201,7 @@ public sealed class AssetRepository : IAssetRepository
     }
 
     /// <inheritdoc/>
-    public async Task DeleteAsync(Guid assetId, Guid userId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid assetId, string userId, CancellationToken cancellationToken = default)
     {
         // Retrieve asset with authorization check
         var asset = await GetByIdAsync(assetId, userId, cancellationToken);

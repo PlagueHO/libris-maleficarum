@@ -34,7 +34,7 @@ public class EntitiesControllerTests
     private IValidator<UpdateWorldEntityRequest> _updateValidator = null!;
     private WorldEntitiesController _controller = null!;
 
-    private readonly Guid _userId = Guid.NewGuid();
+    private readonly string _userId = "test-user-id";
     private readonly Guid _worldId = Guid.NewGuid();
     private readonly Guid _entityId = Guid.NewGuid();
     private readonly Guid _parentId = Guid.NewGuid();

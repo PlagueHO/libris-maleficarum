@@ -49,10 +49,9 @@ public class DeleteService : IDeleteService
     public async Task<DeleteOperation> InitiateDeleteAsync(Guid worldId, Guid entityId, bool cascade = true, CancellationToken cancellationToken = default)
     {
         var currentUserId = await _userContextService.GetCurrentUserIdAsync();
-        var userId = currentUserId.ToString();
 
         // Rate limiting: Check active operations for this user in this world
-        var activeCount = await _deleteOperationRepository.CountActiveByUserAsync(worldId, userId, cancellationToken);
+        var activeCount = await _deleteOperationRepository.CountActiveByUserAsync(worldId, currentUserId, cancellationToken);
         if (activeCount >= _options.MaxConcurrentPerUserPerWorld)
         {
             throw new RateLimitExceededException(activeCount, _options.MaxConcurrentPerUserPerWorld, _options.RetryAfterSeconds);
@@ -77,7 +76,7 @@ public class DeleteService : IDeleteService
             worldId,
             entityId,
             entity.Name,
-            userId,
+            currentUserId,
             cascade,
             ttlSeconds: _options.OperationTtlHours * 3600);
 
@@ -101,7 +100,7 @@ public class DeleteService : IDeleteService
             { "entity.world_id", worldId },
             { "delete.cascade", cascade },
             { "delete.already_deleted", entity.IsDeleted },
-            { "user.id", userId }
+            { "user.id", currentUserId }
         });
 
         return operation;

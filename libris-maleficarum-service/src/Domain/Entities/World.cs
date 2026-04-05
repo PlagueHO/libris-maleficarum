@@ -13,7 +13,7 @@ public class World
     /// <summary>
     /// Gets the unique identifier of the user who owns this world.
     /// </summary>
-    public Guid OwnerId { get; private set; }
+    public string OwnerId { get; private set; } = string.Empty;
 
     /// <summary>
     /// Gets the name of the world.
@@ -56,7 +56,7 @@ public class World
     /// <param name="description">The description of the world.</param>
     /// <returns>A new <see cref="World"/> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
-    public static World Create(Guid ownerId, string name, string? description = null)
+    public static World Create(string ownerId, string name, string? description = null)
     {
         var world = new World
         {
