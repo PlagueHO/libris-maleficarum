@@ -5,7 +5,7 @@
 
 ## Overview
 
-This feature does not introduce new CosmosDB containers or entities. It modifies how existing entities populate their user identity fields (`OwnerId`, `CreatedBy`, `ModifiedBy`, `DeletedBy`) based on the active authentication mode.
+This feature does not introduce new CosmosDB containers or entities. It modifies how existing entities populate their user identity fields (`OwnerId`, `DeletedBy`) based on the active authentication mode, and adds new `CreatedBy` and `ModifiedBy` properties to `WorldEntity`. It also changes `World.OwnerId` from `Guid` to `string` to support `_anonymous`.
 
 ## Entities Affected
 
@@ -13,20 +13,20 @@ This feature does not introduce new CosmosDB containers or entities. It modifies
 
 | Field | Type | Change | Description |
 |-------|------|--------|-------------|
-| `OwnerId` | `string` | **Populated from auth** | Previously hardcoded GUID; now set from `IUserContextService` which reads authenticated user or `_anonymous` |
+| `OwnerId` | `string` | **Type changed from `Guid` to `string`; populated from auth** | Was `Guid` with hardcoded value; changed to `string` to accommodate `_anonymous` identifier. Requires updating `World.Create()` signature and all repository interfaces/implementations that accept `Guid ownerId`. |
 
-No schema change. The field type is already `string` and accepts any user identifier.
+**Breaking entity change**: `World.OwnerId` type changes from `Guid` to `string`. The `World.Create()` factory method signature must be updated from `Guid ownerId` to `string ownerId`. All `IWorldRepository` methods and implementations that reference `Guid ownerId` must also be updated.
 
 ### WorldEntity (existing — WorldEntity container, partition key `[/WorldId, /id]`)
 
 | Field | Type | Change | Description |
 |-------|------|--------|-------------|
 | `OwnerId` | `string` | **Populated from auth** | Set from authenticated user or `_anonymous` |
-| `CreatedBy` | `string?` | **Now populated** | Was always `null` — now set to user ID on entity creation |
-| `ModifiedBy` | `string?` | **Now populated** | Was always `null` — now set to user ID on entity update |
+| `CreatedBy` | `string?` | **New property** | Does not exist yet — must be added to `WorldEntity.cs` and set to user ID on entity creation |
+| `ModifiedBy` | `string?` | **New property** | Does not exist yet — must be added to `WorldEntity.cs` and set to user ID on entity update |
 | `DeletedBy` | `string?` | **Already populated** | Already set on soft delete — no change needed |
 
-No schema change. Fields already exist in the data model but `CreatedBy` and `ModifiedBy` were not being written.
+**New properties required**: `CreatedBy` and `ModifiedBy` do not currently exist on `WorldEntity`. They must be added as `string?` properties, the `WorldEntity.Create()` factory must accept `createdBy`, and an `UpdateModifiedBy(string modifiedBy)` method must be added.
 
 ### Asset (existing — Asset container, partition key `[/WorldId, /EntityId]`)
 
@@ -63,9 +63,12 @@ public interface IUserContextService
 
 **Reason**: `_anonymous` is not a valid GUID. The return type must accommodate both string-based user identifiers.
 
-**Impact**: All call sites in controllers currently call `.GetCurrentUserIdAsync()` and pass the result to repository methods. The repositories accept `string` OwnerId (matching the domain model). The main impact is:
-- Remove any `.ToString()` calls on the GUID result
-- Update the interface, implementation, and test mocks
+**Impact**: All call sites in controllers currently call `.GetCurrentUserIdAsync()` and pass the result to repository methods. The cascading changes include:
+- `World.OwnerId`: Change from `Guid` to `string`, update `World.Create()` signature
+- `IAssetRepository`: 5 methods accepting `Guid userId` must change to `string`
+- `UnauthorizedWorldAccessException`: Constructor `Guid userId` and property `Guid? UserId` must change to `string`
+- All corresponding implementations in `Infrastructure/Repositories/`
+- All test mocks returning `Guid` from `IUserContextService`
 
 ## Data Isolation Queries
 
