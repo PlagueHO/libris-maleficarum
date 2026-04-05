@@ -18,6 +18,7 @@
 **Purpose**: Install dependencies and add shared UI components needed by multiple stories
 
 - [ ] T001 Install `@azure/msal-browser` and `@azure/msal-react` packages in `libris-maleficarum-app/`
+- [ ] T001b [P] Install `react-router-dom` package in `libris-maleficarum-app/`
 - [ ] T002 [P] Add Shadcn dropdown-menu component via `npx shadcn@latest add dropdown-menu` generating `libris-maleficarum-app/src/components/ui/dropdown-menu.tsx`
 - [ ] T003 [P] Add `Microsoft.Identity.Web` and `Microsoft.Identity.Web.UI` package references to `libris-maleficarum-service/Directory.Packages.props` and add `PackageReference` to `libris-maleficarum-service/src/Api/LibrisMaleficarum.Api.csproj`
 
@@ -30,12 +31,13 @@
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
 - [ ] T004 Change `IUserContextService.GetCurrentUserIdAsync()` return type from `Task<Guid>` to `Task<string>` in `libris-maleficarum-service/src/Domain/Interfaces/Services/IUserContextService.cs`
-- [ ] T005 Update all call sites and test mocks that depend on `Guid` return type to use `string` across `libris-maleficarum-service/src/` and `libris-maleficarum-service/tests/`
-- [ ] T006 [P] Create `ClaimsPrincipalExtensions.cs` with `GetUserIdOrAnonymous()` extension method returning the `oid` claim value or `_anonymous` in `libris-maleficarum-service/src/Api/Extensions/ClaimsPrincipalExtensions.cs`
+- [ ] T005 Update all call sites for `Guid` → `string` user ID change: (a) `IAssetRepository` — 5 methods with `Guid userId` parameter in `src/Domain/Interfaces/Repositories/IAssetRepository.cs`, (b) `UnauthorizedWorldAccessException` — constructor `Guid userId` and property `Guid? UserId` in `src/Domain/Exceptions/UnauthorizedWorldAccessException.cs`, (c) corresponding implementations in `src/Infrastructure/Repositories/AssetRepository.cs`, (d) `IDeleteOperationRepository.CountActiveByUserAsync` already uses `string userId` — verify no regression, (e) all test mocks returning `Guid` from `IUserContextService` across `libris-maleficarum-service/tests/`
+- [ ] T005b [US6] Change `World.OwnerId` from `Guid` to `string`, update `World.Create()` signature from `Guid ownerId` to `string ownerId`, and update all `World` repository interfaces/implementations that reference `Guid ownerId` in `libris-maleficarum-service/src/Domain/Entities/World.cs` and `libris-maleficarum-service/src/Domain/Interfaces/Repositories/IWorldRepository.cs`
 - [ ] T007 [P] Add `AzureAd` configuration section with empty `Instance`, `TenantId`, `ClientId`, `Audience`, and `Scopes` values to `libris-maleficarum-service/src/Api/appsettings.json`
 - [ ] T008 [P] Create `authConfig.ts` with MSAL `PublicClientApplication` instance, `isAuthConfigured` flag (checks `__MSAL_CLIENT_ID__`), and `loginRequest` (scopes: `api://libris-maleficarum-api/access_as_user`) in `libris-maleficarum-app/src/auth/authConfig.ts`
 - [ ] T009 [P] Add `__MSAL_CLIENT_ID__` and `__MSAL_TENANT_ID__` to the Vite `define` block, reading from `process.env.ENTRA_CLIENT_ID` and `process.env.ENTRA_TENANT_ID` in `libris-maleficarum-app/vite.config.ts`
 - [ ] T010 [P] Add TypeScript global type declarations for `__MSAL_CLIENT_ID__` and `__MSAL_TENANT_ID__` as `string` in `libris-maleficarum-app/src/vite-env.d.ts`
+- [ ] T010b Wrap the app root in `<BrowserRouter>` in `libris-maleficarum-app/src/main.tsx` (or `App.tsx`) to enable URL-based routing for `/settings` and future routes
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
 
@@ -54,6 +56,7 @@
 
 ### Implementation for User Story 3
 
+- [ ] T006 [US3] Create `ClaimsPrincipalExtensions.cs` with `GetUserIdOrAnonymous()` extension method returning the `oid` claim value or `_anonymous` in `libris-maleficarum-service/src/Api/Extensions/ClaimsPrincipalExtensions.cs`
 - [ ] T013 [US3] Add auth mode detection to `Program.cs` — when `AzureAd:ClientId` is present and non-empty, call `AddMicrosoftIdentityWebApiAuthentication()` and add `app.UseAuthentication()` + `app.UseAuthorization()`; otherwise register anonymous middleware in `libris-maleficarum-service/src/Api/Program.cs`
 - [ ] T014 [US3] Implement `AnonymousClaimsMiddleware` that injects a synthetic `ClaimsPrincipal` with `oid = _anonymous` and `scp = access_as_user` claims on every request in `libris-maleficarum-service/src/Api/Middleware/AnonymousClaimsMiddleware.cs`
 - [ ] T015 [US3] Ensure health check endpoints (`/health`, `/alive`) mapped by `MapDefaultEndpoints()` remain publicly accessible with `.AllowAnonymous()` in `libris-maleficarum-service/src/Api/Program.cs`
@@ -78,9 +81,11 @@
 
 - [ ] T019 [US6] Update `UserContextService` to inject `IHttpContextAccessor`, read `ClaimsPrincipal` from `HttpContext.User`, and return user ID using `GetUserIdOrAnonymous()` in `libris-maleficarum-service/src/Infrastructure/Services/UserContextService.cs`
 - [ ] T020 [US6] Register `IHttpContextAccessor` in DI container via `builder.Services.AddHttpContextAccessor()` in `libris-maleficarum-service/src/Api/Program.cs`
+- [ ] T020b [US6] Add `CreatedBy` (`string?`) and `ModifiedBy` (`string?`) properties to `WorldEntity` domain entity, update `WorldEntity.Create()` factory to accept and set `createdBy`, and add an `UpdateModifiedBy(string modifiedBy)` method in `libris-maleficarum-service/src/Domain/Entities/WorldEntity.cs`
 - [ ] T021 [US6] Ensure `CreatedBy` is populated from `IUserContextService` on entity creation and `ModifiedBy` on entity update in repository methods across `libris-maleficarum-service/src/Infrastructure/Repositories/`
+- [ ] T021b [US6] Verify/implement OwnerId-based query filtering in `IWorldRepository.ListWorldsAsync()` and related methods to ensure multi-user mode returns only the caller's data — review `libris-maleficarum-service/src/Infrastructure/Repositories/WorldRepository.cs` and `WorldEntityRepository.cs`
 
-**Checkpoint**: All data operations correctly populate user identity fields from claims
+**Checkpoint**: All data operations correctly populate user identity fields from claims; query filtering enforces data isolation
 
 ---
 
@@ -97,7 +102,7 @@
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Create `UserMenu.tsx` component using Shadcn `DropdownMenu` with two display modes: anonymous (user icon + "Anonymous", disabled sign-in, settings link, Entra ID not configured note) and authenticated (initials avatar, display name, email, sign-out, settings link) in `libris-maleficarum-app/src/components/UserMenu/UserMenu.tsx`
+- [ ] T024 [US2] Create `UserMenu.tsx` component using Shadcn `DropdownMenu` with three display modes: (1) anonymous (user icon + "Anonymous", disabled sign-in, settings link, Entra ID not configured note per FR-007), (2) authenticated (initials avatar, display name, email, sign-out, settings link per FR-008), and (3) unauthenticated-multi-user (sign-in button, settings link per FR-009) in `libris-maleficarum-app/src/components/UserMenu/UserMenu.tsx`
 - [ ] T025 [P] [US2] Create barrel export `index.ts` in `libris-maleficarum-app/src/components/UserMenu/index.ts`
 - [ ] T026 [US2] Create `SettingsPage.tsx` component with page heading, dark/light mode toggle (reusing existing `ThemeToggle` component), and accessible layout in `libris-maleficarum-app/src/components/SettingsPage/SettingsPage.tsx`
 - [ ] T027 [P] [US2] Create barrel export `index.ts` in `libris-maleficarum-app/src/components/SettingsPage/index.ts`
@@ -195,9 +200,9 @@
 
 - **Setup (Phase 1)**: No dependencies — can start immediately
 - **Foundational (Phase 2)**: Depends on Setup completion — BLOCKS all user stories
-- **US3 (Phase 3)**: Depends on Foundational (T006 ClaimsPrincipalExtensions, T007 appsettings)
-- **US6 (Phase 4)**: Depends on Foundational (T004/T005 interface change) and US3 (T014 anonymous middleware)
-- **US2 (Phase 5)**: Depends on Foundational (T002 dropdown-menu, T008 authConfig) — frontend only
+- **US3 (Phase 3)**: Depends on Foundational (T007 appsettings); T006 now in this phase (TDD: T011 test first, then T006 implementation)
+- **US6 (Phase 4)**: Depends on Foundational (T004/T005/T005b interface + entity changes) and US3 (T014 anonymous middleware, T006 extensions)
+- **US2 (Phase 5)**: Depends on Foundational (T002 dropdown-menu, T008 authConfig, T010b BrowserRouter) — frontend only
 - **US1 (Phase 6)**: Depends on US3, US6, and US2 — integration validation
 - **US4 (Phase 7)**: Depends on Foundational (T008 authConfig, T009 Vite defines) — frontend only
 - **US5 (Phase 8)**: Depends on US4 (T033 MSAL provider wrapping)
@@ -222,8 +227,8 @@
 
 ### Parallel Opportunities
 
-- **Setup**: T002 and T003 can run in parallel (different projects)
-- **Foundational**: T006, T007, T008, T009, T010 can all run in parallel (after T004/T005)
+- **Setup**: T001b, T002, and T003 can run in parallel (different projects)
+- **Foundational**: T007, T008, T009, T010 can all run in parallel (after T004/T005/T005b)
 - **Backend + Frontend tracks**: US3/US6 (backend) and US2 (frontend) can run in parallel
 - **US4 can run in parallel with US2** (both frontend, different files)
 - All test tasks marked [P] can run in parallel within their phase
@@ -247,14 +252,14 @@
 
 | Phase | Story | Tasks | Parallelizable |
 |-------|-------|-------|----------------|
-| 1 — Setup | — | 3 | 2 |
-| 2 — Foundational | — | 7 | 5 |
-| 3 — Backend Auth | US3 | 6 | 2 |
-| 4 — CosmosDB Identity | US6 | 5 | 2 |
+| 1 — Setup | — | 4 | 3 |
+| 2 — Foundational | — | 8 | 4 |
+| 3 — Backend Auth | US3 | 7 | 2 |
+| 4 — CosmosDB Identity | US6 | 7 | 2 |
 | 5 — User Menu | US2 | 8 | 4 |
 | 6 — Anonymous Mode | US1 | 2 | 0 |
 | 7 — Frontend Auth | US4 | 5 | 2 |
 | 8 — Entra ID Sign-In | US5 | 3 | 1 |
 | 9 — Aspire Config | US7 | 2 | 0 |
 | 10 — Polish | — | 5 | 2 |
-| **Total** | | **46** | **20** |
+| **Total** | | **51** | **20** |
