@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "libris-maleficarum-service/src/Orchestration/AppHost/LibrisMaleficarum.AppHost.csproj"
+  }
+}

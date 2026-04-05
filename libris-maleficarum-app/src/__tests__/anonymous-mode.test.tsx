@@ -6,7 +6,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { Provider } from 'react-redux';
-import { MemoryRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupServer } from 'msw/node';
 import App from '@/App';
@@ -36,14 +35,12 @@ const createMockStore = () => {
   });
 };
 
-function renderApp(initialRoute = '/') {
+function renderApp() {
   const store = createMockStore();
   return render(
-    <MemoryRouter initialEntries={[initialRoute]}>
-      <Provider store={store}>
-        <App />
-      </Provider>
-    </MemoryRouter>
+    <Provider store={store}>
+      <App />
+    </Provider>
   );
 }
 
@@ -71,8 +68,13 @@ describe('Anonymous Single-User Mode', () => {
     expect(screen.getByRole('menuitem', { name: /settings/i })).toBeInTheDocument();
   });
 
-  it('navigates to settings page via /settings route', () => {
-    renderApp('/settings');
+  it('opens settings panel when Settings menu item is clicked', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(screen.getByRole('button', { name: /user menu/i }));
+    await user.click(screen.getByRole('menuitem', { name: /settings/i }));
+
     expect(screen.getByRole('heading', { name: /settings/i })).toBeInTheDocument();
   });
 

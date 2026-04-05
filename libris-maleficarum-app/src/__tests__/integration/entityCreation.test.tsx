@@ -2,7 +2,6 @@ import { describe, test, beforeAll, afterEach, afterAll, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
-import { MemoryRouter } from 'react-router-dom';
 import { store } from '../../store/store';
 import App from '../../App';
 
@@ -93,11 +92,9 @@ describe('Entity Creation Integration', () => {
       })
     );
     render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>
+        <App />
+      </Provider>
     );
 
     const user = userEvent.setup();

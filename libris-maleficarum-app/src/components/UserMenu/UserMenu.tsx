@@ -1,5 +1,4 @@
 import { User, Settings, LogOut, LogIn } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,8 +15,7 @@ import { isAuthConfigured, loginRequest } from '@/auth/authConfig';
  * User menu for multi-user mode with MSAL authentication.
  * Uses MSAL hooks (requires MsalProvider ancestor).
  */
-function AuthenticatedUserMenu() {
-  const navigate = useNavigate();
+function AuthenticatedUserMenu({ onOpenSettings }: { onOpenSettings: () => void }) {
   const { instance, accounts } = useMsal();
   const isAuthenticated = useIsAuthenticated();
 
@@ -71,7 +69,7 @@ function AuthenticatedUserMenu() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => navigate('/settings')}>
+            <DropdownMenuItem onSelect={onOpenSettings}>
               <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
               Settings
             </DropdownMenuItem>
@@ -85,7 +83,7 @@ function AuthenticatedUserMenu() {
           <>
             <DropdownMenuLabel>Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => navigate('/settings')}>
+            <DropdownMenuItem onSelect={onOpenSettings}>
               <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
               Settings
             </DropdownMenuItem>
@@ -104,9 +102,7 @@ function AuthenticatedUserMenu() {
 /**
  * User menu for anonymous single-user mode (no MSAL dependency).
  */
-function AnonymousUserMenu() {
-  const navigate = useNavigate();
-
+function AnonymousUserMenu({ onOpenSettings }: { onOpenSettings: () => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -117,7 +113,7 @@ function AnonymousUserMenu() {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Anonymous</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => navigate('/settings')}>
+        <DropdownMenuItem onSelect={onOpenSettings}>
           <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
           Settings
         </DropdownMenuItem>
@@ -130,9 +126,13 @@ function AnonymousUserMenu() {
  * User menu dropdown component.
  * Renders the appropriate variant based on auth configuration.
  */
-export function UserMenu() {
+interface UserMenuProps {
+  onOpenSettings: () => void;
+}
+
+export function UserMenu({ onOpenSettings }: UserMenuProps) {
   if (isAuthConfigured) {
-    return <AuthenticatedUserMenu />;
+    return <AuthenticatedUserMenu onOpenSettings={onOpenSettings} />;
   }
-  return <AnonymousUserMenu />;
+  return <AnonymousUserMenu onOpenSettings={onOpenSettings} />;
 }

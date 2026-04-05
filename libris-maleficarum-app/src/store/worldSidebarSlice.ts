@@ -307,6 +307,28 @@ export const worldSidebarSlice = createSlice({
       state.mainPanelMode = 'empty';
       state.movingEntityId = null;
     },
+
+    /**
+     * Reset to home/welcome state by clearing all selections and forms
+     *
+     * @param state - Current state
+     */
+    resetToHome: (state) => {
+      state.selectedWorldId = null;
+      state.selectedEntityId = null;
+      state.expandedNodeIds = [];
+      state.mainPanelMode = 'empty';
+      state.isWorldFormOpen = false;
+      state.editingWorldId = null;
+      state.editingEntityId = null;
+      state.newEntityParentId = null;
+      state.hasUnsavedChanges = false;
+      state.deletingEntityId = null;
+      state.deletingEntityName = null;
+      state.showDeleteConfirmation = false;
+      state.movingEntityId = null;
+      state.creatingEntityParentId = null;
+    },
   },
 });
 
@@ -332,6 +354,7 @@ export const {
   closeDeleteConfirmation,
   openMoveEntity,
   closeMoveEntity,
+  resetToHome,
 } = worldSidebarSlice.actions;
 
 /**

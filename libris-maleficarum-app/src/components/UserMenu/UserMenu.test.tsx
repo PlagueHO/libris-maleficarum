@@ -1,18 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { UserMenu } from './UserMenu';
-import { MemoryRouter } from 'react-router-dom';
 
 expect.extend(toHaveNoViolations);
 
 function renderUserMenu() {
-  return render(
-    <MemoryRouter>
-      <UserMenu />
-    </MemoryRouter>
-  );
+  const onOpenSettings = vi.fn();
+  return {
+    onOpenSettings,
+    ...render(
+      <UserMenu onOpenSettings={onOpenSettings} />
+    ),
+  };
 }
 
 describe('UserMenu', () => {

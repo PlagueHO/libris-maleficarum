@@ -3,7 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { toHaveNoViolations } from 'jest-axe';
 import { Provider } from 'react-redux';
-import { MemoryRouter } from 'react-router-dom';
 import { store } from '../../../store/store';
 import App from '../../../App';
 import { WorldEntityType, type CreateWorldEntityRequest } from '@/services/types/worldEntity.types';
@@ -45,11 +44,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should render DynamicPropertiesForm when entityType is GeographicRegion', async () => {
       const user = userEvent.setup();
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       await openCreateForm(user);
@@ -80,11 +75,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it.skip('should update custom properties when fields change', async () => {
       const user = userEvent.setup();
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       await openCreateForm(user);
@@ -141,11 +132,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should render DynamicPropertiesForm when entityType is PoliticalRegion', async () => {
       const user = userEvent.setup();
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       await openCreateForm(user);
@@ -173,11 +160,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should handle MemberStates TagInput correctly', async () => {
       const user = userEvent.setup();
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       await openCreateForm(user);
@@ -213,11 +196,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should handle free-form EstablishedDate field', async () => {
       const user = userEvent.setup();
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       await openCreateForm(user);
@@ -277,11 +256,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       await openCreateForm(user);
@@ -369,11 +344,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       await openCreateForm(user);
@@ -464,11 +435,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       // Select world
@@ -549,11 +516,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       // Select world
@@ -634,11 +597,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       // Select world
@@ -674,11 +633,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should allow creating Character directly under World root (bypassing People container)', async () => {
       const user = userEvent.setup();
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       await openCreateForm(user);
@@ -720,11 +675,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should allow selecting Quest type when parent is Continent (unconventional pairing)', async () => {
       const user = userEvent.setup();
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       await openCreateForm(user);
@@ -760,11 +711,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       const user = userEvent.setup();
 
       render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>\n        <App />\n      </Provider>
     );
 
       await openCreateForm(user);

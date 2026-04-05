@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { AuthGuard } from './AuthGuard';
-import { MemoryRouter } from 'react-router-dom';
 
 expect.extend(toHaveNoViolations);
 
@@ -13,9 +12,7 @@ vi.mock('@/auth/authConfig', () => ({
 
 function renderAuthGuard(children: React.ReactNode = <div>Protected content</div>) {
   return render(
-    <MemoryRouter>
-      <AuthGuard>{children}</AuthGuard>
-    </MemoryRouter>
+    <AuthGuard>{children}</AuthGuard>
   );
 }
 

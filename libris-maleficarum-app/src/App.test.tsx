@@ -4,7 +4,6 @@
 import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { MemoryRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupServer } from 'msw/node';
 import App from './App';
@@ -38,11 +37,9 @@ describe('App', () => {
   it('renders without crashing', () => {
     const store = createMockStore();
     render(
-      <MemoryRouter>
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </MemoryRouter>
+      <Provider store={store}>
+        <App />
+      </Provider>
     );
     expect(screen.getByRole('heading', { name: /Libris Maleficarum/i })).toBeInTheDocument();
   });
