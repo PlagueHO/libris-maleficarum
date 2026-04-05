@@ -1,7 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
-import { BrowserRouter } from 'react-router-dom'
 import { MsalProvider } from '@azure/msal-react'
 import { store } from './store/store'
 import { initializeTelemetry } from './lib/telemetry'
@@ -48,9 +47,7 @@ async function initializeApp() {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <Provider store={store}>
-        <BrowserRouter>
-          {appTree}
-        </BrowserRouter>
+        {appTree}
       </Provider>
     </StrictMode>,
   );

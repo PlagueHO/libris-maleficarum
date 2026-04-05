@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Routes, Route } from 'react-router-dom';
 import { TopToolbar } from './components/TopToolbar/TopToolbar'
 import { WorldSidebar } from './components/WorldSidebar/WorldSidebar'
 import { MainPanel } from './components/MainPanel/MainPanel'
@@ -13,7 +12,7 @@ import { WorldProvider } from './contexts'
 import { OptimisticDeleteProvider } from './components/WorldSidebar/OptimisticDeleteContext';
 import { selectHasPendingOperations } from './store/notificationSelectors';
 import { Toaster } from './components/ui/sonner';
-import { SettingsPage } from './components/SettingsPage';
+import { SettingsPanel } from './components/SettingsPage';
 import { AuthGuard } from './components/AuthGuard';
 import { logger } from './lib/logger';
 
@@ -23,6 +22,9 @@ function App() {
   
   // Track optimistically deleted entity IDs
   const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState<Set<string>>(new Set());
+  
+  // Settings panel visibility
+  const [settingsOpen, setSettingsOpen] = useState(false);
   
   // Track when we need to poll after a delete (for smart polling)
   const [shouldPollAfterDelete, setShouldPollAfterDelete] = useState(false);
@@ -141,27 +143,23 @@ function App() {
     <OptimisticDeleteProvider value={{ onOptimisticDelete: handleOptimisticDelete, onRollbackDelete: handleRollbackDelete }}>
       <Toaster position="bottom-right" />
       <div className="h-screen flex flex-col bg-background text-foreground">
-        <TopToolbar />
-        <Routes>
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="*" element={
-            <AuthGuard>
-              {/* WorldProvider wraps entire app tree; key ensures context resets when world changes */}
-              <WorldProvider
-                key={selectedWorldId || 'no-world-selected'}
-                initialWorldId={selectedWorldId || ''}
-                initialWorldName=""
-              >
-                <div className="flex-1 flex overflow-hidden">
-                  <WorldSidebar optimisticallyDeletedIds={optimisticallyDeletedIds} />
-                  <MainPanel />
-                  <ChatPanel />
-                </div>
-                <DeleteConfirmationModal />
-              </WorldProvider>
-            </AuthGuard>
-          } />
-        </Routes>
+        <TopToolbar onOpenSettings={() => setSettingsOpen(true)} />
+        <AuthGuard>
+          {/* WorldProvider wraps entire app tree; key ensures context resets when world changes */}
+          <WorldProvider
+            key={selectedWorldId || 'no-world-selected'}
+            initialWorldId={selectedWorldId || ''}
+            initialWorldName=""
+          >
+            <div className="flex-1 flex overflow-hidden">
+              <WorldSidebar optimisticallyDeletedIds={optimisticallyDeletedIds} />
+              <MainPanel />
+              <ChatPanel />
+            </div>
+            <DeleteConfirmationModal />
+          </WorldProvider>
+        </AuthGuard>
+        <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
     </OptimisticDeleteProvider>
   )
