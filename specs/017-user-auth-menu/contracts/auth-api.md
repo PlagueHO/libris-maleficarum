@@ -25,7 +25,7 @@
 
 When auth is not configured, inject synthetic claims on every request:
 
-```
+```text
 ClaimsIdentity("Anonymous"):
   - Claim: "http://schemas.microsoft.com/identity/claims/objectidentifier" = "_anonymous"
   - Claim: "scp" = "access_as_user"
@@ -80,7 +80,7 @@ export const loginRequest: { scopes: string[] };  // ['api://libris-maleficarum-
 
 ### Conditional MSAL Provider (main.tsx)
 
-```
+```text
 If isAuthConfigured:
   Initialize msalInstance → wrap <App /> in <MsalProvider>
 Else:
