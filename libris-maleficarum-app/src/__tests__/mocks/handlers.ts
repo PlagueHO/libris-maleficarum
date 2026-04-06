@@ -164,16 +164,7 @@ seedMockData();
 // Detect environment to determine base URL
 // In Node (tests), we need absolute URLs (http://localhost:5000) for MSW to match requests
 // In Browser (dev), we need relative URLS (or match current origin) for MSW to intercept fetch
-let isNode = false;
-try {
-  // Use 'process' directly rather than 'globalThis.process' because in Vitest's jsdom
-  // environment, globalThis is the jsdom window object which does not have 'process'.
-  // The bare 'process' global is always available in Node.js worker threads.
-  isNode = typeof process !== 'undefined' && !!process.versions?.node;
-} catch {
-  // ignore
-}
-const baseUrl = isNode ? 'http://localhost:5000' : '';
+const baseUrl = import.meta.env.MODE === 'test' ? 'http://localhost:5000' : '';
 
 /**
  * MSW HTTP handlers for World API
