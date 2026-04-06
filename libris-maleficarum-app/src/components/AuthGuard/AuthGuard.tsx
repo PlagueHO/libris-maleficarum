@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
-import { isAuthConfigured } from '@/auth/authConfig';
+import { useIsAuthenticated, useMsal } from '@azure/msal-react';
+import { isAuthConfigured, loginRequest } from '@/auth/authConfig';
+import { LogIn } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -16,8 +19,43 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return <>{children}</>;
   }
 
-  // Multi-user mode: check MSAL authentication state
-  // This will be enhanced in Phase 8 with useIsAuthenticated() from @azure/msal-react
-  // For now, render children (auth check will be added when MsalProvider is active)
-  return <>{children}</>;
+  // Multi-user mode: gate behind MSAL authentication
+  return <AuthenticatedGuard>{children}</AuthenticatedGuard>;
+}
+
+/**
+ * Inner component that uses MSAL hooks (requires MsalProvider ancestor).
+ */
+function AuthenticatedGuard({ children }: { children: ReactNode }) {
+  const isAuthenticated = useIsAuthenticated();
+  const { instance } = useMsal();
+
+  if (isAuthenticated) {
+    return <>{children}</>;
+  }
+
+  const handleSignIn = async () => {
+    try {
+      await instance.loginPopup(loginRequest);
+    } catch (error) {
+      console.error('Sign-in failed:', error);
+    }
+  };
+
+  return (
+    <div
+      role="alert"
+      className="flex flex-col items-center justify-center gap-4 p-8 text-center"
+    >
+      <LogIn className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
+      <h2 className="text-lg font-semibold">Sign in to continue</h2>
+      <p className="text-sm text-muted-foreground">
+        You need to sign in with your Entra ID account to access this content.
+      </p>
+      <Button onClick={() => void handleSignIn()}>
+        <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
+        Sign in
+      </Button>
+    </div>
+  );
 }

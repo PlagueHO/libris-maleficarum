@@ -194,7 +194,8 @@ public class WorldEntity
             ModifiedDate = DateTime.UtcNow,
             IsDeleted = false,
             SchemaVersion = schemaVersion,
-            CreatedBy = ownerId
+            CreatedBy = ownerId,
+            ModifiedBy = ownerId
         };
 
         entity.Validate();

@@ -35,6 +35,11 @@ async function initializeApp() {
     }
   }
 
+  // Initialize MSAL before rendering when auth is configured
+  if (isAuthConfigured) {
+    await msalInstance.initialize();
+  }
+
   // Render the app after MSW is ready
   const appTree = isAuthConfigured ? (
     <MsalProvider instance={msalInstance}>
