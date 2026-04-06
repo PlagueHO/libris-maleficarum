@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "13415780110047648794"
+      "templateHash": "7341815286277808393"
     }
   },
   "parameters": {
@@ -220,8 +220,8 @@
     "sendTologAnalyticsCustomSettingName": "[format('send-to-{0}', variables('logAnalyticsName'))]",
     "applicationInsightsName": "[format('{0}{1}', variables('abbrs').insightsComponents, parameters('environmentName'))]",
     "virtualNetworkName": "[format('{0}{1}', variables('abbrs').networkVirtualNetworks, parameters('environmentName'))]",
-    "storageAccounName": "[toLower(replace(format('{0}{1}', variables('abbrs').storageStorageAccounts, parameters('environmentName')), '-', ''))]",
-    "keyVaultName": "[toLower(replace(format('{0}{1}', variables('abbrs').keyVaultVaults, parameters('environmentName')), '-', ''))]",
+    "storageAccounName": "[take(toLower(replace(format('{0}{1}', variables('abbrs').storageStorageAccounts, parameters('environmentName')), '-', '')), 24)]",
+    "keyVaultName": "[take(toLower(replace(format('{0}{1}', variables('abbrs').keyVaultVaults, parameters('environmentName')), '-', '')), 24)]",
     "cosmosDbAccountName": "[toLower(replace(format('{0}{1}', variables('abbrs').cosmosDBAccounts, parameters('environmentName')), '-', ''))]",
     "aiSearchName": "[format('{0}{1}', variables('abbrs').aiSearchSearchServices, parameters('environmentName'))]",
     "aiFoundryName": "[format('{0}{1}', variables('abbrs').aiServicesAccounts, parameters('environmentName'))]",
