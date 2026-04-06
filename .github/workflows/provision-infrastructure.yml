@@ -125,7 +125,7 @@ jobs:
       - name: Get Output Endpoints
         id: get_endpoints
         run: |
-          AZURE_RESOURCE_GROUP="rg-${{ inputs.AZURE_ENV_NAME }}"
+          AZURE_RESOURCE_GROUP="rg-${AZURE_ENV_NAME}"
           echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP" >> $GITHUB_OUTPUT
 
           # Get Static Web App name from the resource group
