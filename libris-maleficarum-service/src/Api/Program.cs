@@ -47,6 +47,9 @@ else
     builder.Services.AddAuthentication().AddJwtBearer();
 }
 
+// Register authorization services (required by UseAuthorization middleware)
+builder.Services.AddAuthorization();
+
 // Add custom application telemetry (meters, activity sources, and counters)
 // Must be called after AddServiceDefaults to ensure OpenTelemetry is configured
 builder.AddApplicationTelemetry();

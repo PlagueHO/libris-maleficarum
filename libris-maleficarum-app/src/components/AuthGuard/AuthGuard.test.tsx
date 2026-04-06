@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -8,9 +9,10 @@ expect.extend(toHaveNoViolations);
 // Mock the auth config module
 vi.mock('@/auth/authConfig', () => ({
   isAuthConfigured: false,
+  loginRequest: { scopes: ['api://libris-maleficarum-api/access_as_user'] },
 }));
 
-function renderAuthGuard(children: React.ReactNode = <div>Protected content</div>) {
+function renderAuthGuard(children: ReactNode = <div>Protected content</div>) {
   return render(
     <AuthGuard>{children}</AuthGuard>
   );

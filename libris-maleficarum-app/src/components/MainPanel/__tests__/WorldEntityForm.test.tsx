@@ -44,8 +44,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should render DynamicPropertiesForm when entityType is GeographicRegion', async () => {
       const user = userEvent.setup();
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       await openCreateForm(user);
 
@@ -75,8 +77,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it.skip('should update custom properties when fields change', async () => {
       const user = userEvent.setup();
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       await openCreateForm(user);
 
@@ -132,8 +136,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should render DynamicPropertiesForm when entityType is PoliticalRegion', async () => {
       const user = userEvent.setup();
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       await openCreateForm(user);
 
@@ -160,8 +166,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should handle MemberStates TagInput correctly', async () => {
       const user = userEvent.setup();
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       await openCreateForm(user);
 
@@ -196,8 +204,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should handle free-form EstablishedDate field', async () => {
       const user = userEvent.setup();
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       await openCreateForm(user);
 
@@ -256,8 +266,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       await openCreateForm(user);
 
@@ -344,8 +356,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       await openCreateForm(user);
 
@@ -435,8 +449,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       // Select world
       const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
@@ -516,8 +532,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       // Select world
       const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
@@ -597,8 +615,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       );
 
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       // Select world
       const worldTrigger = await screen.findByRole('combobox', { name: /choose a realm/i });
@@ -633,8 +653,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should allow creating Character directly under World root (bypassing People container)', async () => {
       const user = userEvent.setup();
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       await openCreateForm(user);
 
@@ -675,8 +697,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     it('should allow selecting Quest type when parent is Continent (unconventional pairing)', async () => {
       const user = userEvent.setup();
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       await openCreateForm(user);
 
@@ -711,8 +735,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       const user = userEvent.setup();
 
       render(
-      <Provider store={store}>\n        <App />\n      </Provider>
-    );
+        <Provider store={store}>
+          <App />
+        </Provider>
+      );
 
       await openCreateForm(user);
 

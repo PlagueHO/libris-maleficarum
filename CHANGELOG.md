@@ -13,13 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Anonymous Mode**: Zero-config single-user mode using `_anonymous` identity; no Entra ID setup required
   - **Multi-User Mode**: Entra ID authentication via MSAL with popup sign-in/sign-out and JWT bearer tokens
   - **User Menu Dropdown**: Accessible dropdown in header toolbar with identity display, settings link, and mode-appropriate sign-in/sign-out actions
-  - **Settings Page**: `/settings` route with theme toggle and accessible layout
+  - **Settings Panel**: Settings overlay panel with theme toggle and accessible layout
   - **AuthGuard Component**: Conditionally gates data pages behind authentication in multi-user mode
   - **Backend Auth Detection**: API auto-detects auth mode from `AzureAd:ClientId` configuration, applies JWT validation or anonymous middleware
   - **Identity Propagation**: `CreatedBy`/`ModifiedBy` fields on WorldEntity records, UserContextService reads identity from HTTP context claims
   - **Bearer Token Interceptor**: Axios request interceptor acquires MSAL tokens silently for authenticated API calls
   - **Aspire AppHost Config**: Optional Entra ID environment variable propagation to API and frontend services
-  - **Accessibility**: All new components jest-axe tested, keyboard navigable, WCAG 2.2 Level AA compliant
+  - **Accessibility**: All new components jest-axe tested with 0 violations, keyboard navigable, built with accessibility in mind
 - **Edit World Entity**: Complete editing workflow with three user stories:
   - **US1 - Edit from Hierarchy**: Click edit icon in EntityTreeNode to quickly modify entity properties
   - **US2 - Edit from Detail View**: Edit button in EntityDetailReadOnlyView transitions to WorldEntityForm in edit mode  

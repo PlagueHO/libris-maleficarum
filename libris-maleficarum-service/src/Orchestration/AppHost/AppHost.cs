@@ -119,7 +119,7 @@ if (!string.IsNullOrEmpty(entraClientId))
     apiService
         .WithEnvironment("AzureAd__ClientId", entraClientId)
         .WithEnvironment("AzureAd__TenantId", entraTenantId ?? "common")
-        .WithEnvironment("AzureAd__Audience", entraAudience ?? $"api://{entraClientId}");
+        .WithEnvironment("AzureAd__Audience", entraAudience ?? "api://libris-maleficarum-api");
 }
 
 // Add the Search Index Worker service (Change Feed Processor for AI Search sync)

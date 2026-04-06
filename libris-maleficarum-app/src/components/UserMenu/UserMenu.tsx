@@ -111,11 +111,19 @@ function AnonymousUserMenu({ onOpenSettings }: { onOpenSettings: () => void }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Anonymous</DropdownMenuLabel>
+        <DropdownMenuLabel>Anonymous Mode</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <div className="px-2 py-1.5 text-xs text-muted-foreground">
+          Entra ID is not configured. Running in single-user mode.
+        </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={onOpenSettings}>
           <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
           Settings
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled>
+          <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
+          Sign in
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
