@@ -166,9 +166,10 @@ seedMockData();
 // In Browser (dev), we need relative URLS (or match current origin) for MSW to intercept fetch
 let isNode = false;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const globalAny = globalThis as any;
-  isNode = typeof globalAny.process !== 'undefined' && !!globalAny.process.versions && !!globalAny.process.versions.node;
+  // Use 'process' directly rather than 'globalThis.process' because in Vitest's jsdom
+  // environment, globalThis is the jsdom window object which does not have 'process'.
+  // The bare 'process' global is always available in Node.js worker threads.
+  isNode = typeof process !== 'undefined' && !!process.versions?.node;
 } catch {
   // ignore
 }

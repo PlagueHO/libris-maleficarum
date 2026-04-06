@@ -3,6 +3,10 @@ name: Smoke Test
 on:
   workflow_call:
     inputs:
+      AZURE_CONTAINER_APP_FQDN:
+        description: "The FQDN of the deployed Azure Container App (optional, enables backend tests)"
+        required: false
+        type: string
       AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME:
         description: "The default hostname of the deployed Azure Static Web App"
         required: true
@@ -28,9 +32,16 @@ jobs:
       - name: Run Smoke Tests
         shell: pwsh
         run: |
-          $container = New-PesterContainer -Path 'tests/smoke/Smoke.Tests.ps1' -Data @{
+          $data = @{
             FrontendBaseUrl = 'https://${{ inputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}'
           }
+
+          $apiFqdn = '${{ inputs.AZURE_CONTAINER_APP_FQDN }}'
+          if ($apiFqdn) {
+            $data['ApiBaseUrl'] = "https://$apiFqdn"
+          }
+
+          $container = New-PesterContainer -Path 'tests/smoke/Smoke.Tests.ps1' -Data $data
 
           $config = New-PesterConfiguration
           $config.Run.Container = $container

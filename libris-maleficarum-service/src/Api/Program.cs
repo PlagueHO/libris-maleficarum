@@ -1,6 +1,7 @@
 using FluentValidation;
 using LibrisMaleficarum.Api.BackgroundServices;
 using LibrisMaleficarum.Api.Filters;
+using LibrisMaleficarum.Api.HealthChecks;
 using LibrisMaleficarum.Api.Middleware;
 using LibrisMaleficarum.Api.Validators;
 using LibrisMaleficarum.Domain.Configuration;
@@ -17,6 +18,7 @@ using System.Diagnostics.Metrics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Azure.AI.OpenAI;
+using Azure.Identity;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Azure.Cosmos;
@@ -69,7 +71,18 @@ builder.Services.Configure<AppSearchOptions>(
 // Configure DbContext with Cosmos DB via Aspire EF Core Cosmos client integration
 // Registers ApplicationDbContext using the "cosmosdb" connection from AppHost
 // Aspire handles connection string parsing, health checks, logging, tracing, and metrics
+//
+// Use ManagedIdentityCredential directly in deployed environments to avoid
+// DefaultAzureCredential's permanent credential-unavailability caching.
+// See: https://learn.microsoft.com/azure/container-apps/managed-identity?tabs=portal,dotnet
 builder.AddCosmosDbContext<ApplicationDbContext>("cosmosdb", "LibrisMaleficarum",
+    configureSettings: settings =>
+    {
+        if (!builder.Environment.IsDevelopment())
+        {
+            settings.Credential = new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned);
+        }
+    },
     configureDbContextOptions: options =>
         options.UseCosmos(cosmosOptions =>
         {
@@ -130,6 +143,18 @@ builder.AddAzureBlobServiceClient("blobs");
 
 // Register Azure Blob Storage service
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+
+// Register health checks for the /health diagnostic endpoint.
+builder.Services.AddHealthChecks()
+    .AddCheck<CosmosDbHealthCheck>("cosmosdb")
+    .AddCheck<AiSearchHealthCheck>("ai-search")
+    .AddCheck<EmbeddingsHealthCheck>("embeddings");
+
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHealthChecks()
+        .AddCheck<ManagedIdentityHealthCheck>("managed-identity");
+}
 
 // Register background services
 builder.Services.AddHostedService<DeleteOperationProcessor>();

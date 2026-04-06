@@ -66,12 +66,12 @@ const world2Handler = http.get('http://localhost:5000/api/v1/worlds/world-2/enti
 });
 
 // Error handler for world-error (returns 500)
-const worldErrorHandler = http.get('http://localhost:5000/api/worlds/world-error/entities', () => {
+const worldErrorHandler = http.get('http://localhost:5000/api/v1/worlds/world-error/entities', () => {
   return new HttpResponse(null, { status: 500, statusText: 'Internal Server Error' });
 });
 
 // Error handler for world-network-error (returns network error)
-const worldNetworkErrorHandler = http.get('http://localhost:5000/api/worlds/world-network-error/entities', () => {
+const worldNetworkErrorHandler = http.get('http://localhost:5000/api/v1/worlds/world-network-error/entities', () => {
   return HttpResponse.error();
 });
 
