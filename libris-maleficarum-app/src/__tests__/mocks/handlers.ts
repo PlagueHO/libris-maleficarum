@@ -782,4 +782,13 @@ export const asyncOperationsHandlers = [
 /**
  * All MSW handlers (World + WorldEntity + AsyncOperations)
  */
-export const handlers = [...worldHandlers, ...worldEntityHandlers, ...asyncOperationsHandlers];
+/**
+ * Config API handlers
+ */
+const configHandlers = [
+  http.get(`${baseUrl}/api/config/access-status`, () => {
+    return HttpResponse.json({ accessCodeRequired: false });
+  }),
+];
+
+export const handlers = [...worldHandlers, ...worldEntityHandlers, ...asyncOperationsHandlers, ...configHandlers];

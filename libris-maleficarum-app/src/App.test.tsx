@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 /// <reference types="@testing-library/jest-dom" />
 
-import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, afterAll, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -11,6 +11,17 @@ import { api } from '@/services/api';
 import worldSidebarReducer from '@/store/worldSidebarSlice';
 import notificationsReducer from '@/store/notificationsSlice';
 import { handlers } from '@/__tests__/mocks/handlers';
+
+// Mock useAccessCode to always return verified
+vi.mock('./hooks/useAccessCode', () => ({
+  useAccessCode: () => ({
+    accessCodeRequired: false,
+    isVerified: true,
+    isLoading: false,
+    error: null,
+    submitCode: vi.fn(),
+  }),
+}));
 
 // Setup MSW server
 const server = setupServer(...handlers);

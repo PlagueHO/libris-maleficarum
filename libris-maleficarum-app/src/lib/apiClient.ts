@@ -13,6 +13,25 @@ import { logger } from './logger';
 import { isAuthConfigured, msalInstance, loginRequest } from '@/auth/authConfig';
 
 /**
+ * Module-scoped access code for X-Access-Code header injection.
+ */
+let currentAccessCode: string | null = null;
+
+/**
+ * Set the access code to be included in all API requests.
+ */
+export function setAccessCode(code: string | null): void {
+  currentAccessCode = code;
+}
+
+/**
+ * Get the currently configured access code.
+ */
+export function getAccessCode(): string | null {
+  return currentAccessCode;
+}
+
+/**
  * Base URL for API requests
  *
  * Priority:
@@ -103,6 +122,11 @@ axiosRetry(apiClient, {
 // Add request interceptor for logging outgoing API calls
 apiClient.interceptors.request.use(
   async (config) => {
+    // Attach access code header when configured
+    if (currentAccessCode) {
+      config.headers['X-Access-Code'] = currentAccessCode;
+    }
+
     // Attach bearer token when multi-user auth is configured
     if (isAuthConfigured) {
       const accounts = msalInstance.getAllAccounts();

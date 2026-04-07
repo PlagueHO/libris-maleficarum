@@ -437,3 +437,6 @@ temp/
 .pnpm/
 **/.pnpm/
 .pnpm-store/
+
+# C# DevKit
+*.lscache

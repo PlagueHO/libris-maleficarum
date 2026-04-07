@@ -45,6 +45,10 @@ param principalId string = ''
 ])
 param principalIdType string = 'User'
 
+@secure()
+@description('Optional access code for protecting the API in single-user mode. When empty, no access code protection is applied.')
+param accessCode string = ''
+
 var abbrs = loadJsonContent('./abbreviations.json')
 
 // tags that should be applied to all resources.

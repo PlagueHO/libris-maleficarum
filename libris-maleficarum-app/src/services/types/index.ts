@@ -19,6 +19,9 @@ export {
   isValidationProblemDetails,
 } from './problemDetails.types';
 
+// Access control types
+export type { AccessControlStatus } from './accessControl.types';
+
 // World entity types
 export type {
   World,

@@ -78,6 +78,16 @@ export default defineConfig({
               // Keep /api/v1 prefix - backend expects it
               rewrite: (path) => path,
             },
+            '/api/config': {
+              target:
+                process.env.services__api__http__0 ||
+                process.env.services__api__https__0 ||
+                process.env.VITE_API_BASE_URL ||
+                'http://localhost:5077',
+              changeOrigin: true,
+              secure: false,
+              rewrite: (path) => path,
+            },
           },
   },
 })

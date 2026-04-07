@@ -46,6 +46,9 @@ on:
       AZURE_CLIENT_ID:
         description: "The Azure client ID to use for authentication to Azure for deployment"
         required: true
+      ACCESS_CODE:
+        description: "Optional access code for API protection in single-user mode"
+        required: false
 
 jobs:
   provision-infrastructure:
@@ -110,6 +113,9 @@ jobs:
           azd env set AZURE_RESOURCE_GROUP "rg-${AZURE_ENV_NAME}"
           if [ -n "$AZURE_STATIC_WEB_APP_LOCATION" ]; then
             azd env set AZURE_STATIC_WEB_APP_LOCATION "$AZURE_STATIC_WEB_APP_LOCATION"
+          fi
+          if [ -n "${{ secrets.ACCESS_CODE }}" ]; then
+            azd env set ACCESS_CODE "${{ secrets.ACCESS_CODE }}"
           fi
       - name: Provision Infrastructure using Azure Developer CLI
         id: provision

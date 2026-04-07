@@ -103,6 +103,58 @@ pnpm dev
 | `dotnet test --filter TestCategory=Unit` | Run unit tests only |
 | `dotnet test --filter TestCategory=Integration` | Run integration tests only |
 
+## Authentication and Access Control
+
+The application supports two authentication modes and an optional access code gate. These can be used independently or together.
+
+### Single-user mode (default)
+
+When no Entra ID configuration is provided, the API runs in **single-user anonymous mode**. All requests are treated as a single anonymous user. No sign-in or bearer token is required. This is the default for local development.
+
+### Multi-user mode (Entra ID)
+
+When `AzureAd:ClientId` is configured, the API enables **Microsoft Entra ID** JWT bearer authentication. Users must sign in via MSAL and provide a valid bearer token with each request.
+
+Configure the backend in `appsettings.json`:
+
+```json
+{
+  "AzureAd": {
+    "Instance": "https://login.microsoftonline.com/",
+    "TenantId": "<your-tenant-id>",
+    "ClientId": "<your-client-id>",
+    "Audience": "<your-audience>",
+    "Scopes": "access_as_user"
+  }
+}
+```
+
+The frontend reads `ENTRA_CLIENT_ID` and `ENTRA_TENANT_ID` environment variables (injected by Aspire or set manually) to configure MSAL for interactive sign-in.
+
+### Access code gate (optional)
+
+The access code is an optional shared secret that protects all API endpoints. It works in both single-user and multi-user modes. When enabled, every request must include an `X-Access-Code` header. The frontend shows a dialog prompting for the code before allowing access.
+
+Set the access code via environment variable or configuration:
+
+```powershell
+# Environment variable (recommended)
+$env:ACCESS_CODE = "your-secret-code"
+```
+
+```json
+// appsettings.Development.json (local dev only — do not commit secrets)
+{
+  "AccessControl": {
+    "AccessCode": "your-secret-code"
+  }
+}
+```
+
+To disable, leave `AccessCode` empty or omit `ACCESS_CODE`. When no access code is configured, all requests pass through without restriction.
+
+For Azure deployments, set the `ACCESS_CODE` secret in your GitHub repository settings. The CI/CD workflows pass it through to the infrastructure automatically.
+
 ## Deploy to Azure
 
 This project uses the [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/overview) to provision infrastructure and deploy the application.

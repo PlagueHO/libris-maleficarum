@@ -15,10 +15,16 @@ import { Toaster } from './components/ui/sonner';
 import { SettingsPanel } from './components/SettingsPage';
 import { AuthGuard } from './components/AuthGuard';
 import { logger } from './lib/logger';
+import { useAccessCode } from './hooks/useAccessCode';
+import { AccessCodeDialog } from './components/shared/AccessCodeDialog';
+import { Loader2 } from 'lucide-react';
 
 function App() {
   const dispatch = useAppDispatch();
   const selectedWorldId = useAppSelector(selectSelectedWorldId);
+
+  // Access code gate
+  const { accessCodeRequired, isVerified, isLoading: accessCodeLoading, error: accessCodeError, submitCode } = useAccessCode();
   
   // Track optimistically deleted entity IDs
   const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState<Set<string>>(new Set());
@@ -139,6 +145,28 @@ function App() {
     }
   );
   
+  // Access code loading spinner (only while checking status, not during code submission)
+  if (accessCodeLoading && !accessCodeRequired) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background" role="status">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <span className="sr-only">Loading...</span>
+      </div>
+    );
+  }
+
+  // Access code dialog gate
+  if (accessCodeRequired && !isVerified) {
+    return (
+      <AccessCodeDialog
+        open={true}
+        onSubmit={submitCode}
+        isLoading={accessCodeLoading}
+        error={accessCodeError}
+      />
+    );
+  }
+
   return (
     <OptimisticDeleteProvider value={{ onOptimisticDelete: handleOptimisticDelete, onRollbackDelete: handleRollbackDelete }}>
       <Toaster position="bottom-right" />

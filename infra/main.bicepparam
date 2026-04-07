@@ -13,3 +13,6 @@ param createBastionHost = bool(readEnvironmentVariable('AZURE_CREATE_BASTION_HOS
 // Static Web App location override (must be one of: centralus, eastasia, eastus2, westeurope, westus2)
 // Leave empty to use the primary location.
 param staticWebAppLocation = toLower(readEnvironmentVariable('AZURE_STATIC_WEB_APP_LOCATION', ''))
+
+// Optional access code for API protection in single-user mode
+param accessCode = readEnvironmentVariable('ACCESS_CODE', '')

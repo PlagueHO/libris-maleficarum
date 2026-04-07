@@ -27,6 +27,12 @@ using AppSearchOptions = LibrisMaleficarum.Infrastructure.Configuration.SearchOp
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Map ACCESS_CODE environment variable to AccessControl:AccessCode configuration key
+builder.Configuration.AddInMemoryCollection(
+    string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ACCESS_CODE"))
+        ? []
+        : [new KeyValuePair<string, string?>("AccessControl:AccessCode", Environment.GetEnvironmentVariable("ACCESS_CODE"))]);
+
 // Add Aspire service defaults (OpenTelemetry, health checks, resilience, service discovery)
 builder.AddServiceDefaults();
 
@@ -63,6 +69,10 @@ builder.Services.Configure<EntitySchemaVersionConfig>(
 // Configure delete operation options
 builder.Services.Configure<DeleteOperationOptions>(
     builder.Configuration.GetSection(DeleteOperationOptions.SectionName));
+
+// Configure access control options
+builder.Services.Configure<AccessControlOptions>(
+    builder.Configuration.GetSection(AccessControlOptions.SectionName));
 
 // Configure search options
 builder.Services.Configure<AppSearchOptions>(
@@ -242,6 +252,9 @@ if (!app.Environment.IsDevelopment())
 // Enable CORS (must be before Authorization)
 app.UseCors();
 
+// Access code protection (after CORS, before authentication)
+app.UseMiddleware<AccessCodeMiddleware>();
+
 // Authentication and authorization pipeline
 app.UseAuthentication();
 
@@ -266,6 +279,17 @@ if (isMultiUserMode)
 else
 {
     app.Logger.LogWarning("Authentication mode: Single-user anonymous (no AzureAd:ClientId configured)");
+}
+
+// Log access control status at startup
+var accessCode = builder.Configuration["AccessControl:AccessCode"];
+if (!string.IsNullOrEmpty(accessCode))
+{
+    app.Logger.LogInformation("Access control: Enabled (access code configured)");
+}
+else
+{
+    app.Logger.LogInformation("Access control: Disabled (no access code configured)");
 }
 
 app.Run();
