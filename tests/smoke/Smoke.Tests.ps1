@@ -3,7 +3,10 @@ param(
     [string]$ApiBaseUrl,
 
     [Parameter(Mandatory)]
-    [string]$FrontendBaseUrl
+    [string]$FrontendBaseUrl,
+
+    [Parameter()]
+    [string]$AccessCode = ''
 )
 
 if ($ApiBaseUrl) {
@@ -47,12 +50,14 @@ if ($ApiBaseUrl) {
             $statusRetries = 20
             $statusDelay = 10
             $statusHealthy = $false
+            $statusHeaders = @{}
+            if ($AccessCode) { $statusHeaders['X-Access-Code'] = $AccessCode }
 
             for ($i = 1; $i -le $statusRetries; $i++) {
                 $timestamp = Get-Date -Format 'HH:mm:ss'
                 try {
                     # Use -SkipHttpErrorCheck so we can read 503 response body for diagnostics
-                    $response = Invoke-WebRequest -Uri "$ApiBaseUrl/api/status" -UseBasicParsing -TimeoutSec 30 -SkipHttpErrorCheck
+                    $response = Invoke-WebRequest -Uri "$ApiBaseUrl/api/status" -UseBasicParsing -TimeoutSec 30 -SkipHttpErrorCheck -Headers $statusHeaders
                     $status = $response.Content | ConvertFrom-Json
 
                     $miStatus = $status.managedIdentity.status
@@ -98,7 +103,9 @@ if ($ApiBaseUrl) {
         }
 
         It 'Status endpoint reports all dependencies healthy' {
-            $response = Invoke-WebRequest -Uri "$ApiBaseUrl/api/status" -UseBasicParsing -TimeoutSec 30
+            $headers = @{}
+            if ($AccessCode) { $headers['X-Access-Code'] = $AccessCode }
+            $response = Invoke-WebRequest -Uri "$ApiBaseUrl/api/status" -UseBasicParsing -TimeoutSec 30 -Headers $headers
             $response.StatusCode | Should -Be 200
 
             $status = $response.Content | ConvertFrom-Json

@@ -92,6 +92,8 @@ jobs:
       contents: read
     with:
       AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ needs.provision-infrastructure.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
+    secrets:
+      ACCESS_CODE: ${{ secrets.ACCESS_CODE }}
 
   delete-infrastructure:
     needs: [provision-infrastructure, smoke-test]
