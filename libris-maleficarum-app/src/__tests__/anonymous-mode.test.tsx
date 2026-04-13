@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 /// <reference types="@testing-library/jest-dom" />
 
-import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, afterAll, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -15,6 +15,17 @@ import notificationsReducer from '@/store/notificationsSlice';
 import { handlers } from '@/__tests__/mocks/handlers';
 
 expect.extend(toHaveNoViolations);
+
+// Mock useAccessCode to bypass the loading state so the app renders immediately
+vi.mock('@/hooks/useAccessCode', () => ({
+  useAccessCode: () => ({
+    accessCodeRequired: false,
+    isVerified: true,
+    isLoading: false,
+    error: null,
+    submitCode: vi.fn(),
+  }),
+}));
 
 const server = setupServer(...handlers);
 
