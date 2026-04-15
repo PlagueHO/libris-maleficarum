@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['node_modules', 'dist', 'build', 'coverage', '**/*.min.js']),
+  globalIgnores(['node_modules', 'dist', 'build', 'coverage', '**/*.min.js', 'public/mockServiceWorker.js']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
