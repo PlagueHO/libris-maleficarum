@@ -87,7 +87,7 @@ jobs:
           version: latest
 
       - name: Install Azure Developer CLI
-        uses: Azure/setup-azd@v2.2.1
+        uses: Azure/setup-azd@v2.3.0
 
       - name: Authenticate Azure Developer CLI (Federated Credentials)
         run: |
