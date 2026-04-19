@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@azure/msal-browser':
-        specifier: ^5.6.3
-        version: 5.6.3
+        specifier: ^5.7.0
+        version: 5.7.0
       '@azure/msal-react':
         specifier: ^5.2.1
-        version: 5.2.1(@azure/msal-browser@5.6.3)(react@19.2.5)
+        version: 5.2.1(@azure/msal-browser@5.7.0)(react@19.2.5)
       '@opentelemetry/api':
         specifier: ^1.9.1
         version: 1.9.1
@@ -209,12 +209,12 @@ packages:
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
 
-  '@azure/msal-browser@5.6.3':
-    resolution: {integrity: sha512-sTjMtUm+bJpENU/1WlRzHEsgEHppZDZ1EtNyaOODg/sQBtMxxJzGB+MOCM+T2Q5Qe1fKBrdxUmjyRxm0r7Ez9w==}
+  '@azure/msal-browser@5.7.0':
+    resolution: {integrity: sha512-uYbJ0YarxkVGWEq814BysJry/IPvpDNkVKmc2bMZp4G+igUQkJ5nlFirycwPGUeA9ICLQqCxqExCA1Z1E07bPA==}
     engines: {node: '>=0.8.0'}
 
-  '@azure/msal-common@16.4.1':
-    resolution: {integrity: sha512-Bl8f+w37xkXsYh7QRkAKCFGYtWMYuOVO7Lv+BxILrvGz3HbIEF22Pt0ugyj0QPOl6NLrHcnNUQ9yeew98P/5iw==}
+  '@azure/msal-common@16.5.0':
+    resolution: {integrity: sha512-i3eS/5pmxDbIU/mLMENs88Qg3k6XxqJytJy6PpB7L1tCBjdXHJDadCD3Hu1TyTooe7iQo7CYqbocgL/l/8u90g==}
     engines: {node: '>=0.8.0'}
 
   '@azure/msal-react@5.2.1':
@@ -3324,15 +3324,15 @@ snapshots:
 
   '@asamuzakjp/nwsapi@2.3.9': {}
 
-  '@azure/msal-browser@5.6.3':
+  '@azure/msal-browser@5.7.0':
     dependencies:
-      '@azure/msal-common': 16.4.1
+      '@azure/msal-common': 16.5.0
 
-  '@azure/msal-common@16.4.1': {}
+  '@azure/msal-common@16.5.0': {}
 
-  '@azure/msal-react@5.2.1(@azure/msal-browser@5.6.3)(react@19.2.5)':
+  '@azure/msal-react@5.2.1(@azure/msal-browser@5.7.0)(react@19.2.5)':
     dependencies:
-      '@azure/msal-browser': 5.6.3
+      '@azure/msal-browser': 5.7.0
       react: 19.2.5
 
   '@babel/code-frame@7.27.1':
