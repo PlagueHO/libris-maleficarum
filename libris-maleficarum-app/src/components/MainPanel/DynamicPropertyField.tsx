@@ -139,6 +139,7 @@ export function DynamicPropertyField({
       // Format numeric values for display
       if (typeof value === 'number') {
         const decimals = schema.type === 'decimal' ? 2 : 0;
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronizing local display value with external prop change
         setLocalValue(formatNumericDisplay(value, decimals));
       } else {
         setLocalValue('');

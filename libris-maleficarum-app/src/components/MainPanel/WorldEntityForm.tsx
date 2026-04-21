@@ -82,6 +82,7 @@ export function EntityDetailForm() {
   useEffect(() => {
     if (isEditing && existingEntity) {
       // Populate on edit mode
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronizing form state with entity data on edit
       setName(existingEntity.name);
       setDescription(existingEntity.description || '');
       setEntityType(existingEntity.entityType);
@@ -122,6 +123,7 @@ export function EntityDetailForm() {
     ];
     
     if (!propertyTypes.includes(entityType as WorldEntityType)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Clearing derived state when entity type changes
       setCustomProperties(null);
     }
   }, [entityType]);

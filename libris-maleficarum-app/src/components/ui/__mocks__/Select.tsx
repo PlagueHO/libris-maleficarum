@@ -36,10 +36,11 @@ function Select({
 }) {
   const [open, setOpen] = React.useState(false);
   const [internalValue, setInternalValue] = React.useState(value);
-
-  React.useEffect(() => {
+  const [prevPropValue, setPrevPropValue] = React.useState(value);
+  if (prevPropValue !== value) {
+    setPrevPropValue(value);
     setInternalValue(value);
-  }, [value]);
+  }
 
   const handleValueChange = (newValue: string) => {
     setInternalValue(newValue);

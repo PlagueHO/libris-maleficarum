@@ -52,7 +52,6 @@ export function EntityTree({ optimisticallyDeletedIds }: { optimisticallyDeleted
           entities.push({ id: entityId } as WorldEntity);
         }
       });
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronizing state with DOM tree structure
       setFlattenedEntities(entities);
     }
   }, [expandedNodeIds, selectedWorldId]);
