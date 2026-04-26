@@ -5,7 +5,7 @@ targetScope = 'subscription'
 // see https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/make-azd-compatible?pivots=azd-create
 
 @minLength(1)
-@maxLength(64)
+@maxLength(16)
 @description('Name of the the environment which is used to generate a short unique hash used in all resources.')
 param environmentName string
 
@@ -81,7 +81,7 @@ var aiFoundryCustomSubDomainName = toLower(replace(environmentName, '-', ''))
 var staticSiteName = toLower(replace('${abbrs.webStaticSites}${environmentName}', '-', ''))
 var bastionHostName = '${abbrs.networkBastionHosts}${environmentName}'
 var containerAppsEnvironmentName = '${abbrs.appManagedEnvironments}${environmentName}'
-var containerAppName = '${abbrs.appContainerApps}${environmentName}-api'
+var containerAppName = take('${abbrs.appContainerApps}${environmentName}-api', 32)
 
 var subnets = [  {
     // Container Apps subnet for backend API services (requires /23 minimum)

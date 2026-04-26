@@ -66,6 +66,26 @@ jobs:
             echo "Resource group '${RESOURCE_GROUP}' does not exist or was already deleted."
           fi
 
+          # Purge any soft-deleted Key Vault resources that were in the resource group.
+          # These block future deployments with the same name if not purged.
+          echo "Checking for soft-deleted Key Vaults to purge..."
+          DELETED_VAULTS=$(az keyvault list-deleted \
+            --subscription "$AZURE_SUBSCRIPTION_ID" \
+            --query "[?contains(properties.vaultId, '${RESOURCE_GROUP}')]" -o json 2>/dev/null || echo "[]")
+
+          if [ "$DELETED_VAULTS" != "[]" ] && [ -n "$DELETED_VAULTS" ]; then
+            echo "$DELETED_VAULTS" | jq -c '.[]' | while read -r vault; do
+              VAULT_NAME=$(echo "$vault" | jq -r '.name')
+              VAULT_LOCATION=$(echo "$vault" | jq -r '.properties.location')
+              echo "Purging soft-deleted Key Vault: $VAULT_NAME (location: $VAULT_LOCATION)"
+              az keyvault purge \
+                --name "$VAULT_NAME" \
+                --location "$VAULT_LOCATION" || true
+            done
+          else
+            echo "No soft-deleted Key Vaults found to purge."
+          fi
+
           # Purge any soft-deleted Cognitive Services resources that were in the resource group.
           # These block future deployments with the same name if not purged.
           echo "Checking for soft-deleted Cognitive Services resources to purge..."
