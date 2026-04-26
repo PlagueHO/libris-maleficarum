@@ -3,6 +3,10 @@ name: Smoke Test
 on:
   workflow_call:
     inputs:
+      ENVIRONMENT:
+        description: "The GitHub environment to use for accessing secrets"
+        required: true
+        type: string
       AZURE_CONTAINER_APP_FQDN:
         description: "The FQDN of the deployed Azure Container App (optional, enables backend tests)"
         required: false
@@ -12,17 +16,28 @@ on:
         required: true
         type: string
     secrets:
+      AZURE_TENANT_ID:
+        description: "The Azure tenant ID for CLI authentication"
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        description: "The Azure subscription ID for CLI authentication"
+        required: true
+      AZURE_CLIENT_ID:
+        description: "The Azure client ID for CLI authentication"
+        required: true
       ACCESS_CODE:
-        description: "Optional access code for API protection in single-user mode"
+        description: "Optional: The access code for secured API endpoints (if configured)"
         required: false
 
 jobs:
   smoke-test:
     name: Smoke Test
     runs-on: ubuntu-latest
+    environment: ${{ inputs.ENVIRONMENT }}
     permissions:
       checks: write
       contents: read
+      id-token: write
 
     steps:
       - name: Checkout

@@ -32,6 +32,10 @@ jobs:
   build-and-publish-frontend-app:
     name: Build and Publish Frontend App
     uses: ./.github/workflows/build-and-publish-frontend-app.yml
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
 
   build-and-publish-backend-service:
     needs:
@@ -39,6 +43,11 @@ jobs:
 
     name: Build and Publish Backend Service
     uses: ./.github/workflows/build-and-publish-backend-service.yml
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+      packages: write
     with:
       push-to-ghcr: true
       image-tag: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
@@ -47,20 +56,21 @@ jobs:
   e2e-test-v1:
     needs:
       - set-build-variables
+      - lint-and-publish-bicep
+      - build-and-publish-frontend-app
+      - build-and-publish-backend-service
 
     name: E2E Test
     uses: ./.github/workflows/e2e-test.yml
     with:
       ENVIRONMENT: test
       BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
       AZURE_ENV_NAME: ${{ format('libmal-{0}', github.run_id) }}
-      AZURE_STATIC_WEB_APP_LOCATION: ${{ vars.AZURE_STATIC_WEB_APP_LOCATION }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ACCESS_CODE: ${{ secrets.ACCESS_CODE }}
 
   # ────────────────────────────────────────────────────────────────────────────
   # Production deployment — only runs on v* tag pushes, after E2E tests pass.
@@ -80,8 +90,7 @@ jobs:
       checks: write
     with:
       BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-      AZURE_STATIC_WEB_APP_LOCATION: ${{ vars.AZURE_STATIC_WEB_APP_LOCATION }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

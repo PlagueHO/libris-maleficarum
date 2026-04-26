@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       ENVIRONMENT:
-        description: "The environment to validate the application infrastructure for"
+        description: "The environment to provision the application infrastructure for"
         required: true
         type: string
       BUILD_VERSION:
@@ -19,11 +19,6 @@ on:
         description: "The name of the Azure environment"
         required: true
         type: string
-      AZURE_STATIC_WEB_APP_LOCATION:
-        description: "The Azure region for the Static Web App (must be one of: centralus, eastasia, eastus2, westeurope, westus2)"
-        required: false
-        type: string
-        default: ''
 
     outputs:
       AZURE_RESOURCE_GROUP:
@@ -64,13 +59,12 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME || inputs.AZURE_ENV_NAME }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION || inputs.AZURE_LOCATION }}
-      AZURE_STATIC_WEB_APP_LOCATION: ${{ vars.AZURE_STATIC_WEB_APP_LOCATION || inputs.AZURE_STATIC_WEB_APP_LOCATION }}
-      AZURE_PRINCIPAL_ID_TYPE: "ServicePrincipal"
+      AZURE_PRINCIPAL_ID_TYPE: 'ServicePrincipal'
 
     outputs:
-      AZURE_RESOURCE_GROUP: ${{ steps.get_endpoints.outputs.AZURE_RESOURCE_GROUP }}
-      AZURE_STATIC_WEB_APP_NAME: ${{ steps.get_endpoints.outputs.AZURE_STATIC_WEB_APP_NAME }}
-      AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ steps.get_endpoints.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
+      AZURE_RESOURCE_GROUP: ${{ steps.get_infrastructure_outputs.outputs.AZURE_RESOURCE_GROUP }}
+      AZURE_STATIC_WEB_APP_NAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_STATIC_WEB_APP_NAME }}
+      AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
 
     steps:
       - name: Checkout
@@ -111,11 +105,15 @@ jobs:
         run: |
           azd env set AZURE_PRINCIPAL_ID_TYPE "$AZURE_PRINCIPAL_ID_TYPE"
           azd env set AZURE_RESOURCE_GROUP "rg-${AZURE_ENV_NAME}"
-          if [ -n "$AZURE_STATIC_WEB_APP_LOCATION" ]; then
-            azd env set AZURE_STATIC_WEB_APP_LOCATION "$AZURE_STATIC_WEB_APP_LOCATION"
+          # Set Static Web App location override (required when primary region doesn't support Microsoft.Web/staticSites).
+          STATIC_WEB_APP_LOCATION="${{ vars.AZURE_STATIC_WEB_APP_LOCATION }}"
+          if [ -n "$STATIC_WEB_APP_LOCATION" ]; then
+            azd env set AZURE_STATIC_WEB_APP_LOCATION "$STATIC_WEB_APP_LOCATION"
           fi
-          if [ -n "${{ secrets.ACCESS_CODE }}" ]; then
-            azd env set ACCESS_CODE "${{ secrets.ACCESS_CODE }}"
+          # Set access code for single-user mode protection when configured.
+          ACCESS_CODE="${{ secrets.ACCESS_CODE }}"
+          if [ -n "$ACCESS_CODE" ]; then
+            azd env set ACCESS_CODE "$ACCESS_CODE"
           fi
       - name: Provision Infrastructure using Azure Developer CLI
         id: provision
@@ -129,15 +127,31 @@ jobs:
           exit 1
 
       - name: Get Output Endpoints
-        id: get_endpoints
+        id: get_infrastructure_outputs
         run: |
-          AZURE_RESOURCE_GROUP="rg-${AZURE_ENV_NAME}"
-          echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP" >> $GITHUB_OUTPUT
+          # Get all outputs from azd env get-values and pass them through directly
+          echo "Getting azd environment outputs..."
+          AZD_OUTPUTS=$(azd env get-values)
+
+          # Define all the output variables we want to extract from azd outputs
+          OUTPUT_VARS=(
+            "AZURE_RESOURCE_GROUP"
+          )
+
+          # Extract and set each output variable directly from azd outputs
+          for VAR_NAME in "${OUTPUT_VARS[@]}"; do
+            VAR_VALUE=$(echo "$AZD_OUTPUTS" | grep "^${VAR_NAME}=" | cut -d'=' -f2- | xargs)
+            echo "$VAR_NAME=$VAR_VALUE" >> $GITHUB_OUTPUT
+            echo "Set $VAR_NAME=$VAR_VALUE"
+          done
 
           # Get Static Web App name from the resource group
+          AZURE_RESOURCE_GROUP=$(echo "$AZD_OUTPUTS" | grep "^AZURE_RESOURCE_GROUP=" | cut -d'=' -f2- | xargs)
           AZURE_STATIC_WEB_APP_NAME=$(az staticwebapp list --resource-group "$AZURE_RESOURCE_GROUP" --query "[0].name" -o tsv)
           echo "AZURE_STATIC_WEB_APP_NAME=$AZURE_STATIC_WEB_APP_NAME" >> $GITHUB_OUTPUT
+          echo "Set AZURE_STATIC_WEB_APP_NAME=$AZURE_STATIC_WEB_APP_NAME"
 
           # Get default hostname of the Static Web App
           AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME=$(az staticwebapp show --name "$AZURE_STATIC_WEB_APP_NAME" --resource-group "$AZURE_RESOURCE_GROUP" --query "defaultHostname" -o tsv)
           echo "AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME=$AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME" >> $GITHUB_OUTPUT
+          echo "Set AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME=$AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME"

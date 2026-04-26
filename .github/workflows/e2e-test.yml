@@ -19,11 +19,7 @@ on:
         description: "The name of the Azure environment"
         required: true
         type: string
-      AZURE_STATIC_WEB_APP_LOCATION:
-        description: "The Azure region for the Static Web App (must be one of: centralus, eastasia, eastus2, westeurope, westus2)"
-        required: false
-        type: string
-        default: ''
+
     secrets:
       AZURE_TENANT_ID:
         description: "The Azure tenant ID to use for authentication to Azure for deployment"
@@ -34,9 +30,6 @@ on:
       AZURE_CLIENT_ID:
         description: "The Azure client ID to use for authentication to Azure for deployment"
         required: true
-      ACCESS_CODE:
-        description: "Optional access code for API protection in single-user mode"
-        required: false
 
 jobs:
   validate-infrastructure:
@@ -47,27 +40,27 @@ jobs:
       BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
       AZURE_ENV_NAME: ${{ inputs.AZURE_ENV_NAME }}
-      AZURE_STATIC_WEB_APP_LOCATION: ${{ inputs.AZURE_STATIC_WEB_APP_LOCATION }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
 
   provision-infrastructure:
-    needs:
-      - validate-infrastructure
+    name: Provision Infrastructure
+    needs: [validate-infrastructure]
+    # E2E tests provision without Entra ID (ENABLE_ENTRA_AUTH is NOT set).
+    # This avoids requiring Application.ReadWrite.All Graph permission for ephemeral
+    # test environments. The app runs in anonymous single-user mode.
     uses: ./.github/workflows/provision-infrastructure.yml
     with:
       ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
       BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
       AZURE_ENV_NAME: ${{ inputs.AZURE_ENV_NAME }}
-      AZURE_STATIC_WEB_APP_LOCATION: ${{ inputs.AZURE_STATIC_WEB_APP_LOCATION }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ACCESS_CODE: ${{ secrets.ACCESS_CODE }}
 
   deploy-frontend-app:
     name: Deploy Frontend App
@@ -90,12 +83,17 @@ jobs:
     permissions:
       checks: write
       contents: read
+      id-token: write
     with:
+      ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
       AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ needs.provision-infrastructure.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
     secrets:
-      ACCESS_CODE: ${{ secrets.ACCESS_CODE }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
 
   delete-infrastructure:
+    name: Delete Provisioned Infrastructure
     needs: [provision-infrastructure, smoke-test]
     if: always()
     uses: ./.github/workflows/delete-infrastructure.yml

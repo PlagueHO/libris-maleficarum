@@ -19,11 +19,6 @@ on:
         description: "The name of the Azure environment"
         required: true
         type: string
-      AZURE_STATIC_WEB_APP_LOCATION:
-        description: "The Azure region for the Static Web App (must be one of: centralus, eastasia, eastus2, westeurope, westus2)"
-        required: false
-        type: string
-        default: ''
 
     secrets:
       AZURE_TENANT_ID:
@@ -51,8 +46,7 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME || inputs.AZURE_ENV_NAME }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION || inputs.AZURE_LOCATION }}
-      AZURE_STATIC_WEB_APP_LOCATION: ${{ vars.AZURE_STATIC_WEB_APP_LOCATION || inputs.AZURE_STATIC_WEB_APP_LOCATION }}
-      AZURE_PRINCIPAL_ID_TYPE: "ServicePrincipal"
+      AZURE_PRINCIPAL_ID_TYPE: 'ServicePrincipal'
 
     steps:
       - name: Checkout
@@ -93,8 +87,10 @@ jobs:
         run: |
           azd env set AZURE_PRINCIPAL_ID_TYPE "$AZURE_PRINCIPAL_ID_TYPE"
           azd env set AZURE_RESOURCE_GROUP "rg-${AZURE_ENV_NAME}"
-          if [ -n "$AZURE_STATIC_WEB_APP_LOCATION" ]; then
-            azd env set AZURE_STATIC_WEB_APP_LOCATION "$AZURE_STATIC_WEB_APP_LOCATION"
+          # Set Static Web App location override (required when primary region doesn't support Microsoft.Web/staticSites).
+          STATIC_WEB_APP_LOCATION="${{ vars.AZURE_STATIC_WEB_APP_LOCATION }}"
+          if [ -n "$STATIC_WEB_APP_LOCATION" ]; then
+            azd env set AZURE_STATIC_WEB_APP_LOCATION "$STATIC_WEB_APP_LOCATION"
           fi
 
       - name: Preview Infrastructure using Azure Developer CLI

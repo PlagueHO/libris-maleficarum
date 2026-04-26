@@ -11,10 +11,6 @@ on:
         description: "The Azure region to deploy to"
         required: true
         type: string
-      AZURE_STATIC_WEB_APP_LOCATION:
-        description: "The Azure region for the Static Web App"
-        required: true
-        type: string
 
     secrets:
       AZURE_TENANT_ID:
@@ -39,7 +35,6 @@ jobs:
       BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
       AZURE_ENV_NAME: libris-maleficarum-prod
-      AZURE_STATIC_WEB_APP_LOCATION: ${{ inputs.AZURE_STATIC_WEB_APP_LOCATION }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -55,7 +50,6 @@ jobs:
       BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
       AZURE_ENV_NAME: libris-maleficarum-prod
-      AZURE_STATIC_WEB_APP_LOCATION: ${{ inputs.AZURE_STATIC_WEB_APP_LOCATION }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -88,7 +82,12 @@ jobs:
     permissions:
       checks: write
       contents: read
+      id-token: write
     with:
+      ENVIRONMENT: prod
       AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ needs.provision-prod-infrastructure.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
     secrets:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ACCESS_CODE: ${{ secrets.ACCESS_CODE }}
