@@ -52,7 +52,7 @@ The following secrets are required for the workflows to authenticate with Azure:
 
 The following variables are required for the workflows:
 
-- **`AZURE_ENV_NAME`**: The base name of the Azure resources (e.g., `dsr-libris`). Maximum 16 characters — enforced by `infra/main.bicep` to ensure all derived resource names stay within Azure service naming limits.
+- **`AZURE_ENV_NAME`**: The base name of the Azure resources (e.g., `dsr-libris`). Maximum 24 characters — enforced by `infra/main.bicep` to ensure all derived resource names stay within Azure service naming limits.
 - **`AZURE_LOCATION`**: The Azure region for deployment (e.g., `eastus2`).
 
 ## Creating the Azure Application Federation Credential

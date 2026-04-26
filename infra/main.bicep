@@ -5,7 +5,7 @@ targetScope = 'subscription'
 // see https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/make-azd-compatible?pivots=azd-create
 
 @minLength(1)
-@maxLength(16)
+@maxLength(24)
 @description('Name of the the environment which is used to generate a short unique hash used in all resources.')
 param environmentName string
 

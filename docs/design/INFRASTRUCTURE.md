@@ -116,7 +116,7 @@ The solution supports the following configuration parameters:
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| `environmentName` | string | *required* | Name used to generate unique resource names. Maximum 16 characters. |
+| `environmentName` | string | *required* | Name used to generate unique resource names. Maximum 24 characters. |
 | `location` | string | *required* | Azure region for all resources |
 | `resourceGroupName` | string | `''` | Optional custom resource group name |
 | `createBastionHost` | bool | `false` | Whether to deploy Azure Bastion for secure access |
