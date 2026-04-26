@@ -64,7 +64,7 @@ var resourceToken = toLower(uniqueString(subscription().id, environmentName, loc
 
 var effectiveResourceGroupName = !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
 var effectiveStaticWebAppLocation = !empty(staticWebAppLocation) ? staticWebAppLocation : location
-var deploymentId = uniqueString(subscription().id, environmentName)
+var deploymentId = uniqueString(subscription().id, environmentName, location)
 var logAnalyticsName = '${abbrs.operationalInsightsWorkspaces}${environmentName}'
 var sendTologAnalyticsCustomSettingName = 'send-to-${logAnalyticsName}'
 var applicationInsightsName = '${abbrs.insightsComponents}${environmentName}'

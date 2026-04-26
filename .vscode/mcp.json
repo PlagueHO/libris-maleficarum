@@ -21,7 +21,7 @@
       "url": "https://gitmcp.io/microsoft/agent-framework",
       "type": "sse"
     },
-    "microsoft-aspire": {
+    "aspire": {
       "type": "stdio",
       "command": "aspire",
       "args": [
@@ -55,14 +55,6 @@
       "args": [
         "-y",
         "@playwright/mcp@latest"
-      ]
-    },
-    "playwright-test": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "playwright",
-        "run-test-mcp-server"
       ]
     }
   }
