@@ -14,5 +14,8 @@ param createBastionHost = bool(readEnvironmentVariable('AZURE_CREATE_BASTION_HOS
 // Leave empty to use the primary location.
 param staticWebAppLocation = toLower(readEnvironmentVariable('AZURE_STATIC_WEB_APP_LOCATION', ''))
 
+// Container image for the backend API
+param apiContainerImage = readEnvironmentVariable('API_CONTAINER_IMAGE', 'ghcr.io/plagueho/libris-maleficarum-service:latest')
+
 // Optional access code for API protection in single-user mode
 param accessCode = readEnvironmentVariable('ACCESS_CODE', '')

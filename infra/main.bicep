@@ -45,6 +45,9 @@ param principalId string = ''
 ])
 param principalIdType string = 'User'
 
+@description('Container image to deploy for the backend API Container App.')
+param apiContainerImage string = 'ghcr.io/plagueho/libris-maleficarum-service:latest'
+
 @secure()
 @description('Optional access code for protecting the API in single-user mode. When empty, no access code protection is applied.')
 param accessCode string = ''
@@ -78,6 +81,7 @@ var aiFoundryCustomSubDomainName = toLower(replace(environmentName, '-', ''))
 var staticSiteName = toLower(replace('${abbrs.webStaticSites}${environmentName}', '-', ''))
 var bastionHostName = '${abbrs.networkBastionHosts}${environmentName}'
 var containerAppsEnvironmentName = '${abbrs.appManagedEnvironments}${environmentName}'
+var containerAppName = '${abbrs.appContainerApps}${environmentName}-api'
 
 var subnets = [  {
     // Container Apps subnet for backend API services (requires /23 minimum)
@@ -151,7 +155,7 @@ module applicationInsights 'br/public:avm/res/insights/component:0.7.1' = {
 }
 
 // Create the Virtual Network and subnets using Azure Verified Modules (AVM)
-module virtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = {
+module virtualNetwork 'br/public:avm/res/network/virtual-network:0.8.1' = {
   name: 'virtual-network-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -220,7 +224,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.13.3' = {
 }
 
 // Create a Static Web App for the application using Azure Verified Module (AVM)
-module staticSite 'br/public:avm/res/web/static-site:0.9.3' = {
+module staticSite 'br/public:avm/res/web/static-site:0.9.4' = {
   name: 'static-site-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -236,7 +240,7 @@ module staticSite 'br/public:avm/res/web/static-site:0.9.3' = {
 }
 
 // Create Azure Container Apps Environment in the frontend subnet using Azure Verified Module (AVM)
-module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.1' = {
+module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.2' = {
   name: 'container-apps-environment-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -264,6 +268,73 @@ module aspireDashboard 'aspire-dashboard.bicep' = {
   dependsOn: [containerAppsEnvironment]
   params: {
     containerAppsEnvironmentName: containerAppsEnvironmentName
+  }
+}
+
+// --------- BACKEND API CONTAINER APP ---------
+// Deploy the backend API as a Container App using Azure Verified Module (AVM)
+module containerApp 'br/public:avm/res/app/container-app:0.22.0' = {
+  name: 'container-app-api-deployment-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  dependsOn: [
+    resourceGroup
+  ]
+  params: {
+    name: containerAppName
+    environmentResourceId: containerAppsEnvironment.outputs.resourceId
+    location: location
+    tags: union(tags, {
+      'azd-service-name': 'api'
+    })
+    managedIdentities: {
+      systemAssigned: true
+    }
+    containers: [
+      {
+        name: 'api'
+        image: apiContainerImage
+        resources: {
+          // AVM pattern: use json() for fractional CPU until native float support is available in Bicep.
+          cpu: json('0.5')
+          memory: '1Gi'
+        }
+        env: [
+          {
+            name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+            value: applicationInsights.outputs.connectionString
+          }
+          {
+            name: 'AZURE_AI_FOUNDRY_ENDPOINT'
+            value: aiFoundryAccount.outputs.endpoint
+          }
+          {
+            name: 'ConnectionStrings__ai-foundry'
+            value: 'Endpoint=${aiFoundryAccount.outputs.endpoint}'
+          }
+          {
+            name: 'ConnectionStrings__cosmos'
+            value: 'AccountEndpoint=${cosmosDbAccount.outputs.endpoint}'
+          }
+          ...(!empty(accessCode) ? [
+            {
+              name: 'ACCESS_CODE'
+              value: accessCode
+            }
+          ] : [])
+          {
+            name: 'CORS__AllowedOrigins'
+            value: 'https://${staticSite.outputs.defaultHostname}'
+          }
+        ]
+      }
+    ]
+    ingressExternal: true
+    ingressTargetPort: 8080
+    ingressTransport: 'auto'
+    scaleSettings: {
+      minReplicas: 0
+      maxReplicas: 3
+    }
   }
 }
 
@@ -490,7 +561,7 @@ module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.
 }
 
 // Create Azure AI Foundry instance with private endpoint in the shared subnet using Azure Verified Module (AVM)
-module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.14.1' = {
+module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.14.2' = {
   name: 'ai-foundry-account-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -556,7 +627,7 @@ module bastionHost 'br/public:avm/res/network/bastion-host:0.8.2' = if (createBa
 // Create Network Security Groups for each subnet using Azure Verified Modules (AVM)
 
 // Container Apps NSG for backend API services
-module containerAppsNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
+module containerAppsNsg 'br/public:avm/res/network/network-security-group:0.5.3' = {
   name: 'container-apps-nsg-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -622,7 +693,7 @@ module containerAppsNsg 'br/public:avm/res/network/network-security-group:0.5.2'
 }
 
 // Backend NSG for backend services and databases
-module backendNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
+module backendNsg 'br/public:avm/res/network/network-security-group:0.5.3' = {
   name: 'backend-nsg-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -662,7 +733,7 @@ module backendNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
 }
 
 // Gateway NSG for application gateways and load balancers
-module gatewayNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
+module gatewayNsg 'br/public:avm/res/network/network-security-group:0.5.3' = {
   name: 'gateway-nsg-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -702,7 +773,7 @@ module gatewayNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
 }
 
 // Shared NSG for shared services
-module sharedNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
+module sharedNsg 'br/public:avm/res/network/network-security-group:0.5.3' = {
   name: 'shared-nsg-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -741,25 +812,60 @@ module sharedNsg 'br/public:avm/res/network/network-security-group:0.5.2' = {
   }
 }
 
+// ---------- CONTAINER APP ROLE ASSIGNMENTS ----------
+// Assign Cognitive Services OpenAI User role to the Container App's managed identity
+var containerAppFoundryRoleAssignments = [
+  {
+    roleDefinitionIdOrName: 'Cognitive Services OpenAI User'
+    principalType: 'ServicePrincipal'
+    principalId: containerApp.outputs.?systemAssignedMIPrincipalId ?? ''
+  }
+]
+
+module containerAppFoundryRoles './core/security/role_foundry.bicep' = {
+  name: 'container-app-foundry-roles-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  params: {
+    foundryName: aiFoundryName
+    roleAssignments: containerAppFoundryRoleAssignments
+  }
+}
+
+// Assign Cosmos DB Built-in Data Contributor role to the Container App's managed identity
+// for data plane access. The built-in role GUID is 00000000-0000-0000-0000-000000000002.
+module containerAppCosmosDbRoles './core/security/role_cosmosdb.bicep' = {
+  name: 'container-app-cosmos-roles-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  params: {
+    cosmosDbAccountName: cosmosDbAccountName
+    sqlRoleAssignments: [
+      {
+        principalId: containerApp.outputs.?systemAssignedMIPrincipalId ?? ''
+        roleDefinitionId: '00000000-0000-0000-0000-000000000002'
+      }
+    ]
+  }
+}
+
 // ---------- AI SEARCH ROLE ASSIGNMENTS ----------
 // Role assignments for AI Search service to allow Foundry and developer access
 var aiSearchRoleAssignmentsArray = [
   // Foundry service managed identity needs access to AI Search
-  ...(!empty(aiFoundryAccount.outputs.systemAssignedMIPrincipalId) ? [
+  ...(!empty(aiFoundryAccount.outputs.?systemAssignedMIPrincipalId) ? [
     {
       roleDefinitionIdOrName: 'Search Index Data Contributor'
       principalType: 'ServicePrincipal'
-      principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
+      principalId: aiFoundryAccount.outputs.?systemAssignedMIPrincipalId ?? ''
     }
     {
       roleDefinitionIdOrName: 'Search Index Data Reader'
       principalType: 'ServicePrincipal'
-      principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
+      principalId: aiFoundryAccount.outputs.?systemAssignedMIPrincipalId ?? ''
     }
     {
       roleDefinitionIdOrName: 'Search Service Contributor'
       principalType: 'ServicePrincipal'
-      principalId: aiFoundryAccount.outputs.systemAssignedMIPrincipalId
+      principalId: aiFoundryAccount.outputs.?systemAssignedMIPrincipalId ?? ''
     }
   ] : [])
   // Developer role assignments
@@ -794,16 +900,16 @@ module aiSearchRoleAssignments './core/security/role_aisearch.bicep' = {
 // Role assignments for Foundry to allow AI Search and developer access
 var foundryRoleAssignmentsArray = [
   // AI Search managed identity needs access to Foundry for vectorization
-  ...(!empty(aiSearchService.outputs.systemAssignedMIPrincipalId) ? [
+  ...(!empty(aiSearchService.outputs.?systemAssignedMIPrincipalId) ? [
     {
       roleDefinitionIdOrName: 'Cognitive Services Contributor'
       principalType: 'ServicePrincipal'
-      principalId: aiSearchService.outputs.systemAssignedMIPrincipalId
+      principalId: aiSearchService.outputs.?systemAssignedMIPrincipalId ?? ''
     }
     {
       roleDefinitionIdOrName: 'Cognitive Services OpenAI Contributor'
       principalType: 'ServicePrincipal'
-      principalId: aiSearchService.outputs.systemAssignedMIPrincipalId
+      principalId: aiSearchService.outputs.?systemAssignedMIPrincipalId ?? ''
     }
   ] : [])
   // Developer role assignments
@@ -909,3 +1015,9 @@ output CONTAINER_APPS_ENVIRONMENT_NAME string = containerAppsEnvironment.outputs
 
 @description('The default domain of the Container Apps Environment.')
 output CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = containerAppsEnvironment.outputs.defaultDomain
+
+@description('The name of the backend API Container App.')
+output AZURE_CONTAINER_APP_NAME string = containerApp.outputs.name
+
+@description('The FQDN of the backend API Container App.')
+output AZURE_CONTAINER_APP_FQDN string = containerApp.outputs.fqdn
