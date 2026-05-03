@@ -2,7 +2,7 @@
   "name": "Libris Maleficarum Codespace",
   "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {
+    "ghcr.io/devcontainers/features/node:2": {
       "version": "22",
       "nodeGypDependencies": true,
       "nvmInstallPath": "/usr/local/share/nvm"
