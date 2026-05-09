@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - infra/**
+      - docs/**
+      - .github/workflows/build-docs.yml
       - libris-maleficarum-app/**
       - libris-maleficarum-service/**
   pull_request:
@@ -11,6 +13,8 @@ on:
       - main
     paths:
       - infra/**
+      - docs/**
+      - .github/workflows/build-docs.yml
       - libris-maleficarum-app/**
       - libris-maleficarum-service/**
   workflow_dispatch:
@@ -37,3 +41,9 @@ jobs:
   build-and-publish-backend-service:
     name: Build and Publish Backend Service
     uses: ./.github/workflows/build-and-publish-backend-service.yml
+
+  build-docs:
+    name: Build Docs
+    uses: ./.github/workflows/build-docs.yml
+    permissions:
+      contents: read
