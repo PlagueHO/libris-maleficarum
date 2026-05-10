@@ -14,6 +14,9 @@ param createBastionHost = bool(readEnvironmentVariable('AZURE_CREATE_BASTION_HOS
 // Leave empty to use the primary location.
 param staticWebAppLocation = toLower(readEnvironmentVariable('AZURE_STATIC_WEB_APP_LOCATION', ''))
 
+// Static Web App custom domain override. Leave empty to disable custom domain binding.
+param staticWebAppCustomDomain = toLower(readEnvironmentVariable('AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN', ''))
+
 // Container image for the backend API
 param apiContainerImage = readEnvironmentVariable('API_CONTAINER_IMAGE', 'ghcr.io/plagueho/libris-maleficarum-service:latest')
 

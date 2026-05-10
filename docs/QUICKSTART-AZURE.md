@@ -95,16 +95,20 @@ All infrastructure parameters are read from environment variables in `infra/main
 | `AZURE_RESOURCE_GROUP` | empty | Use a custom resource group name instead of azd default naming. |
 | `AZURE_CREATE_BASTION_HOST` | `false` | Set to `true` to deploy Azure Bastion. |
 | `AZURE_STATIC_WEB_APP_LOCATION` | empty | Override static web app location. |
+| `AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN` | empty | Optional custom domain for static web app binding. Leave empty to disable custom domain binding. |
 | `API_CONTAINER_IMAGE` | `ghcr.io/plagueho/libris-maleficarum-service:latest` | Backend API container image. |
 | `ACCESS_CODE` | empty | Optional API access code for single-user mode. |
 
 Set values before provisioning:
 
 ```bash
+azd env set AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN "YOUR_CUSTOM_DOMAIN_HERE"
 azd env set API_CONTAINER_IMAGE "ghcr.io/plagueho/libris-maleficarum-service:latest"
 azd env set ACCESS_CODE "your-access-code"
 azd up
 ```
+
+If you set `AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN`, create a DNS CNAME record that points your custom host to the Static Web App default hostname before or during deployment so Azure validation can complete.
 
 ## Update and redeploy
 

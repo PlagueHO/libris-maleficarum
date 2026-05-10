@@ -48,6 +48,10 @@ The following secrets are required for the workflows to authenticate with Azure:
 - **`AZURE_SUBSCRIPTION_ID`**: The Azure subscription ID for authentication.
 - **`AZURE_CLIENT_ID`**: The Azure client ID for authentication.
 
+Optional workflow secrets:
+
+- **`AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN`**: Optional Static Web App custom domain (for example `YOUR_CUSTOM_DOMAIN_HERE`). Leave empty to disable custom domain binding.
+
 ### Variables
 
 The following variables are required for the workflows:

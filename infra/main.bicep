@@ -35,6 +35,9 @@ param createBastionHost bool = false
 ])
 param staticWebAppLocation string = ''
 
+@description('Optional custom domain for the Azure Static Web App. Leave empty to disable custom domain binding.')
+param staticWebAppCustomDomain string = ''
+
 @description('Id of the user or app to assign application roles.')
 param principalId string = ''
 
@@ -67,6 +70,7 @@ var resourceToken = toLower(uniqueString(subscription().id, environmentName, loc
 
 var effectiveResourceGroupName = !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
 var effectiveStaticWebAppLocation = !empty(staticWebAppLocation) ? staticWebAppLocation : location
+var effectiveStaticWebAppCustomDomain = toLower(trim(staticWebAppCustomDomain))
 var deploymentId = uniqueString(subscription().id, environmentName, location)
 var logAnalyticsName = '${abbrs.operationalInsightsWorkspaces}${environmentName}'
 var sendTologAnalyticsCustomSettingName = 'send-to-${logAnalyticsName}'
@@ -235,6 +239,14 @@ module staticSite 'br/public:avm/res/web/static-site:0.9.4' = {
     enterpriseGradeCdnStatus: 'Disabled'
     sku: 'Standard'
     stagingEnvironmentPolicy: 'Enabled'
+    customDomains: !empty(effectiveStaticWebAppCustomDomain)
+      ? [
+          {
+            name: effectiveStaticWebAppCustomDomain
+            validationMethod: 'cname-delegation'
+          }
+        ]
+      : []
     tags: tags
   }
 }
@@ -323,7 +335,9 @@ module containerApp 'br/public:avm/res/app/container-app:0.22.0' = {
           ] : [])
           {
             name: 'CORS__AllowedOrigins'
-            value: 'https://${staticSite.outputs.defaultHostname}'
+            value: empty(effectiveStaticWebAppCustomDomain)
+              ? 'https://${staticSite.outputs.defaultHostname}'
+              : 'https://${staticSite.outputs.defaultHostname},https://${effectiveStaticWebAppCustomDomain}'
           }
         ]
       }
