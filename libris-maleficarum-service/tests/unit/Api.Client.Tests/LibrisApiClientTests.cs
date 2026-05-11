@@ -28,7 +28,7 @@ public class LibrisApiClientTests
         var expectedWorld = new WorldResponse
         {
             Id = Guid.NewGuid(),
-            OwnerId = Guid.NewGuid(),
+            OwnerId = Guid.NewGuid().ToString(),
             Name = "Test World",
             Description = "A test world",
             CreatedDate = DateTime.UtcNow,

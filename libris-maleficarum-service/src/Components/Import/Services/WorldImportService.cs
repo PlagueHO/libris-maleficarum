@@ -1,6 +1,7 @@
 namespace LibrisMaleficarum.Import.Services;
 
 using System.Diagnostics;
+using System.Collections.Concurrent;
 using LibrisMaleficarum.Api.Client;
 using LibrisMaleficarum.Api.Client.Models;
 using LibrisMaleficarum.Import.Interfaces;
@@ -105,6 +106,8 @@ public sealed class WorldImportService(
         var createdByType = new Dictionary<string, int>();
         var errors = new List<EntityImportError>();
         var skippedLocalIds = new HashSet<string>(StringComparer.Ordinal);
+        // Maps localId → actual Guid assigned by the API after creation
+        var actualIdMap = new ConcurrentDictionary<string, Guid>(StringComparer.Ordinal);
 
         for (var depth = 0; depth <= manifest.MaxDepth; depth++)
         {
@@ -152,13 +155,17 @@ public sealed class WorldImportService(
                         Name = entity.Definition.Name,
                         Description = entity.Definition.Description,
                         EntityType = entity.Definition.EntityType,
-                        ParentId = entity.ResolvedParentId,
+                            ParentId = entity.Definition.ParentLocalId is not null
+                                && actualIdMap.TryGetValue(entity.Definition.ParentLocalId, out var resolvedParentId)
+                                ? resolvedParentId
+                                : null,
                         Tags = entity.Definition.Tags,
                         Attributes = entity.Definition.Properties,
                         SchemaVersion = 1
                     };
 
-                    await _apiClient.CreateEntityAsync(worldId, request, cancellationToken).ConfigureAwait(false);
+                        var createdEntity = await _apiClient.CreateEntityAsync(worldId, request, cancellationToken).ConfigureAwait(false);
+                        actualIdMap[entity.Definition.LocalId] = createdEntity.Id;
 
                     lock (createdByType)
                     {

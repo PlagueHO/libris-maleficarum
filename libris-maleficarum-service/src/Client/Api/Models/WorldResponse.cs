@@ -13,7 +13,7 @@ public sealed class WorldResponse
     /// <summary>
     /// Gets the unique identifier of the world owner.
     /// </summary>
-    public required Guid OwnerId { get; init; }
+    public required string OwnerId { get; init; }
 
     /// <summary>
     /// Gets the name of the world.

@@ -134,7 +134,8 @@ var searchWorker = builder.AddProject<Projects.LibrisMaleficarum_SearchIndexWork
 
 // Add the React Vite frontend
 var frontend = builder.AddViteApp("frontend", "../../../../libris-maleficarum-app", "dev")
-    .WithPnpm()
+    // Configure pnpm install for non-interactive Aspire installer execution.
+    .WithPnpm(installArgs: ["--config.confirmModulesPurge=false"])
     .WithExternalHttpEndpoints()
     .WithReference(apiService)
     .WaitFor(apiService);

@@ -52,6 +52,8 @@ public static class ServiceCollectionExtensions
             {
                 resilience.TotalRequestTimeout.Timeout = options.RequestTimeout.Value;
                 resilience.AttemptTimeout.Timeout = options.RequestTimeout.Value;
+                // SamplingDuration must be at least double AttemptTimeout to satisfy Polly's validation rule.
+                resilience.CircuitBreaker.SamplingDuration = options.RequestTimeout.Value * 2;
             });
         }
         else
