@@ -331,6 +331,440 @@ public sealed class WorldImportServiceTests
         _validator.Received(1).Validate(content);
     }
 
+    [TestMethod]
+    public async Task ImportAsync_EmptyEntityList_SucceedsWithZeroCounts()
+    {
+        // Arrange
+        var content = CreateSourceContent(entities: []);
+        var manifest = CreateManifest(content);
+        SetupMocks(content, manifest);
+
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+
+        var options = CreateOptions();
+
+        // Act
+        var result = await _service.ImportAsync("/test", options);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.TotalEntitiesCreated.Should().Be(0);
+        result.TotalEntitiesFailed.Should().Be(0);
+        result.TotalEntitiesSkipped.Should().Be(0);
+        result.WorldId.Should().Be(TestWorldId);
+        await _apiClient.Received(1).CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>());
+        await _apiClient.DidNotReceive().CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_MultipleEntitiesAtSameDepth_CreatedInParallel()
+    {
+        // Arrange — three root-level entities at depth 0
+        var entities = new List<EntityImportDefinition>
+        {
+            new() { LocalId = "r1", EntityType = "Continent", Name = "Root1" },
+            new() { LocalId = "r2", EntityType = "Continent", Name = "Root2" },
+            new() { LocalId = "r3", EntityType = "Continent", Name = "Root3" }
+        };
+        var content = CreateSourceContent(entities: entities);
+        var manifest = CreateManifest(content);
+        SetupMocks(content, manifest);
+
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+        _apiClient.CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateEntityResponse());
+
+        var options = new ImportOptions
+        {
+            ApiBaseUrl = "https://test.api.local",
+            AuthToken = "test-token-123",
+            MaxConcurrency = 3
+        };
+
+        // Act
+        var result = await _service.ImportAsync("/test", options);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.TotalEntitiesCreated.Should().Be(3);
+        await _apiClient.Received(3).CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_EntityAlreadyInSkippedSet_IsSkipped()
+    {
+        // Arrange — root fails, so child at next depth should be skipped even though
+        // the validator marked it valid. We simulate by making root throw.
+        var entities = new List<EntityImportDefinition>
+        {
+            new() { LocalId = "root", EntityType = "Continent", Name = "Root" },
+            new() { LocalId = "child", EntityType = "Country", Name = "Child", ParentLocalId = "root" }
+        };
+        var content = CreateSourceContent(entities: entities);
+        var manifest = CreateManifest(content);
+        SetupMocks(content, manifest);
+
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+
+        _apiClient.CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var req = callInfo.ArgAt<CreateEntityRequest>(1);
+                if (req.Name == "Root")
+                {
+                    throw new InvalidOperationException("Root failure");
+                }
+                return CreateEntityResponse();
+            });
+
+        var options = CreateOptions();
+
+        // Act
+        var result = await _service.ImportAsync("/test", options);
+
+        // Assert
+        result.TotalEntitiesFailed.Should().Be(1);
+        result.TotalEntitiesSkipped.Should().Be(1);
+        result.Errors.Should().ContainSingle(e => e.LocalId == "root");
+        await _apiClient.Received(1).CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_MultipleDepths_ProcessesInOrder()
+    {
+        // Arrange — depth 0: root, depth 1: child, depth 2: grandchild
+        var entities = new List<EntityImportDefinition>
+        {
+            new() { LocalId = "root", EntityType = "Continent", Name = "Root" },
+            new() { LocalId = "child", EntityType = "Country", Name = "Child", ParentLocalId = "root" },
+            new() { LocalId = "grandchild", EntityType = "City", Name = "Grandchild", ParentLocalId = "child" }
+        };
+        var content = CreateSourceContent(entities: entities);
+        var manifest = CreateManifest(content);
+        SetupMocks(content, manifest);
+
+        var callOrder = new List<string>();
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+        _apiClient.CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                callOrder.Add(callInfo.ArgAt<CreateEntityRequest>(1).Name);
+                return CreateEntityResponse();
+            });
+
+        var options = CreateOptions();
+
+        // Act
+        await _service.ImportAsync("/test", options);
+
+        // Assert — depth 0 must be created before depth 1, which must be before depth 2
+        callOrder.Should().ContainInOrder("Root", "Child", "Grandchild");
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_MissingDepthKey_ContinuesToNextDepth()
+    {
+        // Arrange — manifest has gaps in depth keys (e.g., depth 0 and 2, but not 1)
+        var root = new EntityImportDefinition { LocalId = "root", EntityType = "Continent", Name = "Root" };
+        var content = CreateSourceContent(entities: [root]);
+        var manifest = CreateManifest(content);
+
+        // Force a gap by removing depth 0 and adding a fake depth 2
+        var hackedManifest = new ImportManifest
+        {
+            World = manifest.World,
+            Entities = manifest.Entities,
+            EntitiesByDepth = new Dictionary<int, IReadOnlyList<ResolvedEntity>>
+            {
+                [2] = manifest.EntitiesByDepth[0]
+            },
+            MaxDepth = 3,
+            TotalEntityCount = manifest.TotalEntityCount,
+            CountsByType = manifest.CountsByType
+        };
+
+        SetupMocks(content, hackedManifest);
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+        _apiClient.CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateEntityResponse());
+
+        var options = CreateOptions();
+
+        // Act
+        var result = await _service.ImportAsync("/test", options);
+
+        // Assert — should still succeed, processing only depth 2
+        result.Success.Should().BeTrue();
+        result.TotalEntitiesCreated.Should().Be(1);
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_ConcurrencyZero_UsesDefaultOfOne()
+    {
+        // Arrange
+        var content = CreateSourceContent();
+        var manifest = CreateManifest(content);
+        SetupMocks(content, manifest);
+
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+        _apiClient.CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateEntityResponse());
+
+        var options = new ImportOptions
+        {
+            ApiBaseUrl = "https://test.api.local",
+            AuthToken = "test-token-123",
+            MaxConcurrency = 0
+        };
+
+        // Act
+        var result = await _service.ImportAsync("/test", options);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.TotalEntitiesCreated.Should().Be(2);
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_NullProgress_DoesNotThrow()
+    {
+        // Arrange
+        var content = CreateSourceContent();
+        var manifest = CreateManifest(content);
+        SetupMocks(content, manifest);
+
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+        _apiClient.CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateEntityResponse());
+
+        var options = CreateOptions();
+
+        // Act
+        var act = () => _service.ImportAsync("/test", options, progress: null);
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_EntityWithNullParentId_CreatesAsRoot()
+    {
+        // Arrange — entity without ParentLocalId should have ParentId = null in request
+        var entity = new EntityImportDefinition
+        {
+            LocalId = "orphan",
+            EntityType = "Continent",
+            Name = "Orphan"
+        };
+        var content = CreateSourceContent(entities: [entity]);
+        var manifest = CreateManifest(content);
+        SetupMocks(content, manifest);
+
+        CreateEntityRequest? capturedRequest = null;
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+        _apiClient.CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                capturedRequest = callInfo.ArgAt<CreateEntityRequest>(1);
+                return CreateEntityResponse();
+            });
+
+        var options = CreateOptions();
+
+        // Act
+        await _service.ImportAsync("/test", options);
+
+        // Assert
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.ParentId.Should().BeNull();
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_MultipleEntityTypes_TracksCountsByType()
+    {
+        // Arrange
+        var entities = new List<EntityImportDefinition>
+        {
+            new() { LocalId = "c1", EntityType = "Continent", Name = "Continent1" },
+            new() { LocalId = "c2", EntityType = "Continent", Name = "Continent2" },
+            new() { LocalId = "co1", EntityType = "Country", Name = "Country1" }
+        };
+        var content = CreateSourceContent(entities: entities);
+        var manifest = CreateManifest(content);
+        SetupMocks(content, manifest);
+
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+        _apiClient.CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateEntityResponse());
+
+        var options = CreateOptions();
+
+        // Act
+        var result = await _service.ImportAsync("/test", options);
+
+        // Assert
+        result.CreatedByType.Should().ContainKey("Continent").WhoseValue.Should().Be(2);
+        result.CreatedByType.Should().ContainKey("Country").WhoseValue.Should().Be(1);
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_FailedEntity_HasCorrectErrorDetails()
+    {
+        // Arrange
+        var entities = new List<EntityImportDefinition>
+        {
+            new() { LocalId = "root", EntityType = "Continent", Name = "Root" },
+            new() { LocalId = "child", EntityType = "Country", Name = "Child", ParentLocalId = "root" },
+            new() { LocalId = "grandchild", EntityType = "City", Name = "Grandchild", ParentLocalId = "child" }
+        };
+        var content = CreateSourceContent(entities: entities);
+        var manifest = CreateManifest(content);
+        SetupMocks(content, manifest);
+
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+
+        _apiClient.CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var req = callInfo.ArgAt<CreateEntityRequest>(1);
+                if (req.Name == "Child")
+                {
+                    throw new InvalidOperationException("Simulated API failure");
+                }
+                return CreateEntityResponse();
+            });
+
+        var options = CreateOptions();
+
+        // Act
+        var result = await _service.ImportAsync("/test", options);
+
+        // Assert
+        var error = result.Errors.Should().ContainSingle().Subject;
+        error.LocalId.Should().Be("child");
+        error.EntityName.Should().Be("Child");
+        error.ErrorMessage.Should().Be("Simulated API failure");
+        error.SkippedDescendantLocalIds.Should().ContainSingle().Which.Should().Be("grandchild");
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_PartialFailure_SuccessIsFalse()
+    {
+        // Arrange — one entity fails, one succeeds
+        var entities = new List<EntityImportDefinition>
+        {
+            new() { LocalId = "good", EntityType = "Continent", Name = "Good" },
+            new() { LocalId = "bad", EntityType = "Continent", Name = "Bad" }
+        };
+        var content = CreateSourceContent(entities: entities);
+        var manifest = CreateManifest(content);
+        SetupMocks(content, manifest);
+
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+
+        _apiClient.CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var req = callInfo.ArgAt<CreateEntityRequest>(1);
+                if (req.Name == "Bad")
+                {
+                    throw new InvalidOperationException("Failure");
+                }
+                return CreateEntityResponse();
+            });
+
+        var options = CreateOptions();
+
+        // Act
+        var result = await _service.ImportAsync("/test", options);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.TotalEntitiesCreated.Should().Be(1);
+        result.TotalEntitiesFailed.Should().Be(1);
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_ProgressReportsAllPhases()
+    {
+        // Arrange
+        var entities = new List<EntityImportDefinition>
+        {
+            new() { LocalId = "e1", EntityType = "Continent", Name = "Entity1" }
+        };
+        var content = CreateSourceContent(entities: entities);
+        var manifest = CreateManifest(content);
+        SetupMocks(content, manifest);
+
+        _apiClient.CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateWorldResponse());
+        _apiClient.CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateEntityResponse());
+
+        var progressReports = new List<ImportProgress>();
+        var progress = Substitute.For<IProgress<ImportProgress>>();
+        progress.When(p => p.Report(Arg.Any<ImportProgress>()))
+            .Do(callInfo => progressReports.Add(callInfo.ArgAt<ImportProgress>(0)));
+
+        var options = CreateOptions();
+
+        // Act
+        await _service.ImportAsync("/test", options, progress);
+
+        // Assert
+        progressReports.Should().Contain(p => p.Phase == ImportPhase.Reading);
+        progressReports.Should().Contain(p => p.Phase == ImportPhase.Validating);
+        progressReports.Should().Contain(p => p.Phase == ImportPhase.CreatingWorld);
+        progressReports.Should().Contain(p => p.Phase == ImportPhase.CreatingEntities);
+        progressReports.Should().Contain(p => p.Phase == ImportPhase.Complete);
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_ValidationFails_ReturnsErrorsWithoutCallingApi()
+    {
+        // Arrange
+        var content = CreateSourceContent();
+        var validationResult = new ImportValidationResult
+        {
+            Errors =
+            [
+                new ImportValidationError { Code = "TEST001", Message = "Test validation error", FilePath = "/test/entity.json" }
+            ],
+            Warnings = [],
+            Manifest = null
+        };
+
+        _reader.ReadAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(content);
+        _validator.Validate(Arg.Any<ImportSourceContent>())
+            .Returns(validationResult);
+
+        var options = CreateOptions();
+
+        // Act
+        var result = await _service.ImportAsync("/test", options);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.WorldId.Should().Be(Guid.Empty);
+        result.TotalEntitiesCreated.Should().Be(0);
+        result.TotalEntitiesFailed.Should().Be(1);
+        result.Errors.Should().ContainSingle(e => e.ErrorMessage == "[TEST001] Test validation error");
+        await _apiClient.DidNotReceive().CreateWorldAsync(Arg.Any<CreateWorldRequest>(), Arg.Any<CancellationToken>());
+        await _apiClient.DidNotReceive().CreateEntityAsync(Arg.Any<Guid>(), Arg.Any<CreateEntityRequest>(), Arg.Any<CancellationToken>());
+    }
+
     #region Helper Methods
 
     private static ImportSourceContent CreateSourceContent(
@@ -405,6 +839,17 @@ public sealed class WorldImportServiceTests
             resolvedEntities.Add(resolved);
         }
 
+        // Populate Children based on parent relationships
+        var entityMap = resolvedEntities.ToDictionary(e => e.Definition.LocalId);
+        foreach (var resolved in resolvedEntities)
+        {
+            if (resolved.Definition.ParentLocalId is not null &&
+                entityMap.TryGetValue(resolved.Definition.ParentLocalId, out var parent))
+            {
+                parent.Children.Add(resolved);
+            }
+        }
+
         // Group by depth
         foreach (var group in resolvedEntities.GroupBy(e => e.Depth))
         {
@@ -456,7 +901,7 @@ public sealed class WorldImportServiceTests
         return new WorldResponse
         {
             Id = TestWorldId,
-            OwnerId = Guid.NewGuid(),
+            OwnerId = Guid.NewGuid().ToString(),
             Name = "Test World",
             Description = "A test world",
             CreatedDate = DateTime.UtcNow,

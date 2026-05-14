@@ -1,4 +1,4 @@
-namespace LibrisMaleficarum.Import.Services;
+    namespace LibrisMaleficarum.Import.Services;
 
 using System.Diagnostics;
 using System.Collections.Concurrent;
