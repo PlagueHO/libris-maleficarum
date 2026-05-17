@@ -1,4 +1,4 @@
-    namespace LibrisMaleficarum.Import.Services;
+namespace LibrisMaleficarum.Import.Services;
 
 using System.Diagnostics;
 using System.Collections.Concurrent;
@@ -155,7 +155,7 @@ public sealed class WorldImportService(
                         Name = entity.Definition.Name,
                         Description = entity.Definition.Description,
                         EntityType = entity.Definition.EntityType,
-                            ParentId = entity.Definition.ParentLocalId is not null
+                        ParentId = entity.Definition.ParentLocalId is not null
                                 && actualIdMap.TryGetValue(entity.Definition.ParentLocalId, out var resolvedParentId)
                                 ? resolvedParentId
                                 : null,
@@ -164,8 +164,8 @@ public sealed class WorldImportService(
                         SchemaVersion = 1
                     };
 
-                        var createdEntity = await _apiClient.CreateEntityAsync(worldId, request, cancellationToken).ConfigureAwait(false);
-                        actualIdMap[entity.Definition.LocalId] = createdEntity.Id;
+                    var createdEntity = await _apiClient.CreateEntityAsync(worldId, request, cancellationToken).ConfigureAwait(false);
+                    actualIdMap[entity.Definition.LocalId] = createdEntity.Id;
 
                     lock (createdByType)
                     {
