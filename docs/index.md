@@ -7,11 +7,11 @@ hero:
   actions:
     - theme: brand
       text: Quickstart Local
-      link: /QUICKSTART-LOCAL
+      link: /quickstart-local
     - theme: alt
       text: Quickstart Azure
-      link: /QUICKSTART-AZURE
+      link: /quickstart-azure
     - theme: alt
       text: Design Docs
-      link: /design/README
+      link: /design/readme
 ---

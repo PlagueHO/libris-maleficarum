@@ -10,41 +10,41 @@ export default defineConfig({
 
   themeConfig: {
     nav: [
-      { text: 'Quickstart Local', link: '/QUICKSTART-LOCAL' },
-      { text: 'Quickstart Azure', link: '/QUICKSTART-AZURE' },
-      { text: 'Architecture', link: '/design/README' },
+      { text: 'Quickstart Local', link: '/quickstart-local' },
+      { text: 'Quickstart Azure', link: '/quickstart-azure' },
+      { text: 'Architecture', link: '/design/readme' },
     ],
 
     sidebar: [
       {
         text: 'Getting Started',
         items: [
-          { text: 'Quickstart Local', link: '/QUICKSTART-LOCAL' },
-          { text: 'Quickstart Azure', link: '/QUICKSTART-AZURE' },
+          { text: 'Quickstart Local', link: '/quickstart-local' },
+          { text: 'Quickstart Azure', link: '/quickstart-azure' },
         ],
       },
       {
         text: 'Design',
         items: [
-          { text: 'Design Overview', link: '/design/README' },
-          { text: 'Project Overview', link: '/design/OVERVIEW' },
-          { text: 'Architecture', link: '/design/BACKEND' },
-          { text: 'Frontend', link: '/design/FRONTEND' },
-          { text: 'Infrastructure', link: '/design/INFRASTRUCTURE' },
-          { text: 'Data Model', link: '/design/DATA_MODEL' },
-          { text: 'API', link: '/design/API' },
-          { text: 'CI/CD', link: '/design/CI_CD' },
-          { text: 'Testing', link: '/design/TESTING' },
-          { text: 'Technology', link: '/design/TECHNOLOGY' },
-          { text: 'Folder Structure', link: '/design/FOLDER_STRUCTURE' },
-          { text: 'Schema Matrix', link: '/design/SCHEMA_VERSION_MATRIX' },
+          { text: 'Design Overview', link: '/design/readme' },
+          { text: 'Project Overview', link: '/design/overview' },
+          { text: 'Architecture', link: '/design/backend' },
+          { text: 'Frontend', link: '/design/frontend' },
+          { text: 'Infrastructure', link: '/design/infrastructure' },
+          { text: 'Data Model', link: '/design/data_model' },
+          { text: 'API', link: '/design/api' },
+          { text: 'CI/CD', link: '/design/ci_cd' },
+          { text: 'Testing', link: '/design/testing' },
+          { text: 'Technology', link: '/design/technology' },
+          { text: 'Folder Structure', link: '/design/folder_structure' },
+          { text: 'Schema Matrix', link: '/design/schema_version_matrix' },
         ],
       },
       {
         text: 'Other Docs',
         items: [
           { text: 'App Components', link: '/components/libris-maleficarum-app-documentation' },
-          { text: 'Markdown Linting', link: '/operations/MARKDOWN_LINTING' },
+          { text: 'Markdown Linting', link: '/operations/markdown_linting' },
         ],
       },
     ],
