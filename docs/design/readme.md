@@ -4,15 +4,15 @@ This folder contains the design, architecture, and technical documentation for t
 
 ## Contents
 
-- [OVERVIEW.md](OVERVIEW.md) — Project summary and high-level description
-- [ARCHITECTURE.md](ARCHITECTURE.md) — Architecture overview, diagrams, and components
-- [TECHNOLOGY.md](TECHNOLOGY.md) — Backend and frontend technology choices and rationale
-- [DATA_MODEL.md](DATA_MODEL.md) — Cosmos DB data model, WorldEntity structure, hierarchy, and partitioning
-- [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md) — Repository folder structure and conventions
-- [TESTING.md](TESTING.md) — Automated test approaches, frameworks, and strategies
-- [CI_CD.md](CI_CD.md) — CI/CD strategy, workflows, and secrets management
-- [FRONTEND.md](FRONTEND.md) — Frontend design, structure, and UI/UX principles
-- [BACKEND.md](BACKEND.md) — Backend design, .NET 10 API, and Aspire.NET orchestration
-- [API.md](API.md) — RESTful API specification and endpoint design
+- [Overview](overview.md) — Project summary and high-level description
+- [Architecture](architecture.md) — Architecture overview, diagrams, and components
+- [Technology](technology.md) — Backend and frontend technology choices and rationale
+- [Data Model](data_model.md) — Cosmos DB data model, WorldEntity structure, hierarchy, and partitioning
+- [Folder Structure](folder_structure.md) — Repository folder structure and conventions
+- [Testing](testing.md) — Automated test approaches, frameworks, and strategies
+- [CI/CD](ci_cd.md) — CI/CD strategy, workflows, and secrets management
+- [Frontend](frontend.md) — Frontend design, structure, and UI/UX principles
+- [Backend](backend.md) — Backend design, .NET 10 API, and Aspire.NET orchestration
+- [API](api.md) — RESTful API specification and endpoint design
 
 Refer to each file for detailed documentation on each aspect of the system.
