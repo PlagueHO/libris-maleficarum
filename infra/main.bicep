@@ -49,7 +49,7 @@ param principalId string = ''
 param principalIdType string = 'User'
 
 @description('Container image to deploy for the backend API Container App.')
-param apiContainerImage string = 'ghcr.io/plagueho/libris-maleficarum-service:latest'
+param apiContainerImage string = 'ghcr.io/plagueho/libris-maleficarum-api:latest'
 
 @secure()
 @description('Optional access code for protecting the API in single-user mode. When empty, no access code protection is applied.')

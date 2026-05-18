@@ -1,89 +1,114 @@
 # CI/CD Strategy
 
-Continuous Integration and Continuous Deployment (CI/CD) will be implemented using **GitHub Actions**, stored in the `.github\workflows` folder:
+This repository uses GitHub Actions workflows in `.github/workflows`.
 
-## GitHub Actions Workflows
+The workflow model is intentionally split into two layers:
+
+- Entry-point workflows: manually or directly triggered workflows
+- Reusable workflows: `workflow_call` workflows invoked only by entry-point workflows
+
+## Entry-Point Workflows
+
+Only the following workflows should be called directly:
+
+- **Continuous Integration (`continuous-integration.yml`)**
+- **Continuous Delivery (`continuous-delivery.yml`)**
+- **Publish Docs (`publish-docs.yml`)**
 
 ### Continuous Integration (`continuous-integration.yml`)
 
-Triggered on pull requests to the `main` branch:
+Triggered on push, pull request to `main`, or manual dispatch for code, infra, docs, and build-doc workflow changes.
 
-- **Lint and Publish Bicep:** Lint Bicep templates and publish as artifacts.
+Current jobs:
 
-### Continuous Deployment (`continuous-deployment.yml`)
+- Lint Markdown
+- Lint and Publish Bicep
+- Build and Publish Frontend App
+- Build and Publish Backend Service
+- Build Docs
 
-Triggered on pushes to the `main` branch, tags (`v*`), or manually:
+### Continuous Delivery (`continuous-delivery.yml`)
 
-- **Set Build Variables:** Determine build version using GitVersion.
-- **Lint and Publish Bicep:** Lint Bicep templates and publish as artifacts.
-- **Validate Infrastructure (Test):** Validate Azure infrastructure deployment using Bicep templates.
-- **Deploy Infrastructure (Test):** Deploy Azure infrastructure using validated Bicep templates.
+Triggered on push to `main`, push of tags matching `v*`, or manual dispatch.
 
-### Reusable Workflows
+Current high-level flow:
 
-These workflows are called by the main workflows above:
+1. Set build variables
+1. Lint and publish Bicep
+1. Build and publish frontend app
+1. Build and publish backend service image to GHCR
+1. Run end-to-end test workflow in a temporary test environment
+1. For tag builds (`v*`) only, run production deployment workflow after E2E succeeds
 
-- **Set Build Variables (`set-build-variables.yml`):** Determines and outputs the build version.
-- **Lint and Publish Bicep (`lint-and-publish-bicep.yml`):** Lints Bicep templates and publishes them as artifacts.
-- **Validate Infrastructure (`validate-infrastructure.yml`):** Performs a "what-if" validation of Azure infrastructure deployment.
-- **Deploy Infrastructure (`deploy-infrastructure.yml`):** Deploys Azure infrastructure resources using Bicep templates.
+### Publish Docs (`publish-docs.yml`)
+
+Triggered on pushes to `main` that affect docs or docs workflow files, and on manual dispatch.
+
+Current jobs:
+
+- Build docs
+- Deploy docs to GitHub Pages
+
+## Reusable Workflows
+
+All other workflows are reusable/orchestrated workflows and are not intended to be directly invoked.
+
+Key reusable workflows include:
+
+- **`set-build-variables.yml`**: Computes build/version outputs
+- **`lint-markdown.yml`**: Lints Markdown content
+- **`lint-and-publish-bicep.yml`**: Lints Bicep and publishes artifacts
+- **`build-and-publish-frontend-app.yml`**: Builds frontend artifacts
+- **`build-and-publish-backend-service.yml`**: Builds/tests backend and optionally pushes container image
+- **`validate-infrastructure.yml`**: Performs infra validation/what-if checks
+- **`provision-infrastructure.yml`**: Provisions Azure infrastructure with `azd provision`
+- **`deploy-frontend-app.yml`**: Deploys frontend to Azure Static Web Apps
+- **`smoke-test.yml`**: Runs smoke tests against deployed endpoints
+- **`delete-infrastructure.yml`**: Cleans up ephemeral environments
+- **`e2e-test.yml`**: Orchestrates validation, provision, deploy, smoke, and cleanup for test environments
+- **`deploy-production.yml`**: Orchestrates production validate, provision, deploy, and smoke-test stages
+- **`build-docs.yml`**: Builds static docs artifacts for publishing
 
 ## Environments
 
-### Test
+### Test (Ephemeral)
 
-- **Description:** Used for testing infrastructure and application deployments.
-- **Azure Location:** `eastus2`
-- **Azure Resource Base Name:** `dsr-libris-maleficarum`
+- Used by E2E runs in delivery pipeline
+- Environment name is generated per run (for example `libmal-<run_id>`)
+- Infrastructure is deleted at the end of the E2E workflow
 
-Additional environments can be added by extending the workflows and providing the required variables and secrets.
+### Production
+
+- Uses GitHub environment `prod`
+- Default Azure environment name: `libmal-prod`
+- Production deployment is gated behind successful E2E and tag-based release flow (`v*`)
 
 ## Secrets and Variables
 
-### Secrets
+### Required Azure Auth Secrets
 
-The following secrets are required for the workflows to authenticate with Azure:
+- `AZURE_TENANT_ID`
+- `AZURE_SUBSCRIPTION_ID`
+- `AZURE_CLIENT_ID`
 
-- **`AZURE_TENANT_ID`**: The Azure tenant ID for authentication.
-- **`AZURE_SUBSCRIPTION_ID`**: The Azure subscription ID for authentication.
-- **`AZURE_CLIENT_ID`**: The Azure client ID for authentication.
+### Optional Secrets
 
-Optional workflow secrets:
+- `ACCESS_CODE`: Optional API access-code protection in single-user mode
+- `AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN`: Optional Static Web App custom domain
 
-- **`AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN`**: Optional Static Web App custom domain (for example `YOUR_CUSTOM_DOMAIN_HERE`). Leave empty to disable custom domain binding.
+### Common Variables
 
-### Variables
+- `AZURE_LOCATION`: Azure region used by infra workflows
+- `AZURE_ENV_NAME`: Azure Developer CLI environment name where applicable
 
-The following variables are required for the workflows:
+## Azure Federated Credential Setup
 
-- **`AZURE_ENV_NAME`**: The base name of the Azure resources (e.g., `dsr-libris`). Maximum 24 characters — enforced by `infra/main.bicep` to ensure all derived resource names stay within Azure service naming limits.
-- **`AZURE_LOCATION`**: The Azure region for deployment (e.g., `eastus2`).
+To enable GitHub OIDC authentication for Azure deployments:
 
-## Creating the Azure Application Federation Credential
+1. Register an app in Microsoft Entra ID
+1. Add a federated credential for GitHub Actions with issuer `https://token.actions.githubusercontent.com`
+1. Scope subject to the repository and environment pattern you use
+1. Assign required Azure RBAC roles to the service principal
+1. Add `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` as GitHub secrets
 
-To allow GitHub Actions workflows to connect to the Azure subscription and deploy resources, follow these steps:
-
-1. **Register an Azure AD Application**:
-   - Navigate to the Azure portal and go to **Azure Entra ID** > **App registrations**.
-   - Click **New registration** and provide a name (e.g., `GitHubActionsApp`).
-   - Set the **Supported account types** to "Accounts in this organizational directory only".
-   - Click **Register**.
-
-1. **Create a Federated Credential**:
-   - Go to **Certificates & secrets** > **Federated credentials**.
-   - Click **Add credential** and configure:
-     - **Issuer**: `https://token.actions.githubusercontent.com`
-     - **Subject Identifier**: `repo:<GitHubOrg>/<GitHubRepo>:environment:<EnvironmentName>`
-     - **Audience**: `api://AzureADTokenExchange`
-   - Save the credential.
-
-1. **Assign Roles to the Application**:
-   - Navigate to the Azure subscription and go to **Access control (IAM)**.
-   - Click **Add role assignment** and assign the `Contributor` role to the registered application.
-
-1. **Add Secrets to GitHub**:
-   - Copy the `Application (client) ID` and `Directory (tenant) ID` from the Azure Entra ID application.
-   - Add these as secrets (`AZURE_CLIENT_ID` and `AZURE_TENANT_ID`) in the GitHub repository settings.
-   - Add the Azure subscription ID as `AZURE_SUBSCRIPTION_ID`.
-
-Once configured, the GitHub Actions workflows will be able to authenticate with Azure and deploy resources securely.
+This enables passwordless authentication from GitHub Actions to Azure.

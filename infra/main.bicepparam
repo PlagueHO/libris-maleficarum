@@ -18,7 +18,7 @@ param staticWebAppLocation = toLower(readEnvironmentVariable('AZURE_STATIC_WEB_A
 param staticWebAppCustomDomain = toLower(readEnvironmentVariable('AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN', ''))
 
 // Container image for the backend API
-param apiContainerImage = readEnvironmentVariable('API_CONTAINER_IMAGE', 'ghcr.io/plagueho/libris-maleficarum-service:latest')
+param apiContainerImage = readEnvironmentVariable('API_CONTAINER_IMAGE', 'ghcr.io/plagueho/libris-maleficarum-api:latest')
 
 // Optional access code for API protection in single-user mode
 param accessCode = readEnvironmentVariable('ACCESS_CODE', '')
