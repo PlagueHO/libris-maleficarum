@@ -67,6 +67,7 @@ jobs:
       BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
       AZURE_ENV_NAME: ${{ format('libmal-{0}', github.run_id) }}
+      CONTAINER_IMAGE_API: ${{ needs.build-and-publish-backend-service.outputs.api-container-image }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

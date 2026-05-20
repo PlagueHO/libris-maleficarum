@@ -18,6 +18,10 @@ on:
         type: string
         default: ''
         required: false
+    outputs:
+      api-container-image:
+        description: "Full container image reference pushed to GHCR (empty when push-to-ghcr is false)"
+        value: ${{ jobs.build-and-publish-backend-service.outputs.api-container-image }}
 
 jobs:
   build-and-publish-backend-service:
@@ -28,6 +32,8 @@ jobs:
       packages: write
       checks: write
       pull-requests: write
+    outputs:
+      api-container-image: ${{ steps.set-image-ref.outputs.api-container-image }}
     defaults:
       run:
         working-directory: libris-maleficarum-service
@@ -175,3 +181,10 @@ jobs:
         run: |
           OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           docker push ghcr.io/${OWNER_LOWER}/libris-maleficarum-api:${{ inputs.image-tag || 'latest' }}
+
+      - name: Set image reference output
+        id: set-image-ref
+        if: inputs.push-to-ghcr == true
+        run: |
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "api-container-image=ghcr.io/${OWNER_LOWER}/libris-maleficarum-api:${{ inputs.image-tag || 'latest' }}" >> $GITHUB_OUTPUT
