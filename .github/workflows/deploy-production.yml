@@ -11,6 +11,10 @@ on:
         description: "The Azure region to deploy to"
         required: true
         type: string
+      CONTAINER_IMAGE_API:
+        description: "API container image to deploy (e.g. ghcr.io/owner/libris-maleficarum-api:v1.0.0)"
+        required: true
+        type: string
 
     secrets:
       AZURE_TENANT_ID:
@@ -53,6 +57,7 @@ jobs:
       BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
       AZURE_ENV_NAME: libmal-prod
+      CONTAINER_IMAGE_API: ${{ inputs.CONTAINER_IMAGE_API }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
