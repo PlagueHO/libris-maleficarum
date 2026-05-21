@@ -7,62 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-05-21
+
 ### Added
 
-- **User Authentication Mode & User Menu**: Dual-mode authentication supporting anonymous single-user and multi-user Entra ID modes:
-  - **Anonymous Mode**: Zero-config single-user mode using `_anonymous` identity; no Entra ID setup required
-  - **Multi-User Mode**: Entra ID authentication via MSAL with popup sign-in/sign-out and JWT bearer tokens
-  - **User Menu Dropdown**: Accessible dropdown in header toolbar with identity display, settings link, and mode-appropriate sign-in/sign-out actions
-  - **Settings Panel**: Settings overlay panel with theme toggle and accessible layout
-  - **AuthGuard Component**: Conditionally gates data pages behind authentication in multi-user mode
-  - **Backend Auth Detection**: API auto-detects auth mode from `AzureAd:ClientId` configuration, applies JWT validation or anonymous middleware
-  - **Identity Propagation**: `CreatedBy`/`ModifiedBy` fields on WorldEntity records, UserContextService reads identity from HTTP context claims
-  - **Bearer Token Interceptor**: Axios request interceptor acquires MSAL tokens silently for authenticated API calls
-  - **Aspire AppHost Config**: Optional Entra ID environment variable propagation to API and frontend services
-  - **Accessibility**: All new components jest-axe tested with 0 violations, keyboard navigable, built with accessibility in mind
-- **Edit World Entity**: Complete editing workflow with three user stories:
-  - **US1 - Edit from Hierarchy**: Click edit icon in EntityTreeNode to quickly modify entity properties
-  - **US2 - Edit from Detail View**: Edit button in EntityDetailReadOnlyView transitions to WorldEntityForm in edit mode  
-  - **US3 - Client-Side Validation**: Real-time validation with inline error display, `aria-invalid`, and `aria-describedby` for assistive technologies
-  - **Data Safety**: UnsavedChangesDialog prevents accidental data loss when navigating away with unsaved changes
-  - **Unified Form Component**: WorldEntityForm handles both create and edit workflows with mode detection
-  - **Performance**: React.memo optimization on EntityTreeNode prevents unnecessary re-renders
-  - **Accessibility**: All components jest-axe tested with 0 violations, full keyboard navigation, WCAG 2.2 Level AA compliant
-  - **Validation Module**: Reusable `worldEntityValidator.ts` module for client-side schema validation
-  - **Technical**:44/52 tasks complete (85%), 526 tests passing, clean build & lint, integration tests verify end-to-end workflows
-- **Schema Versioning**: Added `SchemaVersion` field to WorldEntity for lazy migration on save
-  - Entity-level schema versioning with 1-based integers (default: 1)
-  - Backend validation with 4 error codes (INVALID, TOO_LOW, TOO_HIGH, DOWNGRADE_NOT_ALLOWED)
-  - Frontend auto-injection of current schema version during entity creation/update
-  - EF Core value converter for backward compatibility (0 → 1 conversion for pre-versioning documents)
-  - Lazy migration strategy: entities upgrade to current version when saved, enabling gradual world migration
-  - Comprehensive test coverage: 20 backend unit tests + component integration tests
-  - Documentation: DATA_MODEL.md includes schema evolution guidelines, API.md includes validation error examples
-- **Container Entity Types**: Added 10 new container entity types (Locations, People, Events, History, Lore, Bestiary, Items, Adventures, Geographies, Campaigns) to organize world content into logical categories.
-- **Regional Entity Types**: Added 4 new regional entity types (GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion) with custom properties for domain-specific data.
-- **Custom Properties**: Regional entities support custom properties stored in JSON field:
-  - GeographicRegion: Climate, Terrain, Population (integer), Area (decimal)
-  - PoliticalRegion: GovernmentType, MemberStates (tags), EstablishedDate
-  - CulturalRegion: Languages (tags), Religions (tags), CulturalTraits
-  - MilitaryRegion: CommandStructure, StrategicImportance, MilitaryAssets (tags)
-- **TagInput Component**: Reusable component for entering lists of text values with keyboard support, duplicate prevention, and accessibility.
-- **Numeric Validation**: Utilities for parsing and validating Population (integer) and Area (decimal) fields with thousand separators.
+- **User Authentication**: Dual-mode authentication — anonymous single-user mode (zero-config `_anonymous` identity) and multi-user Entra ID mode via MSAL with JWT bearer tokens, `AuthGuard` component, and bearer token Axios interceptor.
+- **User Menu & Settings Panel**: Accessible dropdown in the header toolbar with identity display, sign-in/sign-out actions, and a settings overlay with theme toggle.
+- **Edit World Entity**: Full editing workflow — edit from hierarchy tree, edit from detail view, client-side validation with `aria-invalid`/`aria-describedby`, and `UnsavedChangesDialog` to prevent accidental data loss. `WorldEntityForm` handles both create and edit modes.
+- **Schema Versioning**: `SchemaVersion` field on `WorldEntity` with lazy migration on save, backend validation (INVALID, TOO_LOW, TOO_HIGH, DOWNGRADE_NOT_ALLOWED), frontend auto-injection, and EF Core value converter for backward compatibility.
+- **World Data Importer**: CLI tool, import library, and API client SDK for bulk world data import; Grimhollow sample world auto-seeded via Aspire AppHost on first run.
+- **Entity Search Index**: Azure AI Search integration with vector search, `SearchIndexWorker` powered by Cosmos DB change feed, and document indexing with filtering.
+- **Async Entity Operations & Notification Center**: Background delete and cascade-delete with TTL-based soft delete, progress polling, Sonner toast notifications, and optimistic UI updates.
+- **Soft Delete with Cascade**: `IsDeleted` flag, delete validation (blocks deletes without cascade option), configurable TTL, and `WorldEntity` hierarchy-aware cascade logic.
+- **Container Entity Types**: 10 new container entity types (Locations, People, Events, History, Lore, Bestiary, Items, Adventures, Geographies, Campaigns) to organise world content into logical categories.
+- **Regional Entity Types**: 4 new regional entity types (GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion) with custom JSON properties — climate, terrain, population, government type, languages, religions, and more.
+- **Player Character Entity Type**: New entity type with icon mapping for TTRPG campaign management.
+- **TagInput Component**: Reusable tag entry component with keyboard support, duplicate prevention, and full accessibility.
+- **Numeric Validation**: Utilities for parsing and validating Population (integer) and Area (decimal) fields with thousand-separator support.
 - **Smart Type Recommendations**: Context-aware entity type suggestions based on parent entity (e.g., Continent suggests GeographicRegion, Country).
-- **Flexible Entity Placement**: Users can create any entity type under any parent without system restrictions.
-- **Icon Support**: Visual icons for all 29 entity types using Fluent UI icons.
-- **Accessibility**: All new components tested with jest-axe, WCAG 2.2 Level AA compliant, full keyboard navigation.
-- **Validation Utilities**: Shared validation logic for text fields and array fields in custom property components.
+- **Dark/Light Mode Toggle**: Fantasy D&D theme with a full dark/light colour palette switchable at runtime.
+- **Dynamic Schema Properties — Phase 1**: Schema foundation and dynamic field renderer for entity-type-specific custom properties.
+- **EntityTypeSelector**: Context-aware type suggestions with prominent recommended types and search across all 29 entity types.
+- **Azure Static Web App**: Custom domain support, configurable location input, and full CI/CD deployment pipeline.
+- **Access Code Protection**: Optional API protection via access code verification, configurable per environment.
+- **Azure AI Foundry & Cognitive Services**: Capability host, Foundry project, AI services connections, and role assignments in Bicep infrastructure.
+- **Backend Service**: ASP.NET Core 10 API with Clean/Hexagonal architecture, EF Core + Cosmos DB (NoSQL), Aspire.NET orchestration, health checks, and OpenTelemetry tracing.
+- **Aspire AppHost**: Local development orchestration with service discovery, connection string injection, and Aspire Dashboard for observability.
 
 ### Changed
 
-- Extended `WorldEntityType` enum from 15 to 29 types.
-- Updated `ENTITY_TYPE_META` with labels, descriptions, categories, and icons for all entity types.
-- Updated `ENTITY_TYPE_SUGGESTIONS` mapping for intelligent type recommendations.
-- EntityTypeSelector now displays recommended types prominently while maintaining access to all types.
+- Extended `WorldEntityType` enum from 15 to 29 types; updated `ENTITY_TYPE_META` with labels, descriptions, categories, and icons for all types.
+- Updated `ENTITY_TYPE_SUGGESTIONS` mapping for intelligent context-aware recommendations.
+- Migrated UI from Fluent UI v9 to Shadcn/UI + Radix UI primitives with TailwindCSS v4 (CSS-based configuration).
+- Refactored app structure into feature-scoped components: `WorldSidebar`, `MainPanel`, `ChatPanel`, `TopToolbar`.
+- World entity API endpoints versioned to `/api/v1/`.
+- Improved `BaseUrl` validation and error handling in the API client.
+- CI/CD workflows restructured: frontend build/deploy, backend service publish, and infrastructure provisioning run as separate jobs.
+- Soft delete logic updated: `IsDeleted` flag filtering on all queries; separate endpoint for retrieving soft-deleted entities.
+- Cosmos DB partition key strategy: `/WorldId` for entities, composite `/WorldId-ParentId` for hierarchy queries.
+- Azure infrastructure: network-isolated architecture with private endpoints for all PaaS services; public network access disabled by default.
 
-### Technical
+### Fixed
 
-- 82 tasks completed across 7 phases (Setup, Foundational, 4 User Stories, Polish).
-- 27 accessibility tests passing with zero violations.
-- Test coverage >80% for all new code.
-- Performance: EntityTypeSelector search <100ms with 29 entity types.
+- Resolved `react-hooks/set-state-in-effect` lint errors from `eslint-plugin-react-hooks` 7.1.1.
+- Relaxed flaky performance test threshold from 1ms to 50ms.
+- Fixed pnpm v11 compatibility: added `pnpm-workspace.yaml` `allowBuilds` entries for esbuild, msw, and protobufjs.
+- Fixed `AZURE_ENV_NAME` format for consistency in environment naming.
+- Fixed anonymous-mode test loading state by mocking `useAccessCode`.
+- Fixed URI validation for `BlobUrl` values.
+- Increased resilience timeout for CLI import operations.
+
+### Security
+
+- All components comply with WCAG 2.2 Level AA; jest-axe tested with 0 violations across 27+ accessibility tests.
+- Private endpoints for Key Vault, Storage, Cosmos DB, AI Search, and AI Services; public network access disabled.
+- RBAC enabled for Key Vault; Cosmos DB and AI Search role assignments managed via Bicep templates.
+- Azure User Assigned Managed Identity with federated OIDC for passwordless GitHub Actions authentication.
+
+### Dependencies
+
+- Bumped `vite` from 7.x to 8.x.
+- Bumped `lucide-react` from 0.577 to 1.7.0.
+- Bumped `jsdom` from 26.x to 29.x.
+- Bumped `tailwindcss` from 4.1 to 4.2.
+- Bumped `MSTest.Sdk` from 3.x to 4.2.3.
+- Bumped numerous OpenTelemetry, React ecosystem, TypeScript, and GitHub Actions dependencies.
