@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-05-22
+
+### Changed
+
+- Updated backend service deployment workflows in CI/CD automation.
+
 ## [0.1.0] - 2026-05-21
 
 ### Added
