@@ -11,6 +11,8 @@ jobs:
   set-build-variables:
     name: Set build variables
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       build_version: ${{ steps.build_version.outputs.GitVersion_FullSemVer }}
       FullSemVer: ${{ steps.build_version.outputs.GitVersion_FullSemVer }}

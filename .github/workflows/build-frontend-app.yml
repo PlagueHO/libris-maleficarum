@@ -1,12 +1,16 @@
-name: Build and Publish Frontend App
+name: Build Frontend App
 
 on:
   workflow_call:
 
 jobs:
-  build-and-publish-frontend-app:
-    name: Build and Publish Frontend App
+  build-frontend-app:
+    name: Build Frontend App
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     defaults:
       run:
         working-directory: libris-maleficarum-app

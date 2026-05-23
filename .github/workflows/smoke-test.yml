@@ -53,7 +53,11 @@ jobs:
         run: |
           $data = @{
             FrontendBaseUrl = 'https://${{ inputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}'
-            AccessCode      = '${{ secrets.ACCESS_CODE }}'
+          }
+
+          $accessCode = '${{ secrets.ACCESS_CODE }}'
+          if ($accessCode) {
+            $data['AccessCode'] = $accessCode
           }
 
           $apiFqdn = '${{ inputs.AZURE_CONTAINER_APP_FQDN }}'

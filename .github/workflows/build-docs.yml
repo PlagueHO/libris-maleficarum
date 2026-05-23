@@ -7,6 +7,8 @@ jobs:
   build-docs:
     name: Build Docs
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: docs

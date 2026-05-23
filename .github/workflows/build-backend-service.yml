@@ -1,39 +1,22 @@
-name: Build and Publish Backend Service
+name: Build Backend Service
 
 on:
   workflow_call:
     inputs:
-      push-to-ghcr:
-        description: Whether to push the Docker image to GitHub Container Registry
-        type: boolean
-        default: false
-        required: false
-      image-tag:
-        description: The tag for the Docker image
-        type: string
-        default: 'latest'
-        required: false
       build-version:
         description: The semantic version to embed in .NET assemblies (e.g. 1.2.3-beta.1)
         type: string
         default: ''
         required: false
-    outputs:
-      api-container-image:
-        description: "Full container image reference pushed to GHCR (empty when push-to-ghcr is false)"
-        value: ${{ jobs.build-and-publish-backend-service.outputs.api-container-image }}
 
 jobs:
-  build-and-publish-backend-service:
-    name: Build and Publish Backend Service
+  build-backend-service:
+    name: Build Backend Service
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
       checks: write
       pull-requests: write
-    outputs:
-      api-container-image: ${{ steps.set-image-ref.outputs.api-container-image }}
     defaults:
       run:
         working-directory: libris-maleficarum-service
@@ -158,33 +141,3 @@ jobs:
         with:
           name: libris-maleficarum-cli
           path: libris-maleficarum-service/publish/cli
-
-      - name: Build Docker image
-        run: |
-          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker build \
-            --build-arg BUILD_VERSION=${{ inputs.build-version || '0.0.0' }} \
-            -t ghcr.io/${OWNER_LOWER}/libris-maleficarum-api:${{ inputs.image-tag || 'latest' }} \
-            -f src/Api/Dockerfile \
-            .
-
-      - name: Login to GitHub Container Registry
-        if: inputs.push-to-ghcr == true
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push Docker image to GHCR
-        if: inputs.push-to-ghcr == true
-        run: |
-          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker push ghcr.io/${OWNER_LOWER}/libris-maleficarum-api:${{ inputs.image-tag || 'latest' }}
-
-      - name: Set image reference output
-        id: set-image-ref
-        if: inputs.push-to-ghcr == true
-        run: |
-          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          echo "api-container-image=ghcr.io/${OWNER_LOWER}/libris-maleficarum-api:${{ inputs.image-tag || 'latest' }}" >> $GITHUB_OUTPUT

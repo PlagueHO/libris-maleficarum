@@ -1,0 +1,62 @@
+name: Publish Backend Service
+
+on:
+  workflow_call:
+    inputs:
+      image-tag:
+        description: The tag for the Docker image
+        type: string
+        default: 'latest'
+        required: false
+      build-version:
+        description: The semantic version to embed in the container build metadata
+        type: string
+        default: ''
+        required: false
+    outputs:
+      api-container-image:
+        description: Full container image reference pushed to GHCR
+        value: ${{ jobs.publish-backend-service.outputs.api-container-image }}
+
+jobs:
+  publish-backend-service:
+    name: Publish Backend Service
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      api-container-image: ${{ steps.set-image-ref.outputs.api-container-image }}
+    defaults:
+      run:
+        working-directory: libris-maleficarum-service
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build Docker image
+        run: |
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          docker build \
+            --build-arg BUILD_VERSION=${{ inputs.build-version || '0.0.0' }} \
+            -t ghcr.io/${OWNER_LOWER}/libris-maleficarum-api:${{ inputs.image-tag || 'latest' }} \
+            -f src/Api/Dockerfile \
+            .
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker image to GHCR
+        run: |
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          docker push ghcr.io/${OWNER_LOWER}/libris-maleficarum-api:${{ inputs.image-tag || 'latest' }}
+
+      - name: Set image reference output
+        id: set-image-ref
+        run: |
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "api-container-image=ghcr.io/${OWNER_LOWER}/libris-maleficarum-api:${{ inputs.image-tag || 'latest' }}" >> $GITHUB_OUTPUT
