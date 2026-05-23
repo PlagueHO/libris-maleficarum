@@ -32,9 +32,9 @@ Azure Verified Modules (AVM) are pre-built, tested, and validated Bicep modules 
 ### From Examples
 
 1. Review module README in `https://github.com/Azure/bicep-registry-modules/tree/main/avm/res/{service}/{resource}`
-2. Copy example code from module documentation
-3. Reference module using `br/public:avm/res/{service}/{resource}:{version}`
-4. Configure required and optional parameters
+1. Copy example code from module documentation
+1. Reference module using `br/public:avm/res/{service}/{resource}:{version}`
+1. Configure required and optional parameters
 
 ### Example Usage
 
@@ -170,19 +170,19 @@ Get-ChildItem -Path ./infra -Filter '*.bicep' -Recurse | ForEach-Object {
 When working with Bicep:
 
 1. Check for existing AVM modules before creating resources
-2. Use official module examples as starting points
-3. Run `az bicep build` after all changes
-4. Update accompanying `.bicepparam` files
-5. Document customizations or deviations from examples
+1. Use official module examples as starting points
+1. Run `az bicep build` after all changes
+1. Update accompanying `.bicepparam` files
+1. Document customizations or deviations from examples
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **Module Version**: Always specify exact version in module reference
-2. **Missing Dependencies**: Ensure resources are created before dependent modules
-3. **Validation Failures**: Run `az bicep build` to identify syntax/type errors
-4. **Parameter Files**: Ensure `.bicepparam` files are updated when parameters change
+1. **Missing Dependencies**: Ensure resources are created before dependent modules
+1. **Validation Failures**: Run `az bicep build` to identify syntax/type errors
+1. **Parameter Files**: Ensure `.bicepparam` files are updated when parameters change
 
 ### Support Resources
 

@@ -1,7 +1,7 @@
 # Pull Request
 
-Thank you for submitting a Pull Request to the Libris Maleficarnum project!
-Please ensure you have read the [Contributing.md](CONTRIBUTING.md) guide.
+Thank you for submitting a Pull Request to the Libris Maleficarum project.
+Please ensure you have read the [CONTRIBUTING.md](../CONTRIBUTING.md) guide.
 
 ---
 
@@ -19,7 +19,7 @@ List any code changes, enhancements, or refactoring included in this PR.
 
 ## Testing
 
-Describe how you tested your changes (manual, Pester tests, etc.).
+Describe how you tested your changes.
 
 ## Contributor Mention
 

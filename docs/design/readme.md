@@ -5,7 +5,7 @@ This folder contains the design, architecture, and technical documentation for t
 ## Contents
 
 - [Overview](overview.md) — Project summary and high-level description
-- [Architecture](architecture.md) — Architecture overview, diagrams, and components
+- [Architecture](overview.md) — Architecture overview, diagrams, and components
 - [Technology](technology.md) — Backend and frontend technology choices and rationale
 - [Data Model](data_model.md) — Cosmos DB data model, WorldEntity structure, hierarchy, and partitioning
 - [Folder Structure](folder_structure.md) — Repository folder structure and conventions

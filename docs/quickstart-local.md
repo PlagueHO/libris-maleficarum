@@ -10,7 +10,7 @@ ms.topic: how-to
 Run Libris Maleficarum locally with .NET Aspire. Aspire orchestrates the backend API, search indexing worker, frontend dev server, and local infrastructure dependencies.
 
 > [!NOTE]
-> For Azure deployment, use [QUICKSTART-AZURE.md](QUICKSTART-AZURE.md).
+> For Azure deployment, use [quickstart-azure.md](quickstart-azure.md).
 
 ## Prerequisites
 
@@ -137,5 +137,5 @@ pnpm test
 
 ## Next steps
 
-* Deploy to Azure with [QUICKSTART-AZURE.md](QUICKSTART-AZURE.md).
-* Review architecture docs in [design/README.md](design/README.md).
+* Deploy to Azure with [quickstart-azure.md](quickstart-azure.md).
+* Review architecture docs in [design/readme.md](design/readme.md).

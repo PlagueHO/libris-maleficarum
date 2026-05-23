@@ -10,7 +10,7 @@ ms.topic: how-to
 Deploy Libris Maleficarum to Azure with Azure Developer CLI (`azd`).
 
 > [!NOTE]
-> For local development, use [QUICKSTART-LOCAL.md](QUICKSTART-LOCAL.md).
+> For local development, use [quickstart-local.md](quickstart-local.md).
 
 ## Prerequisites
 
@@ -156,5 +156,5 @@ azd down --force --purge
 
 ## Next steps
 
-* Use [QUICKSTART-LOCAL.md](QUICKSTART-LOCAL.md) for local development.
-* Review design docs in [design/README.md](design/README.md).
+* Use [quickstart-local.md](quickstart-local.md) for local development.
+* Review design docs in [design/readme.md](design/readme.md).

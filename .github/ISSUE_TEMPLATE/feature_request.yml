@@ -1,5 +1,5 @@
 name: "✨ Feature Request"
-description: Suggest a new feature or enhancement for the Libris Maleficarnum.
+description: Suggest a new feature or enhancement for Libris Maleficarum.
 labels: [enhancement]
 body:
   - type: markdown
@@ -9,8 +9,8 @@ body:
   - type: input
     id: module_version
     attributes:
-      label: Libris Maleficarnum Version
-      description: What version of the Libris Maleficarnum are you using?
+      label: Libris Maleficarum Version
+      description: What version of Libris Maleficarum are you using?
       placeholder: e.g. 4.0.0
     validations:
       required: false

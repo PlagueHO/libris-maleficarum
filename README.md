@@ -42,7 +42,7 @@
 
 ### Prerequisites
 
-- [Node.js 20+](https://nodejs.org/) with [pnpm](https://pnpm.io/)
+- [Node.js 22 LTS](https://nodejs.org/) with [pnpm](https://pnpm.io/)
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - [Docker](https://www.docker.com/) (for Aspire orchestration and Cosmos DB Emulator)
 - [Azure Developer CLI (`azd`)](https://aka.ms/install-azd) (for Azure deployment)

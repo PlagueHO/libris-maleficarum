@@ -36,7 +36,7 @@ updates:
 
   # .NET 10+ dependencies (backend services)
   - package-ecosystem: "nuget"
-    directory: "/libris-maleficarum-service/src"
+    directory: "/libris-maleficarum-service"
     schedule:
       interval: "weekly"
       time: "06:00"

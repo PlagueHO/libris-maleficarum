@@ -63,7 +63,7 @@ Get up and running in under 5 minutes with Aspire's single-command developer exp
    }
    ```
 
-📖 **For detailed instructions**, see [Quick Start Guide](../specs/001-backend-rest-api/quickstart.md)
+📖 **For detailed instructions**, see [Quickstart Local](../docs/quickstart-local.md)
 
 ## Architecture
 
@@ -218,9 +218,8 @@ Interactive API documentation is available at:
 
 Detailed OpenAPI specifications are maintained in:
 
-- `specs/001-backend-rest-api/contracts/worlds.yaml` - World Management
-- `specs/001-backend-rest-api/contracts/entities.yaml` - Entity Management
-- `specs/001-backend-rest-api/contracts/assets.yaml` - Asset Management
+- [API Design](../docs/design/api.md) - REST API endpoints and contract guidance
+- [Data Model](../docs/design/data_model.md) - Entity structures and relationships
 
 ## Technology Stack
 
@@ -282,10 +281,10 @@ See main repository [LICENSE](../LICENSE) for license information.
 
 ## Documentation
 
-- [Quick Start Guide](../specs/001-backend-rest-api/quickstart.md) - Detailed getting started
-- [Data Model](../specs/001-backend-rest-api/data-model.md) - Entity schemas and relationships
-- [Technical Decisions](../specs/001-backend-rest-api/research.md) - Architecture and technology choices
-- [Task Breakdown](../specs/001-backend-rest-api/tasks.md) - Implementation phases
+- [Quickstart Local](../docs/quickstart-local.md) - Detailed local setup and development workflow
+- [Quickstart Azure](../docs/quickstart-azure.md) - Azure provisioning and deployment workflow
+- [Data Model](../docs/design/data_model.md) - Entity schemas and relationships
+- [Architecture Overview](../docs/design/overview.md) - System architecture and component boundaries
 
 ---
 

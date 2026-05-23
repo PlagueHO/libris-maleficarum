@@ -9,8 +9,8 @@ body:
   - type: input
     id: module_version
     attributes:
-      label: Libris Maleficarnum Version
-      description: What version of the Libris Maleficarnum are you using? (use `Get-Module -Name Libris Maleficarnum`)
+      label: Libris Maleficarum Version
+      description: What version of Libris Maleficarum are you using?
       placeholder: e.g. 4.0.0
     validations:
       required: false

@@ -5,7 +5,7 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 ## Architecture snapshot
 
 - **Frontend**: React 19 + TypeScript app in `libris-maleficarum-app/` (Vite + Vitest, Redux Toolkit state). Entry: `src/main.tsx`, `src/App.tsx`. Store/slice: `src/store/store.ts`.
-  - **UI**: Shadcn/UI components (kebab-case in `src/components/ui/*`: dialog, select, button, input, scroll-area, form-actions, form-layout, etc.) with Radix UI primitives. Docs: https://ui.shadcn.com/
+  - **UI**: Shadcn/UI components (kebab-case in `src/components/ui/*`: dialog, select, button, input, scroll-area, form-actions, form-layout, etc.) with Radix UI primitives. Docs: <https://ui.shadcn.com/>
   - **Shared**: Custom reusable components in PascalCase folders (`src/components/shared/*`: EntityTypeSelector/, TagInput/, UnsavedChangesDialog.tsx)
   - **Features**: Feature-specific components in PascalCase folders (`src/components/*`: TopToolbar/, WorldSidebar/, MainPanel/, ChatPanel/)
   - **Styles**: TailwindCSS v4 with CSS-based configuration in `index.css`. Use `cn()` utility from `@/lib/utils` for conditional classes.
@@ -33,7 +33,7 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 
 ### Frontend dev (folder: `libris-maleficarum-app/`)
 
-- **Dev server**: `pnpm dev` or `pnpm start` → launches Vite on https://127.0.0.1:4000 (port 4000, see `vite.config.ts`)
+- **Dev server**: `pnpm dev` or `pnpm start` → launches Vite on <https://127.0.0.1:4000> (port 4000, see `vite.config.ts`)
   - First run generates self-signed SSL cert (browser will warn)
   - VS Code task: "app: dev" starts dev server from app folder
 - **Build**: `pnpm build` → TypeScript check + Vite build; `pnpm preview` to serve production build
@@ -182,7 +182,7 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
   - Use hooks to expose WorldEntity hierarchy and user context to agents
   - Handle agent events and update Redux state accordingly
 - **Testing**: CopilotKit components are testable with React Testing Library + jest-axe
-- **Documentation**: See https://docs.copilotkit.ai/microsoft-agent-framework
+- **Documentation**: See <https://docs.copilotkit.ai/microsoft-agent-framework>
 
 ### Data model
 

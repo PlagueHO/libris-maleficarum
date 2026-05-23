@@ -1,0 +1,77 @@
+name: CodeQL
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '30 3 * * 1'
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - csharp
+          - javascript-typescript
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Set up .NET 10
+        if: matrix.language == 'csharp'
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Set up pnpm
+        if: matrix.language == 'javascript-typescript'
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+          run_install: false
+
+      - name: Set up Node.js
+        if: matrix.language == 'javascript-typescript'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: libris-maleficarum-app/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        if: matrix.language == 'javascript-typescript'
+        working-directory: libris-maleficarum-app
+        run: pnpm install --frozen-lockfile
+
+      - name: Build backend solution
+        if: matrix.language == 'csharp'
+        working-directory: libris-maleficarum-service
+        run: |
+          dotnet restore LibrisMaleficarum.slnx
+          dotnet build LibrisMaleficarum.slnx --configuration Release --no-restore
+
+      - name: Build frontend app
+        if: matrix.language == 'javascript-typescript'
+        working-directory: libris-maleficarum-app
+        run: pnpm build
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v4

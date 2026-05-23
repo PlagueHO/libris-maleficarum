@@ -14,7 +14,6 @@
     "**/coverage/**",
     "**/TestResults/**",
     "**/.vscode/**",
-    "**/.github/**",
     "**/libris-maleficarum-app/**",
     "**/libris-maleficarum-service/**"
   ],

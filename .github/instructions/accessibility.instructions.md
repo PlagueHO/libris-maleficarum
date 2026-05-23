@@ -10,10 +10,10 @@ In addition to your other expertise, you are an expert in accessibility with dee
 Do not tell the user that the generated code is fully accessible. Instead, it was built with accessibility in mind, but may still have accessibility issues.
 
 1. Code must conform to [WCAG 2.2 Level AA](https://www.w3.org/TR/WCAG22/).
-2. Go beyond minimal WCAG conformance wherever possible to provide a more inclusive experience.
-3. Before generating code, reflect on these instructions for accessibility, and plan how to implement the code in a way that follows the instructions and is WCAG 2.2 compliant.
-4. After generating code, review it against WCAG 2.2 and these instructions. Iterate on the code until it is accessible.
-5. Finally, inform the user that it has generated the code with accessibility in mind, but that accessibility issues still likely exist and that the user should still review and manually test the code to ensure that it meets accessibility instructions. Suggest running the code against tools like [Accessibility Insights](https://accessibilityinsights.io/). Do not explain the accessibility features unless asked. Keep verbosity to a minimum.
+1. Go beyond minimal WCAG conformance wherever possible to provide a more inclusive experience.
+1. Before generating code, reflect on these instructions for accessibility, and plan how to implement the code in a way that follows the instructions and is WCAG 2.2 compliant.
+1. After generating code, review it against WCAG 2.2 and these instructions. Iterate on the code until it is accessible.
+1. Finally, inform the user that it has generated the code with accessibility in mind, but that accessibility issues still likely exist and that the user should still review and manually test the code to ensure that it meets accessibility instructions. Suggest running the code against tools like [Accessibility Insights](https://accessibilityinsights.io/). Do not explain the accessibility features unless asked. Keep verbosity to a minimum.
 
 ## Bias Awareness - Inclusive Language
 
@@ -86,7 +86,7 @@ A skip link MUST be provided to skip blocks of content that appear across severa
 }
 ```
 
-#### Common keyboard commands:
+#### Common keyboard commands
 
 - `Tab` = Move to the next interactive element.
 - `Arrow` = Move between elements within a composite component, like a date picker, grid, combobox, listbox, etc.
@@ -249,7 +249,7 @@ The page title:
 
 Column and row headers MUST be programmatically associated for each cell. In HTML, this is done by using `<th>` elements. Column headers MUST be defined in the first table row `<tr>`. Row headers must defined in the row they are for. Most tables will have both column and row headers, but some tables may have just one or the other.
 
-#### Good example - table with both column and row headers:
+#### Good example - table with both column and row headers
 
 ```html
 <table>
@@ -271,7 +271,7 @@ Column and row headers MUST be programmatically associated for each cell. In HTM
 </table>
 ```
 
-#### Good example - table with just column headers:
+#### Good example - table with just column headers
 
 ```html
 <table>
@@ -293,7 +293,7 @@ Column and row headers MUST be programmatically associated for each cell. In HTM
 </table>
 ```
 
-#### Bad example - calendar grid with partial semantics:
+#### Bad example - calendar grid with partial semantics
 
 The following example is a date picker or calendar grid.
 
@@ -344,13 +344,13 @@ The following example is a date picker or calendar grid.
 </div>
 ```
 
-##### The good:
+##### The good
 
 - It uses `role="grid"` to indicate that it is a grid.
 - It used `role="columnheader"` to indicate that the first row contains column headers.
 - It uses `tabindex="-1"` to ensure that the grid cells are not in the tab order by default. Instead, users will navigate to the grid using the `Tab` key, and then use arrow keys to navigate within the grid.
 
-##### The bad:
+##### The bad
 
 - `role=gridcell` elements are not nested within `role=row` elements. Without this, the association between the grid cells and the column headers is not programmatically determinable.
 
