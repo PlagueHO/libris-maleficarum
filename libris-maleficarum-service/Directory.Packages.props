@@ -20,7 +20,7 @@
 
     <!-- Azure SDK packages -->
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
-    <PackageVersion Include="Azure.Search.Documents" Version="11.7.0" />
+    <PackageVersion Include="Azure.Search.Documents" Version="12.0.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.28.0" />
 
     <!-- Microsoft.Extensions packages -->
