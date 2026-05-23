@@ -26,6 +26,9 @@ jobs:
   lint-and-publish-bicep:
     name: Lint and Publish Bicep
     uses: ./.github/workflows/lint-and-publish-bicep.yml
+    permissions:
+      contents: read
+      pull-requests: write
 
   build-frontend-app:
     name: Build Frontend App
