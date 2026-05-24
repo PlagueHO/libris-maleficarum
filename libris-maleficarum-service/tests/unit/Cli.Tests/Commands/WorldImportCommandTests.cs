@@ -102,8 +102,8 @@ public class WorldImportCommandTests
             Environment.SetEnvironmentVariable("LIBRIS_API_URL", null);
             Environment.SetEnvironmentVariable("LIBRIS_API_TOKEN", null);
 
-            var exitCode = await new CommandLineConfiguration(_command)
-                .InvokeAsync(["--source", tempDirectory, "--validate-only"]);
+            var parseResult = _command.Parse(["--source", tempDirectory, "--validate-only"]);
+            var exitCode = await parseResult.InvokeAsync(parseResult.InvocationConfiguration);
 
             exitCode.Should().Be(0);
         }
