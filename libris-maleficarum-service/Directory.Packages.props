@@ -62,7 +62,7 @@
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.8" />
 
     <!-- Testing packages -->
-    <PackageVersion Include="FluentAssertions" Version="7.0.0" />
+    <PackageVersion Include="FluentAssertions" Version="8.10.0" />
     <PackageVersion Include="MSTest.TestFramework" Version="4.2.3" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
   </ItemGroup>
