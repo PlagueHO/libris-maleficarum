@@ -935,7 +935,7 @@ public class WorldEntityRepositoryIntegrationTests
 
         // Assert
         retrievedEntity.Should().NotBeNull();
-        retrievedEntity!.SchemaVersion.Should().BeGreaterOrEqualTo(1, "Missing SchemaVersion should default to 1 for backward compatibility");
+        retrievedEntity!.SchemaVersion.Should().BeGreaterThanOrEqualTo(1, "Missing SchemaVersion should default to 1 for backward compatibility");
 
         // Cleanup
         await context.Database.EnsureDeletedAsync();
