@@ -12,7 +12,7 @@ public class Program
     {
         var rootCommand = new RootCommand("Libris Maleficarum CLI tool");
         rootCommand.Add(WorldCommand.Create());
-        var config = new CommandLineConfiguration(rootCommand);
-        return await config.InvokeAsync(args);
+        var parseResult = rootCommand.Parse(args);
+        return await parseResult.InvokeAsync(parseResult.InvocationConfiguration);
     }
 }
