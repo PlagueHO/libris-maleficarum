@@ -80,7 +80,7 @@ var storageAccounName = take(toLower(replace('${abbrs.storageStorageAccounts}${e
 var keyVaultName = take(toLower(replace('${abbrs.keyVaultVaults}${environmentName}', '-', '')), 24)
 var cosmosDbAccountName = toLower(replace('${abbrs.cosmosDBAccounts}${environmentName}', '-', ''))
 var aiSearchName = '${abbrs.aiSearchSearchServices}${environmentName}'
-var aiFoundryName = '${abbrs.aiServicesAccounts}${environmentName}'
+var aiFoundryName = '${abbrs.aiFoundryAccounts}${environmentName}'
 var aiFoundryCustomSubDomainName = toLower(replace(environmentName, '-', ''))
 var staticSiteName = toLower(replace('${abbrs.webStaticSites}${environmentName}', '-', ''))
 var bastionHostName = '${abbrs.networkBastionHosts}${environmentName}'
@@ -149,7 +149,7 @@ module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
 module applicationInsights 'br/public:avm/res/insights/component:0.7.1' = {
   name: 'application-insights-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
-  dependsOn: [resourceGroup]  
+  dependsOn: [resourceGroup]
   params: {
     name: applicationInsightsName
     location: location
