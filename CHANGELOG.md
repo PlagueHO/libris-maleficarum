@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-05-24
+
+### Added
+
+- Added CI/CD workflow coverage for backend and frontend pipelines.
+
+### Changed
+
+- Updated infrastructure abbreviations in JSON configuration.
+- Added required permissions for the lint-and-publish-bicep workflow job.
+- Updated pnpm workspace configuration, documentation links, and package settings.
+
+### Dependencies
+
+- Bumped project and workflow dependencies across .NET, Azure SDK, and GitHub Actions packages.
+- Bumped `Azure.Search.Documents` from 11.7.0 to 12.0.0 and `Azure.Storage.Blobs` from 12.26.0 to 12.28.0.
+- Updated workflow toolchain versions, including pnpm 10.0.0 and devcontainer Docker-in-Docker feature updates.
+
 ## [0.1.1] - 2026-05-22
 
 ### Changed
