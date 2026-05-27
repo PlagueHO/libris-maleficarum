@@ -322,8 +322,6 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
             results.Count,
             stopwatch.ElapsedMilliseconds);
 
-        _logger.LogDebug("Search raw query: {Query}", request.Query);
-
         return new SearchResultSet
         {
             Results = results,

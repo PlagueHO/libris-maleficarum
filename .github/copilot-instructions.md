@@ -109,6 +109,13 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 - Never hardcode secrets; use Key Vault and managed identity. Disable public network access where supported.
 - If you need Azure best practices, call the Azure guidance tool.
 
+## Logging security (C# backend)
+
+- **Never log raw user-derived values** — query text, transcription text, access codes, display names, user-authored content. This prevents log injection (CWE-117).
+- **Log safe metadata only**: counts, lengths, durations, GUIDs, HTTP status codes, lifecycle event names.
+- A central `SanitizingLogRecordProcessor` in `ServiceDefaults` escapes control characters as defense-in-depth, but call sites must still avoid logging sensitive content.
+- Full rules: `docs/design/security-logging.md` and `.github/instructions/logging-security.instructions.md`.
+
 ## Where to look first
 
 - **Frontend examples**: `src/components/TopToolbar/TopToolbar.tsx`, `WorldSidebar/*`, `MainPanel/*`, `ChatWindow/*` for Shadcn/UI + Tailwind patterns

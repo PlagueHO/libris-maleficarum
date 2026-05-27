@@ -43,6 +43,27 @@ jobs:
       - name: Run linting (format check)
         run: dotnet format LibrisMaleficarum.slnx --verify-no-changes --severity error
 
+      - name: Scan for unsafe log patterns
+        # Fail the build if any log call emits raw user-derived content (CWE-117 / OWASP Log Injection).
+        # To add a justified exception, append '# log-injection-allowlist' to the offending line
+        # and document the reason in a comment above it.
+        run: |
+          set +e
+          MATCHES=$(grep -rn \
+            --include='*.cs' \
+            -E \
+            'Log(Debug|Trace|Information|Warning|Error|Critical)\s*\(.*\bQuery\b[^L]|Log(Debug|Trace|Information|Warning|Error|Critical)\s*\(.*[Pp]rovided[Cc]ode|Log(Debug|Trace|Information|Warning|Error|Critical)\s*\(.*[Aa]ccess[Cc]ode|Log(Debug|Trace|Information|Warning|Error|Critical)\s*\(.*[Tt]ranscri' \
+            src/ | grep -v '# log-injection-allowlist')
+          set -e
+          if [ -n "$MATCHES" ]; then
+            echo "::error::Unsafe logging pattern detected. Raw user-derived values must not be logged."
+            echo "See docs/design/security-logging.md for approved alternatives."
+            echo ""
+            echo "$MATCHES"
+            exit 1
+          fi
+          echo "Unsafe log pattern scan passed."
+
       - name: Run unit tests
         run: |
           dotnet test --solution LibrisMaleficarum.slnx \

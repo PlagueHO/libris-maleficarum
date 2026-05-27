@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using LibrisMaleficarum.ServiceDefaults.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
@@ -57,6 +58,9 @@ public static class Extensions
         {
             logging.IncludeFormattedMessage = true;
             logging.IncludeScopes = true;
+            // Defense-in-depth: sanitize control characters from all log strings
+            // before they reach any export sink (CWE-117 / OWASP Log Injection).
+            logging.AddProcessor(new SanitizingLogRecordProcessor());
         });
 
         builder.Services.AddOpenTelemetry()

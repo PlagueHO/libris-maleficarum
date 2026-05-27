@@ -1,6 +1,6 @@
 # Agent Development Guide
 
-AI coding agent guide for Libris Maleficarum - an AI-enhanced TTRPG campaign management platform.
+Libris Maleficarum — AI-enhanced TTRPG campaign management platform.
 
 **Stack**: React 19 + TypeScript + Vite + Redux Toolkit + TailwindCSS + Shadcn/ui (frontend) | .NET 10 + ASP.NET Core + EF Core + Cosmos DB + Aspire.NET (backend) | Azure + Bicep (infra)
 
@@ -9,22 +9,22 @@ AI coding agent guide for Libris Maleficarum - an AI-enhanced TTRPG campaign man
 ### Frontend (libris-maleficarum-app/)
 
 ```bash
-pnpm dev                                                      # Dev server (https://127.0.0.1:4000)
-pnpm build                                                    # Build (tsc + vite)
-pnpm lint                                                     # Lint
-pnpm test                                                     # Test (headless)
-pnpm test src/components/shared/TagInput/TagInput.test.tsx   # Single test file
-pnpm test -- --grep "accessibility"                          # Test pattern match
+pnpm dev  # Dev server (https://127.0.0.1:4000)
+pnpm build  # Build (tsc + vite)
+pnpm lint  # Lint
+pnpm test  # Test (headless)
+pnpm test src/components/shared/TagInput/TagInput.test.tsx  # Single test file
+pnpm test -- --grep "accessibility"  # Test pattern match
 ```
 
 ### Backend (libris-maleficarum-service/)
 
 ```bash
-dotnet run --project src/Orchestration/AppHost                                    # Start Aspire
-dotnet build LibrisMaleficarum.slnx                                               # Build
-dotnet test LibrisMaleficarum.slnx                                                # All tests
-dotnet test --filter TestCategory!=Integration                                    # Unit tests only
-dotnet test --filter FullyQualifiedName~CreateWorld_ValidRequest_ReturnsCreated   # Single test
+dotnet run --project src/Orchestration/AppHost  # Start Aspire
+dotnet build LibrisMaleficarum.slnx  # Build
+dotnet test LibrisMaleficarum.slnx  # All tests
+dotnet test --filter TestCategory!=Integration  # Unit tests only
+dotnet test --filter FullyQualifiedName~CreateWorld_ValidRequest_ReturnsCreated  # Single test
 ```
 
 ## TypeScript/React Style
@@ -94,6 +94,7 @@ public class ControllerTests {
 - **Azure**: Never hardcode secrets (use Key Vault + managed identity); private endpoints; prefer `azd` over `az`
 - **AI**: Microsoft Agent Framework (not Semantic Kernel) for backend; CopilotKit for frontend
 - **Aspire.NET**: Local dev only (`dotnet run --project src/Orchestration/AppHost`)
+- **Logging (C# only)**: Never log raw user-derived values (query/transcription text, access codes, display names, user-authored content). Log safe metadata only: counts, lengths, durations, GUIDs, HTTP status codes, lifecycle event names. See `docs/design/security-logging.md` and `.github/instructions/logging-security.instructions.md`.
 
 ## Post-Generation
 
