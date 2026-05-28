@@ -50,6 +50,31 @@ export default defineConfig({
     __MSAL_CLIENT_ID__: JSON.stringify(process.env.ENTRA_CLIENT_ID || ''),
     __MSAL_TENANT_ID__: JSON.stringify(process.env.ENTRA_TENANT_ID || ''),
   },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // OpenTelemetry packages - separate chunk
+          if (id.includes('@opentelemetry')) {
+            return 'vendor-observability'
+          }
+          // MSAL/Azure auth packages - separate chunk
+          if (id.includes('@azure/msal')) {
+            return 'vendor-auth'
+          }
+          // Radix UI packages - separate chunk
+          if (id.includes('@radix-ui') || (id.includes('node_modules') && id.includes('radix-ui'))) {
+            return 'vendor-radix'
+          }
+          // React core - separate chunk
+          if (id.includes('react/') || id.includes('react-dom') || id.includes('react-redux') || id.includes('@reduxjs')) {
+            return 'vendor-react'
+          }
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
