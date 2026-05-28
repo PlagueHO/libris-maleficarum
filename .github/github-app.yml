@@ -1,0 +1,57 @@
+instructions: Use `aspire run` to start the application. Use aspire MCP server tools to select AppHost and open `frontend` resource.
+scripts:
+- name: 'app: dev'
+  command: pnpm --dir libris-maleficarum-app dev
+- name: 'app: install'
+  command: pnpm --dir libris-maleficarum-app install
+- name: 'app: build'
+  command: pnpm --dir libris-maleficarum-app build
+- name: 'app: lint'
+  command: pnpm --dir libris-maleficarum-app lint
+- name: 'app: lint (fix)'
+  command: pnpm --dir libris-maleficarum-app lint --fix
+- name: 'app: test'
+  command: pnpm --dir libris-maleficarum-app test
+- name: 'app: test (watch)'
+  command: pnpm --dir libris-maleficarum-app test:watch
+- name: 'app: test (ui)'
+  command: pnpm --dir libris-maleficarum-app test:ui
+- name: 'app: test (accessibility)'
+  command: pnpm --dir libris-maleficarum-app test -t accessibility
+- name: 'aspire: run'
+  command: dotnet run --project libris-maleficarum-service\src\Orchestration\AppHost\LibrisMaleficarum.AppHost.csproj
+- name: 'service: build'
+  command: dotnet build libris-maleficarum-service\LibrisMaleficarum.slnx
+- name: 'service: test'
+  command: dotnet test --solution libris-maleficarum-service\LibrisMaleficarum.slnx --no-build
+- name: 'service: test (watch)'
+  command: dotnet watch test --solution libris-maleficarum-service\LibrisMaleficarum.slnx
+- name: 'service: clean'
+  command: dotnet clean libris-maleficarum-service\LibrisMaleficarum.slnx
+- name: 'service: restore'
+  command: dotnet restore libris-maleficarum-service\LibrisMaleficarum.slnx
+- name: 'service: format'
+  command: dotnet format libris-maleficarum-service\LibrisMaleficarum.slnx
+- name: 'service: format (verify)'
+  command: dotnet format libris-maleficarum-service\LibrisMaleficarum.slnx --verify-no-changes
+- name: 'service: test (unit)'
+  command: dotnet test --solution libris-maleficarum-service\LibrisMaleficarum.slnx --filter TestCategory=Unit --configuration Release --no-restore --results-directory libris-maleficarum-service\TestResults --coverage --coverage-output-format cobertura --report-trx
+- name: 'service: test (integration)'
+  command: dotnet test --solution libris-maleficarum-service\LibrisMaleficarum.slnx --filter TestCategory=Integration --configuration Release --no-restore --results-directory libris-maleficarum-service\TestResults
+- name: 'service: test (integration - Api)'
+  command: dotnet test --project libris-maleficarum-service\tests\integration\Api.IntegrationTests\LibrisMaleficarum.Api.IntegrationTests.csproj --filter TestCategory=Integration --configuration Release --no-restore --results-directory libris-maleficarum-service\TestResults
+- name: 'service: test (integration - Infrastructure)'
+  command: dotnet test --project libris-maleficarum-service\tests\integration\Infrastructure.IntegrationTests\LibrisMaleficarum.Infrastructure.IntegrationTests.csproj --filter TestCategory=Integration --configuration Release --no-restore --results-directory libris-maleficarum-service\TestResults
+- name: 'service: test (integration - Orchestration)'
+  command: dotnet test --project libris-maleficarum-service\tests\integration\Orchestration.IntegrationTests\LibrisMaleficarum.Orchestration.IntegrationTests.csproj --filter TestCategory=Integration --configuration Release --no-restore --results-directory libris-maleficarum-service\TestResults
+- name: 'service: code coverage (report)'
+  command: reportgenerator -reports:libris-maleficarum-service\TestResults\**\*.cobertura.xml -targetdir:libris-maleficarum-service\TestResults\CoverageReport "-reporttypes:'Html;MarkdownSummaryGithub;'" -assemblyfilters:+LibrisMaleficarum.*
+- name: 'infra: build (bicep)'
+  command: pwsh -NoProfile -Command "Get-ChildItem -Path infra -Recurse -Filter '*.bicep' | ForEach-Object { Write-Host \"Building $($_.FullName)...\"; az bicep build --file $($_.FullName) }"
+- name: 'markdown: lint'
+  command: pnpm lint:md
+- name: 'markdown: lint (fix)'
+  command: pnpm lint:md:fix
+automation:
+  auto_issue_session: true
+  remote_control: true
