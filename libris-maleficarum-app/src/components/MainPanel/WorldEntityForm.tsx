@@ -86,12 +86,12 @@ export function EntityDetailForm() {
       setName(existingEntity.name);
       setDescription(existingEntity.description || '');
       setEntityType(existingEntity.entityType);
-      
+
       // Deserialize Properties field for Regional entity types
       if (existingEntity.properties) {
         try {
-          const parsed = typeof existingEntity.properties === 'string' 
-            ? JSON.parse(existingEntity.properties) 
+          const parsed = typeof existingEntity.properties === 'string'
+            ? JSON.parse(existingEntity.properties)
             : existingEntity.properties;
           setCustomProperties(parsed);
         } catch (error) {
@@ -114,14 +114,14 @@ export function EntityDetailForm() {
   // Clear custom properties when entity type changes to a non-property type
   useEffect(() => {
     if (!entityType) return;
-    
+
     const propertyTypes: WorldEntityType[] = [
       WorldEntityType.GeographicRegion,
       WorldEntityType.PoliticalRegion,
       WorldEntityType.CulturalRegion,
       WorldEntityType.MilitaryRegion,
     ];
-    
+
     if (!propertyTypes.includes(entityType as WorldEntityType)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Clearing derived state when entity type changes
       setCustomProperties(null);
@@ -130,23 +130,23 @@ export function EntityDetailForm() {
 
   // Track unsaved changes
   const hasChangesPrevRef = useRef(false);
-  
+
   useEffect(() => {
-    let hasChanges = false;
-    
-    if (isEditing && existingEntity) {
-      // Compare with original values
-      const originalName = existingEntity.name || '';
-      const originalDescription = existingEntity.description || '';
-      const originalType = existingEntity.entityType || '';
-      
-      hasChanges = name !== originalName || 
-                   description !== originalDescription || 
-                   entityType !== originalType;
-    } else {
-      // Check if potentially dirty (for Create mode)
-      hasChanges = name.trim() !== '' || description.trim() !== '' || entityType !== '';
-    }
+    const hasChanges = isEditing && existingEntity
+      ? (() => {
+          // Compare with original values
+          const originalName = existingEntity.name || '';
+          const originalDescription = existingEntity.description || '';
+          const originalType = existingEntity.entityType || '';
+
+          return (
+            name !== originalName ||
+            description !== originalDescription ||
+            entityType !== originalType
+          );
+        })()
+      : // Check if potentially dirty (for Create mode)
+        name.trim() !== '' || description.trim() !== '' || entityType !== '';
 
     // Only dispatch if value actually changed
     if (hasChanges !== hasChangesPrevRef.current) {
@@ -271,7 +271,7 @@ export function EntityDetailForm() {
     try {
       // Type assertion done once for reuse
       const typedEntityType = entityType as WorldEntityType;
-      
+
       // Only include properties if there's actual data (not empty object or null)
       const hasProperties = customProperties && Object.keys(customProperties).length > 0;
       const properties = hasProperties ? JSON.stringify(customProperties) : undefined;
@@ -288,7 +288,7 @@ export function EntityDetailForm() {
           },
           currentEntityType: existingEntity?.entityType || typedEntityType,
         }).unwrap();
-        
+
         // T029: After successful edit save, return to read-only view
         dispatch(setUnsavedChanges(false));
         dispatch(closeEntityForm());
@@ -306,18 +306,18 @@ export function EntityDetailForm() {
             schemaVersion: ENTITY_SCHEMA_VERSIONS[typedEntityType],
           },
         }).unwrap();
-        
+
         // Auto-expand parent node to show newly created entity
         if (newEntityParentId) {
           dispatch(expandNode(newEntityParentId));
         }
-        
+
         dispatch(setUnsavedChanges(false));
         dispatch(closeEntityForm());
       }
     } catch (error) {
       logger.error('UI', 'Failed to save entity', { error });
-      
+
       // Log validation errors if present
       if (error && typeof error === 'object' && 'data' in error) {
         const apiError = error as { status?: number; data?: { errors?: Record<string, string[]> } };
