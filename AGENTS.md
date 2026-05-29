@@ -96,6 +96,46 @@ public class ControllerTests {
 - **Aspire.NET**: Local dev only (`dotnet run --project src/Orchestration/AppHost`)
 - **Logging (C# only)**: Never log raw user-derived values (query/transcription text, access codes, display names, user-authored content). Log safe metadata only: counts, lengths, durations, GUIDs, HTTP status codes, lifecycle event names. See `docs/design/security-logging.md` and `.github/instructions/logging-security.instructions.md`.
 
+## Agent guardrails
+
+### CI/CD workflow contract
+
+- **Caller owns token permissions** — reusable workflows never grant themselves scope beyond what the caller job declares.
+- **CI never needs `packages: write`** — build and test only; image push belongs in a dedicated publish workflow.
+- **Workflow file names must match responsibility** — `build-*.yml` builds/tests only; `publish-*.yml` pushes artifacts. Rename if purpose changes.
+- **On any workflow file change**: run a quick permissions audit (`workflow_call:` files should have no `packages: write`).
+
+### Command execution protocol
+
+- Execute the user's stated command exactly; no substitutions without asking first.
+- After running, always emit `Command: <exact command>` + `Result: <concise outcome>` — even for read-only queries.
+- If a user turn is read-only ("check", "report", "inspect"), do not edit files.
+- If output is missing/ambiguous, rerun once with explicit capture (`2>&1`) and explain the gap.
+
+### Build / lint / test triage
+
+When a build, lint, or test fails:
+
+1. Reproduce with the exact failing command; collect the exact error.
+1. Apply the **smallest** fix that addresses the root cause.
+1. Re-run **only** the affected task to verify — not the full suite.
+1. Report: root cause + fix applied + verification command output.
+
+- Do **not** apply multiple speculative fixes before re-testing.
+
+### Cross-repo pattern parity
+
+When mirroring a pattern from another repo (e.g., `prompt-babbler`, `marginalia`):
+
+- Copy names verbatim; change **only** the segment that legitimately differs.
+- Include a one-line parity note: what was copied unchanged and what was intentionally different.
+- Before marking done, verify the changed files against the source repo structure.
+
+### Context growth
+
+- When a session exceeds ~15 turns or spans multiple distinct work phases, proactively suggest `/compact` or starting a fresh thread.
+- Provide a handoff summary on compaction: current state, files changed, next steps.
+
 ## Post-Generation
 
 - Trim trailing whitespace
