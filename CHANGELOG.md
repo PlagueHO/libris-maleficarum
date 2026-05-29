@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-05-29
+
+### Changed
+
+- Updated CLI wiring for System.CommandLine API changes.
+- Updated integration tests to use FluentAssertions v8 numeric assertion APIs.
+- Silenced TypeScript 6 baseUrl deprecation warnings in frontend tsconfig.
+- Updated repository governance and workflow guidance, including agent guardrails and CI/CD protocol documentation.
+- Updated repository standards files, including Code of Conduct and editor configuration.
+- Removed DatePicker initialFocus usage to align component behavior.
+
+### Removed
+
+- Removed CodeQL workflow configuration from CI.
+
+### Security
+
+- Enhanced logging security controls.
+
+### Dependencies
+
+- Upgraded major frontend and tooling dependencies, including TypeScript 6, ESLint 10, Vite build toolchain groups, and markdownlint-cli2.
+- Upgraded backend and test dependencies, including Microsoft.Identity.Web, MSTest.TestFramework, FluentAssertions, FluentValidation.AspNetCore, and System.CommandLine.
+- Upgraded platform and CI dependencies, including dotnet-sdk baseline and actions/checkout v6.
+- Consolidated grouped Dependabot updates for UI utilities, type definitions, and devcontainer dependency groups.
+
 ## [0.1.2] - 2026-05-24
 
 ### Added
