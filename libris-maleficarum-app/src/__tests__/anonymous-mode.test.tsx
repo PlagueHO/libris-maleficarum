@@ -58,23 +58,23 @@ function renderApp() {
 describe('Anonymous Single-User Mode', () => {
   it('shows user menu trigger in header', () => {
     renderApp();
-    expect(screen.getByRole('button', { name: /user menu/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /anonymous/i })).toBeInTheDocument();
   });
 
   it('shows "Anonymous" when user menu is opened', async () => {
     const user = userEvent.setup();
     renderApp();
 
-    await user.click(screen.getByRole('button', { name: /user menu/i }));
+    await user.click(screen.getByRole('button', { name: /anonymous/i }));
 
-    expect(screen.getByText(/anonymous/i)).toBeInTheDocument();
+    expect(screen.getByText(/anonymous mode/i)).toBeInTheDocument();
   });
 
   it('shows settings menu item in user menu', async () => {
     const user = userEvent.setup();
     renderApp();
 
-    await user.click(screen.getByRole('button', { name: /user menu/i }));
+    await user.click(screen.getByRole('button', { name: /anonymous/i }));
 
     expect(screen.getByRole('menuitem', { name: /settings/i })).toBeInTheDocument();
   });
@@ -83,7 +83,7 @@ describe('Anonymous Single-User Mode', () => {
     const user = userEvent.setup();
     renderApp();
 
-    await user.click(screen.getByRole('button', { name: /user menu/i }));
+    await user.click(screen.getByRole('button', { name: /anonymous/i }));
     await user.click(screen.getByRole('menuitem', { name: /settings/i }));
 
     expect(screen.getByRole('heading', { name: /settings/i })).toBeInTheDocument();

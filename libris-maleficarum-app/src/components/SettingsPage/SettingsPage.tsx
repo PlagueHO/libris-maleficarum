@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { CheckCircle2, Loader2, Monitor, Moon, RefreshCw, Sun, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { getAccessStatus } from '@/services/configService';
+import { useLazyGetAccessStatusQuery } from '@/services/configApi';
 import { useTheme, type ThemePreference } from '@/hooks/useTheme';
 
 interface SettingsPageProps {
@@ -20,6 +20,20 @@ interface SettingsPageProps {
 interface BackendStatus {
   state: 'loading' | 'connected' | 'disconnected';
   message?: string;
+}
+
+function getBackendErrorMessage(error: unknown): string {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'data' in error &&
+    typeof (error as { data?: unknown }).data === 'object' &&
+    (error as { data?: { detail?: string } }).data?.detail
+  ) {
+    return (error as { data: { detail: string } }).data.detail;
+  }
+
+  return 'Unable to reach backend service.';
 }
 
 function isThemePreference(value: string): value is ThemePreference {
@@ -32,23 +46,18 @@ function isThemePreference(value: string): value is ThemePreference {
  */
 export function SettingsPage({ onClose }: SettingsPageProps) {
   const { theme, setTheme } = useTheme();
-  const [backendStatus, setBackendStatus] = useState<BackendStatus>({ state: 'loading' });
+  const [loadBackendStatus, { isUninitialized, isLoading, isError, error }] =
+    useLazyGetAccessStatusQuery();
 
-  const refreshBackendStatus = useCallback(async () => {
-    setBackendStatus({ state: 'loading' });
-
-    try {
-      await getAccessStatus();
-      setBackendStatus({ state: 'connected' });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unable to reach backend service.';
-      setBackendStatus({ state: 'disconnected', message });
-    }
-  }, []);
+  const backendStatus: BackendStatus = isLoading || isUninitialized
+    ? { state: 'loading' }
+    : isError
+      ? { state: 'disconnected', message: getBackendErrorMessage(error) }
+      : { state: 'connected' };
 
   useEffect(() => {
-    void refreshBackendStatus();
-  }, [refreshBackendStatus]);
+    void loadBackendStatus();
+  }, [loadBackendStatus]);
 
   const handleThemeChange = (value: string) => {
     if (isThemePreference(value)) {
@@ -147,7 +156,7 @@ export function SettingsPage({ onClose }: SettingsPageProps) {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => void refreshBackendStatus()}
+                onClick={() => void loadBackendStatus()}
                 disabled={backendStatus.state === 'loading'}
                 aria-label="Refresh backend status"
               >

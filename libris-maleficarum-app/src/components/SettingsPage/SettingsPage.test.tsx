@@ -1,22 +1,34 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { SettingsPage } from './SettingsPage';
 
-vi.mock('@/services/configService', () => ({
-  getAccessStatus: vi.fn(),
-}));
+const mockLoadBackendStatus = vi.fn(async () => undefined);
+let mockBackendStatusState: {
+  isUninitialized: boolean;
+  isLoading: boolean;
+  isError: boolean;
+  error?: unknown;
+} = {
+  isUninitialized: false,
+  isLoading: false,
+  isError: false,
+};
 
-import { getAccessStatus } from '@/services/configService';
+vi.mock('@/services/configApi', () => ({
+  useLazyGetAccessStatusQuery: () => [mockLoadBackendStatus, mockBackendStatusState],
+}));
 
 expect.extend(toHaveNoViolations);
 
-const mockGetAccessStatus = vi.mocked(getAccessStatus);
-
 beforeEach(() => {
   vi.clearAllMocks();
-  mockGetAccessStatus.mockResolvedValue({ accessCodeRequired: false });
+  mockBackendStatusState = {
+    isUninitialized: false,
+    isLoading: false,
+    isError: false,
+  };
 });
 
 function renderSettingsPage() {
@@ -30,16 +42,13 @@ function renderSettingsPage() {
 }
 
 describe('SettingsPage', () => {
-  it('renders heading and key settings sections', async () => {
+  it('renders heading and key settings sections', () => {
     renderSettingsPage();
 
     expect(screen.getByRole('heading', { name: /settings/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /appearance/i })).toBeInTheDocument();
     expect(screen.getByText(/^backend status$/i)).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(screen.getByText(/connected/i)).toBeInTheDocument();
-    });
+    expect(screen.getByText(/connected/i)).toBeInTheDocument();
   });
 
   it('renders theme options light dark and system', async () => {
@@ -65,13 +74,16 @@ describe('SettingsPage', () => {
   });
 
   it('shows disconnected state when backend check fails', async () => {
-    mockGetAccessStatus.mockRejectedValue(new Error('Network Error'));
+    mockBackendStatusState = {
+      isUninitialized: false,
+      isLoading: false,
+      isError: true,
+      error: { data: { detail: 'Network Error' } },
+    };
 
     renderSettingsPage();
 
-    await waitFor(() => {
-      expect(screen.getByText(/disconnected/i)).toBeInTheDocument();
-    });
+    expect(screen.getByText(/disconnected/i)).toBeInTheDocument();
 
     expect(screen.getByText(/network error/i)).toBeInTheDocument();
   });
@@ -81,25 +93,15 @@ describe('SettingsPage', () => {
 
     renderSettingsPage();
 
-    await waitFor(() => {
-      expect(screen.getByText(/connected/i)).toBeInTheDocument();
-    });
-
-    const initialCalls = mockGetAccessStatus.mock.calls.length;
+    const initialCalls = mockLoadBackendStatus.mock.calls.length;
 
     await user.click(screen.getByRole('button', { name: /refresh backend status/i }));
 
-    await waitFor(() => {
-      expect(mockGetAccessStatus.mock.calls.length).toBeGreaterThan(initialCalls);
-    });
+    expect(mockLoadBackendStatus.mock.calls.length).toBeGreaterThan(initialCalls);
   });
 
   it('has no accessibility violations', async () => {
     const { container } = renderSettingsPage();
-
-    await waitFor(() => {
-      expect(screen.getByText(/connected/i)).toBeInTheDocument();
-    });
 
     const results = await axe(container);
     expect(results).toHaveNoViolations();
