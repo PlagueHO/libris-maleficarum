@@ -90,7 +90,7 @@ const EntityTreeNodeComponent = memo(function EntityTreeNode({ entity, level, ch
     dispatch(openEntityFormEdit(entity.id));
   };
 
-  const indentStyle = { paddingLeft: `${level * 20}px` };
+  const indentStyle = { paddingLeft: `${level * 20 + 8}px` };
 
   return (
     <div className="flex flex-col relative" data-level={level}>
@@ -143,23 +143,23 @@ const EntityTreeNodeComponent = memo(function EntityTreeNode({ entity, level, ch
           <span className="flex-1 text-sm overflow-hidden text-ellipsis whitespace-nowrap">{entity.name}</span>
 
           <Button
-            variant="icon-ghost"
+            variant="icon-expander-action"
             size="icon-sm"
             onClick={handleEdit}
             aria-label={`Edit ${entity.name}`}
             tabIndex={-1}
-            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity w-5 h-5 hover:bg-muted"
+            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity w-5 h-5"
           >
             <Pencil size={14} aria-hidden="true" />
           </Button>
 
           <Button
-            variant="icon-ghost"
+            variant="icon-expander-action"
             size="icon-sm"
             onClick={handleQuickCreate}
             aria-label={`Add child to ${entity.name}`}
             tabIndex={-1}
-            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity w-5 h-5 hover:bg-muted"
+            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity w-5 h-5"
           >
             <Plus size={14} aria-hidden="true" />
           </Button>

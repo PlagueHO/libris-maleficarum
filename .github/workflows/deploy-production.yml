@@ -26,9 +26,6 @@ on:
       AZURE_CLIENT_ID:
         description: "The Azure client ID to use for authentication to Azure for deployment"
         required: true
-      ACCESS_CODE:
-        description: "Optional access code for API protection in single-user mode"
-        required: false
       AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN:
         description: "Optional custom domain for Azure Static Web App"
         required: false
@@ -62,7 +59,7 @@ jobs:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ACCESS_CODE: ${{ secrets.ACCESS_CODE }}
+      AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN: ${{ secrets.AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN }}
 
   deploy-prod-frontend:
     name: Deploy Prod Frontend
@@ -98,4 +95,3 @@ jobs:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ACCESS_CODE: ${{ secrets.ACCESS_CODE }}

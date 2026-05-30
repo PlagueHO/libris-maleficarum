@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Send, Sparkles } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import malleusIcon from '@/assets/malleus-icon.png';
 
 interface Message {
   id: string;
@@ -40,7 +41,7 @@ export function ChatPanel() {
     <aside data-testid="chat-panel" className="w-96 border-l border-border bg-card flex flex-col">
       <div className="p-4 border-b border-border">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
+          <img src={malleusIcon} alt="" className="h-5 w-5 rounded-sm" aria-hidden="true" />
           <h2 className="text-lg font-semibold">Malleus</h2>
         </div>
       </div>

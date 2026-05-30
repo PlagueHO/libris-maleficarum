@@ -76,8 +76,8 @@ export function EntityContextMenu({ entity, children }: EntityContextMenuProps) 
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
+          variant="destructive"
           onClick={handleDelete}
-          className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/10"
         >
           <Trash2 className="mr-2 h-4 w-4" />
           Delete Entry

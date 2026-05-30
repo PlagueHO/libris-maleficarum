@@ -12,12 +12,12 @@ import { WorldProvider } from './contexts'
 import { OptimisticDeleteProvider } from './components/WorldSidebar/OptimisticDeleteContext';
 import { selectHasPendingOperations } from './store/notificationSelectors';
 import { Toaster } from './components/ui/sonner';
-import { SettingsPanel } from './components/SettingsPage';
+import { SettingsPage } from './components/SettingsPage';
 import { AuthGuard } from './components/AuthGuard';
 import { logger } from './lib/logger';
 import { useAccessCode } from './hooks/useAccessCode';
 import { AccessCodeDialog } from './components/shared/AccessCodeDialog';
-import { Loader2 } from 'lucide-react';
+import appIcon from '@/assets/libris-maleficarum-icon.png';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -25,13 +25,13 @@ function App() {
 
   // Access code gate
   const { accessCodeRequired, isVerified, isLoading: accessCodeLoading, error: accessCodeError, submitCode } = useAccessCode();
-  
+
   // Track optimistically deleted entity IDs
   const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState<Set<string>>(new Set());
-  
+
   // Settings panel visibility
   const [settingsOpen, setSettingsOpen] = useState(false);
-  
+
   // Track when we need to poll after a delete (for smart polling)
   const [shouldPollAfterDelete, setShouldPollAfterDelete] = useState(false);
 
@@ -43,19 +43,19 @@ function App() {
     setOptimisticallyDeletedIds(prev => {
       const next = new Set(prev);
       next.add(entityId);
-      
+
       // Add child entity IDs for cascading deletes
       if (childIds) {
         childIds.forEach(id => next.add(id));
       }
-      
+
       return next;
     });
-    
+
     // Enable polling after delete for 30 seconds
     setShouldPollAfterDelete(true);
   }, []);
-  
+
   /**
    * Rollback optimistic delete (restore entity to UI)
    * Called when backend delete fails
@@ -64,60 +64,60 @@ function App() {
     setOptimisticallyDeletedIds(prev => {
       const next = new Set(prev);
       next.delete(entityId);
-      
+
       // Remove child entity IDs
       if (childIds) {
         childIds.forEach(id => next.delete(id));
       }
-      
+
       return next;
     });
   }, []);
-  
+
   // Enable polling when app mounts
   useEffect(() => {
     dispatch(setPollingEnabled(true));
-    
+
     return () => {
       dispatch(setPollingEnabled(false));
     };
   }, [dispatch]);
-  
+
   // T033: 24-hour cleanup interval for old notifications
   useEffect(() => {
     const CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds
     const MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    
+
     // Run cleanup immediately on mount
     const cutoffTimestamp = Date.now() - MAX_AGE;
     dispatch(performCleanup(cutoffTimestamp));
-    
+
     // Set up interval to run cleanup every hour
     const interval = setInterval(() => {
       const cutoff = Date.now() - MAX_AGE;
       dispatch(performCleanup(cutoff));
     }, CLEANUP_INTERVAL);
-    
+
     return () => clearInterval(interval);
   }, [dispatch]);
-  
+
   // Poll for async operations
   // Smart polling: Only poll when there are active operations or we recently initiated a delete
   // This reduces unnecessary API calls when there's nothing to track
   const hasPendingOperations = useAppSelector(selectHasPendingOperations);
   const shouldPoll = hasPendingOperations || shouldPollAfterDelete;
-  
+
   // Clear shouldPollAfterDelete flag after 30 seconds to stop polling
   useEffect(() => {
     if (!shouldPollAfterDelete) return;
-    
+
     const timeout = setTimeout(() => {
       setShouldPollAfterDelete(false);
     }, 30000);
-    
+
     return () => clearTimeout(timeout);
   }, [shouldPollAfterDelete]);
-  
+
   // Log when polling starts/stops (debug visibility)
   useEffect(() => {
     if (shouldPoll && selectedWorldId) {
@@ -129,9 +129,9 @@ function App() {
       logger.debug('STATE', 'Delete operations polling stopped - no active operations');
     }
   }, [shouldPoll, selectedWorldId, hasPendingOperations, shouldPollAfterDelete]);
-  
+
   useGetDeleteOperationsQuery(
-    { 
+    {
       worldId: selectedWorldId!,
       // Don't filter by status - fetch all operations including completed
       // The notification panel handles filtering/display logic
@@ -144,12 +144,23 @@ function App() {
       skipPollingIfUnfocused: true, // Pause polling when browser tab is inactive
     }
   );
-  
+
   // Access code loading spinner (only while checking status, not during code submission)
   if (accessCodeLoading && !accessCodeRequired) {
     return (
       <div className="h-screen flex items-center justify-center bg-background" role="status">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <div className="relative flex h-24 w-24 items-center justify-center">
+          <div
+            className="h-24 w-24 animate-spin rounded-full border-4 border-muted border-t-primary"
+            aria-hidden="true"
+          />
+          <img
+            src={appIcon}
+            alt=""
+            className="absolute size-9 rounded-sm"
+            aria-hidden="true"
+          />
+        </div>
         <span className="sr-only">Loading...</span>
       </div>
     );
@@ -181,13 +192,16 @@ function App() {
           >
             <div className="flex-1 flex overflow-hidden">
               <WorldSidebar optimisticallyDeletedIds={optimisticallyDeletedIds} />
-              <MainPanel />
+              {settingsOpen ? (
+                <SettingsPage onClose={() => setSettingsOpen(false)} />
+              ) : (
+                <MainPanel />
+              )}
               <ChatPanel />
             </div>
             <DeleteConfirmationModal />
           </WorldProvider>
         </AuthGuard>
-        <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
     </OptimisticDeleteProvider>
   )

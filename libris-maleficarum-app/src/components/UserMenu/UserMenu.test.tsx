@@ -19,23 +19,24 @@ function renderUserMenu() {
 describe('UserMenu', () => {
   it('renders the user menu trigger button', () => {
     renderUserMenu();
-    expect(screen.getByRole('button', { name: /user menu/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /anonymous/i })).toBeInTheDocument();
   });
 
   it('shows anonymous mode display by default', async () => {
     const user = userEvent.setup();
     renderUserMenu();
 
-    await user.click(screen.getByRole('button', { name: /user menu/i }));
+    await user.click(screen.getByRole('button', { name: /anonymous/i }));
 
-    expect(screen.getByText(/anonymous/i)).toBeInTheDocument();
+    expect(screen.getByText(/anonymous mode/i)).toBeInTheDocument();
+    expect(screen.getByText(/entra id sso is not configured/i)).toBeInTheDocument();
   });
 
   it('shows settings menu item when opened', async () => {
     const user = userEvent.setup();
     renderUserMenu();
 
-    await user.click(screen.getByRole('button', { name: /user menu/i }));
+    await user.click(screen.getByRole('button', { name: /anonymous/i }));
 
     expect(screen.getByRole('menuitem', { name: /settings/i })).toBeInTheDocument();
   });
@@ -44,8 +45,8 @@ describe('UserMenu', () => {
     const user = userEvent.setup();
     renderUserMenu();
 
-    await user.click(screen.getByRole('button', { name: /user menu/i }));
-    expect(screen.getByText(/anonymous/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /anonymous/i }));
+    expect(screen.getByText(/anonymous mode/i)).toBeInTheDocument();
 
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('menuitem', { name: /settings/i })).not.toBeInTheDocument();
@@ -61,7 +62,7 @@ describe('UserMenu', () => {
     const user = userEvent.setup();
     const { container } = renderUserMenu();
 
-    await user.click(screen.getByRole('button', { name: /user menu/i }));
+    await user.click(screen.getByRole('button', { name: /anonymous/i }));
 
     const results = await axe(container);
     expect(results).toHaveNoViolations();

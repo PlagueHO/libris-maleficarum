@@ -1,15 +1,26 @@
-import { User, Settings, LogOut, LogIn } from 'lucide-react';
+import { CircleUser, Settings, LogOut, LogIn } from 'lucide-react';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { isAuthConfigured, loginRequest } from '@/auth/authConfig';
+
+/** Extracts up to two initials from a display name. */
+function getInitials(name: string | undefined): string {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return parts[0][0]?.toUpperCase() ?? '?';
+}
 
 /**
  * User menu for multi-user mode with MSAL authentication.
@@ -21,12 +32,8 @@ function AuthenticatedUserMenu({ onOpenSettings }: { onOpenSettings: () => void 
 
   const account = accounts[0];
   const displayName = account?.name ?? account?.username ?? 'User';
-  const initials = displayName
-    .split(' ')
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+  const email = account?.username ?? '';
+  const initials = getInitials(displayName);
 
   const handleSignIn = async () => {
     try {
@@ -47,51 +54,57 @@ function AuthenticatedUserMenu({ onOpenSettings }: { onOpenSettings: () => void 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="User menu">
-          {isAuthenticated ? (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground" aria-hidden="true">
+        {isAuthenticated ? (
+          <Button variant="ghost" size="sm" className="gap-2" title={displayName}>
+            <span className="flex size-6 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground" aria-hidden="true">
               {initials}
             </span>
-          ) : (
-            <User className="h-5 w-5" />
-          )}
-        </Button>
+            <span className="max-w-30 truncate text-sm">{displayName}</span>
+          </Button>
+        ) : (
+          <Button variant="ghost" size="sm">
+            <LogIn className="size-4" aria-hidden="true" />
+            Sign in
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         {isAuthenticated ? (
           <>
-            <DropdownMenuLabel>
+            <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium">{displayName}</p>
-                {account?.username && (
-                  <p className="text-xs text-muted-foreground">{account.username}</p>
+                <p className="text-sm font-medium leading-none">{displayName}</p>
+                {email && (
+                  <p className="text-xs leading-none text-muted-foreground">{email}</p>
                 )}
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={onOpenSettings}>
-              <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
-              Settings
-            </DropdownMenuItem>
+            <DropdownMenuGroup>
+              <DropdownMenuItem onSelect={onOpenSettings}>
+                <Settings className="size-4" aria-hidden="true" />
+                Settings
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => void handleSignOut()}>
-              <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
+              <LogOut className="size-4" aria-hidden="true" />
               Sign out
             </DropdownMenuItem>
           </>
         ) : (
           <>
-            <DropdownMenuLabel>Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={onOpenSettings}>
-              <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
-              Settings
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => void handleSignIn()}>
-              <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
-              Sign in
+              <LogIn className="size-4" aria-hidden="true" />
+              Sign in with Entra ID
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem onSelect={onOpenSettings}>
+                <Settings className="size-4" aria-hidden="true" />
+                Settings
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
           </>
         )}
       </DropdownMenuContent>
@@ -106,24 +119,37 @@ function AnonymousUserMenu({ onOpenSettings }: { onOpenSettings: () => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="User menu">
-          <User className="h-5 w-5" />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-2 opacity-60"
+          title="Entra ID SSO is not enabled. Running in anonymous single-user mode."
+        >
+          <CircleUser className="size-5" aria-hidden="true" />
+          <span className="text-sm">Anonymous</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Anonymous Mode</DropdownMenuLabel>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">Anonymous Mode</p>
+            <p className="text-xs leading-none text-muted-foreground">
+              Entra ID SSO is not configured.
+            </p>
+          </div>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <div className="px-2 py-1.5 text-xs text-muted-foreground">
-          Entra ID is not configured. Running in single-user mode.
-        </div>
+        <DropdownMenuGroup>
+          <DropdownMenuItem onSelect={onOpenSettings}>
+            <Settings className="size-4" aria-hidden="true" />
+            Settings
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={onOpenSettings}>
-          <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
-          Settings
-        </DropdownMenuItem>
         <DropdownMenuItem disabled>
-          <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
+          <LogIn className="size-4" aria-hidden="true" />
           Sign in
+          <span className="ml-auto text-xs text-muted-foreground">Disabled</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, Sparkles } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useDispatch } from 'react-redux';
@@ -7,6 +7,7 @@ import { resetToHome } from '@/store/worldSidebarSlice';
 import { NotificationBell, NotificationCenter } from '@/components/NotificationCenter';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
+import appIcon from '@/assets/libris-maleficarum-icon.png';
 
 interface TopToolbarProps {
   onOpenSettings: () => void;
@@ -36,7 +37,7 @@ export function TopToolbar({ onOpenSettings }: TopToolbarProps) {
             className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-colors"
             onClick={() => dispatch(resetToHome())}
           >
-            <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
+            <img src={appIcon} alt="" className="h-5 w-5 rounded-sm" aria-hidden="true" />
             <h1 className="text-lg font-semibold">Libris Maleficarum</h1>
           </button>
 
@@ -47,7 +48,7 @@ export function TopToolbar({ onOpenSettings }: TopToolbarProps) {
           </div>
         </div>
       </header>
-      
+
       <NotificationCenter
         open={notificationCenterOpen}
         onOpenChange={setNotificationCenterOpen}

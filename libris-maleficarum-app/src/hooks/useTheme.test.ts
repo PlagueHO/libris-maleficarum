@@ -3,28 +3,31 @@ import { renderHook, act } from '@testing-library/react';
 import { useTheme } from './useTheme';
 
 describe('useTheme', () => {
-  let matchMediaListeners: Map<string, ((e: { matches: boolean }) => void)[]>;
+  let mediaChangeHandler: ((e: { matches: boolean }) => void) | undefined;
+  let mockMatches = false;
 
   beforeEach(() => {
     localStorage.clear();
     document.documentElement.classList.remove('dark');
-    matchMediaListeners = new Map();
+    mediaChangeHandler = undefined;
+    mockMatches = false;
 
     vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => {
-      const listeners: ((e: { matches: boolean }) => void)[] = [];
-      matchMediaListeners.set(query, listeners);
       return {
-        matches: false,
+        matches: mockMatches,
         media: query,
         onchange: null,
         addListener: vi.fn(),
         removeListener: vi.fn(),
-        addEventListener: vi.fn((_event: string, cb: (e: { matches: boolean }) => void) => {
-          listeners.push(cb);
+        addEventListener: vi.fn((event: string, cb: (e: { matches: boolean }) => void) => {
+          if (event === 'change') {
+            mediaChangeHandler = cb;
+          }
         }),
-        removeEventListener: vi.fn((_event: string, cb: (e: { matches: boolean }) => void) => {
-          const index = listeners.indexOf(cb);
-          if (index > -1) listeners.splice(index, 1);
+        removeEventListener: vi.fn((event: string, cb: (e: { matches: boolean }) => void) => {
+          if (event === 'change' && mediaChangeHandler === cb) {
+            mediaChangeHandler = undefined;
+          }
         }),
         dispatchEvent: vi.fn(),
       } as unknown as MediaQueryList;
@@ -35,49 +38,37 @@ describe('useTheme', () => {
     vi.restoreAllMocks();
   });
 
-  it('defaults to light mode when no localStorage and no OS preference', () => {
+  it('defaults to system preference and resolves to light when OS is light', () => {
     const { result } = renderHook(() => useTheme());
-    expect(result.current.theme).toBe('light');
+    expect(result.current.theme).toBe('system');
+    expect(result.current.resolvedTheme).toBe('light');
     expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(localStorage.getItem('theme')).toBe('system');
   });
 
-  it('reads theme from localStorage', () => {
+  it('reads explicit theme from localStorage', () => {
     localStorage.setItem('theme', 'dark');
     const { result } = renderHook(() => useTheme());
     expect(result.current.theme).toBe('dark');
+    expect(result.current.resolvedTheme).toBe('dark');
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
 
-  it('falls back to OS preference when no localStorage value', () => {
-    vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => {
-      const listeners: ((e: { matches: boolean }) => void)[] = [];
-      matchMediaListeners.set(query, listeners);
-      return {
-        matches: query === '(prefers-color-scheme: dark)',
-        media: query,
-        onchange: null,
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        addEventListener: vi.fn((_event: string, cb: (e: { matches: boolean }) => void) => {
-          listeners.push(cb);
-        }),
-        removeEventListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-      } as unknown as MediaQueryList;
-    });
-
+  it('resolves to dark when system preference is dark', () => {
+    mockMatches = true;
     const { result } = renderHook(() => useTheme());
-    expect(result.current.theme).toBe('dark');
+    expect(result.current.theme).toBe('system');
+    expect(result.current.resolvedTheme).toBe('dark');
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
 
-  it('applies .dark class on documentElement for dark mode', () => {
+  it('applies .dark class for dark mode preference', () => {
     localStorage.setItem('theme', 'dark');
     renderHook(() => useTheme());
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
 
-  it('removes .dark class on documentElement for light mode', () => {
+  it('removes .dark class for light mode preference', () => {
     document.documentElement.classList.add('dark');
     localStorage.setItem('theme', 'light');
     renderHook(() => useTheme());
@@ -86,13 +77,14 @@ describe('useTheme', () => {
 
   it('persists preference to localStorage on toggle', () => {
     const { result } = renderHook(() => useTheme());
-    expect(result.current.theme).toBe('light');
+    expect(result.current.theme).toBe('system');
 
     act(() => {
       result.current.toggleTheme();
     });
 
     expect(result.current.theme).toBe('dark');
+    expect(result.current.resolvedTheme).toBe('dark');
     expect(localStorage.getItem('theme')).toBe('dark');
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
@@ -108,12 +100,43 @@ describe('useTheme', () => {
 
     expect(result.current.theme).toBe('light');
     expect(localStorage.getItem('theme')).toBe('light');
+    expect(result.current.resolvedTheme).toBe('light');
     expect(document.documentElement.classList.contains('dark')).toBe(false);
   });
 
-  it('ignores invalid localStorage values and defaults to light', () => {
+  it('allows setting system/light/dark explicitly via setTheme', () => {
+    const { result } = renderHook(() => useTheme());
+
+    act(() => {
+      result.current.setTheme('dark');
+    });
+    expect(result.current.theme).toBe('dark');
+    expect(result.current.resolvedTheme).toBe('dark');
+
+    act(() => {
+      result.current.setTheme('system');
+    });
+    expect(result.current.theme).toBe('system');
+    expect(result.current.resolvedTheme).toBe('light');
+  });
+
+  it('updates resolved theme when OS preference changes in system mode', () => {
+    const { result } = renderHook(() => useTheme());
+    expect(result.current.theme).toBe('system');
+    expect(result.current.resolvedTheme).toBe('light');
+
+    act(() => {
+      mediaChangeHandler?.({ matches: true });
+    });
+
+    expect(result.current.resolvedTheme).toBe('dark');
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+  });
+
+  it('ignores invalid localStorage values and defaults to system', () => {
     localStorage.setItem('theme', 'invalid-value');
     const { result } = renderHook(() => useTheme());
-    expect(result.current.theme).toBe('light');
+    expect(result.current.theme).toBe('system');
+    expect(result.current.resolvedTheme).toBe('light');
   });
 });

@@ -1,21 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 
-type Theme = 'light' | 'dark';
+export type ThemePreference = 'system' | 'light' | 'dark';
+type ResolvedTheme = 'light' | 'dark';
 
 const STORAGE_KEY = 'theme';
 
-function getInitialTheme(): Theme {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'dark' || stored === 'light') {
-    return stored;
+function resolveTheme(theme: ThemePreference): ResolvedTheme {
+  if (theme === 'system') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
-  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-  return 'light';
+  return theme;
 }
 
-function applyTheme(theme: Theme) {
+function getInitialTheme(): ThemePreference {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored === 'system' || stored === 'dark' || stored === 'light') {
+    return stored;
+  }
+  return 'system';
+}
+
+function applyTheme(theme: ResolvedTheme) {
   if (theme === 'dark') {
     document.documentElement.classList.add('dark');
   } else {
@@ -23,20 +28,38 @@ function applyTheme(theme: Theme) {
   }
 }
 
+// Apply class before first React render to prevent initial theme mismatch flash.
+(function applyThemeClass() {
+  applyTheme(resolveTheme(getInitialTheme()));
+})();
+
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const [theme, setTheme] = useState<ThemePreference>(getInitialTheme);
+  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() =>
+    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+  );
+  const resolvedTheme = theme === 'system' ? systemTheme : theme;
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      setSystemTheme(event.matches ? 'dark' : 'light');
+    };
 
-  const toggleTheme = useCallback(() => {
-    setTheme((prev) => {
-      const next = prev === 'dark' ? 'light' : 'dark';
-      localStorage.setItem(STORAGE_KEY, next);
-      return next;
-    });
+    media.addEventListener('change', handleChange);
+    return () => {
+      media.removeEventListener('change', handleChange);
+    };
   }, []);
 
-  return { theme, toggleTheme } as const;
+  useEffect(() => {
+    applyTheme(resolvedTheme);
+    localStorage.setItem(STORAGE_KEY, theme);
+  }, [theme, resolvedTheme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((current) => (resolveTheme(current) === 'dark' ? 'light' : 'dark'));
+  }, []);
+
+  return { theme, resolvedTheme, setTheme, toggleTheme } as const;
 }
