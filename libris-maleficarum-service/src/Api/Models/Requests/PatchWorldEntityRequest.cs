@@ -34,10 +34,21 @@ public class PatchWorldEntityRequest
     public List<string>? Tags { get; set; }
 
     /// <summary>
-    /// Gets or sets the custom attributes as key-value pairs (max 100KB serialized).
-    /// If provided, merges with existing attributes.
+    /// Gets or sets the optional schema identifier for this entity type.
     /// </summary>
-    public Dictionary<string, object>? Attributes { get; set; }
+    public string? SchemaId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the common properties as key-value pairs (max 100KB serialized).
+    /// If provided, merges with existing properties.
+    /// </summary>
+    public Dictionary<string, object>? Properties { get; set; }
+
+    /// <summary>
+    /// Gets or sets the system-specific properties as key-value pairs (max 100KB serialized).
+    /// If provided, merges with existing system properties.
+    /// </summary>
+    public Dictionary<string, object>? SystemProperties { get; set; }
 
     /// <summary>
     /// Gets or sets the schema version for this entity type.

@@ -54,11 +54,11 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       // Select GeographicRegion type (search for it since it's not recommended at root level)
       const typeButton = await screen.findByRole('combobox', { name: /entity type/i });
       await user.click(typeButton);
-      
+
       // Search for Geographic Region
       const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'geographic');
-      
+
       const geoRegionOption = await screen.findByRole('option', { name: /geographic region/i });
       await user.click(geoRegionOption);
 
@@ -87,11 +87,11 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       // Select GeographicRegion type (search for it since it's not recommended at root level)
       const typeButton = await screen.findByRole('combobox', { name: /entity type/i });
       await user.click(typeButton);
-      
+
       // Search for Geographic Region
       const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'geographic');
-      
+
       const geoRegionOption = await screen.findByRole('option', { name: /geographic region/i });
       await user.click(geoRegionOption);
 
@@ -108,11 +108,11 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
 
       const populationInput = screen.getByLabelText(/population/i);
       const areaInput = screen.getByLabelText(/area/i);
-      
+
       await user.clear(populationInput);
       await user.type(populationInput, '250000');
       await user.click(document.body); // Blur to trigger formatting
-      
+
       await user.clear(areaInput);
       await user.type(areaInput, '1500.5');
       await user.click(document.body); // Blur to trigger formatting
@@ -121,7 +121,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await waitFor(() => {
         expect(populationInput).toHaveValue('250,000');
       });
-      
+
       await waitFor(() => {
         expect(areaInput).toHaveValue('1,500.50');
       });
@@ -146,11 +146,11 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       // Select PoliticalRegion type (search for it since it's not recommended at root level)
       const typeButton = await screen.findByRole('combobox', { name: /entity type/i });
       await user.click(typeButton);
-      
+
       // Search for Political Region
       const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'political');
-      
+
       const polRegionOption = await screen.findByRole('option', { name: /political region/i });
       await user.click(polRegionOption);
 
@@ -176,11 +176,11 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       // Select PoliticalRegion type (search for it since it's not recommended at root level)
       const typeButton = await screen.findByRole('combobox', { name: /entity type/i });
       await user.click(typeButton);
-      
+
       // Search for Political Region
       const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'political');
-      
+
       const polRegionOption = await screen.findByRole('option', { name: /political region/i });
       await user.click(polRegionOption);
 
@@ -214,11 +214,11 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       // Select PoliticalRegion type (search for it since it's not recommended at root level)
       const typeButton = await screen.findByRole('combobox', { name: /entity type/i });
       await user.click(typeButton);
-      
+
       // Search for Political Region
       const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'political');
-      
+
       const polRegionOption = await screen.findByRole('option', { name: /political region/i });
       await user.click(polRegionOption);
 
@@ -240,7 +240,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
     // They should be refactored to use renderWithProviders with preloadedState.
     it.skip('should include serialized Properties field when creating entity with custom properties', async () => {
       const user = userEvent.setup();
-      
+
       // Spy on POST request
       let capturedRequestBody: CreateWorldEntityRequest | null = null;
       server.use(
@@ -283,11 +283,11 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       // Select GeographicRegion type (search for it since it's not recommended at root level)
       const typeButton = await screen.findByRole('combobox', { name: /entity type/i });
       await user.click(typeButton);
-      
+
       // Search for Geographic Region
       const searchInput = await screen.findByPlaceholderText(/filter/i);
       await user.type(searchInput, 'geographic');
-      
+
       const geoRegionOption = await screen.findByRole('option', { name: /geographic region/i });
       await user.click(geoRegionOption);
 
@@ -307,7 +307,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       const submitButton = submitButtons[submitButtons.length - 1];
       await user.click(submitButton);
 
-      // Verify request was made with serialized Properties
+      // Verify request was made with Properties payload
       await waitFor(
         () => {
           expect(capturedRequestBody).not.toBeNull();
@@ -317,9 +317,10 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
 
       expect(capturedRequestBody).not.toBeNull();
       expect(capturedRequestBody!.properties).toBeDefined();
-      expect(typeof capturedRequestBody!.properties).toBe('string');
-      
-      const parsedProperties = JSON.parse(capturedRequestBody!.properties!);
+
+      const parsedProperties = typeof capturedRequestBody!.properties === 'string'
+        ? JSON.parse(capturedRequestBody!.properties)
+        : capturedRequestBody!.properties;
       expect(parsedProperties).toEqual(
         expect.objectContaining({
           Climate: 'Tropical',
@@ -330,7 +331,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
 
     it.skip('should omit Properties field when no custom properties entered', async () => {
       const user = userEvent.setup();
-      
+
       // Spy on POST request
       let capturedRequestBody: CreateWorldEntityRequest | null = null;
       server.use(
@@ -396,7 +397,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       'should deserialize Properties field and populate custom property fields',
       async () => {
       const user = userEvent.setup();
-      
+
       // Add entity to tree for selection
       const testEntity = {
         id: 'geo-region-with-props',
@@ -420,20 +421,20 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
           Area: 2500.75,
         }),
       };
-      
+
       server.use(
         http.get('http://localhost:5000/api/v1/worlds/:worldId/entities', ({ params, request }) => {
           const { worldId } = params;
           if (worldId !== 'test-world-123') {
             return HttpResponse.json({ data: [], meta: { count: 0, nextCursor: null } });
           }
-          
+
           const url = new URL(request.url);
           const parentId = url.searchParams.get('parentId');
           if (parentId !== null && parentId !== 'null') {
             return HttpResponse.json({ data: [], meta: { count: 0, nextCursor: null } });
           }
-          
+
           return HttpResponse.json({
             data: [testEntity],
             meta: { count: 1, nextCursor: null },
@@ -480,7 +481,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       'should handle PoliticalRegion properties with arrays correctly',
       async () => {
       const user = userEvent.setup();
-      
+
       // Add political region to tree
       const testEntity = {
         id: 'pol-region-with-props',
@@ -503,20 +504,20 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
           EstablishedDate: 'Year 1200, Second Age',
         }),
       };
-      
+
       server.use(
         http.get('http://localhost:5000/api/v1/worlds/:worldId/entities', ({ params, request }) => {
           const { worldId } = params;
           if (worldId !== 'test-world-123') {
             return HttpResponse.json({ data: [], meta: { count: 0, nextCursor: null } });
           }
-          
+
           const url = new URL(request.url);
           const parentId = url.searchParams.get('parentId');
           if (parentId !== null && parentId !== 'null') {
             return HttpResponse.json({ data: [], meta: { count: 0, nextCursor: null } });
           }
-          
+
           return HttpResponse.json({
             data: [testEntity],
             meta: { count: 1, nextCursor: null },
@@ -586,20 +587,20 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
         isDeleted: false,
         properties: 'invalid json{',
       };
-      
+
       server.use(
         http.get('http://localhost:5000/api/v1/worlds/:worldId/entities', ({ params, request }) => {
           const { worldId } = params;
           if (worldId !== 'test-world-123') {
             return HttpResponse.json({ data: [], meta: { count: 0, nextCursor: null } });
           }
-          
+
           const url = new URL(request.url);
           const parentId = url.searchParams.get('parentId');
           if (parentId !== null && parentId !== 'null') {
             return HttpResponse.json({ data: [], meta: { count: 0, nextCursor: null } });
           }
-          
+
           return HttpResponse.json({
             data: [testEntity],
             meta: { count: 1, nextCursor: null },
@@ -663,11 +664,11 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       // Select Character type (unconventional - normally Character goes under People container)
       const typeButton = await screen.findByRole('combobox', { name: /entity type/i });
       await user.click(typeButton);
-      
+
       // Search for Character (may not be in recommended types for root level)
       const searchInput = screen.getByPlaceholderText(/filter/i);
       await user.type(searchInput, 'Character');
-      
+
       // Use getAllByRole and select the exact match (first one will be Character entity, not People container)
       const characterOptions = await screen.findAllByRole('option', { name: /character/i });
       const characterOption = characterOptions.find(opt => opt.textContent?.includes('A person, NPC'));
@@ -679,7 +680,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await user.type(nameInput, 'Elminster Aumar');
 
       // Submit form - should succeed without validation errors
-      const submitBtn = screen.getAllByRole('button', { name: /create/i }).find(btn => 
+      const submitBtn = screen.getAllByRole('button', { name: /create/i }).find(btn =>
         btn.textContent === 'Create'
       );
       expect(submitBtn).toBeDefined();
@@ -708,16 +709,16 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       // when searching (no longer filtered by parent type)
       const typeButton = await screen.findByRole('combobox', { name: /entity type/i });
       await user.click(typeButton);
-      
+
       // Search for Quest - it should be available regardless of parent
       const searchInput = screen.getByPlaceholderText(/filter/i);
       await user.type(searchInput, 'Quest');
-      
+
       // Quest should appear in search results (proving it's not filtered out)
       const questOptions = await screen.findAllByRole('option', { name: /quest/i });
       const questOption = questOptions.find(opt => opt.textContent?.includes('mission, objective'));
       expect(questOption).toBeDefined();
-      
+
       // Select it
       await user.click(questOption!);
 
@@ -765,7 +766,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       await waitFor(() => {
         expect(screen.queryByRole('form')).not.toBeInTheDocument();
       }, { timeout: 3000 });
-      
+
       // Note: We cannot easily test the HTTP request body without complex MSW setup
       // The schemaVersion injection is tested via:
       // 1. TypeScript compilation (ensures types are correct)

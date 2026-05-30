@@ -31,9 +31,19 @@ public sealed class CreateEntityRequest
     public List<string>? Tags { get; init; }
 
     /// <summary>
-    /// Gets the custom attributes as key-value pairs.
+    /// Gets the optional schema identifier for this entity's property template.
     /// </summary>
-    public Dictionary<string, object>? Attributes { get; init; }
+    public string? SchemaId { get; init; }
+
+    /// <summary>
+    /// Gets the common properties as key-value pairs.
+    /// </summary>
+    public Dictionary<string, object>? Properties { get; init; }
+
+    /// <summary>
+    /// Gets the system-specific properties as key-value pairs.
+    /// </summary>
+    public Dictionary<string, object>? SystemProperties { get; init; }
 
     /// <summary>
     /// Gets the schema version for this entity type.

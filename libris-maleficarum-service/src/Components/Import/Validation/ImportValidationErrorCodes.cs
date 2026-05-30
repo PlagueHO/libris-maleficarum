@@ -39,6 +39,9 @@ public static class ImportValidationErrorCodes
     /// <summary>An entity references a ParentLocalId that does not exist in the import source.</summary>
     public const string EntityDanglingParent = "ENTITY_DANGLING_PARENT";
 
+    /// <summary>The import does not contain a root entity.</summary>
+    public const string EntityMissingRoot = "ENTITY_MISSING_ROOT";
+
     /// <summary>A cycle was detected in the entity parent-child hierarchy.</summary>
     public const string EntityCycleDetected = "ENTITY_CYCLE_DETECTED";
 
@@ -54,8 +57,8 @@ public static class ImportValidationErrorCodes
     /// <summary>An entity tag exceeds the maximum allowed length.</summary>
     public const string EntityTagTooLong = "ENTITY_TAG_TOO_LONG";
 
-    /// <summary>An entity's custom properties exceed the maximum allowed size.</summary>
-    public const string EntityPropsTooLarge = "ENTITY_PROPS_TOO_LARGE";
+    /// <summary>An entity's properties exceed the maximum allowed size.</summary>
+    public const string EntityPropertiesTooLarge = "ENTITY_PROPERTIES_TOO_LARGE";
 
     // Source-level errors
 

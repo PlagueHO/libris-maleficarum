@@ -167,7 +167,7 @@ public record BaseWorldEntity
     public string? SchemaId { get; init; }             // References property schema (e.g., "dnd5e-character", "fantasy-location")
     
     // === Hierarchy ===
-    public List<string>? Path { get; init; }           // Breadcrumb path from root (for UI display)
+    public List<Guid>? Path { get; init; }             // Ancestor entity IDs from root to parent (for hierarchy operations)
     public required int Depth { get; init; }           // Hierarchy depth (0 = root World)
     
     // === Core Metadata (REQUIRED) ===

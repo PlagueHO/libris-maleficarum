@@ -43,7 +43,6 @@ export default defineConfig({
       {
         text: 'Other Docs',
         items: [
-          { text: 'App Components', link: '/components/libris-maleficarum-app-documentation' },
           { text: 'Markdown Linting', link: '/operations/markdown_linting' },
         ],
       },

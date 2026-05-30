@@ -104,7 +104,9 @@ public class WorldEntitiesController : ControllerBase
             request.Description,
             request.ParentId,
             request.Tags,
-            request.Attributes,
+            request.SchemaId,
+            request.Properties,
+            request.SystemProperties,
             schemaVersion: request.SchemaVersion ?? 1);
 
         var createdEntity = await _entityRepository.CreateAsync(entity, cancellationToken);
@@ -430,7 +432,9 @@ public class WorldEntitiesController : ControllerBase
             request.EntityType,
             request.ParentId,
             request.Tags,
-            request.Attributes,
+            request.SchemaId,
+            request.Properties,
+            request.SystemProperties,
             finalSchemaVersion);
 
         // Get If-Match header for ETag validation
@@ -483,13 +487,29 @@ public class WorldEntitiesController : ControllerBase
             });
         }
 
-        // Merge attributes if provided
-        var attributes = entity.GetAttributes();
-        if (request.Attributes != null)
+        // Merge properties if provided
+        var properties = entity.Properties is not null
+            ? new Dictionary<string, object>(entity.Properties)
+            : new Dictionary<string, object>();
+
+        if (request.Properties != null)
         {
-            foreach (var kvp in request.Attributes)
+            foreach (var kvp in request.Properties)
             {
-                attributes[kvp.Key] = kvp.Value;
+                properties[kvp.Key] = kvp.Value;
+            }
+        }
+
+        // Merge system properties if provided
+        var systemProperties = entity.SystemProperties is not null
+            ? new Dictionary<string, object>(entity.SystemProperties)
+            : new Dictionary<string, object>();
+
+        if (request.SystemProperties != null)
+        {
+            foreach (var kvp in request.SystemProperties)
+            {
+                systemProperties[kvp.Key] = kvp.Value;
             }
         }
 
@@ -500,7 +520,9 @@ public class WorldEntitiesController : ControllerBase
             request.EntityType ?? entity.EntityType,
             request.ParentId ?? entity.ParentId,
             request.Tags ?? entity.Tags,
-            request.Attributes != null ? attributes : entity.GetAttributes(),
+            request.SchemaId ?? entity.SchemaId,
+            request.Properties != null ? properties : entity.Properties,
+            request.SystemProperties != null ? systemProperties : entity.SystemProperties,
             request.SchemaVersion ?? entity.SchemaVersion);
 
         // Get If-Match header for ETag validation
@@ -670,15 +692,21 @@ public class WorldEntitiesController : ControllerBase
             WorldId = entity.WorldId,
             ParentId = entity.ParentId,
             EntityType = entity.EntityType,
+            SchemaId = entity.SchemaId,
             Name = entity.Name,
             Description = entity.Description,
             Tags = entity.Tags,
-            Attributes = entity.GetAttributes(),
+            Properties = entity.Properties ?? [],
+            SystemProperties = entity.SystemProperties ?? [],
             Path = entity.Path,
             Depth = entity.Depth,
             HasChildren = entity.HasChildren,
             OwnerId = entity.OwnerId,
+            CreatedBy = entity.CreatedBy,
+            ModifiedBy = entity.ModifiedBy,
             IsDeleted = entity.IsDeleted,
+            DeletedDate = entity.DeletedDate,
+            DeletedBy = entity.DeletedBy,
             CreatedDate = entity.CreatedDate,
             ModifiedDate = entity.ModifiedDate,
             SchemaVersion = entity.SchemaVersion

@@ -36,9 +36,14 @@ public sealed class EntityImportDefinition
     public List<string>? Tags { get; init; }
 
     /// <summary>
-    /// Gets the optional custom properties for this entity.
+    /// Gets the optional common properties for this entity.
     /// </summary>
     public Dictionary<string, object>? Properties { get; init; }
+
+    /// <summary>
+    /// Gets the optional system-specific properties for this entity.
+    /// </summary>
+    public Dictionary<string, object>? SystemProperties { get; init; }
 
     /// <summary>
     /// The source file path (for error reporting). Not serialized from JSON.

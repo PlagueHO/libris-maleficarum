@@ -5,7 +5,7 @@ using System.Text.Json;
 
 /// <summary>
 /// Represents a generic entity within a world (e.g., locations, characters, campaigns).
-/// Supports hierarchical relationships via ParentId and flexible attributes via Tags and Attributes.
+/// Supports hierarchical relationships via ParentId and flexible property bags via Tags, Properties, and SystemProperties.
 /// </summary>
 public class WorldEntity
 {
@@ -28,6 +28,11 @@ public class WorldEntity
     /// Gets the type of entity (Character, Location, Campaign, etc.).
     /// </summary>
     public EntityType EntityType { get; private set; }
+
+    /// <summary>
+    /// Gets the optional schema identifier for this entity's property template.
+    /// </summary>
+    public string? SchemaId { get; private set; }
 
     /// <summary>
     /// Gets the name of this entity.
@@ -65,9 +70,14 @@ public class WorldEntity
     public string OwnerId { get; private set; }
 
     /// <summary>
-    /// Gets the custom attributes as a JSON string (flexible schema).
+    /// Gets the common properties for this entity (cross-system).
     /// </summary>
-    public string Attributes { get; private set; }
+    public Dictionary<string, object>? Properties { get; private set; }
+
+    /// <summary>
+    /// Gets the system-specific properties for this entity.
+    /// </summary>
+    public Dictionary<string, object>? SystemProperties { get; private set; }
 
     /// <summary>
     /// Gets the UTC timestamp when this entity was created.
@@ -129,7 +139,8 @@ public class WorldEntity
         Tags = [];
         Path = [];
         OwnerId = string.Empty;
-        Attributes = "{}";
+        Properties = [];
+        SystemProperties = [];
     }
 
     /// <summary>
@@ -142,7 +153,9 @@ public class WorldEntity
     /// <param name="description">Optional description (max 5000 characters).</param>
     /// <param name="parentId">Optional parent entity identifier for hierarchical relationships.</param>
     /// <param name="tags">Optional list of tags (max 20, each max 50 characters).</param>
-    /// <param name="attributes">Optional custom attributes as dictionary (serialized to JSON, max 100KB).</param>
+    /// <param name="schemaId">Optional schema identifier for the entity property template.</param>
+    /// <param name="properties">Optional common properties as dictionary (max 100KB serialized).</param>
+    /// <param name="systemProperties">Optional system-specific properties as dictionary (max 100KB serialized).</param>
     /// <param name="parentPath">Optional parent's path (for calculating this entity's path).</param>
     /// <param name="parentDepth">Optional parent's depth (for calculating this entity's depth).</param>
     /// <param name="schemaVersion">The schema version for this entity type (defaults to 1).</param>
@@ -155,7 +168,9 @@ public class WorldEntity
         string? description = null,
         Guid? parentId = null,
         List<string>? tags = null,
-        Dictionary<string, object>? attributes = null,
+        string? schemaId = null,
+        Dictionary<string, object>? properties = null,
+        Dictionary<string, object>? systemProperties = null,
         List<Guid>? parentPath = null,
         int parentDepth = -1,
         int schemaVersion = 1)
@@ -182,6 +197,7 @@ public class WorldEntity
             WorldId = worldId,
             ParentId = parentId,
             EntityType = entityType,
+            SchemaId = schemaId,
             Name = name,
             Description = description,
             Tags = tags ?? [],
@@ -189,7 +205,8 @@ public class WorldEntity
             Depth = depth,
             HasChildren = false,
             OwnerId = ownerId,
-            Attributes = attributes != null ? JsonSerializer.Serialize(attributes) : "{}",
+            Properties = properties,
+            SystemProperties = systemProperties,
             CreatedDate = DateTime.UtcNow,
             ModifiedDate = DateTime.UtcNow,
             IsDeleted = false,
@@ -203,6 +220,38 @@ public class WorldEntity
     }
 
     /// <summary>
+    /// Creates a new WorldEntity using legacy call signature.
+    /// </summary>
+    public static WorldEntity Create(
+        Guid worldId,
+        EntityType entityType,
+        string name,
+        string ownerId,
+        string? description,
+        Guid? parentId,
+        List<string>? tags,
+        Dictionary<string, object>? properties,
+        List<Guid>? parentPath = null,
+        int parentDepth = -1,
+        int schemaVersion = 1)
+    {
+        return Create(
+            worldId,
+            entityType,
+            name,
+            ownerId,
+            description,
+            parentId,
+            tags,
+            schemaId: null,
+            properties,
+            systemProperties: null,
+            parentPath,
+            parentDepth,
+            schemaVersion);
+    }
+
+    /// <summary>
     /// Updates the entity properties and refreshes ModifiedDate.
     /// </summary>
     /// <param name="name">The new name (1-200 characters).</param>
@@ -210,7 +259,9 @@ public class WorldEntity
     /// <param name="entityType">The new entity type.</param>
     /// <param name="parentId">The new parent ID (null for root-level).</param>
     /// <param name="tags">The new tags list (max 20, each max 50 characters).</param>
-    /// <param name="attributes">The new attributes dictionary (max 100KB serialized).</param>
+    /// <param name="schemaId">The new schema identifier for property template selection.</param>
+    /// <param name="properties">The new common properties dictionary (max 100KB serialized).</param>
+    /// <param name="systemProperties">The new system-specific properties dictionary (max 100KB serialized).</param>
     /// <param name="schemaVersion">The schema version for this entity type.</param>
     public void Update(
         string name,
@@ -218,19 +269,47 @@ public class WorldEntity
         EntityType entityType,
         Guid? parentId,
         List<string>? tags,
-        Dictionary<string, object>? attributes,
+        string? schemaId,
+        Dictionary<string, object>? properties,
+        Dictionary<string, object>? systemProperties,
         int schemaVersion)
     {
         Name = name;
         Description = description;
         EntityType = entityType;
+        SchemaId = schemaId;
         ParentId = parentId;
         Tags = tags ?? [];
-        Attributes = attributes != null ? JsonSerializer.Serialize(attributes) : "{}";
+        Properties = properties;
+        SystemProperties = systemProperties;
         SchemaVersion = schemaVersion;
         ModifiedDate = DateTime.UtcNow;
 
         Validate();
+    }
+
+    /// <summary>
+    /// Updates a WorldEntity using legacy call signature.
+    /// </summary>
+    public void Update(
+        string name,
+        string? description,
+        EntityType entityType,
+        Guid? parentId,
+        List<string>? tags,
+        Dictionary<string, object>? properties,
+        int schemaVersion)
+    {
+        Update(
+            name,
+            description,
+            entityType,
+            parentId,
+            tags,
+            SchemaId,
+            properties,
+            SystemProperties,
+            schemaVersion);
     }
 
     /// <summary>
@@ -360,20 +439,23 @@ public class WorldEntity
             throw new ArgumentException("Schema version must be at least 1.");
         }
 
-        // Validate Attributes JSON size (max 100KB)
-        var attributesBytes = System.Text.Encoding.UTF8.GetByteCount(Attributes);
-        if (attributesBytes > 100 * 1024)
+        // Validate Properties JSON size (max 100KB)
+        if (Properties is not null && !ValidatePropertyBagSize(Properties))
         {
-            throw new ArgumentException("Attributes must not exceed 100KB serialized.");
+            throw new ArgumentException("Properties must not exceed 100KB serialized.");
+        }
+
+        // Validate SystemProperties JSON size (max 100KB)
+        if (SystemProperties is not null && !ValidatePropertyBagSize(SystemProperties))
+        {
+            throw new ArgumentException("SystemProperties must not exceed 100KB serialized.");
         }
     }
 
-    /// <summary>
-    /// Gets the attributes as a deserialized dictionary.
-    /// </summary>
-    /// <returns>Dictionary of custom attributes.</returns>
-    public Dictionary<string, object> GetAttributes()
+    private static bool ValidatePropertyBagSize(Dictionary<string, object> propertyBag)
     {
-        return JsonSerializer.Deserialize<Dictionary<string, object>>(Attributes) ?? [];
+        var json = JsonSerializer.Serialize(propertyBag);
+        var sizeBytes = System.Text.Encoding.UTF8.GetByteCount(json);
+        return sizeBytes <= 100 * 1024;
     }
 }

@@ -26,6 +26,11 @@ public sealed class EntityResponse
     public required string EntityType { get; init; }
 
     /// <summary>
+    /// Gets the optional schema identifier for this entity's property template.
+    /// </summary>
+    public string? SchemaId { get; init; }
+
+    /// <summary>
     /// Gets the entity name.
     /// </summary>
     public required string Name { get; init; }
@@ -61,9 +66,24 @@ public sealed class EntityResponse
     public required string OwnerId { get; init; }
 
     /// <summary>
-    /// Gets the custom attributes.
+    /// Gets the identifier of the user who created this entity.
     /// </summary>
-    public Dictionary<string, object>? Attributes { get; init; }
+    public string? CreatedBy { get; init; }
+
+    /// <summary>
+    /// Gets the identifier of the user who last modified this entity.
+    /// </summary>
+    public string? ModifiedBy { get; init; }
+
+    /// <summary>
+    /// Gets the common properties.
+    /// </summary>
+    public Dictionary<string, object>? Properties { get; init; }
+
+    /// <summary>
+    /// Gets the system-specific properties.
+    /// </summary>
+    public Dictionary<string, object>? SystemProperties { get; init; }
 
     /// <summary>
     /// Gets the UTC timestamp when the entity was created.
@@ -79,6 +99,16 @@ public sealed class EntityResponse
     /// Gets a value indicating whether this entity has been soft-deleted.
     /// </summary>
     public required bool IsDeleted { get; init; }
+
+    /// <summary>
+    /// Gets the UTC timestamp when this entity was soft-deleted.
+    /// </summary>
+    public DateTime? DeletedDate { get; init; }
+
+    /// <summary>
+    /// Gets the identifier of the user who soft-deleted this entity.
+    /// </summary>
+    public string? DeletedBy { get; init; }
 
     /// <summary>
     /// Gets the schema version of this entity.

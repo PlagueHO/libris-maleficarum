@@ -72,7 +72,7 @@ public class LibrisApiClientTests
             Depth = 0,
             HasChildren = false,
             OwnerId = Guid.NewGuid().ToString(),
-            Attributes = new Dictionary<string, object> { ["level"] = 5 },
+            Properties = new Dictionary<string, object> { ["level"] = 5 },
             CreatedDate = DateTime.UtcNow,
             ModifiedDate = DateTime.UtcNow,
             IsDeleted = false,
@@ -88,7 +88,7 @@ public class LibrisApiClientTests
             Description = "A test entity",
             EntityType = "Character",
             Tags = ["rpg", "npc"],
-            Attributes = new Dictionary<string, object> { ["level"] = 5 },
+            Properties = new Dictionary<string, object> { ["level"] = 5 },
             SchemaVersion = 1
         };
 

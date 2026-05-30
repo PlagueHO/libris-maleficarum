@@ -66,9 +66,19 @@ public class SearchIndexDocument
     public required int Depth { get; init; }
 
     /// <summary>
-    /// Gets the attributes as a JSON string.
+    /// Gets the schema identifier for this entity's property template.
     /// </summary>
-    public string? Attributes { get; init; }
+    public string? SchemaId { get; init; }
+
+    /// <summary>
+    /// Gets the common properties as a JSON string.
+    /// </summary>
+    public string? Properties { get; init; }
+
+    /// <summary>
+    /// Gets the system-specific properties as a JSON string.
+    /// </summary>
+    public string? SystemProperties { get; init; }
 
     /// <summary>
     /// Gets the schema version for compatibility.

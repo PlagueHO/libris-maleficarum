@@ -114,7 +114,7 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 - **Never log raw user-derived values** — query text, transcription text, access codes, display names, user-authored content. This prevents log injection (CWE-117).
 - **Log safe metadata only**: counts, lengths, durations, GUIDs, HTTP status codes, lifecycle event names.
 - A central `SanitizingLogRecordProcessor` in `ServiceDefaults` escapes control characters as defense-in-depth, but call sites must still avoid logging sensitive content.
-- Full rules: `docs/design/security-logging.md` and `.github/instructions/logging-security.instructions.md`.
+- Full rules: `docs/design/security_logging.md` and `.github/instructions/logging-security.instructions.md`.
 
 ## Where to look first
 
@@ -198,6 +198,12 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
   - WorldEntityHierarchy container: composite partition key `/WorldId-ParentId` for efficient parent-child queries
   - Entity types: World (root), Continent, Country, Region, City, Character, etc.
   - Indexed by Azure AI Search for semantic/full-text search
+
+### Persistence source of truth
+
+- For any persistence or data-shape work (domain entities, API contracts, Cosmos mappings, import/export schemas, frontend entity types), always consult `docs/design/data_model.md` first.
+- Treat `docs/design/data_model.md` as authoritative for persistence naming and field shapes.
+- If there is a conflict between implementation and docs, align implementation to `docs/design/data_model.md` unless the user explicitly directs otherwise.
 
 ## Azure integration
 

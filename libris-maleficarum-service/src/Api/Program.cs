@@ -23,6 +23,7 @@ using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Azure.Cosmos;
 using OpenAI.Embeddings;
+using System.Net;
 using AppSearchOptions = LibrisMaleficarum.Infrastructure.Configuration.SearchOptions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -226,7 +227,10 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await context.Database.EnsureCreatedAsync();
+    await EnsureCosmosDatabaseCreatedAsync(
+        context,
+        app.Logger,
+        app.Lifetime.ApplicationStopping);
 }
 
 // Configure the HTTP request pipeline.
@@ -293,3 +297,36 @@ else
 }
 
 app.Run();
+
+static async Task EnsureCosmosDatabaseCreatedAsync(
+    ApplicationDbContext context,
+    ILogger logger,
+    CancellationToken cancellationToken)
+{
+    const int maxAttempts = 10;
+    var delay = TimeSpan.FromSeconds(2);
+
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            await context.Database.EnsureCreatedAsync(cancellationToken);
+            return;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.ServiceUnavailable && attempt < maxAttempts)
+        {
+            logger.LogWarning(
+                "Cosmos DB emulator is not ready yet during startup initialization. Retrying EnsureCreated (attempt {Attempt}/{MaxAttempts}) after {DelaySeconds}s.",
+                attempt,
+                maxAttempts,
+                delay.TotalSeconds);
+
+            await Task.Delay(delay, cancellationToken);
+
+            var nextDelaySeconds = Math.Min(delay.TotalSeconds * 1.5d, 10d);
+            delay = TimeSpan.FromSeconds(nextDelaySeconds);
+        }
+    }
+
+    await context.Database.EnsureCreatedAsync(cancellationToken);
+}

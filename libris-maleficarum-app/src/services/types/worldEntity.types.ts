@@ -14,7 +14,7 @@ import { ENTITY_TYPE_REGISTRY } from '../config/entityTypeRegistry';
 
 /**
  * Entity type literal union (derived from registry)
- * 
+ *
  * String literal union of all valid entity types: "Continent" | "Country" | "Region" | ...
  * This preserves autocomplete and exhaustiveness checking in TypeScript.
  */
@@ -23,7 +23,7 @@ export type WorldEntityTypeLiteral =
 
 /**
  * Entity type classification const object (derived from registry)
- * 
+ *
  * Provides named constants for entity types while preserving literal types.
  * Usage: WorldEntityType.Continent, WorldEntityType.Character, etc.
  */
@@ -37,7 +37,7 @@ export const WorldEntityType = ENTITY_TYPE_REGISTRY.reduce(
 
 /**
  * Entity type string literal union
- * 
+ *
  * Use this type for function parameters, interface properties, etc.
  * Provides full autocomplete and type safety.
  */
@@ -91,8 +91,14 @@ export interface WorldEntity {
   /** Soft delete flag */
   isDeleted: boolean;
 
-  /** Optional custom properties (JSON string) for entity-specific data */
-  properties?: string;
+  /** Optional schema identifier for property template selection */
+  schemaId?: string;
+
+  /** Optional common properties for entity-specific data. */
+  properties?: Record<string, unknown> | string;
+
+  /** Optional system-specific properties for ruleset data. */
+  systemProperties?: Record<string, unknown> | string;
 
   /** Schema version for document compatibility (default: 1) */
   schemaVersion: number;
@@ -117,8 +123,14 @@ export interface CreateWorldEntityRequest {
   /** Optional tags */
   tags?: string[];
 
-  /** Optional custom properties (JSON string) for entity-specific data */
-  properties?: string;
+  /** Optional schema identifier for property template selection */
+  schemaId?: string;
+
+  /** Optional common properties for entity-specific data */
+  properties?: Record<string, unknown>;
+
+  /** Optional system-specific properties for ruleset data */
+  systemProperties?: Record<string, unknown>;
 
   /** Schema version for document compatibility (default: current version for entityType) */
   schemaVersion?: number;
@@ -140,8 +152,14 @@ export interface UpdateWorldEntityRequest {
   /** Updated entity type */
   entityType?: WorldEntityType;
 
-  /** Optional custom properties (JSON string) for entity-specific data */
-  properties?: string;
+  /** Optional schema identifier for property template selection */
+  schemaId?: string;
+
+  /** Optional common properties for entity-specific data */
+  properties?: Record<string, unknown>;
+
+  /** Optional system-specific properties for ruleset data */
+  systemProperties?: Record<string, unknown>;
 
   /** Schema version for document compatibility (must be >= current version) */
   schemaVersion?: number;

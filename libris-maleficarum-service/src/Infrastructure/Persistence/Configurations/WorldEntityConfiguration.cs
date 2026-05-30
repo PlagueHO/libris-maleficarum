@@ -50,6 +50,10 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
             .HasConversion<string>()
             .IsRequired();
 
+        builder.Property(e => e.SchemaId)
+            .ToJsonProperty("SchemaId")
+            .IsRequired(false);
+
         builder.Property(e => e.Name)
             .ToJsonProperty("Name")
             .IsRequired()
@@ -90,9 +94,37 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
             .ToJsonProperty("OwnerId")
             .IsRequired();
 
-        builder.Property(e => e.Attributes)
-            .ToJsonProperty("Attributes")
-            .IsRequired();
+        builder.Property(e => e.CreatedBy)
+            .ToJsonProperty("CreatedBy")
+            .IsRequired(false);
+
+        builder.Property(e => e.ModifiedBy)
+            .ToJsonProperty("ModifiedBy")
+            .IsRequired(false);
+
+        var propertiesBuilder = builder.Property(e => e.Properties)
+            .ToJsonProperty("Properties")
+            .HasConversion(
+                v => SerializeDictionary(v),
+                v => DeserializeDictionary(v))
+            .IsRequired(false);
+
+        propertiesBuilder.Metadata.SetValueComparer(new ValueComparer<Dictionary<string, object>?>(
+            (left, right) => DictionaryEquals(left, right),
+            value => DictionaryHashCode(value),
+            value => DictionarySnapshot(value)));
+
+        var systemPropertiesBuilder = builder.Property(e => e.SystemProperties)
+            .ToJsonProperty("SystemProperties")
+            .HasConversion(
+                v => SerializeDictionary(v),
+                v => DeserializeDictionary(v))
+            .IsRequired(false);
+
+        systemPropertiesBuilder.Metadata.SetValueComparer(new ValueComparer<Dictionary<string, object>?>(
+            (left, right) => DictionaryEquals(left, right),
+            value => DictionaryHashCode(value),
+            value => DictionarySnapshot(value)));
 
         builder.Property(e => e.CreatedDate)
             .ToJsonProperty("CreatedDate")
@@ -105,6 +137,14 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
         builder.Property(e => e.IsDeleted)
             .ToJsonProperty("IsDeleted")
             .IsRequired();
+
+        builder.Property(e => e.DeletedDate)
+            .ToJsonProperty("DeletedDate")
+            .IsRequired(false);
+
+        builder.Property(e => e.DeletedBy)
+            .ToJsonProperty("DeletedBy")
+            .IsRequired(false);
 
         // TTL property for Cosmos DB automatic cleanup
         // Maps to "ttl" (lowercase) - Cosmos DB reserved field name
@@ -130,5 +170,52 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
                 // From database: treat missing/0 as version 1 for backward compatibility (FR-008)
                 v => v == 0 ? 1 : v)
             .IsRequired();
+    }
+
+    private static string? SerializeDictionary(Dictionary<string, object>? value)
+    {
+        return value is null
+            ? null
+            : JsonSerializer.Serialize(value);
+    }
+
+    private static Dictionary<string, object>? DeserializeDictionary(string? json)
+    {
+        return string.IsNullOrWhiteSpace(json)
+            ? null
+            : JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+    }
+
+    private static bool DictionaryEquals(Dictionary<string, object>? left, Dictionary<string, object>? right)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+
+        if (left is null || right is null)
+        {
+            return false;
+        }
+
+        return JsonSerializer.Serialize(left) == JsonSerializer.Serialize(right);
+    }
+
+    private static int DictionaryHashCode(Dictionary<string, object>? value)
+    {
+        return value is null
+            ? 0
+            : JsonSerializer.Serialize(value).GetHashCode(StringComparison.Ordinal);
+    }
+
+    private static Dictionary<string, object>? DictionarySnapshot(Dictionary<string, object>? value)
+    {
+        if (value is null)
+        {
+            return null;
+        }
+
+        var serialized = JsonSerializer.Serialize(value);
+        return JsonSerializer.Deserialize<Dictionary<string, object>>(serialized);
     }
 }

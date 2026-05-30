@@ -37,17 +37,22 @@ public class CreateWorldEntityRequestValidator : AbstractValidator<CreateWorldEn
             .WithMessage("Each tag must be 1-50 characters.")
             .When(x => x.Tags is not null);
 
-        RuleFor(x => x.Attributes)
-            .Must(attributes => attributes == null || ValidateAttributesSize(attributes))
-            .WithMessage("Attributes must not exceed 100KB serialized.")
-            .When(x => x.Attributes is not null);
+        RuleFor(x => x.Properties)
+            .Must(properties => properties == null || ValidatePropertyBagSize(properties))
+            .WithMessage("Properties must not exceed 100KB serialized.")
+            .When(x => x.Properties is not null);
+
+        RuleFor(x => x.SystemProperties)
+            .Must(systemProperties => systemProperties == null || ValidatePropertyBagSize(systemProperties))
+            .WithMessage("SystemProperties must not exceed 100KB serialized.")
+            .When(x => x.SystemProperties is not null);
     }
 
-    private static bool ValidateAttributesSize(Dictionary<string, object> attributes)
+    private static bool ValidatePropertyBagSize(Dictionary<string, object> propertyBag)
     {
         try
         {
-            var json = JsonSerializer.Serialize(attributes);
+            var json = JsonSerializer.Serialize(propertyBag);
             var sizeBytes = System.Text.Encoding.UTF8.GetByteCount(json);
             return sizeBytes <= 100 * 1024; // 100KB
         }

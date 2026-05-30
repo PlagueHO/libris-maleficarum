@@ -4,7 +4,12 @@
   "name": "The Temple of Fractured Light",
   "description": "A crystalline cathedral where refracted mana light paints ever-shifting patterns across the walls, and the priests commune with echoes of the Silent Gods. Those who meditate here too long sometimes hear whispers that follow them home.",
   "parentLocalId": "silverdale",
-  "tags": ["temple", "crystal-architecture", "divine", "haunted"],
+  "tags": [
+    "temple",
+    "crystal-architecture",
+    "divine",
+    "haunted"
+  ],
   "properties": {
     "deity": "The Silent Gods — primarily Vethara, the Veiled",
     "builtBy": "The First Crystal Magisters",

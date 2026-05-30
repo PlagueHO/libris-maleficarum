@@ -302,7 +302,7 @@ public class DeleteServiceCascadeTests
             null,  // description
             parentId,
             null,  // tags
-            null,  // attributes
+            null,  // properties
             null,  // parentPath
             -1,    // parentDepth
             1);    // schemaVersion

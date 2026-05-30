@@ -21,10 +21,10 @@ public class WorldEntityTests
         var name = "Aragorn";
         var description = "Ranger of the North";
         var tags = new List<string> { "hero", "ranger" };
-        var attributes = new Dictionary<string, object> { ["level"] = 10, ["class"] = "ranger" };
+        var properties = new Dictionary<string, object> { ["level"] = 10, ["class"] = "ranger" };
 
         // Act
-        var entity = WorldEntity.Create(worldId, entityType, name, TestOwnerId, description, null, tags, attributes);
+        var entity = WorldEntity.Create(worldId, entityType, name, TestOwnerId, description, null, tags, properties);
 
         // Assert
         entity.Should().NotBeNull();
@@ -37,8 +37,8 @@ public class WorldEntityTests
         entity.Tags.Should().HaveCount(2);
         entity.Tags.Should().Contain("hero");
         entity.Tags.Should().Contain("ranger");
-        entity.GetAttributes().Should().ContainKey("level");
-        entity.GetAttributes().Should().ContainKey("class");
+        (entity.Properties ?? []).Should().ContainKey("level");
+        (entity.Properties ?? []).Should().ContainKey("class");
         entity.CreatedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         entity.ModifiedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         entity.IsDeleted.Should().BeFalse();
@@ -61,7 +61,7 @@ public class WorldEntityTests
         entity.Description.Should().BeNull();
         entity.ParentId.Should().BeNull();
         entity.Tags.Should().BeEmpty();
-        entity.GetAttributes().Should().BeEmpty();
+        (entity.Properties ?? []).Should().BeEmpty();
     }
 
     [TestMethod]
@@ -158,16 +158,16 @@ public class WorldEntityTests
         var newName = "Aragorn II Elessar";
         var newDescription = "King of Gondor";
         var newTags = new List<string> { "king", "hero" };
-        var newAttributes = new Dictionary<string, object> { ["title"] = "King" };
+        var newProperties = new Dictionary<string, object> { ["title"] = "King" };
 
         // Act
-        entity.Update(newName, newDescription, EntityType.Character, null, newTags, newAttributes, 1);
+        entity.Update(newName, newDescription, EntityType.Character, null, newTags, newProperties, 1);
 
         // Assert
         entity.Name.Should().Be(newName);
         entity.Description.Should().Be(newDescription);
         entity.Tags.Should().HaveCount(2);
-        entity.GetAttributes().Should().ContainKey("title");
+        (entity.Properties ?? []).Should().ContainKey("title");
         entity.ModifiedDate.Should().BeAfter(originalModifiedDate);
     }
 
@@ -224,26 +224,26 @@ public class WorldEntityTests
     }
 
     [TestMethod]
-    public void GetAttributes_ShouldReturnDeserializedDictionary()
+    public void GetProperties_ShouldReturnDeserializedDictionary()
     {
         // Arrange
         var worldId = Guid.NewGuid();
-        var attributes = new Dictionary<string, object>
+        var properties = new Dictionary<string, object>
         {
             ["strength"] = 18,
             ["dexterity"] = 14,
             ["constitution"] = 16
         };
-        var entity = WorldEntity.Create(worldId, EntityType.Character, "Gimli", TestOwnerId, attributes: attributes);
+        var entity = WorldEntity.Create(worldId, EntityType.Character, "Gimli", TestOwnerId, properties: properties);
 
         // Act
-        var retrievedAttributes = entity.GetAttributes();
+        var retrievedProperties = entity.Properties ?? [];
 
         // Assert
-        retrievedAttributes.Should().HaveCount(3);
-        retrievedAttributes.Should().ContainKey("strength");
-        retrievedAttributes.Should().ContainKey("dexterity");
-        retrievedAttributes.Should().ContainKey("constitution");
+        retrievedProperties.Should().HaveCount(3);
+        retrievedProperties.Should().ContainKey("strength");
+        retrievedProperties.Should().ContainKey("dexterity");
+        retrievedProperties.Should().ContainKey("constitution");
     }
 
     // T011 [US1] TEST: SchemaVersion property exists and is initialized

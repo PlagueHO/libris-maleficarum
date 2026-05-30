@@ -4,7 +4,12 @@
   "name": "The Sylvan Council",
   "description": "The governing body of the Sylvan Reach, composed of elder druids, fey ambassadors, and hereditary wardens who have protected the ancient forests for millennia. Their power derives from pacts with the land itself, making them formidable but slow to act.",
   "parentLocalId": "sylvan-reach",
-  "tags": ["druidic", "governing-body", "fey-allied", "nature-magic"],
+  "tags": [
+    "druidic",
+    "governing-body",
+    "fey-allied",
+    "nature-magic"
+  ],
   "properties": {
     "memberCount": "13 council seats",
     "alignment": "Neutral Good",

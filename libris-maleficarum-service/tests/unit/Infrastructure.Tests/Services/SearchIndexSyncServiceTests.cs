@@ -29,7 +29,7 @@ public class SearchIndexSyncServiceTests
             ownerId: TestOwnerId,
             description: "A wise wizard",
             tags: new List<string> { "wizard", "istari" },
-            attributes: new Dictionary<string, object> { ["power"] = "fire" });
+            properties: new Dictionary<string, object> { ["power"] = "fire" });
 
         // Act
         var result = SearchIndexSyncService.BuildEmbeddingContent(entity);
@@ -45,7 +45,7 @@ public class SearchIndexSyncServiceTests
     [TestMethod]
     public void BuildEmbeddingContent_OnlyName_StartsWithName()
     {
-        // Arrange — entity with no description and no tags still has default Attributes "{}"
+        // Arrange — entity with no description and no tags still has default Properties "{}"
         var entity = WorldEntity.Create(
             worldId: TestWorldId,
             entityType: EntityType.Location,
@@ -92,7 +92,7 @@ public class SearchIndexSyncServiceTests
         // Act
         var result = SearchIndexSyncService.BuildEmbeddingContent(entity);
 
-        // Assert — default Attributes is "{}" which is non-empty, so it gets appended
+        // Assert — default Properties is "{}" which is non-empty, so it gets appended
         result.Should().StartWith("Frodo The ring bearer");
         result.Should().Contain("Frodo");
         result.Should().Contain("The ring bearer");
@@ -116,7 +116,7 @@ public class SearchIndexSyncServiceTests
             description: "King of Gondor",
             parentId: parentId,
             tags: new List<string> { "king", "ranger" },
-            attributes: new Dictionary<string, object> { ["title"] = "Elessar" },
+            properties: new Dictionary<string, object> { ["title"] = "Elessar" },
             parentPath: parentPath,
             parentDepth: 1,
             schemaVersion: 2);
@@ -139,7 +139,7 @@ public class SearchIndexSyncServiceTests
         document.ModifiedDate.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
         document.Path.Should().HaveCount(2); // parentPath (1) + parentId (1)
         document.Depth.Should().Be(2); // parentDepth(1) + 1
-        document.Attributes.Should().Contain("Elessar");
+        document.Properties.Should().Contain("Elessar");
         document.SchemaVersion.Should().Be(2);
         document.ContentVector.Length.Should().Be(3);
     }

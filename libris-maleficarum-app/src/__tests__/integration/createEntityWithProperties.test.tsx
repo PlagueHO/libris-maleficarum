@@ -196,7 +196,7 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
 
     await user.type(militaryAssetsInput, 'Archers');
     await user.keyboard('{Enter}');
-    
+
     // Wait for all tags to render (check that tags appear as text in the DOM)
     await waitFor(
       () => {
@@ -218,7 +218,9 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
       expect(createdEntity?.properties).toBeDefined();
 
       // Parse and verify properties
-      const props = JSON.parse(createdEntity?.properties || '{}');
+      const props = typeof createdEntity?.properties === 'string'
+        ? JSON.parse(createdEntity.properties)
+        : (createdEntity?.properties ?? {});
       expect(props.CommandStructure).toBe('General Blackthorn, 5th Legion');
       expect(props.StrategicImportance).toBe('85'); // Textarea returns string
       expect(props.MilitaryAssets).toEqual(['Fortress', 'Cavalry', 'Archers']);
@@ -348,9 +350,11 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
       expect(createdEntity).not.toBeNull();
       expect(createdEntity?.name).toBe('Minimal Military Region');
 
-      // properties should either be undefined or an empty JSON object
+      // properties should either be undefined or an empty object
       if (createdEntity?.properties) {
-        const props = JSON.parse(createdEntity.properties);
+        const props = typeof createdEntity.properties === 'string'
+          ? JSON.parse(createdEntity.properties)
+          : createdEntity.properties;
         // All property values should be undefined/empty
         expect(Object.keys(props).length).toBe(0);
       }

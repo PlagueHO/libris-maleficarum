@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using System.Text.Json;
 
 /// <summary>
 /// Background service that monitors the Cosmos DB Change Feed for WorldEntity changes
@@ -230,9 +231,14 @@ public class SearchIndexSyncService : BackgroundService
             parts.Add(string.Join(" ", entity.Tags));
         }
 
-        if (!string.IsNullOrEmpty(entity.Attributes))
+        if (entity.Properties is not null)
         {
-            parts.Add(entity.Attributes);
+            parts.Add(JsonSerializer.Serialize(entity.Properties));
+        }
+
+        if (entity.SystemProperties is not null)
+        {
+            parts.Add(JsonSerializer.Serialize(entity.SystemProperties));
         }
 
         return string.Join(" ", parts);
@@ -259,7 +265,9 @@ public class SearchIndexSyncService : BackgroundService
             ModifiedDate = new DateTimeOffset(entity.ModifiedDate, TimeSpan.Zero),
             Path = entity.Path?.Select(g => g.ToString()).ToList() ?? [],
             Depth = entity.Depth,
-            Attributes = entity.Attributes,
+            SchemaId = entity.SchemaId,
+            Properties = entity.Properties is not null ? JsonSerializer.Serialize(entity.Properties) : null,
+            SystemProperties = entity.SystemProperties is not null ? JsonSerializer.Serialize(entity.SystemProperties) : null,
             SchemaVersion = entity.SchemaVersion,
             ContentVector = contentVector
         };

@@ -64,7 +64,9 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                 new SimpleField("modifiedDate", SearchFieldDataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
                 new SimpleField("path", SearchFieldDataType.Collection(SearchFieldDataType.String)) { IsFilterable = true },
                 new SimpleField("depth", SearchFieldDataType.Int32) { IsFilterable = true, IsSortable = true, IsFacetable = true },
-                new SearchableField("attributes"),
+                new SimpleField("schemaId", SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
+                new SearchableField("properties"),
+                new SearchableField("systemProperties"),
                 new SimpleField("schemaVersion", SearchFieldDataType.Int32) { IsFilterable = true },
                 new SearchField("contentVector", SearchFieldDataType.Collection(SearchFieldDataType.Single))
                 {
@@ -103,7 +105,8 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                         ContentFields =
                         {
                             new SemanticField("description"),
-                            new SemanticField("attributes")
+                            new SemanticField("properties"),
+                            new SemanticField("systemProperties")
                         },
                         KeywordsFields =
                         {

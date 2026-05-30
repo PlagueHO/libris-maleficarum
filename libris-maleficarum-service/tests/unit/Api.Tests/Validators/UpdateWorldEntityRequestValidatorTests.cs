@@ -58,7 +58,7 @@ public class UpdateWorldEntityRequestValidatorTests
             Description = "King of Gondor, Ranger of the North",
             EntityType = EntityType.Character,
             Tags = ["hero", "king", "ranger", "warrior"],
-            Attributes = new Dictionary<string, object>
+            Properties = new Dictionary<string, object>
             {
                 { "level", 25 },
                 { "title", "King" },
@@ -351,24 +351,24 @@ public class UpdateWorldEntityRequestValidatorTests
     }
 
     /// <summary>
-    /// Tests that attributes exceeding 100KB fails validation.
+    /// Tests that properties exceeding 100KB fails validation.
     /// </summary>
     [TestMethod]
-    public async Task ValidateAsync_WithAttributesTooLarge_ReturnsError()
+    public async Task ValidateAsync_WithPropertiesTooLarge_ReturnsError()
     {
         // Arrange
         // Create a dictionary that will exceed 100KB when serialized
-        var largeAttributes = new Dictionary<string, object>();
+        var largeProperties = new Dictionary<string, object>();
         for (int i = 0; i < 5000; i++)
         {
-            largeAttributes[$"key{i}"] = new string('A', 50);
+            largeProperties[$"key{i}"] = new string('A', 50);
         }
 
         var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
-            Attributes = largeAttributes
+            Properties = largeProperties
         };
 
         // Act
@@ -377,22 +377,22 @@ public class UpdateWorldEntityRequestValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle()
-            .Which.PropertyName.Should().Be("Attributes");
-        result.Errors.First().ErrorMessage.Should().Be("Attributes must not exceed 100KB serialized.");
+            .Which.PropertyName.Should().Be("Properties");
+        result.Errors.First().ErrorMessage.Should().Be("Properties must not exceed 100KB serialized.");
     }
 
     /// <summary>
-    /// Tests that attributes within size limit passes validation.
+    /// Tests that properties within size limit passes validation.
     /// </summary>
     [TestMethod]
-    public async Task ValidateAsync_WithAttributesWithinLimit_ReturnsNoErrors()
+    public async Task ValidateAsync_WithPropertiesWithinLimit_ReturnsNoErrors()
     {
         // Arrange
         var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
-            Attributes = new Dictionary<string, object>
+            Properties = new Dictionary<string, object>
             {
                 { "level", 25 },
                 { "class", "Paladin" },
@@ -432,17 +432,17 @@ public class UpdateWorldEntityRequestValidatorTests
     }
 
     /// <summary>
-    /// Tests that null attributes passes validation.
+    /// Tests that null properties passes validation.
     /// </summary>
     [TestMethod]
-    public async Task ValidateAsync_WithNullAttributes_ReturnsNoErrors()
+    public async Task ValidateAsync_WithNullProperties_ReturnsNoErrors()
     {
         // Arrange
         var request = new UpdateWorldEntityRequest
         {
             Name = "Test Entity",
             EntityType = EntityType.Character,
-            Attributes = null
+            Properties = null
         };
 
         // Act

@@ -57,7 +57,7 @@ jobs:
           set -e
           if [ -n "$MATCHES" ]; then
             echo "::error::Unsafe logging pattern detected. Raw user-derived values must not be logged."
-            echo "See docs/design/security-logging.md for approved alternatives."
+            echo "See docs/design/security_logging.md for approved alternatives."
             echo ""
             echo "$MATCHES"
             exit 1

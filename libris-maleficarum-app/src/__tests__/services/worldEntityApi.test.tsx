@@ -169,6 +169,53 @@ describe('WorldEntity API - Schema Versioning', () => {
       // Verify explicit schemaVersion is preserved
       expect(lastCreateRequest!.schemaVersion).toBe(2);
     });
+
+    it('should send object-based properties and passthrough schemaId/systemProperties', async () => {
+      const { result } = renderHook(() => useCreateWorldEntityMutation(), {
+        wrapper: createWrapper(),
+      });
+
+      const [createEntity] = result.current;
+
+      const requestData: CreateWorldEntityRequest = {
+        parentId: null,
+        entityType: WorldEntityType.Character,
+        name: 'Aragorn',
+        schemaId: 'dnd5e-character',
+        properties: {
+          Class: 'Ranger',
+          Level: 10,
+        },
+        systemProperties: {
+          HP: 85,
+          AC: 17,
+        },
+      };
+
+      await createEntity({
+        worldId: '550e8400-e29b-41d4-a716-446655440000',
+        data: requestData,
+      }).unwrap();
+
+      await waitFor(() => {
+        expect(lastCreateRequest).toBeDefined();
+      });
+
+      expect(lastCreateRequest!.schemaId).toBe('dnd5e-character');
+      expect(lastCreateRequest!.properties).toEqual(
+        expect.objectContaining({
+          Class: 'Ranger',
+          Level: 10,
+        })
+      );
+      expect(lastCreateRequest!.systemProperties).toEqual(
+        expect.objectContaining({
+          HP: 85,
+          AC: 17,
+        })
+      );
+      expect(typeof lastCreateRequest!.properties).toBe('object');
+    });
   });
 
   describe('T056: updateWorldEntity schema version handling', () => {
@@ -224,6 +271,49 @@ describe('WorldEntity API - Schema Versioning', () => {
 
       // FR-007: Verify schemaVersion is always included using current version from config
       expect(lastUpdateRequest!.schemaVersion).toBe(1); // Current version for Continent from config
+    });
+
+    it('should send object-based properties and passthrough schemaId/systemProperties on update', async () => {
+      const { result } = renderHook(() => useUpdateWorldEntityMutation(), {
+        wrapper: createWrapper(),
+      });
+
+      const [updateEntity] = result.current;
+
+      const requestData: UpdateWorldEntityRequest = {
+        name: 'Updated Character',
+        schemaId: 'dnd5e-character',
+        properties: {
+          Level: 11,
+        },
+        systemProperties: {
+          HP: 92,
+        },
+      };
+
+      await updateEntity({
+        worldId: '550e8400-e29b-41d4-a716-446655440000',
+        entityId: '123e4567-e89b-12d3-a456-426614174000',
+        data: requestData,
+        currentEntityType: WorldEntityType.Character,
+      }).unwrap();
+
+      await waitFor(() => {
+        expect(lastUpdateRequest).toBeDefined();
+      });
+
+      expect(lastUpdateRequest!.schemaId).toBe('dnd5e-character');
+      expect(lastUpdateRequest!.properties).toEqual(
+        expect.objectContaining({
+          Level: 11,
+        })
+      );
+      expect(lastUpdateRequest!.systemProperties).toEqual(
+        expect.objectContaining({
+          HP: 92,
+        })
+      );
+      expect(typeof lastUpdateRequest!.properties).toBe('object');
     });
   });
 });

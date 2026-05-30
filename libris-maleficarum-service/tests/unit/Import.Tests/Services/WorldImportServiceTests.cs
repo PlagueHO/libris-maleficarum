@@ -90,7 +90,7 @@ public sealed class WorldImportServiceTests
     }
 
     [TestMethod]
-    public async Task ImportAsync_MapsPropertiesToAttributes()
+    public async Task ImportAsync_MapsPropertiesToProperties()
     {
         // Arrange
         var properties = new Dictionary<string, object> { ["population"] = 50000, ["climate"] = "temperate" };
@@ -122,8 +122,8 @@ public sealed class WorldImportServiceTests
 
         // Assert
         capturedRequest.Should().NotBeNull();
-        capturedRequest!.Attributes.Should().ContainKey("population");
-        capturedRequest.Attributes.Should().ContainKey("climate");
+        capturedRequest!.Properties.Should().ContainKey("population");
+        capturedRequest.Properties.Should().ContainKey("climate");
     }
 
     [TestMethod]

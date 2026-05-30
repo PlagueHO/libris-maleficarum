@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, vi, beforeAll, afterEach, afterAll } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -127,7 +127,7 @@ describe('World Entity Editing Integration (T013)', () => {
   describe('User Story 1: Quick Edit from Hierarchy (T013)', () => {
     it('should allow editing entity by clicking edit icon in hierarchy', async () => {
       const user = userEvent.setup();
-      
+
       const store = createMockStore({
           selectedWorldId: 'world-1',
       });
@@ -164,7 +164,7 @@ describe('World Entity Editing Integration (T013)', () => {
           editingEntityId: 'entity-1',
           mainPanelMode: 'editing_entity',
       });
-      
+
       render(
         <Provider store={store}>
           <MainPanel />
@@ -196,7 +196,7 @@ describe('World Entity Editing Integration (T013)', () => {
   describe('User Story 2: Edit from Detail View (T023)', () => {
     it('should allow editing entity by clicking Edit button in detail view', async () => {
       const user = userEvent.setup();
-      
+
       const store = createMockStore({
           selectedWorldId: 'world-1',
           selectedEntityId: 'entity-1',
@@ -219,7 +219,7 @@ describe('World Entity Editing Integration (T013)', () => {
       const state = store.getState();
       expect(state.worldSidebar.editingEntityId).toBe('entity-1');
       expect(state.worldSidebar.mainPanelMode).toBe('editing_entity');
-      
+
       await waitFor(() => {
           expect(screen.getByRole('heading', { name: /edit entry/i })).toBeInTheDocument();
       });
@@ -227,7 +227,7 @@ describe('World Entity Editing Integration (T013)', () => {
 
     it('should transition back to read-only view after successful edit save', async () => {
       const user = userEvent.setup();
-      
+
       const store = createMockStore({
           selectedWorldId: 'world-1',
           selectedEntityId: 'entity-1',
@@ -262,7 +262,7 @@ describe('World Entity Editing Integration (T013)', () => {
 
     it('should preserve detail view after canceling edit', async () => {
       const user = userEvent.setup();
-      
+
       const store = createMockStore({
           selectedWorldId: 'world-1',
           selectedEntityId: 'entity-1',
@@ -289,12 +289,49 @@ describe('World Entity Editing Integration (T013)', () => {
         expect(screen.getByText('Faerûn')).toBeInTheDocument();
       });
     });
+
+    it('should transition back to read-only view when saving from unsaved changes dialog', async () => {
+      const user = userEvent.setup();
+
+      const store = createMockStore({
+          selectedWorldId: 'world-1',
+          selectedEntityId: 'entity-1',
+          editingEntityId: 'entity-1',
+          mainPanelMode: 'editing_entity'
+      });
+
+      render(
+        <Provider store={store}>
+          <MainPanel />
+        </Provider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+      });
+
+      const nameInput = screen.getByLabelText(/name/i);
+      await user.clear(nameInput);
+      await user.type(nameInput, 'Faerûn (Dialog Save)');
+
+      const backButton = screen.getByRole('button', { name: /back/i });
+      await user.click(backButton);
+
+      const unsavedDialog = await screen.findByRole('dialog', { name: /unsealed changes/i });
+      const saveButton = within(unsavedDialog).getByRole('button', { name: /^save$/i });
+      await user.click(saveButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Faerûn (Dialog Save)')).toBeInTheDocument();
+        expect(screen.queryByLabelText(/name/i)).not.toBeInTheDocument();
+      });
+    });
   });
 
   describe('User Story 3: Validation Error Flow (T034)', () => {
     it('should display validation errors and prevent save with invalid data', async () => {
       const user = userEvent.setup();
-      
+
       const store = createMockStore({
           selectedWorldId: 'world-1',
           newEntityParentId: 'parent-1',
@@ -333,7 +370,7 @@ describe('World Entity Editing Integration (T013)', () => {
 
     it('should allow save after fixing validation errors', async () => {
       const user = userEvent.setup();
-      
+
       const store = createMockStore({
           selectedWorldId: 'world-1',
           newEntityParentId: 'parent-1',
@@ -365,7 +402,7 @@ describe('World Entity Editing Integration (T013)', () => {
       await user.type(nameInput, 'New Valid Entity');
 
       // Click select button
-      const typeTrigger = screen.getByRole('combobox', { name: /type/i }); 
+      const typeTrigger = screen.getByRole('combobox', { name: /type/i });
       await user.click(typeTrigger);
 
       // Find option in portal
@@ -397,7 +434,7 @@ describe('World Entity Editing Integration (T013)', () => {
           editingEntityId: 'entity-1',
           mainPanelMode: 'editing_entity' as const,
       });
-      
+
       server.use(
         http.put(`${BASE_URL}/api/v1/worlds/:worldId/entities/:entityId`, async () => {
           updateCalled = true;
@@ -417,13 +454,13 @@ describe('World Entity Editing Integration (T013)', () => {
 
       const nameInput = screen.getByLabelText(/name/i) as HTMLInputElement;
       await user.clear(nameInput);
-      
+
       const longName = 'A'.repeat(101);
       await user.type(nameInput, longName);
 
       expect(nameInput.value).toBe('A'.repeat(100));
       expect(nameInput.value.length).toBe(100);
-      
+
       const saveButton = screen.getByRole('button', { name: /save/i });
       await user.click(saveButton);
 
@@ -439,24 +476,24 @@ describe('World Entity Editing Integration (T013)', () => {
             newEntityParentId: 'parent-1',
             mainPanelMode: 'creating_entity',
         });
-  
+
         const { container } = render(
           <Provider store={store}>
             <MainPanel />
           </Provider>,
         );
-  
+
         await waitFor(() => {
           expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
         });
-  
+
         const saveButton = screen.getByRole('button', { name: /create/i });
         await user.click(saveButton);
-  
+
         await waitFor(() => {
           expect(screen.getByText(/every entry must bear a name/i)).toBeInTheDocument();
         });
-  
+
         expect(await axe(container)).toHaveNoViolations();
     });
   });

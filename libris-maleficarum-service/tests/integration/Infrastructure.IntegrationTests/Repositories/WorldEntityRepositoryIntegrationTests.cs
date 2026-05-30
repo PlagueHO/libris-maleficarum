@@ -879,7 +879,7 @@ public class WorldEntityRepositoryIntegrationTests
         var telemetryService = new NoOpTelemetryService();
         var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
 
-        var entityToCreate = WorldEntity.Create(world.Id, EntityType.Character, "Versioned Entity", TestOwnerId, "Description", null, null, null, schemaVersion: 2);
+        var entityToCreate = WorldEntity.Create(world.Id, EntityType.Character, "Versioned Entity", TestOwnerId, "Description", null, null, schemaId: null, properties: null, systemProperties: null, schemaVersion: 2);
 
         // Act
         var createdEntity = await repository.CreateAsync(entityToCreate);

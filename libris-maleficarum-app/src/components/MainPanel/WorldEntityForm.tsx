@@ -18,8 +18,14 @@ import { EntityTypeSelector } from '../shared/EntityTypeSelector';
 import { FormActions } from '../ui/form-actions';
 import { FormLayout } from '../ui/form-layout';
 import { UnsavedChangesDialog } from '../shared/UnsavedChangesDialog';
+import { MainPanelTransientAlert } from '../shared/MainPanelTransientAlert';
 import { Loader2 } from 'lucide-react';
 import { validateWorldEntityForm, clearFieldError } from '../../services/validators/worldEntityValidator';
+import {
+  isProblemDetails,
+  isValidationProblemDetails,
+  type ProblemDetails,
+} from '@/services/types/problemDetails.types';
 import { DynamicPropertiesForm } from './DynamicPropertiesForm';
 
 /**
@@ -53,6 +59,7 @@ export function EntityDetailForm() {
   const [customProperties, setCustomProperties] = useState<Record<string, unknown> | null>(null);
   const [errors, setErrors] = useState<{ name?: string; type?: string; description?: string }>({});
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
+  const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
 
   const isEditing = !!editingEntityId;
 
@@ -200,6 +207,30 @@ export function EntityDetailForm() {
     }
   };
 
+  const getErrorMessage = (error: unknown): string => {
+    if (!error || typeof error !== 'object' || !('data' in error)) {
+      return 'Unable to save this entry right now. Please try again.';
+    }
+
+    const apiError = error as { data?: unknown };
+    if (!isProblemDetails(apiError.data)) {
+      return 'Unable to save this entry right now. Please try again.';
+    }
+
+    const problem = apiError.data as ProblemDetails;
+    if (isValidationProblemDetails(problem)) {
+      const messages = Object.values(problem.errors)
+        .flat()
+        .filter((message) => message.trim().length > 0);
+
+      if (messages.length > 0) {
+        return messages[0];
+      }
+    }
+
+    return problem.detail || problem.title || 'Unable to save this entry right now. Please try again.';
+  };
+
   const handleDialogSave = async () => {
     // Trigger form submission logic
     if (!validate() || !selectedWorldId) {
@@ -210,7 +241,7 @@ export function EntityDetailForm() {
     try {
       const typedEntityType = entityType as WorldEntityType;
       const hasProperties = customProperties && Object.keys(customProperties).length > 0;
-      const properties = hasProperties ? JSON.stringify(customProperties) : undefined;
+      const properties = hasProperties ? customProperties : undefined;
 
       if (isEditing && editingEntityId) {
         await updateEntity({
@@ -219,11 +250,14 @@ export function EntityDetailForm() {
           data: {
             name,
             description,
+            entityType: typedEntityType,
             properties,
             schemaVersion: ENTITY_SCHEMA_VERSIONS[typedEntityType],
           },
           currentEntityType: existingEntity?.entityType || typedEntityType,
         }).unwrap();
+
+        dispatch(setSelectedEntity(editingEntityId));
       } else if (newEntityParentId) {
         await createEntity({
           worldId: selectedWorldId,
@@ -241,11 +275,13 @@ export function EntityDetailForm() {
 
       dispatch(setUnsavedChanges(false));
       setShowUnsavedChangesDialog(false);
+      setSaveErrorMessage(null);
       dispatch(closeEntityForm());
     } catch (error) {
-      // Error handled by parent component (toast notification)
+      const message = getErrorMessage(error);
+      setSaveErrorMessage(message);
+      logger.error('UI', 'Failed to save entity from unsaved changes dialog', { error, message });
       setShowUnsavedChangesDialog(false);
-      throw error;
     }
   };
 
@@ -262,6 +298,7 @@ export function EntityDetailForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate() || !selectedWorldId) return;
+    setSaveErrorMessage(null);
 
     logger.userAction(isEditing ? 'Update entity' : 'Create entity', {
       entityType,
@@ -274,7 +311,7 @@ export function EntityDetailForm() {
 
       // Only include properties if there's actual data (not empty object or null)
       const hasProperties = customProperties && Object.keys(customProperties).length > 0;
-      const properties = hasProperties ? JSON.stringify(customProperties) : undefined;
+      const properties = hasProperties ? customProperties : undefined;
 
       if (isEditing && editingEntityId) {
         await updateEntity({
@@ -283,6 +320,7 @@ export function EntityDetailForm() {
           data: {
             name,
             description,
+            entityType: typedEntityType,
             properties,
             schemaVersion: ENTITY_SCHEMA_VERSIONS[typedEntityType],
           },
@@ -291,6 +329,7 @@ export function EntityDetailForm() {
 
         // T029: After successful edit save, return to read-only view
         dispatch(setUnsavedChanges(false));
+        setSaveErrorMessage(null);
         dispatch(closeEntityForm());
         dispatch(setSelectedEntity(editingEntityId));
       } else {
@@ -313,9 +352,13 @@ export function EntityDetailForm() {
         }
 
         dispatch(setUnsavedChanges(false));
+        setSaveErrorMessage(null);
         dispatch(closeEntityForm());
       }
     } catch (error) {
+      const message = getErrorMessage(error);
+      setSaveErrorMessage(message);
+
       logger.error('UI', 'Failed to save entity', { error });
 
       // Log validation errors if present
@@ -332,6 +375,14 @@ export function EntityDetailForm() {
 
   return (
     <FormLayout onBack={handleClose}>
+      {saveErrorMessage && (
+        <MainPanelTransientAlert
+          title="Failed to save entry"
+          message={saveErrorMessage}
+          variant="error"
+        />
+      )}
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
           {isEditing ? 'Edit Entry' : 'New Entry'}

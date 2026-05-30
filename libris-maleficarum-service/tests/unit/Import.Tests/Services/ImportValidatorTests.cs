@@ -326,7 +326,25 @@ public sealed class ImportValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.Code == ImportValidationErrorCodes.EntityPropsTooLarge);
+        result.Errors.Should().Contain(e => e.Code == ImportValidationErrorCodes.EntityPropertiesTooLarge);
+    }
+
+    [TestMethod]
+    public void Validate_NoRootEntity_ReturnsError()
+    {
+        // Arrange
+        var entities = new List<EntityImportDefinition>
+        {
+            new() { LocalId = "child", EntityType = "Country", Name = "Child", ParentLocalId = "missing-parent" }
+        };
+        var content = CreateValidContent(entities: entities);
+
+        // Act
+        var result = _validator.Validate(content);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.Code == ImportValidationErrorCodes.EntityMissingRoot);
     }
 
     [TestMethod]

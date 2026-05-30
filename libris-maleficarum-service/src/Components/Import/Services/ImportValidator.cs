@@ -169,11 +169,37 @@ public sealed class ImportValidator : IImportValidator
                     errors.Add(new ImportValidationError
                     {
                         FilePath = filePath,
-                        Code = ImportValidationErrorCodes.EntityPropsTooLarge,
+                        Code = ImportValidationErrorCodes.EntityPropertiesTooLarge,
                         Message = $"Entity properties exceed 100KB ({serializedSize} bytes)."
                     });
                 }
             }
+
+            // SystemProperties size
+            if (entity.SystemProperties is not null)
+            {
+                var serializedSize = JsonSerializer.SerializeToUtf8Bytes(entity.SystemProperties).Length;
+                if (serializedSize > 102_400)
+                {
+                    errors.Add(new ImportValidationError
+                    {
+                        FilePath = filePath,
+                        Code = ImportValidationErrorCodes.EntityPropertiesTooLarge,
+                        Message = $"Entity system properties exceed 100KB ({serializedSize} bytes)."
+                    });
+                }
+            }
+        }
+
+        var hasRootEntity = content.Entities.Any(entity => string.IsNullOrWhiteSpace(entity.ParentLocalId));
+        if (!hasRootEntity)
+        {
+            errors.Add(new ImportValidationError
+            {
+                FilePath = "entities",
+                Code = ImportValidationErrorCodes.EntityMissingRoot,
+                Message = "At least one root entity is required (an entity with no ParentLocalId)."
+            });
         }
 
         // Validate relationships: dangling parents
