@@ -243,6 +243,20 @@ ASP.NET Core health checks monitor service dependencies:
 - **Azure Key Vault**: Sensitive configuration (managed via Aspire integration)
 - **Aspire Configuration**: Service discovery and dependency injection
 
+### Direct API Run Without AppHost
+
+Aspire AppHost is the primary local development path and injects connection settings automatically.
+
+When running the API project directly without AppHost (occasional troubleshooting or isolated runs), provide the Cosmos DB emulator connection string via local .NET user secrets instead of checked-in appsettings values:
+
+```powershell
+Set-Location libris-maleficarum-service/src/Api
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:cosmosdb" "AccountEndpoint=https://localhost:8081/;AccountKey=<emulator-key>;"
+```
+
+For hosted environments, continue using environment variables and Key Vault-backed configuration.
+
 ### Configuration Structure
 
 Configuration organized by concern:

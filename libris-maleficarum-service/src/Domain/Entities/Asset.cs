@@ -89,12 +89,12 @@ public sealed class Asset
     /// <summary>
     /// Timestamp when the asset was created.
     /// </summary>
-    public required DateTime CreatedDate { get; init; }
+    public required DateTime CreatedAt { get; init; }
 
     /// <summary>
     /// Timestamp when the asset metadata was last modified.
     /// </summary>
-    public DateTime? ModifiedDate { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
 
     /// <summary>
     /// Soft delete flag. When true, asset should not be returned in queries.
@@ -167,7 +167,7 @@ public sealed class Asset
             Tags = tags,
             Description = description,
             ImageDimensions = imageDimensions,
-            CreatedDate = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow,
             IsDeleted = false
         };
 
@@ -279,6 +279,6 @@ public sealed class Asset
             Description = description;
         }
 
-        ModifiedDate = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

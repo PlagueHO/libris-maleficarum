@@ -241,6 +241,41 @@ describe('World API - GET Endpoints', () => {
 
       expect(requestCount).toBe(1);
     });
+
+    it('should use canonical createdAt/updatedAt in world list responses', async () => {
+      server.use(
+        http.get('http://localhost:5000/api/v1/worlds', () => {
+          const response = {
+            data: [
+              {
+                id: '550e8400-e29b-41d4-a716-446655440000',
+                name: 'Middle Earth',
+                description: 'A fantasy world created by J.R.R. Tolkien',
+                ownerId: 'user-123',
+                createdAt: '2025-01-01T00:00:00Z',
+                updatedAt: '2025-01-02T00:00:00Z',
+                isDeleted: false,
+              },
+            ],
+            meta: {
+              requestId: 'test-request-list-normalized',
+              timestamp: new Date().toISOString(),
+            },
+          };
+
+          return HttpResponse.json(response);
+        })
+      );
+
+      const { result } = renderHook(() => useGetWorldsQuery(), {
+        wrapper: createTestWrapper(),
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(result.current.data?.[0].createdAt).toBe('2025-01-01T00:00:00Z');
+      expect(result.current.data?.[0].updatedAt).toBe('2025-01-02T00:00:00Z');
+    });
   });
 
   describe('useGetWorldByIdQuery', () => {
@@ -270,6 +305,41 @@ describe('World API - GET Endpoints', () => {
       const error = result.current.error as { data: ProblemDetails };
       expect(error.data.status).toBe(404);
       expect(error.data.title).toBe('Resource Not Found');
+    });
+
+    it('should use canonical createdAt/updatedAt in single world responses', async () => {
+      const worldId = '550e8400-e29b-41d4-a716-446655440000';
+
+      server.use(
+        http.get('http://localhost:5000/api/v1/worlds/:id', ({ params }) => {
+          const response = {
+            data: {
+              id: params.id,
+              name: 'Middle Earth',
+              description: 'A fantasy world created by J.R.R. Tolkien',
+              ownerId: 'user-123',
+              createdAt: '2025-01-01T00:00:00Z',
+              updatedAt: '2025-01-02T00:00:00Z',
+              isDeleted: false,
+            },
+            meta: {
+              requestId: 'test-request-normalized',
+              timestamp: new Date().toISOString(),
+            },
+          };
+
+          return HttpResponse.json(response);
+        })
+      );
+
+      const { result } = renderHook(() => useGetWorldByIdQuery(worldId), {
+        wrapper: createTestWrapper(),
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(result.current.data?.createdAt).toBe('2025-01-01T00:00:00Z');
+      expect(result.current.data?.updatedAt).toBe('2025-01-02T00:00:00Z');
     });
   });
 
@@ -316,7 +386,7 @@ describe('World API - GET Endpoints', () => {
         expect(result.current.isLoading).toBe(false);
         expect(result.current.isUninitialized).toBe(false);
       }, { timeout: 5000 });
-      
+
       // After loading completes, either we have an error or we have success
       expect(result.current.isError || result.current.isSuccess).toBe(true);
     });

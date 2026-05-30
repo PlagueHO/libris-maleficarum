@@ -12,6 +12,7 @@ import {
   WorldEntityType,
   ENTITY_SCHEMA_VERSIONS,
 } from '../../services/types/worldEntity.types';
+import { getEntityTypeConfig } from '../../services/config/entityTypeRegistry';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { EntityTypeSelector } from '../shared/EntityTypeSelector';
@@ -27,6 +28,13 @@ import {
   type ProblemDetails,
 } from '@/services/types/problemDetails.types';
 import { DynamicPropertiesForm } from './DynamicPropertiesForm';
+
+function hasPropertySchema(type: WorldEntityType | '') {
+  if (!type) return false;
+
+  const schema = getEntityTypeConfig(type as WorldEntityType)?.propertySchema;
+  return !!schema && schema.length > 0;
+}
 
 /**
  * EntityDetailForm Component
@@ -93,21 +101,11 @@ export function EntityDetailForm() {
       setName(existingEntity.name);
       setDescription(existingEntity.description || '');
       setEntityType(existingEntity.entityType);
-
-      // Deserialize Properties field for Regional entity types
-      if (existingEntity.properties) {
-        try {
-          const parsed = typeof existingEntity.properties === 'string'
-            ? JSON.parse(existingEntity.properties)
-            : existingEntity.properties;
-          setCustomProperties(parsed);
-        } catch (error) {
-          console.error('Failed to parse entity properties:', error);
-          setCustomProperties(null);
-        }
-      } else {
-        setCustomProperties(null);
-      }
+      setCustomProperties(
+        hasPropertySchema(existingEntity.entityType)
+          ? (existingEntity.properties ?? null)
+          : null
+      );
     } else if (!isEditing) {
       // Reset for create mode
       setName('');
@@ -122,14 +120,7 @@ export function EntityDetailForm() {
   useEffect(() => {
     if (!entityType) return;
 
-    const propertyTypes: WorldEntityType[] = [
-      WorldEntityType.GeographicRegion,
-      WorldEntityType.PoliticalRegion,
-      WorldEntityType.CulturalRegion,
-      WorldEntityType.MilitaryRegion,
-    ];
-
-    if (!propertyTypes.includes(entityType as WorldEntityType)) {
+    if (!hasPropertySchema(entityType)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Clearing derived state when entity type changes
       setCustomProperties(null);
     }
@@ -372,9 +363,22 @@ export function EntityDetailForm() {
   }
 
   const isLoading = (isLoadingEntity && isEditing) || (isLoadingParent && !isEditing && newEntityParentId);
+  const entityDetailFormId = 'world-entity-detail-form';
 
   return (
-    <FormLayout onBack={handleClose}>
+    <FormLayout
+      onBack={handleClose}
+      footer={!isLoading ? (
+        <FormActions
+          submitLabel={isEditing ? 'Save Changes' : 'Create'}
+          cancelLabel="Cancel"
+          isLoading={isSubmitting}
+          isSubmitDisabled={Object.keys(errors).length > 0}
+          onCancel={handleClose}
+          submitFormId={entityDetailFormId}
+        />
+      ) : undefined}
+    >
       {saveErrorMessage && (
         <MainPanelTransientAlert
           title="Failed to save entry"
@@ -404,7 +408,7 @@ export function EntityDetailForm() {
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id={entityDetailFormId} onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium mb-3">
               Name <span className="text-destructive">*</span>
@@ -497,13 +501,6 @@ export function EntityDetailForm() {
             />
           )}
 
-          <FormActions
-            submitLabel={isEditing ? 'Save Changes' : 'Create'}
-            cancelLabel="Cancel"
-            isLoading={isSubmitting}
-            isSubmitDisabled={Object.keys(errors).length > 0}
-            onCancel={handleClose}
-          />
         </form>
         )}
 

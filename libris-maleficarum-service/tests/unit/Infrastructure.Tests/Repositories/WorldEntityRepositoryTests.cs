@@ -17,7 +17,8 @@ using NSubstitute;
 /// Tests CRUD operations, hierarchy management, authorization, and pagination.
 /// </summary>
 [TestClass]
-[TestCategory("Unit")]
+[TestCategory("Integration")]
+[TestCategory("RequiresCosmos")]
 public class WorldEntityRepositoryTests
 {
     private ApplicationDbContext _context = null!;
@@ -48,33 +49,30 @@ public class WorldEntityRepositoryTests
 
     private DbContextOptions<ApplicationDbContext> GetDbContextOptions()
     {
-        // Check if Cosmos DB connection string is available (for integration tests)
+        // These tests exercise the Cosmos-backed repository path.
         var cosmosConnectionString = Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING");
-        if (!string.IsNullOrEmpty(cosmosConnectionString))
+        if (string.IsNullOrWhiteSpace(cosmosConnectionString))
         {
-            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            optionsBuilder.UseCosmos(
-                cosmosConnectionString,
-                _testDatabaseName,
-                cosmosOptions =>
-                {
-                    // Configure HttpClientFactory to skip SSL validation for local emulator
-                    cosmosOptions.HttpClientFactory(() =>
-                    {
-                        var handler = new HttpClientHandler
-                        {
-                            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                        };
-                        return new HttpClient(handler);
-                    });
-                });
-            return optionsBuilder.Options;
+            Assert.Inconclusive("WorldEntityRepositoryTests require COSMOS_CONNECTION_STRING to run.");
         }
 
-        // Default to InMemory for unit tests
-        return new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: _testDatabaseName)
-            .Options;
+        var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+        optionsBuilder.UseCosmos(
+            cosmosConnectionString,
+            _testDatabaseName,
+            cosmosOptions =>
+            {
+                // Configure HttpClientFactory to skip SSL validation for local emulator
+                cosmosOptions.HttpClientFactory(() =>
+                {
+                    var handler = new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                    };
+                    return new HttpClient(handler);
+                });
+            });
+        return optionsBuilder.Options;
     }
 
     [TestCleanup]

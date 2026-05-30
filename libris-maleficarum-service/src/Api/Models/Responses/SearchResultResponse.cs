@@ -69,12 +69,12 @@ public class SearchResultItem
     /// <summary>
     /// Gets or sets the creation timestamp.
     /// </summary>
-    public DateTimeOffset CreatedDate { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// Gets or sets the last modification timestamp.
     /// </summary>
-    public DateTimeOffset ModifiedDate { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }
 
 /// <summary>

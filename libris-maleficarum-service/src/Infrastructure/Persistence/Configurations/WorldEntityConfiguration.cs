@@ -12,6 +12,17 @@ using System.Text.Json;
 /// </summary>
 public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
 {
+    private readonly bool _isCosmosDb;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WorldEntityConfiguration"/> class.
+    /// </summary>
+    /// <param name="isCosmosDb">True when configuring for Cosmos DB provider.</param>
+    public WorldEntityConfiguration(bool isCosmosDb = true)
+    {
+        _isCosmosDb = isCosmosDb;
+    }
+
     /// <summary>
     /// Configures the WorldEntity entity type for Cosmos DB.
     /// </summary>
@@ -21,7 +32,7 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
         // Map to Cosmos DB container
         builder.ToContainer("WorldEntities");
 
-        // Configure partition key to be /WorldId
+        // Configure partition key to be /worldId
         // This groups all entities for a single world in the same partition,
         // allowing for efficient single-partition queries when fetching the world tree.
         builder.HasPartitionKey(e => e.WorldId);
@@ -39,71 +50,84 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
             .IsRequired();
 
         builder.Property(e => e.WorldId)
-            .ToJsonProperty("WorldId")
+            .ToJsonProperty("worldId")
             .IsRequired();
 
         builder.Property(e => e.ParentId)
-            .ToJsonProperty("ParentId");
+            .ToJsonProperty("parentId");
 
         builder.Property(e => e.EntityType)
-            .ToJsonProperty("EntityType")
+            .ToJsonProperty("entityType")
             .HasConversion<string>()
             .IsRequired();
 
         builder.Property(e => e.SchemaId)
-            .ToJsonProperty("SchemaId")
+            .ToJsonProperty("schemaId")
             .IsRequired(false);
 
         builder.Property(e => e.Name)
-            .ToJsonProperty("Name")
+            .ToJsonProperty("name")
             .IsRequired()
             .HasMaxLength(200);
 
         builder.Property(e => e.Description)
-            .ToJsonProperty("Description")
+            .ToJsonProperty("description")
             .HasMaxLength(5000);
 
         builder.Property(e => e.Tags)
-            .ToJsonProperty("Tags")
+            .ToJsonProperty("tags")
             .Metadata.SetValueComparer(
                 new ValueComparer<List<string>>(
                     (c1, c2) => c1!.SequenceEqual(c2!),
                     c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                     c => c.ToList()));
 
-        builder.Property(e => e.Path)
-            .ToJsonProperty("Path")
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions?)null) ?? new List<Guid>())
-            .Metadata.SetValueComparer(
-                new ValueComparer<List<Guid>>(
-                    (c1, c2) => c1!.SequenceEqual(c2!),
-                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                    c => c.ToList()));
+        if (_isCosmosDb)
+        {
+            builder.Property(e => e.Path)
+                .ToJsonProperty("path")
+                .HasConversion(
+                    v => v.Select(pathId => pathId.ToString()).ToList(),
+                    v => v.Select(pathId => Guid.Parse(pathId)).ToList())
+                .Metadata.SetValueComparer(
+                    new ValueComparer<List<Guid>>(
+                        (c1, c2) => c1!.SequenceEqual(c2!),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()));
+        }
+        else
+        {
+            builder.Property(e => e.Path)
+                .ToJsonProperty("path")
+                .Metadata.SetValueComparer(
+                    new ValueComparer<List<Guid>>(
+                        (c1, c2) => c1!.SequenceEqual(c2!),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()));
+        }
 
         builder.Property(e => e.Depth)
-            .ToJsonProperty("Depth")
+            .ToJsonProperty("depth")
             .IsRequired();
 
         builder.Property(e => e.HasChildren)
-            .ToJsonProperty("HasChildren")
+            .ToJsonProperty("hasChildren")
             .IsRequired();
 
         builder.Property(e => e.OwnerId)
-            .ToJsonProperty("OwnerId")
+            .ToJsonProperty("ownerId")
             .IsRequired();
 
         builder.Property(e => e.CreatedBy)
-            .ToJsonProperty("CreatedBy")
+            .ToJsonProperty("createdBy")
             .IsRequired(false);
 
         builder.Property(e => e.ModifiedBy)
-            .ToJsonProperty("ModifiedBy")
+            .ToJsonProperty("modifiedBy")
             .IsRequired(false);
 
         var propertiesBuilder = builder.Property(e => e.Properties)
-            .ToJsonProperty("Properties")
+            .ToJsonProperty("properties")
             .HasConversion(
                 v => SerializeDictionary(v),
                 v => DeserializeDictionary(v))
@@ -115,7 +139,7 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
             value => DictionarySnapshot(value)));
 
         var systemPropertiesBuilder = builder.Property(e => e.SystemProperties)
-            .ToJsonProperty("SystemProperties")
+            .ToJsonProperty("systemProperties")
             .HasConversion(
                 v => SerializeDictionary(v),
                 v => DeserializeDictionary(v))
@@ -126,24 +150,24 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
             value => DictionaryHashCode(value),
             value => DictionarySnapshot(value)));
 
-        builder.Property(e => e.CreatedDate)
-            .ToJsonProperty("CreatedDate")
+        builder.Property(e => e.CreatedAt)
+            .ToJsonProperty("createdAt")
             .IsRequired();
 
-        builder.Property(e => e.ModifiedDate)
-            .ToJsonProperty("ModifiedDate")
+        builder.Property(e => e.UpdatedAt)
+            .ToJsonProperty("updatedAt")
             .IsRequired();
 
         builder.Property(e => e.IsDeleted)
-            .ToJsonProperty("IsDeleted")
+            .ToJsonProperty("isDeleted")
             .IsRequired();
 
         builder.Property(e => e.DeletedDate)
-            .ToJsonProperty("DeletedDate")
+            .ToJsonProperty("deletedDate")
             .IsRequired(false);
 
         builder.Property(e => e.DeletedBy)
-            .ToJsonProperty("DeletedBy")
+            .ToJsonProperty("deletedBy")
             .IsRequired(false);
 
         // TTL property for Cosmos DB automatic cleanup
@@ -170,20 +194,6 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
                 // From database: treat missing/0 as version 1 for backward compatibility (FR-008)
                 v => v == 0 ? 1 : v)
             .IsRequired();
-    }
-
-    private static string? SerializeDictionary(Dictionary<string, object>? value)
-    {
-        return value is null
-            ? null
-            : JsonSerializer.Serialize(value);
-    }
-
-    private static Dictionary<string, object>? DeserializeDictionary(string? json)
-    {
-        return string.IsNullOrWhiteSpace(json)
-            ? null
-            : JsonSerializer.Deserialize<Dictionary<string, object>>(json);
     }
 
     private static bool DictionaryEquals(Dictionary<string, object>? left, Dictionary<string, object>? right)
@@ -217,5 +227,17 @@ public class WorldEntityConfiguration : IEntityTypeConfiguration<WorldEntity>
 
         var serialized = JsonSerializer.Serialize(value);
         return JsonSerializer.Deserialize<Dictionary<string, object>>(serialized);
+    }
+
+    private static string? SerializeDictionary(Dictionary<string, object>? value)
+    {
+        return value is null
+            ? null
+            : JsonSerializer.Serialize(value);
+    }
+
+    private static Dictionary<string, object>? DeserializeDictionary(string? json)
+    {
+        return string.IsNullOrWhiteSpace(json) ? null : JsonSerializer.Deserialize<Dictionary<string, object>>(json);
     }
 }

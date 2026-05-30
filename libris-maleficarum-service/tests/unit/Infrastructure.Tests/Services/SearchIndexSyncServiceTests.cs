@@ -135,8 +135,8 @@ public class SearchIndexSyncServiceTests
         document.Tags.Should().BeEquivalentTo(new List<string> { "king", "ranger" });
         document.ParentId.Should().Be(parentId.ToString());
         document.OwnerId.Should().Be(TestOwnerId);
-        document.CreatedDate.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
-        document.ModifiedDate.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
+        document.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
+        document.UpdatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
         document.Path.Should().HaveCount(2); // parentPath (1) + parentId (1)
         document.Depth.Should().Be(2); // parentDepth(1) + 1
         document.Properties.Should().Contain("Elessar");

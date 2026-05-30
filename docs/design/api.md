@@ -235,8 +235,8 @@ Content-Type: application/json
     "ownerId": "user-123",
     "createdBy": "user-123",
     "modifiedBy": "user-123",
-    "createdDate": "2025-01-15T10:30:00Z",
-    "modifiedDate": "2025-01-15T10:30:00Z",
+    "createdAt": "2025-01-15T10:30:00Z",
+    "updatedAt": "2025-01-15T10:30:00Z",
     "isDeleted": false,
     "deletedDate": null,
     "deletedBy": null,
@@ -284,8 +284,8 @@ Content-Type: application/json
   "ownerId": "user-123",
   "createdBy": "user-123",
   "modifiedBy": "user-123",
-  "createdDate": "2025-01-15T10:30:00Z",
-  "modifiedDate": "2025-01-15T11:45:00Z",
+  "createdAt": "2025-01-15T10:30:00Z",
+  "updatedAt": "2025-01-15T11:45:00Z",
   "isDeleted": false,
   "properties": {
     "level": 10,
@@ -319,8 +319,8 @@ Content-Type: application/json
     "ownerId": "user-123",
     "createdBy": "user-123",
     "modifiedBy": "user-123",
-    "createdDate": "2025-01-15T10:30:00Z",
-    "modifiedDate": "2025-01-15T11:45:00Z",
+    "createdAt": "2025-01-15T10:30:00Z",
+    "updatedAt": "2025-01-15T11:45:00Z",
     "isDeleted": false,
     "deletedDate": null,
     "deletedBy": null,
@@ -530,7 +530,7 @@ Supported parameters:
 
 - `type`: Filter by entity type
 - `tags`: Filter by tags (comma-separated)
-- `sort`: Sort field (name, createdDate, modifiedDate)
+- `sort`: Sort field (name, createdAt, updatedAt)
 - `order`: Sort order (asc, desc)
 
 ## Rate Limiting

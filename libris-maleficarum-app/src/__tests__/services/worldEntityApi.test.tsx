@@ -20,6 +20,9 @@ import type { ReactNode } from 'react';
 import { api } from '@/services/api';
 import {
   useCreateWorldEntityMutation,
+  useGetEntitiesByParentQuery,
+  useGetWorldEntitiesQuery,
+  useGetWorldEntityByIdQuery,
   useUpdateWorldEntityMutation,
 } from '@/services/worldEntityApi';
 import type {
@@ -83,6 +86,27 @@ const server = setupServer(
       },
     };
     return HttpResponse.json(response, { status: 200 });
+  }),
+
+  // GET /api/v1/worlds/:worldId/entities/:id
+  http.get(`${API_BASE_URL}/api/v1/worlds/:worldId/entities/:id`, () => {
+    const response: WorldEntityResponse = {
+      data: mockWorldEntity,
+    };
+    return HttpResponse.json(response, { status: 200 });
+  }),
+
+  // GET /api/v1/worlds/:worldId/entities
+  http.get(`${API_BASE_URL}/api/v1/worlds/:worldId/entities`, () => {
+    const response = {
+      data: [mockWorldEntity],
+      meta: {
+        count: 1,
+        nextCursor: null,
+      },
+    };
+
+    return HttpResponse.json(response, { status: 200 });
   })
 );
 
@@ -111,6 +135,124 @@ function createWrapper() {
 }
 
 describe('WorldEntity API - Schema Versioning', () => {
+  describe('timestamp normalization', () => {
+    it('should use canonical createdAt/updatedAt in entity-by-id responses', async () => {
+      server.use(
+        http.get(`${API_BASE_URL}/api/v1/worlds/:worldId/entities/:id`, () => {
+          const response = {
+            data: {
+              ...mockWorldEntity,
+              createdAt: '2025-01-03T00:00:00Z',
+              updatedAt: '2025-01-04T00:00:00Z',
+            },
+          };
+
+          return HttpResponse.json(response, { status: 200 });
+        })
+      );
+
+      const { result } = renderHook(
+        () =>
+          useGetWorldEntityByIdQuery({
+            worldId: '550e8400-e29b-41d4-a716-446655440000',
+            entityId: '123e4567-e89b-12d3-a456-426614174000',
+          }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data?.createdAt).toBe('2025-01-03T00:00:00Z');
+      expect(result.current.data?.updatedAt).toBe('2025-01-04T00:00:00Z');
+    });
+
+    it('should use canonical createdAt/updatedAt in entity list responses', async () => {
+      server.use(
+        http.get(`${API_BASE_URL}/api/v1/worlds/:worldId/entities`, () => {
+          const response = {
+            data: [
+              {
+                ...mockWorldEntity,
+                createdAt: '2025-01-05T00:00:00Z',
+                updatedAt: '2025-01-06T00:00:00Z',
+              },
+            ],
+            meta: {
+              count: 1,
+              nextCursor: null,
+            },
+          };
+
+          return HttpResponse.json(response, { status: 200 });
+        })
+      );
+
+      const { result } = renderHook(
+        () =>
+          useGetWorldEntitiesQuery({
+            worldId: '550e8400-e29b-41d4-a716-446655440000',
+            page: 1,
+            pageSize: 50,
+          }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data?.data[0].createdAt).toBe('2025-01-05T00:00:00Z');
+      expect(result.current.data?.data[0].updatedAt).toBe('2025-01-06T00:00:00Z');
+    });
+
+    it('should use canonical createdAt/updatedAt in parent-filtered responses', async () => {
+      server.use(
+        http.get(`${API_BASE_URL}/api/v1/worlds/:worldId/entities`, () => {
+          const response = {
+            data: [
+              {
+                ...mockWorldEntity,
+                parentId: null,
+                createdAt: '2025-01-07T00:00:00Z',
+                updatedAt: '2025-01-08T00:00:00Z',
+              },
+            ],
+            meta: {
+              count: 1,
+              nextCursor: null,
+            },
+          };
+
+          return HttpResponse.json(response, { status: 200 });
+        })
+      );
+
+      const { result } = renderHook(
+        () =>
+          useGetEntitiesByParentQuery({
+            worldId: '550e8400-e29b-41d4-a716-446655440000',
+            parentId: null,
+          }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data?.[0].createdAt).toBe('2025-01-07T00:00:00Z');
+      expect(result.current.data?.[0].updatedAt).toBe('2025-01-08T00:00:00Z');
+    });
+  });
+
   describe('T055: createWorldEntity schema version injection', () => {
     it('should include schemaVersion from ENTITY_SCHEMA_VERSIONS when creating entity', async () => {
       const { result } = renderHook(() => useCreateWorldEntityMutation(), {

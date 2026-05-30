@@ -231,7 +231,7 @@ public class WorldRepositoryIntegrationTests
         await context.Worlds.AddAsync(secondWorld);
         await context.SaveChangesAsync();
 
-        var cursor = firstWorld.CreatedDate.ToString("O");
+        var cursor = firstWorld.CreatedAt.ToString("O");
 
         // Act
         var (worlds, nextCursor) = await repository.GetAllByOwnerAsync(userId, cursor: cursor);
@@ -341,7 +341,7 @@ public class WorldRepositoryIntegrationTests
         updatedWorld.Should().NotBeNull();
         updatedWorld.Name.Should().Be("Updated Name");
         updatedWorld.Description.Should().Be("Updated Description");
-        updatedWorld.ModifiedDate.Should().BeAfter(updatedWorld.CreatedDate);
+        updatedWorld.UpdatedAt.Should().BeAfter(updatedWorld.CreatedAt);
 
         // Cleanup
         await context.Database.EnsureDeletedAsync();
@@ -404,7 +404,7 @@ public class WorldRepositoryIntegrationTests
         var deletedWorld = await context.Worlds.FirstOrDefaultAsync(w => w.Id == world.Id);
         deletedWorld.Should().NotBeNull("World should still exist in database");
         deletedWorld!.IsDeleted.Should().BeTrue("World should be soft-deleted");
-        deletedWorld.ModifiedDate.Should().BeAfter(deletedWorld.CreatedDate, "ModifiedDate should be updated on delete");
+        deletedWorld.UpdatedAt.Should().BeAfter(deletedWorld.CreatedAt, "UpdatedAt should be updated on delete");
 
         // Cleanup
         await context.Database.EnsureDeletedAsync();

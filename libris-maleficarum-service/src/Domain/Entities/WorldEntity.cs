@@ -82,12 +82,12 @@ public class WorldEntity
     /// <summary>
     /// Gets the UTC timestamp when this entity was created.
     /// </summary>
-    public DateTime CreatedDate { get; private set; }
+    public DateTime CreatedAt { get; private set; }
 
     /// <summary>
     /// Gets the UTC timestamp when this entity was last modified.
     /// </summary>
-    public DateTime ModifiedDate { get; private set; }
+    public DateTime UpdatedAt { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether this entity has been soft-deleted.
@@ -207,8 +207,8 @@ public class WorldEntity
             OwnerId = ownerId,
             Properties = properties,
             SystemProperties = systemProperties,
-            CreatedDate = DateTime.UtcNow,
-            ModifiedDate = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
             IsDeleted = false,
             SchemaVersion = schemaVersion,
             CreatedBy = ownerId,
@@ -252,7 +252,7 @@ public class WorldEntity
     }
 
     /// <summary>
-    /// Updates the entity properties and refreshes ModifiedDate.
+    /// Updates the entity properties and refreshes UpdatedAt.
     /// </summary>
     /// <param name="name">The new name (1-200 characters).</param>
     /// <param name="description">The new description (max 5000 characters).</param>
@@ -283,7 +283,7 @@ public class WorldEntity
         Properties = properties;
         SystemProperties = systemProperties;
         SchemaVersion = schemaVersion;
-        ModifiedDate = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
 
         Validate();
     }
@@ -350,7 +350,7 @@ public class WorldEntity
             Depth = 0;
         }
 
-        ModifiedDate = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -369,7 +369,7 @@ public class WorldEntity
         DeletedDate = DateTime.UtcNow;
         DeletedBy = deletedBy;
         Ttl = 7776000; // 90 days in seconds (90 * 24 * 60 * 60)
-        ModifiedDate = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -381,7 +381,7 @@ public class WorldEntity
         DeletedDate = null;
         DeletedBy = null;
         Ttl = null; // Remove TTL to prevent auto-deletion
-        ModifiedDate = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>

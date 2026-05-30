@@ -39,21 +39,9 @@ export function EntityDetailReadOnlyView({
   disableEdit = false,
 }: EntityDetailReadOnlyViewProps) {
   const hasDescription = entity.description && entity.description.trim().length > 0;
-  
-  // Parse properties JSON string to object
-  let customProperties: Record<string, unknown> | null = null;
-  if (entity.properties) {
-    try {
-      const parsed = typeof entity.properties === 'string'
-        ? JSON.parse(entity.properties)
-        : entity.properties;
-      customProperties = parsed;
-    } catch {
-      // Ignore parse errors
-      customProperties = null;
-    }
-  }
-  
+
+  const customProperties = entity.properties ?? null;
+
   const hasCustomProperties =
     customProperties &&
     typeof customProperties === 'object' &&

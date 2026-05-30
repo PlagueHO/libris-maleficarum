@@ -194,6 +194,77 @@ describe('World Entity Editing Integration (T013)', () => {
   });
 
   describe('User Story 2: Edit from Detail View (T023)', () => {
+    it('should prefill Campaign custom properties when opening edit mode', async () => {
+      const store = createMockStore({
+          selectedWorldId: 'world-1',
+          selectedEntityId: 'entity-1',
+          editingEntityId: 'entity-1',
+          mainPanelMode: 'editing_entity'
+      });
+
+      currentMockEntity = {
+        ...mockEntity,
+        entityType: WorldEntityType.Campaign,
+        name: 'The Shadow War',
+        properties: {
+          Setting: 'Forgotten Realms',
+          GameSystem: 'D&D 5th Edition',
+          PartySize: 5,
+          StartDate: '1492 DR',
+        },
+      };
+
+      render(
+        <Provider store={store}>
+          <MainPanel />
+        </Provider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: /edit entry/i })).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Campaign Properties')).toBeInTheDocument();
+      });
+
+      expect(screen.getByLabelText(/setting/i)).toHaveValue('Forgotten Realms');
+      expect(screen.getByLabelText(/game system/i)).toHaveValue('D&D 5th Edition');
+      expect(screen.getByLabelText(/party size/i)).toHaveValue('5');
+      expect(screen.getByLabelText(/start date/i)).toHaveValue('1492 DR');
+    });
+
+    it('should not render dynamic properties section for schema-less entity types in edit mode', async () => {
+      const store = createMockStore({
+          selectedWorldId: 'world-1',
+          selectedEntityId: 'entity-1',
+          editingEntityId: 'entity-1',
+          mainPanelMode: 'editing_entity'
+      });
+
+      currentMockEntity = {
+        ...mockEntity,
+        entityType: WorldEntityType.Folder,
+        name: 'Lore Archive',
+        properties: {
+          LegacyNote: 'Should not appear in form fields',
+        },
+      };
+
+      render(
+        <Provider store={store}>
+          <MainPanel />
+        </Provider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: /edit entry/i })).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('Folder Properties')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/legacy note/i)).not.toBeInTheDocument();
+    });
+
     it('should allow editing entity by clicking Edit button in detail view', async () => {
       const user = userEvent.setup();
 

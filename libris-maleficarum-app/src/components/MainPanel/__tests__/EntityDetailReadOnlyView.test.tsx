@@ -76,12 +76,12 @@ describe('T037: EntityDetailReadOnlyView - Custom Properties with DynamicPropert
     const entity = createEntity({
       entityType: WorldEntityType.GeographicRegion,
       name: 'Tropical Rainforest',
-      properties: JSON.stringify({
+      properties: {
         Climate: 'Tropical monsoon',
         Terrain: 'Dense rainforest',
         Population: 500000,
         Area: 2500.75,
-      }),
+      },
     });
 
     render(<EntityDetailReadOnlyView entity={entity} onEditClick={vi.fn()} />);
@@ -98,11 +98,11 @@ describe('T037: EntityDetailReadOnlyView - Custom Properties with DynamicPropert
     const entity = createEntity({
       entityType: WorldEntityType.PoliticalRegion,
       name: 'Federation',
-      properties: JSON.stringify({
+      properties: {
         GovernmentType: 'Federal republic',
         MemberStates: ['State A', 'State B', 'State C'],
         EstablishedDate: '1776-07-04',
-      }),
+      },
     });
 
     render(<EntityDetailReadOnlyView entity={entity} onEditClick={vi.fn()} />);
@@ -117,11 +117,11 @@ describe('T037: EntityDetailReadOnlyView - Custom Properties with DynamicPropert
     const entity = createEntity({
       entityType: WorldEntityType.CulturalRegion,
       name: 'Cultural Heartland',
-      properties: JSON.stringify({
+      properties: {
         Languages: ['English', 'Spanish'],
         Religions: ['Christianity', 'Islam'],
         CulturalTraits: 'Diverse traditions',
-      }),
+      },
     });
 
     render(<EntityDetailReadOnlyView entity={entity} onEditClick={vi.fn()} />);
@@ -145,10 +145,10 @@ describe('T037: EntityDetailReadOnlyView - Custom Properties with DynamicPropert
     expect(screen.queryByRole('heading', { level: 2, name: /properties/i })).toBeNull();
   });
 
-  it('should handle malformed JSON gracefully', () => {
+  it('should not render properties section when properties object is empty', () => {
     const entity = createEntity({
       entityType: WorldEntityType.GeographicRegion,
-      properties: '{ invalid }',
+      properties: {},
     });
 
     render(<EntityDetailReadOnlyView entity={entity} onEditClick={vi.fn()} />);
@@ -161,10 +161,10 @@ describe('EntityDetailReadOnlyView - Accessibility', () => {
   it('should have no accessibility violations', async () => {
     const entity = createEntity({
       entityType: WorldEntityType.GeographicRegion,
-      properties: JSON.stringify({
+      properties: {
         Climate: 'Temperate',
         Population: 1000000,
-      }),
+      },
     });
 
     const { container } = render(<EntityDetailReadOnlyView entity={entity} onEditClick={vi.fn()} />);
@@ -177,7 +177,7 @@ describe('EntityDetailReadOnlyView - Accessibility', () => {
     const entity = createEntity({
       entityType: WorldEntityType.GeographicRegion,
       name: 'Test Region',
-      properties: JSON.stringify({ Climate: 'Temperate' }),
+      properties: { Climate: 'Temperate' },
     });
 
     render(<EntityDetailReadOnlyView entity={entity} onEditClick={vi.fn()} />);

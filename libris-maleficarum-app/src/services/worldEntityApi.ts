@@ -28,11 +28,6 @@ export const worldEntityApi = api.injectEndpoints({
   endpoints: (builder) => ({
     /**
      * GET /api/v1/worlds/{worldId}/entities
-     *
-     * Fetch list of entities for a world, optionally filtered by parent, type, or tags.
-     * Response is cached and tagged with 'WorldEntity' for automatic invalidation.
-     *
-     * @param params - Query parameters including worldId, parentId, entityType, tags, pagination
      */
     getWorldEntities: builder.query<
       WorldEntityListResponse,
@@ -42,6 +37,10 @@ export const worldEntityApi = api.injectEndpoints({
         url: `/api/v1/worlds/${worldId}/entities`,
         method: 'GET',
         params,
+      }),
+      transformResponse: (response: WorldEntityListResponse) => ({
+        ...response,
+        data: response.data,
       }),
       providesTags: (result, _error, { worldId }) =>
         result
@@ -57,12 +56,6 @@ export const worldEntityApi = api.injectEndpoints({
 
     /**
      * GET /api/v1/worlds/{worldId}/entities (filtered by parent)
-     *
-     * Convenience endpoint for fetching entities by parent ID.
-     * Commonly used for lazy-loading tree children.
-     *
-     * @param worldId - Parent world ID
-     * @param parentId - Parent entity ID (null for root entities)
      */
     getEntitiesByParent: builder.query<
       WorldEntity[],
@@ -70,14 +63,15 @@ export const worldEntityApi = api.injectEndpoints({
     >({
       query: ({ worldId, parentId }) => {
         const params: Record<string, string | number> = {
-          limit: 100, // Assume most parents have <100 children
+          limit: 100,
         };
-        // Explicitly set parentId to 'null' string for root entities so the backend can distinguish
+
         if (parentId === null) {
           params.parentId = 'null';
         } else {
           params.parentId = parentId;
         }
+
         return {
           url: `/api/v1/worlds/${worldId}/entities`,
           method: 'GET',
@@ -90,11 +84,13 @@ export const worldEntityApi = api.injectEndpoints({
           type: 'WorldEntity' as const,
           id: `PARENT_${worldId}_${parentId ?? 'ROOT'}`,
         };
+
         logger.debug('API', 'Entities fetched by parent', {
           worldId,
           parentId,
           count: result?.length ?? 0,
         });
+
         return result
           ? [
               ...result.map(({ id }) => ({
@@ -109,12 +105,6 @@ export const worldEntityApi = api.injectEndpoints({
 
     /**
      * GET /api/v1/worlds/{worldId}/entities/{entityId}
-     *
-     * Fetch a single entity by ID.
-     * Response is cached and tagged with specific entity ID for targeted invalidation.
-     *
-     * @param worldId - Parent world ID
-     * @param entityId - Entity ID
      */
     getWorldEntityById: builder.query<
       WorldEntity,
@@ -132,12 +122,6 @@ export const worldEntityApi = api.injectEndpoints({
 
     /**
      * POST /api/v1/worlds/{worldId}/entities
-     *
-     * Create a new entity.
-     * Automatically invalidates the parent's children cache on success.
-     *
-     * @param worldId - Parent world ID
-     * @param data - Entity creation request
      */
     createWorldEntity: builder.mutation<
       WorldEntity,
@@ -148,7 +132,8 @@ export const worldEntityApi = api.injectEndpoints({
         method: 'POST',
         data: {
           ...data,
-          schemaVersion: data.schemaVersion ?? ENTITY_SCHEMA_VERSIONS[data.entityType],
+          schemaVersion:
+            data.schemaVersion ?? ENTITY_SCHEMA_VERSIONS[data.entityType],
         },
       }),
       transformResponse: (response: WorldEntityResponse) => response.data,
@@ -157,6 +142,7 @@ export const worldEntityApi = api.injectEndpoints({
           type: 'WorldEntity' as const,
           id: `PARENT_${worldId}_${data.parentId ?? 'ROOT'}`,
         } as const;
+
         logger.debug('API', 'Entity created, invalidating cache', {
           worldId,
           parentId: data.parentId,
@@ -168,7 +154,6 @@ export const worldEntityApi = api.injectEndpoints({
           parentTag,
         ];
 
-        // If a child is created, invalidate the parent entity so its HasChildren flag updates in the UI
         if (data.parentId) {
           tags.push({ type: 'WorldEntity', id: data.parentId });
         }
@@ -179,14 +164,6 @@ export const worldEntityApi = api.injectEndpoints({
 
     /**
      * PUT /api/v1/worlds/{worldId}/entities/{entityId}
-     *
-     * Update an existing entity.
-     * Invalidates both the specific entity cache and its parent's children cache.
-     *
-     * @param worldId - Parent world ID
-     * @param entityId - Entity ID
-     * @param data - Entity update request
-     * @param currentEntityType - Current entity type (required if entityType not in data for schema version lookup)
      */
     updateWorldEntity: builder.mutation<
       WorldEntity,
@@ -202,16 +179,15 @@ export const worldEntityApi = api.injectEndpoints({
         method: 'PUT',
         data: {
           ...data,
-          // FR-007: Frontend MUST include schemaVersion in all update requests using current version from config
           schemaVersion:
-            data.schemaVersion ?? ENTITY_SCHEMA_VERSIONS[data.entityType ?? currentEntityType],
+            data.schemaVersion ??
+            ENTITY_SCHEMA_VERSIONS[data.entityType ?? currentEntityType],
         },
       }),
       transformResponse: (response: WorldEntityResponse) => response.data,
       invalidatesTags: (result, _error, { worldId, entityId }) => [
         { type: 'WorldEntity', id: entityId },
         { type: 'WorldEntity', id: `LIST_${worldId}` },
-        // Also invalidate parent's children cache if the entity's parentId is known
         ...(result?.parentId
           ? [
               {
@@ -225,12 +201,6 @@ export const worldEntityApi = api.injectEndpoints({
 
     /**
      * DELETE /api/v1/worlds/{worldId}/entities/{entityId}
-     *
-     * Soft delete an entity.
-     * Invalidates both the specific entity cache and its parent's children cache.
-     *
-     * @param worldId - Parent world ID
-     * @param entityId - Entity ID
      */
     deleteWorldEntity: builder.mutation<
       void,
@@ -243,21 +213,11 @@ export const worldEntityApi = api.injectEndpoints({
       invalidatesTags: (_result, _error, { worldId, entityId }) => [
         { type: 'WorldEntity', id: entityId },
         { type: 'WorldEntity', id: `LIST_${worldId}` },
-        // Note: We can't know the parentId without fetching the entity first,
-        // so we invalidate the world list broadly. Consider optimistic updates
-        // if this becomes a performance concern.
       ],
     }),
 
     /**
      * PATCH /api/v1/worlds/{worldId}/entities/{entityId}/move
-     *
-     * Move an entity to a new parent (reparent operation).
-     * Invalidates the old parent's and new parent's children caches.
-     *
-     * @param worldId - Parent world ID
-     * @param entityId - Entity ID
-     * @param data - Move request with newParentId
      */
     moveWorldEntity: builder.mutation<
       WorldEntity,
@@ -273,25 +233,21 @@ export const worldEntityApi = api.injectEndpoints({
         const tags: { type: 'WorldEntity'; id: string }[] = [
           { type: 'WorldEntity', id: entityId },
           { type: 'WorldEntity', id: `LIST_${worldId}` },
-          // Invalidate new parent's children cache
           {
             type: 'WorldEntity',
             id: `PARENT_${worldId}_${data.newParentId ?? 'ROOT'}`,
           },
         ];
 
-        // Invalidate new parent entity so its HasChildren flag updates
         if (data.newParentId) {
           tags.push({ type: 'WorldEntity', id: data.newParentId });
         }
 
         if (result?.parentId && result.parentId !== data.newParentId) {
-          // Invalidate old parent's children cache
           tags.push({
             type: 'WorldEntity',
             id: `PARENT_${worldId}_${result.parentId}`,
           });
-          // Invalidate old parent entity so its HasChildren flag updates
           tags.push({ type: 'WorldEntity', id: result.parentId });
         }
 
@@ -303,63 +259,6 @@ export const worldEntityApi = api.injectEndpoints({
 
 /**
  * Auto-generated hooks for WorldEntity API endpoints
- *
- * Usage in components:
- *
- * @example
- * // Fetch all entities for a world with filters
- * const { data, isLoading, error } = useGetWorldEntitiesQuery({
- *   worldId: 'abc123',
- *   parentId: null, // Root entities
- *   entityType: WorldEntityType.Continent,
- *   page: 1,
- *   pageSize: 50,
- * });
- *
- * @example
- * // Fetch children of a specific entity (lazy loading)
- * const { data: children } = useGetEntitiesByParentQuery({
- *   worldId: 'abc123',
- *   parentId: 'xyz789',
- * });
- *
- * @example
- * // Create a new entity
- * const [createEntity, { isLoading }] = useCreateWorldEntityMutation();
- * await createEntity({
- *   worldId: 'abc123',
- *   data: {
- *     worldId: 'abc123',
- *     parentId: 'xyz789',
- *     entityType: WorldEntityType.Country,
- *     name: 'Cormyr',
- *     description: 'A kingdom in Faerûn',
- *     tags: ['forgotten-realms'],
- *   },
- * }).unwrap();
- *
- * @example
- * // Update an entity
- * const [updateEntity] = useUpdateWorldEntityMutation();
- * await updateEntity({
- *   worldId: 'abc123',
- *   entityId: 'xyz789',
- *   data: { name: 'Updated Name' },
- * }).unwrap();
- *
- * @example
- * // Delete an entity
- * const [deleteEntity] = useDeleteWorldEntityMutation();
- * await deleteEntity({ worldId: 'abc123', entityId: 'xyz789' }).unwrap();
- *
- * @example
- * // Move an entity to a new parent
- * const [moveEntity] = useMoveWorldEntityMutation();
- * await moveEntity({
- *   worldId: 'abc123',
- *   entityId: 'xyz789',
- *   data: { newParentId: 'newparent123' },
- * }).unwrap();
  */
 export const {
   useGetWorldEntitiesQuery,

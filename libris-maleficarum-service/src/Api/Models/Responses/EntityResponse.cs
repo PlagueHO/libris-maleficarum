@@ -90,12 +90,12 @@ public class EntityResponse
     /// <summary>
     /// Gets or sets the creation timestamp.
     /// </summary>
-    public required DateTime CreatedDate { get; set; }
+    public required DateTime CreatedAt { get; set; }
 
     /// <summary>
     /// Gets or sets the last modification timestamp.
     /// </summary>
-    public required DateTime ModifiedDate { get; set; }
+    public required DateTime UpdatedAt { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether this entity has been soft-deleted.

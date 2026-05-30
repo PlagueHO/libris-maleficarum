@@ -60,8 +60,8 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                 new SimpleField("entityType", SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField("parentId", SearchFieldDataType.String) { IsFilterable = true },
                 new SimpleField("ownerId", SearchFieldDataType.String) { IsFilterable = true },
-                new SimpleField("createdDate", SearchFieldDataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
-                new SimpleField("modifiedDate", SearchFieldDataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
+                new SimpleField("createdAt", SearchFieldDataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
+                new SimpleField("updatedAt", SearchFieldDataType.DateTimeOffset) { IsFilterable = true, IsSortable = true },
                 new SimpleField("path", SearchFieldDataType.Collection(SearchFieldDataType.String)) { IsFilterable = true },
                 new SimpleField("depth", SearchFieldDataType.Int32) { IsFilterable = true, IsSortable = true, IsFacetable = true },
                 new SimpleField("schemaId", SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
@@ -232,7 +232,7 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
             Size = limit,
             Skip = offset,
             IncludeTotalCount = true,
-            Select = { "id", "worldId", "entityType", "name", "description", "tags", "parentId", "ownerId", "createdDate", "modifiedDate" }
+            Select = { "id", "worldId", "entityType", "name", "description", "tags", "parentId", "ownerId", "createdAt", "updatedAt" }
         };
 
         // Configure search mode
@@ -307,8 +307,8 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                 ParentId = string.IsNullOrEmpty(doc.ParentId) ? null : Guid.Parse(doc.ParentId),
                 Tags = doc.Tags,
                 OwnerId = doc.OwnerId,
-                CreatedDate = doc.CreatedDate,
-                ModifiedDate = doc.ModifiedDate
+                CreatedAt = doc.CreatedAt,
+                UpdatedAt = doc.UpdatedAt
             });
         }
 

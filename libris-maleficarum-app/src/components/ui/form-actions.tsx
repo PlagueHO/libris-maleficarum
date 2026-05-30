@@ -40,6 +40,9 @@ export interface FormActionsProps {
 
   /** Optional icon component for the cancel button */
   cancelIcon?: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
+
+  /** Optional form id for submit button when rendered outside form element */
+  submitFormId?: string;
 }
 
 /**
@@ -57,6 +60,7 @@ export function FormActions({
   className = '',
   submitIcon: SubmitIcon,
   cancelIcon: CancelIcon,
+  submitFormId,
 }: FormActionsProps) {
   const isDisabled = isLoading || isSubmitDisabled;
 
@@ -72,7 +76,13 @@ export function FormActions({
         {CancelIcon && <CancelIcon className="mr-2 h-4 w-4" aria-hidden />}
         {cancelLabel}
       </Button>
-      <Button type="submit" disabled={isDisabled} aria-busy={isLoading}>
+      <Button
+        type="submit"
+        form={submitFormId}
+        variant="brand-gradient"
+        disabled={isDisabled}
+        aria-busy={isLoading}
+      >
         {isLoading ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
         ) : (

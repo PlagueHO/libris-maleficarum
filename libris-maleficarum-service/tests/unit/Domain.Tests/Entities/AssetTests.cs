@@ -37,7 +37,7 @@ public class AssetTests
         asset.ContentType.Should().Be("image/jpeg");
         asset.SizeBytes.Should().Be(1024);
         asset.BlobUrl.Should().Be(ValidBlobUrl);
-        asset.CreatedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        asset.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
         asset.IsDeleted.Should().BeFalse();
     }
 

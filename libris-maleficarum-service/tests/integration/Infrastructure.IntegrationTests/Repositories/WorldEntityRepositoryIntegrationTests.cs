@@ -10,6 +10,7 @@ using LibrisMaleficarum.Infrastructure.Repositories;
 using LibrisMaleficarum.Infrastructure.IntegrationTests.Fixtures;
 using LibrisMaleficarum.IntegrationTests.Shared;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 /// <summary>
 /// Integration tests for WorldEntityRepository using Aspire-managed Cosmos DB Emulator.
@@ -374,7 +375,7 @@ public class WorldEntityRepositoryIntegrationTests
         await context.WorldEntities.AddAsync(secondEntity);
         await context.SaveChangesAsync();
 
-        var cursor = firstEntity.CreatedDate.ToString("O");
+        var cursor = firstEntity.CreatedAt.ToString("O");
 
         // Act
         var (entities, nextCursor) = await repository.GetAllByWorldAsync(world.Id, cursor: cursor);
@@ -601,7 +602,7 @@ public class WorldEntityRepositoryIntegrationTests
         updatedEntity.Should().NotBeNull();
         updatedEntity.Name.Should().Be("Updated Name");
         updatedEntity.Description.Should().Be("Updated Description");
-        updatedEntity.ModifiedDate.Should().BeAfter(updatedEntity.CreatedDate);
+        updatedEntity.UpdatedAt.Should().BeAfter(updatedEntity.CreatedAt);
 
         // Cleanup
         await context.Database.EnsureDeletedAsync();
@@ -679,7 +680,7 @@ public class WorldEntityRepositoryIntegrationTests
         await repository.DeleteAsync(world.Id, entity.Id, "test-user-id");
 
         // Assert
-        var deletedEntity = await context.WorldEntities.FindAsync(entity.Id);
+        var deletedEntity = await repository.GetByIdIncludingDeletedAsync(world.Id, entity.Id);
         deletedEntity.Should().NotBeNull();
         deletedEntity!.IsDeleted.Should().BeTrue();
 
@@ -727,9 +728,9 @@ public class WorldEntityRepositoryIntegrationTests
         await repository.DeleteAsync(world.Id, parent.Id, "test-user-id", cascade: true);
 
         // Assert
-        var deletedParent = await context.WorldEntities.FindAsync(parent.Id);
-        var deletedChild = await context.WorldEntities.FindAsync(child.Id);
-        var deletedGrandchild = await context.WorldEntities.FindAsync(grandchild.Id);
+        var deletedParent = await repository.GetByIdIncludingDeletedAsync(world.Id, parent.Id);
+        var deletedChild = await repository.GetByIdIncludingDeletedAsync(world.Id, child.Id);
+        var deletedGrandchild = await repository.GetByIdIncludingDeletedAsync(world.Id, grandchild.Id);
 
         deletedParent!.IsDeleted.Should().BeTrue();
         deletedChild!.IsDeleted.Should().BeTrue();
@@ -888,8 +889,8 @@ public class WorldEntityRepositoryIntegrationTests
         createdEntity.Should().NotBeNull();
         createdEntity.SchemaVersion.Should().Be(2);
 
-        // Assert - Verify persisted to Cosmos DB
-        var retrievedEntity = await context.WorldEntities.FirstOrDefaultAsync(e => e.Id == createdEntity.Id);
+        // Assert - Verify persisted to Cosmos DB through repository read path
+        var retrievedEntity = await repository.GetByIdAsync(world.Id, createdEntity.Id);
         retrievedEntity.Should().NotBeNull();
         retrievedEntity!.SchemaVersion.Should().Be(2, "SchemaVersion must persist to Cosmos DB");
 
@@ -939,5 +940,94 @@ public class WorldEntityRepositoryIntegrationTests
 
         // Cleanup
         await context.Database.EnsureDeletedAsync();
+    }
+
+    [TestMethod]
+    public async Task CreateAsync_PersistsPropertyBagsAndPathAsNativeJsonTypes()
+    {
+        // Arrange
+        var userId = "test-user-" + Guid.NewGuid().ToString("N")[..8];
+        var testDatabaseName = $"IntegrationTestDb_{Guid.NewGuid()}";
+
+        await using var context = CreateDbContext(testDatabaseName);
+        await context.Database.EnsureCreatedAsync();
+
+        var userContextService = Substitute.For<IUserContextService>();
+        userContextService.GetCurrentUserIdAsync().Returns(userId);
+
+        var world = World.Create(userId, "Test World", null);
+        await context.Worlds.AddAsync(world);
+        await context.SaveChangesAsync();
+
+        var worldRepository = Substitute.For<IWorldRepository>();
+        worldRepository.GetByIdAsync(world.Id, Arg.Any<CancellationToken>()).Returns(world);
+
+        var telemetryService = new NoOpTelemetryService();
+        var repository = new WorldEntityRepository(context, userContextService, worldRepository, telemetryService);
+
+        var properties = new Dictionary<string, object>
+        {
+            ["Climate"] = "Temperate",
+            ["Population"] = 1200000,
+        };
+
+        var systemProperties = new Dictionary<string, object>
+        {
+            ["RuleSet"] = "DND5E",
+            ["ThreatLevel"] = "High",
+        };
+
+        var entity = WorldEntity.Create(
+            world.Id,
+            EntityType.GeographicRegion,
+            "Storm Coast",
+            TestOwnerId,
+            "Western coast",
+            null,
+            new List<string> { "coastal" },
+            properties: properties,
+            systemProperties: systemProperties);
+
+        // Act
+        var createdEntity = await repository.CreateAsync(entity);
+        var rawDocument = await ReadRawWorldEntityDocumentAsync(testDatabaseName, world.Id, createdEntity.Id);
+
+        // Assert
+        rawDocument.GetProperty("properties").ValueKind.Should().Be(JsonValueKind.Object);
+        rawDocument.GetProperty("properties").GetProperty("Climate").GetString().Should().Be("Temperate");
+
+        rawDocument.GetProperty("systemProperties").ValueKind.Should().Be(JsonValueKind.Object);
+        rawDocument.GetProperty("systemProperties").GetProperty("RuleSet").GetString().Should().Be("DND5E");
+
+        rawDocument.GetProperty("path").ValueKind.Should().Be(JsonValueKind.Array);
+
+        // Cleanup
+        await context.Database.EnsureDeletedAsync();
+    }
+
+    private static async Task<JsonElement> ReadRawWorldEntityDocumentAsync(string databaseName, Guid worldId, Guid entityId)
+    {
+        var cosmosClientOptions = new Microsoft.Azure.Cosmos.CosmosClientOptions
+        {
+            ConnectionMode = Microsoft.Azure.Cosmos.ConnectionMode.Gateway,
+            HttpClientFactory = () => new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+            }),
+            LimitToEndpoint = true,
+        };
+
+        using var client = new Microsoft.Azure.Cosmos.CosmosClient(
+            AppHostFixture.CosmosDbAccountEndpoint,
+            AppHostFixture.CosmosDbAccountKey,
+            cosmosClientOptions);
+
+        var container = client.GetContainer(databaseName, "WorldEntities");
+        using var response = await container.ReadItemStreamAsync(entityId.ToString(), new Microsoft.Azure.Cosmos.PartitionKey(worldId.ToString()));
+
+        response.IsSuccessStatusCode.Should().BeTrue();
+
+        using var jsonDocument = await JsonDocument.ParseAsync(response.Content);
+        return jsonDocument.RootElement.Clone();
     }
 }

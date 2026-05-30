@@ -18,7 +18,7 @@ public sealed class AssetConfiguration : IEntityTypeConfiguration<Asset>
         // Configure Cosmos DB container
         builder.ToContainer("Assets");
 
-        // Configure hierarchical partition key [/WorldId, /EntityId]
+        // Configure hierarchical partition key [/worldId, /entityId]
         // This enables efficient entity-scoped queries (2-5 RUs) and prevents hot partitions
         builder.HasPartitionKey(asset => new { asset.WorldId, asset.EntityId });
 
@@ -30,33 +30,42 @@ public sealed class AssetConfiguration : IEntityTypeConfiguration<Asset>
 
         // Configure properties
         builder.Property(asset => asset.Id)
+            .ToJsonProperty("id")
             .IsRequired();
 
         builder.Property(asset => asset.WorldId)
+            .ToJsonProperty("worldId")
             .IsRequired();
 
         builder.Property(asset => asset.EntityId)
+            .ToJsonProperty("entityId")
             .IsRequired();
 
         builder.Property(asset => asset.FileName)
+            .ToJsonProperty("fileName")
             .IsRequired()
             .HasMaxLength(255);
 
         builder.Property(asset => asset.ContentType)
+            .ToJsonProperty("contentType")
             .IsRequired()
             .HasMaxLength(100);
 
         builder.Property(asset => asset.SizeBytes)
+            .ToJsonProperty("sizeBytes")
             .IsRequired();
 
         builder.Property(asset => asset.BlobUrl)
+            .ToJsonProperty("blobUrl")
             .IsRequired()
             .HasMaxLength(2048);
 
-        builder.Property(asset => asset.CreatedDate)
+        builder.Property(asset => asset.CreatedAt)
+            .ToJsonProperty("createdAt")
             .IsRequired();
 
         builder.Property(asset => asset.IsDeleted)
+            .ToJsonProperty("isDeleted")
             .IsRequired();
 
         builder.Property(asset => asset.ETag)

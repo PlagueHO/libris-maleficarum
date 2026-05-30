@@ -96,6 +96,7 @@ public class ControllerTests {
 - **Aspire.NET**: Local dev only (`dotnet run --project src/Orchestration/AppHost`)
 - **Logging (C# only)**: Never log raw user-derived values (query/transcription text, access codes, display names, user-authored content). Log safe metadata only: counts, lengths, durations, GUIDs, HTTP status codes, lifecycle event names. See `docs/design/security_logging.md` and `.github/instructions/logging-security.instructions.md`.
 - **Persistence Source of Truth**: For any persistence, schema, DTO, Cosmos document, or import/export data-shape change, always consult `docs/design/data_model.md` first and treat it as authoritative. If implementation conflicts with docs, align implementation to `docs/design/data_model.md` (not vice versa) unless explicitly directed by the user.
+- **Data-Shape Gate (Required)**: For any change to APIs, repositories, data storage/persistence, frontend API client contracts, or frontend form data collection/editing flows, consult `docs/design/data_model.md` before coding and validate final field names/shapes against it before completion.
 
 ## Agent guardrails
 
@@ -128,6 +129,7 @@ When a build, lint, or test fails:
 
 - Any change touching persistence contracts (entity models, API payloads, Cosmos mappings, import/export schemas, frontend entity types) must include a consistency pass against `docs/design/data_model.md`.
 - In reviews, explicitly confirm naming and field-shape consistency for `Properties` and `SystemProperties`.
+- For changes touching APIs, repositories, data storage, frontend API clients, or frontend form data collection/editing, include an explicit review note that `docs/design/data_model.md` was consulted.
 
 ### Cross-repo pattern parity
 

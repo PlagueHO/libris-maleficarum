@@ -334,8 +334,8 @@ public class WorldsControllerTests
                     WorldId = _worldId,
                     Tags = ["npc"],
                     OwnerId = TestOwnerId,
-                    CreatedDate = DateTimeOffset.UtcNow,
-                    ModifiedDate = DateTimeOffset.UtcNow
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
                 }
             ],
             TotalCount = 1,

@@ -88,12 +88,12 @@ public sealed class EntityResponse
     /// <summary>
     /// Gets the UTC timestamp when the entity was created.
     /// </summary>
-    public required DateTime CreatedDate { get; init; }
+    public required DateTime CreatedAt { get; init; }
 
     /// <summary>
     /// Gets the UTC timestamp when the entity was last modified.
     /// </summary>
-    public required DateTime ModifiedDate { get; init; }
+    public required DateTime UpdatedAt { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether this entity has been soft-deleted.

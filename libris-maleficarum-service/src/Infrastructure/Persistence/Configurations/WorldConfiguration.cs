@@ -26,25 +26,32 @@ public class WorldConfiguration : IEntityTypeConfiguration<World>
 
         // Configure properties
         builder.Property(w => w.Id)
+            .ToJsonProperty("id")
             .IsRequired();
 
         builder.Property(w => w.OwnerId)
+            .ToJsonProperty("ownerId")
             .IsRequired();
 
         builder.Property(w => w.Name)
+            .ToJsonProperty("name")
             .IsRequired()
             .HasMaxLength(100);
 
         builder.Property(w => w.Description)
+            .ToJsonProperty("description")
             .HasMaxLength(2000);
 
-        builder.Property(w => w.CreatedDate)
+        builder.Property(w => w.CreatedAt)
+            .ToJsonProperty("createdAt")
             .IsRequired();
 
-        builder.Property(w => w.ModifiedDate)
+        builder.Property(w => w.UpdatedAt)
+            .ToJsonProperty("updatedAt")
             .IsRequired();
 
         builder.Property(w => w.IsDeleted)
+            .ToJsonProperty("isDeleted")
             .IsRequired();
     }
 }

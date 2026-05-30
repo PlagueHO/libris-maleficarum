@@ -422,6 +422,133 @@ public class EntitiesControllerTests
     }
 
     [TestMethod]
+    public async Task UpdateEntity_WithPropertyBags_MergesWithExistingValues()
+    {
+        // Arrange
+        var request = new UpdateWorldEntityRequest
+        {
+            Name = "Updated Name",
+            Description = "Updated Description",
+            EntityType = EntityType.Character,
+            Properties = new Dictionary<string, object>
+            {
+                ["strength"] = 12,
+                ["agility"] = 16
+            },
+            SystemProperties = new Dictionary<string, object>
+            {
+                ["source"] = "manual",
+                ["revision"] = 2
+            }
+        };
+
+        var existingEntity = WorldEntity.Create(
+            _worldId,
+            EntityType.Character,
+            "Original Name",
+            TestOwnerId,
+            "Original Description",
+            properties: new Dictionary<string, object>
+            {
+                ["strength"] = 10,
+                ["wisdom"] = 14
+            },
+            systemProperties: new Dictionary<string, object>
+            {
+                ["source"] = "import",
+                ["checksum"] = "abc123"
+            });
+
+        var etag = "test-etag";
+
+        _updateValidator.ValidateAsync(request, Arg.Any<CancellationToken>())
+            .Returns(new ValidationResult());
+
+        _entityRepository.GetByIdAsync(_worldId, _entityId, Arg.Any<CancellationToken>())
+            .Returns(existingEntity);
+
+        _entityRepository.UpdateAsync(Arg.Any<WorldEntity>(), etag, Arg.Any<CancellationToken>())
+            .Returns(args => args.Arg<WorldEntity>());
+
+        _controller.Request.Headers["If-Match"] = etag;
+
+        // Act
+        var result = await _controller.UpdateEntity(_worldId, _entityId, request, CancellationToken.None);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = okResult.Value.Should().BeOfType<ApiResponse<EntityResponse>>().Subject;
+
+        response.Data.Properties.Should().ContainKey("strength");
+        response.Data.Properties["strength"].Should().Be(12);
+        response.Data.Properties.Should().ContainKey("wisdom");
+        response.Data.Properties["wisdom"].Should().Be(14);
+        response.Data.Properties.Should().ContainKey("agility");
+        response.Data.Properties["agility"].Should().Be(16);
+
+        response.Data.SystemProperties.Should().ContainKey("source");
+        response.Data.SystemProperties["source"].Should().Be("manual");
+        response.Data.SystemProperties.Should().ContainKey("checksum");
+        response.Data.SystemProperties["checksum"].Should().Be("abc123");
+        response.Data.SystemProperties.Should().ContainKey("revision");
+        response.Data.SystemProperties["revision"].Should().Be(2);
+    }
+
+    [TestMethod]
+    public async Task UpdateEntity_WithNullPropertyBags_PreservesExistingValues()
+    {
+        // Arrange
+        var request = new UpdateWorldEntityRequest
+        {
+            Name = "Updated Name",
+            Description = "Updated Description",
+            EntityType = EntityType.Character,
+            Properties = null,
+            SystemProperties = null
+        };
+
+        var existingEntity = WorldEntity.Create(
+            _worldId,
+            EntityType.Character,
+            "Original Name",
+            TestOwnerId,
+            "Original Description",
+            properties: new Dictionary<string, object>
+            {
+                ["strength"] = 10
+            },
+            systemProperties: new Dictionary<string, object>
+            {
+                ["source"] = "import"
+            });
+
+        var etag = "test-etag";
+
+        _updateValidator.ValidateAsync(request, Arg.Any<CancellationToken>())
+            .Returns(new ValidationResult());
+
+        _entityRepository.GetByIdAsync(_worldId, _entityId, Arg.Any<CancellationToken>())
+            .Returns(existingEntity);
+
+        _entityRepository.UpdateAsync(Arg.Any<WorldEntity>(), etag, Arg.Any<CancellationToken>())
+            .Returns(args => args.Arg<WorldEntity>());
+
+        _controller.Request.Headers["If-Match"] = etag;
+
+        // Act
+        var result = await _controller.UpdateEntity(_worldId, _entityId, request, CancellationToken.None);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = okResult.Value.Should().BeOfType<ApiResponse<EntityResponse>>().Subject;
+
+        response.Data.Properties.Should().ContainSingle();
+        response.Data.Properties["strength"].Should().Be(10);
+        response.Data.SystemProperties.Should().ContainSingle();
+        response.Data.SystemProperties["source"].Should().Be("import");
+    }
+
+    [TestMethod]
     public async Task UpdateEntity_WithInvalidRequest_ReturnsBadRequest()
     {
         // Arrange

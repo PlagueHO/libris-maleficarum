@@ -904,8 +904,8 @@ public sealed class WorldImportServiceTests
             OwnerId = Guid.NewGuid().ToString(),
             Name = "Test World",
             Description = "A test world",
-            CreatedDate = DateTime.UtcNow,
-            ModifiedDate = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
     }
 
@@ -922,8 +922,8 @@ public sealed class WorldImportServiceTests
             Depth = 0,
             HasChildren = false,
             OwnerId = Guid.NewGuid().ToString(),
-            CreatedDate = DateTime.UtcNow,
-            ModifiedDate = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
             IsDeleted = false,
             SchemaVersion = 1
         };

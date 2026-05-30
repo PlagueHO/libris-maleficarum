@@ -204,8 +204,8 @@ public class WorldsController : ControllerBase
                 ParentId = r.ParentId,
                 Tags = r.Tags,
                 OwnerId = r.OwnerId,
-                CreatedDate = r.CreatedDate,
-                ModifiedDate = r.ModifiedDate
+                CreatedAt = r.CreatedAt,
+                UpdatedAt = r.UpdatedAt
             }).ToList(),
             Meta = new SearchMeta
             {
@@ -405,16 +405,16 @@ public class WorldsController : ControllerBase
             OwnerId = world.OwnerId,
             Name = world.Name,
             Description = world.Description,
-            CreatedDate = world.CreatedDate,
-            ModifiedDate = world.ModifiedDate
+            CreatedAt = world.CreatedAt,
+            UpdatedAt = world.UpdatedAt
         };
     }
 
     private static string GetETag(World world)
     {
-        // Generate a simple ETag based on ModifiedDate
+        // Generate a simple ETag based on UpdatedAt
         return Convert.ToBase64String(
-            System.Text.Encoding.UTF8.GetBytes(world.ModifiedDate.ToString("O")));
+            System.Text.Encoding.UTF8.GetBytes(world.UpdatedAt.ToString("O")));
     }
 
     private static EntityResponse MapToEntityResponse(Domain.Entities.WorldEntity entity)
@@ -436,8 +436,8 @@ public class WorldsController : ControllerBase
             HasChildren = entity.HasChildren,
             OwnerId = entity.OwnerId,
             IsDeleted = entity.IsDeleted,
-            CreatedDate = entity.CreatedDate,
-            ModifiedDate = entity.ModifiedDate,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
             SchemaVersion = entity.SchemaVersion
         };
     }

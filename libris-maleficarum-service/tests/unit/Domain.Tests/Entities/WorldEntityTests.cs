@@ -39,8 +39,8 @@ public class WorldEntityTests
         entity.Tags.Should().Contain("ranger");
         (entity.Properties ?? []).Should().ContainKey("level");
         (entity.Properties ?? []).Should().ContainKey("class");
-        entity.CreatedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        entity.ModifiedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        entity.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        entity.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         entity.IsDeleted.Should().BeFalse();
     }
 
@@ -152,7 +152,7 @@ public class WorldEntityTests
         // Arrange
         var worldId = Guid.NewGuid();
         var entity = WorldEntity.Create(worldId, EntityType.Character, "Aragorn", TestOwnerId, "Ranger");
-        var originalModifiedDate = entity.ModifiedDate;
+        var originalUpdatedAt = entity.UpdatedAt;
         System.Threading.Thread.Sleep(10); // Ensure time difference
 
         var newName = "Aragorn II Elessar";
@@ -168,7 +168,7 @@ public class WorldEntityTests
         entity.Description.Should().Be(newDescription);
         entity.Tags.Should().HaveCount(2);
         (entity.Properties ?? []).Should().ContainKey("title");
-        entity.ModifiedDate.Should().BeAfter(originalModifiedDate);
+        entity.UpdatedAt.Should().BeAfter(originalUpdatedAt);
     }
 
     [TestMethod]
@@ -193,7 +193,7 @@ public class WorldEntityTests
         var worldId = Guid.NewGuid();
         var entity = WorldEntity.Create(worldId, EntityType.City, "Minas Tirith", TestOwnerId);
         var newParentId = Guid.NewGuid();
-        var originalModifiedDate = entity.ModifiedDate;
+        var originalUpdatedAt = entity.UpdatedAt;
         System.Threading.Thread.Sleep(10); // Ensure time difference
 
         // Act
@@ -201,7 +201,7 @@ public class WorldEntityTests
 
         // Assert
         entity.ParentId.Should().Be(newParentId);
-        entity.ModifiedDate.Should().BeAfter(originalModifiedDate);
+        entity.UpdatedAt.Should().BeAfter(originalUpdatedAt);
     }
 
     [TestMethod]
@@ -210,7 +210,7 @@ public class WorldEntityTests
         // Arrange
         var worldId = Guid.NewGuid();
         var entity = WorldEntity.Create(worldId, EntityType.Character, "Boromir", TestOwnerId);
-        var originalModifiedDate = entity.ModifiedDate;
+        var originalUpdatedAt = entity.UpdatedAt;
         System.Threading.Thread.Sleep(10); // Ensure time difference
 
         // Act
@@ -220,7 +220,7 @@ public class WorldEntityTests
         entity.IsDeleted.Should().BeTrue();
         entity.DeletedBy.Should().Be("test-user");
         entity.DeletedDate.Should().NotBeNull();
-        entity.ModifiedDate.Should().BeAfter(originalModifiedDate);
+        entity.UpdatedAt.Should().BeAfter(originalUpdatedAt);
     }
 
     [TestMethod]

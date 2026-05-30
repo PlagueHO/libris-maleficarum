@@ -306,8 +306,8 @@ public class WorldEntitiesController : ControllerBase
                 ParentId = r.ParentId,
                 Tags = r.Tags,
                 OwnerId = r.OwnerId,
-                CreatedDate = r.CreatedDate,
-                ModifiedDate = r.ModifiedDate
+                CreatedAt = r.CreatedAt,
+                UpdatedAt = r.UpdatedAt
             }).ToList(),
             Meta = new SearchMeta
             {
@@ -425,6 +425,9 @@ public class WorldEntitiesController : ControllerBase
             entity.SchemaVersion,
             finalSchemaVersion);
 
+        var mergedProperties = MergePropertyBag(entity.Properties, request.Properties);
+        var mergedSystemProperties = MergePropertyBag(entity.SystemProperties, request.SystemProperties);
+
         // Update entity
         entity.Update(
             request.Name,
@@ -433,8 +436,8 @@ public class WorldEntitiesController : ControllerBase
             request.ParentId,
             request.Tags,
             request.SchemaId,
-            request.Properties,
-            request.SystemProperties,
+            mergedProperties,
+            mergedSystemProperties,
             finalSchemaVersion);
 
         // Get If-Match header for ETag validation
@@ -487,31 +490,8 @@ public class WorldEntitiesController : ControllerBase
             });
         }
 
-        // Merge properties if provided
-        var properties = entity.Properties is not null
-            ? new Dictionary<string, object>(entity.Properties)
-            : new Dictionary<string, object>();
-
-        if (request.Properties != null)
-        {
-            foreach (var kvp in request.Properties)
-            {
-                properties[kvp.Key] = kvp.Value;
-            }
-        }
-
-        // Merge system properties if provided
-        var systemProperties = entity.SystemProperties is not null
-            ? new Dictionary<string, object>(entity.SystemProperties)
-            : new Dictionary<string, object>();
-
-        if (request.SystemProperties != null)
-        {
-            foreach (var kvp in request.SystemProperties)
-            {
-                systemProperties[kvp.Key] = kvp.Value;
-            }
-        }
+        var mergedProperties = MergePropertyBag(entity.Properties, request.Properties);
+        var mergedSystemProperties = MergePropertyBag(entity.SystemProperties, request.SystemProperties);
 
         // Update entity with merged values
         entity.Update(
@@ -521,8 +501,8 @@ public class WorldEntitiesController : ControllerBase
             request.ParentId ?? entity.ParentId,
             request.Tags ?? entity.Tags,
             request.SchemaId ?? entity.SchemaId,
-            request.Properties != null ? properties : entity.Properties,
-            request.SystemProperties != null ? systemProperties : entity.SystemProperties,
+            mergedProperties,
+            mergedSystemProperties,
             request.SchemaVersion ?? entity.SchemaVersion);
 
         // Get If-Match header for ETag validation
@@ -707,17 +687,42 @@ public class WorldEntitiesController : ControllerBase
             IsDeleted = entity.IsDeleted,
             DeletedDate = entity.DeletedDate,
             DeletedBy = entity.DeletedBy,
-            CreatedDate = entity.CreatedDate,
-            ModifiedDate = entity.ModifiedDate,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
             SchemaVersion = entity.SchemaVersion
         };
     }
 
     /// <summary>
-    /// Gets the ETag value for an entity (using ModifiedDate as surrogate).
+    /// Gets the ETag value for an entity (using UpdatedAt as surrogate).
     /// </summary>
     private static string GetETag(WorldEntity entity)
     {
-        return $"\"{entity.ModifiedDate.Ticks}\"";
+        return $"\"{entity.UpdatedAt.Ticks}\"";
+    }
+
+    /// <summary>
+    /// Merges an incoming property bag into an existing property bag.
+    /// Incoming keys overwrite existing keys; existing keys not present in incoming are preserved.
+    /// </summary>
+    private static Dictionary<string, object>? MergePropertyBag(
+        Dictionary<string, object>? existing,
+        Dictionary<string, object>? incoming)
+    {
+        if (incoming is null)
+        {
+            return existing;
+        }
+
+        var merged = existing is not null
+            ? new Dictionary<string, object>(existing)
+            : [];
+
+        foreach (var kvp in incoming)
+        {
+            merged[kvp.Key] = kvp.Value;
+        }
+
+        return merged;
     }
 }

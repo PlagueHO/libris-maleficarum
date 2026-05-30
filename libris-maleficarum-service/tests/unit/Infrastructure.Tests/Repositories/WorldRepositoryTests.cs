@@ -99,7 +99,7 @@ public class WorldRepositoryTests
     }
 
     [TestMethod]
-    public async Task CreateAsync_SetsCreatedAndModifiedDates()
+    public async Task CreateAsync_SetsCreatedAndUpdatedAts()
     {
         // Arrange
         var world = World.Create(_userId, "Test World", null);
@@ -108,8 +108,8 @@ public class WorldRepositoryTests
         var result = await _repository.CreateAsync(world);
 
         // Assert
-        result.CreatedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
-        result.ModifiedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        result.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        result.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
     }
 
     #endregion
@@ -206,7 +206,7 @@ public class WorldRepositoryTests
         {
             var world = World.Create(_userId, $"World {i}", null);
             await _context.Worlds.AddAsync(world);
-            await Task.Delay(1); // Ensure different CreatedDate for ordering
+            await Task.Delay(1); // Ensure different CreatedAt for ordering
         }
         await _context.SaveChangesAsync();
 
@@ -285,7 +285,7 @@ public class WorldRepositoryTests
         // Assert
         result.Name.Should().Be("Updated Name");
         result.Description.Should().Be("Updated Description");
-        result.ModifiedDate.Should().BeAfter(result.CreatedDate);
+        result.UpdatedAt.Should().BeAfter(result.CreatedAt);
 
         var savedWorld = await _context.Worlds.FirstOrDefaultAsync(w => w.Id == world.Id);
         savedWorld!.Name.Should().Be("Updated Name");

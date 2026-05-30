@@ -95,10 +95,10 @@ export interface WorldEntity {
   schemaId?: string;
 
   /** Optional common properties for entity-specific data. */
-  properties?: Record<string, unknown> | string;
+  properties?: Record<string, unknown>;
 
   /** Optional system-specific properties for ruleset data. */
-  systemProperties?: Record<string, unknown> | string;
+  systemProperties?: Record<string, unknown>;
 
   /** Schema version for document compatibility (default: 1) */
   schemaVersion: number;

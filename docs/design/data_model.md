@@ -11,18 +11,54 @@ This document is intended for backend developers, database architects, and syste
 
 The core data model revolves around the concept of a "World" or "Campaign", which serves as a container for all related entities such as locations, characters, items, and sessions. Each World is owned by a user and can contain an arbitrary hierarchy of nested entities. A user can own multiple Worlds, but will only interact with one World at a time in the application.
 
+## Naming Standards (Persistence Contract)
+
+The persisted JSON contract in Cosmos DB uses camelCase field names. This is the
+source-of-truth naming standard for documents, queries, and partition keys.
+
+| Scope | Standard | Examples |
+| ----- | -------- | -------- |
+| Document fields | camelCase | `worldId`, `parentId`, `entityType`, `createdAt`, `isDeleted` |
+| Flexible property bags | nested JSON objects | `properties`, `systemProperties` |
+| Cosmos reserved fields | Cosmos-native names | `id`, `ttl` |
+| Partition keys | camelCase paths | `/id`, `/worldId`, `[/worldId, /entityId]` |
+
+Notes:
+
+1. C# model property names can be `PascalCase`, but persisted document field names
+  must remain camelCase.
+1. SQL query predicates against Cosmos documents must also use camelCase field
+  names (for example `c.worldId`, `c.parentId`, `c.isDeleted`).
+
+## Current Implementation Limitations and Trade-offs
+
+The following limitations were validated during implementation and are deliberate
+for the current architecture:
+
+1. EF Core Cosmos value conversion for flexible object bags can serialize
+  complex values into strings when mapped through value converters.
+1. To preserve `properties` and `systemProperties` as real nested JSON objects,
+  `WorldEntity` persistence uses a manual Cosmos SDK repository path.
+1. EF-managed persistence remains in place for `World`, `Asset`, and
+  `DeleteOperation` entities.
+1. `WorldEntityRepository` depends on a Cosmos-backed `DbContext` via
+  `GetCosmosClient()`. Unit tests that rely on `UseInMemoryDatabase` cannot
+  exercise this path and must be treated as Cosmos-backed integration tests.
+1. Worker and repository serialization paths must explicitly use camelCase to
+  avoid casing drift between document writes and typed model reads.
+
 ## Cosmos DB Containers
 
 Three core containers store all TTRPG data, each with optimized partition keys for their access patterns:
 
 | Container | Purpose | Partition Key | Key Characteristics |
 | --------- | ------- | ------------- | ------------------- |
-| **World** | World/campaign metadata | `/Id` | Top-level world documents; efficient user-owned world queries; isolated from entity hierarchy |
-| **WorldEntity** | World entity hierarchy | `[/WorldId, /id]` | All entities within worlds (locations, characters, campaigns, etc.) with hierarchical relationships via `ParentId`; soft-deleted entities remain in-place with TTL for automatic purge |
-| **Asset** | Asset metadata (images, audio, video, documents) | `[/WorldId, /EntityId]` | References to Azure Blob Storage; separate from entities to prevent document bloat; partitioned by entity for efficient entity-scoped queries |
+| **World** | World/campaign metadata | `/id` | Top-level world documents; efficient user-owned world queries; isolated from entity hierarchy |
+| **WorldEntity** | World entity hierarchy | `/worldId` | All entities within worlds (locations, characters, campaigns, etc.) with hierarchical relationships via `parentId`; soft-deleted entities remain in-place with TTL for automatic purge |
+| **Asset** | Asset metadata (images, audio, video, documents) | `[/worldId, /entityId]` | References to Azure Blob Storage; separate from entities to prevent document bloat; partitioned by entity for efficient entity-scoped queries |
 
 > [!IMPORTANT]
-> Partition key design for each container is critical to ensure RU usage is kept as low as possible. Hot partitions must also be avoided. Hierarchical partition keys (e.g., `[/WorldId, /id]`, `[/WorldId, /EntityId]`) enable efficient queries while distributing load across partitions.
+> Partition key design for each container is critical to ensure RU usage is kept as low as possible. Hot partitions must also be avoided. Use workload-aligned keys: simple key for World (`/id`), simple key for WorldEntity (`/worldId`), and hierarchical key for Asset (`[/worldId, /entityId]`).
 
 ## Common Operations
 
@@ -34,18 +70,18 @@ This section outlines common operations and their estimated RU costs for each co
 | **Get world by ID** | World | `worldId` | 1 RU | Point read with partition key |
 | **Create world** | World | `world` | 5-8 RUs | Includes indexing overhead |
 | **Update world** | World | `worldId`, `updates` | 6-12 RUs | Read (1 RU) + write (5-8 RUs) |
-| **Soft delete world** | World | `worldId` | 6-10 RUs | Mark `IsDeleted = true`, set TTL |
+| **Soft delete world** | World | `worldId` | 6-10 RUs | Mark `isDeleted = true`, set TTL |
 | **Get entity by ID** | WorldEntity | `worldId`, `entityId` | 1 RU | Point read with both partition keys; excludes deleted |
-| **Get entity children** | WorldEntity | `worldId`, `parentId` | 2-6 RUs | Filtered partition prefix query with `IsDeleted` filter; used for lazy-loading tree nodes |
-| **List all world entities** | WorldEntity | `worldId` | 6-18 RUs | Partition prefix query with `IsDeleted` filter; ~10-20% overhead from deleted items |
-| **List entities by type** | WorldEntity | `worldId`, `entityType` | 3-10 RUs | Filtered partition prefix query with `IsDeleted` filter |
-| **Search entities** | WorldEntity | `worldId`, `searchTerm` | 5-14 RUs | Name/tag search with `IsDeleted` filter |
-| **Count children** | WorldEntity | `worldId`, `parentId` | 2-4 RUs | Aggregate query with `IsDeleted` filter |
+| **Get entity children** | WorldEntity | `worldId`, `parentId` | 2-6 RUs | Filtered partition prefix query with `isDeleted` filter; used for lazy-loading tree nodes |
+| **List all world entities** | WorldEntity | `worldId` | 6-18 RUs | Partition prefix query with `isDeleted` filter; ~10-20% overhead from deleted items |
+| **List entities by type** | WorldEntity | `worldId`, `entityType` | 3-10 RUs | Filtered partition prefix query with `isDeleted` filter |
+| **Search entities** | WorldEntity | `worldId`, `searchTerm` | 5-14 RUs | Name/tag search with `isDeleted` filter |
+| **Count children** | WorldEntity | `worldId`, `parentId` | 2-4 RUs | Aggregate query with `isDeleted` filter |
 | **Get entities by owner** | WorldEntity | `ownerId` | 10-60 RUs | Cross-partition (use sparingly); includes deleted filter overhead |
 | **Create entity** | WorldEntity | `entity` | 5-8 RUs | Includes indexing overhead |
 | **Update entity** | WorldEntity | `worldId`, `entityId`, `updates` | 6-12 RUs | Read (1 RU) + write (5-8 RUs) |
 | **Soft delete entity** | WorldEntity | `worldId`, `entityId` | 6-10 RUs | Mark `IsDeleted = true`, set TTL (90 days) |
-| **Move entity** | WorldEntity | `worldId`, `entityId`, `newParentId` | 6-10 RUs | Update `ParentId`, `Path`, `Depth` |
+| **Move entity** | WorldEntity | `worldId`, `entityId`, `newParentId` | 6-10 RUs | Update `parentId`, `path`, `depth` |
 | **Get entity assets** | Asset | `worldId`, `entityId` | 2-5 RUs | Filtered partition prefix query |
 | **Create asset** | Asset | `asset` | 5-7 RUs | Asset metadata only |
 | **Delete asset** | Asset | `worldId`, `assetId` | 6-8 RUs | Soft delete + blob delete |
@@ -55,22 +91,22 @@ This section outlines common operations and their estimated RU costs for each co
 
 ## World Container
 
-World documents store top-level world/campaign metadata with partition key `/Id` for efficient owner-based queries.
+World documents store top-level world/campaign metadata with partition key `/id` for efficient owner-based queries.
 
 - **World**: Root-level world/campaign documents containing core metadata, settings, and ownership information
-- **Ownership**: Every World includes an `OwnerId` property to indicate the owner (user ID)
+- **Ownership**: Every World includes an `ownerId` property to indicate the owner (user ID)
 - **Document IDs**: All Worlds use a GUID for the `id` property to ensure uniqueness
-- **Partition Key**: The container uses a **simple partition key** (`/Id`) to:
+- **Partition Key**: The container uses a **simple partition key** (`/id`) to:
   - **Efficient Point Reads**: 1 RU when querying by world ID
   - **Owner Queries**: Cross-partition query for user's worlds (5-15 RUs, cache results)
   - **Isolation**: World metadata separated from entity hierarchy for cleaner operations
 - **Query Optimization**: This partition strategy enables:
   - Point reads: 1 RU (Id specified)
-  - Owner queries: 5-15 RUs (filter by OwnerId across all partitions)
+  - Owner queries: 5-15 RUs (filter by ownerId across all partitions)
   - Simple CRUD operations without hierarchical complexity
 - **Design Rationale**: Separating World from WorldEntity provides:
   - **Clear Separation**: World metadata vs. world content (entities)
-  - **Simpler Queries**: "List user's worlds" doesn't require filtering WorldEntity by `ParentId == null`
+  - **Simpler Queries**: "List user's worlds" doesn't require filtering WorldEntity by `parentId == null`
   - **Isolated Operations**: World-level operations don't impact entity queries
   - **Better Consistency**: Domain rules enforce World existence before creating entities
 
@@ -80,22 +116,22 @@ World documents store top-level world/campaign metadata with partition key `/Id`
 public record World
 {
     // === Core Identity (REQUIRED) ===
-    public required string Id { get; init; }              // GUID - unique world identifier
-    public required string OwnerId { get; init; }         // User ID who owns this world
+  public required string id { get; init; }              // GUID - unique world identifier
+  public required string ownerId { get; init; }         // User ID who owns this world
     
     // === Metadata (REQUIRED) ===
-    public required string Name { get; init; }            // Display name (max 100 chars)
-    public string? Description { get; init; }             // Rich text description (max 2000 chars)
+    public required string name { get; init; }            // Display name (max 100 chars)
+    public string? description { get; init; }             // Rich text description (max 2000 chars)
     
     // === Temporal (REQUIRED) ===
-    public required DateTime CreatedDate { get; init; }   // ISO 8601 timestamp
-    public required DateTime ModifiedDate { get; init; }  // ISO 8601 timestamp
+    public required DateTime createdAt { get; init; }     // ISO 8601 timestamp
+    public required DateTime updatedAt { get; init; }     // ISO 8601 timestamp
     
     // === Soft Delete (REQUIRED) ===
-    public required bool IsDeleted { get; init; }         // Soft delete flag (default: false)
-    public DateTime? DeletedDate { get; init; }           // ISO 8601 timestamp when deleted
-    public string? DeletedBy { get; init; }               // User ID who deleted
-    public int? Ttl { get; init; }                        // Time-to-live in seconds (Cosmos DB reserved field)
+    public required bool isDeleted { get; init; }         // Soft delete flag (default: false)
+    public DateTime? deletedDate { get; init; }           // ISO 8601 timestamp when deleted
+    public string? deletedBy { get; init; }               // User ID who deleted
+    public int? ttl { get; init; }                        // Time-to-live in seconds (Cosmos DB reserved field)
                                                           // null = omit property (use container default, requires DefaultTimeToLive set)
                                                           // -1 = never expire (override container TTL)
                                                           // >0 = expire N seconds after last modified (_ts)
@@ -109,8 +145,8 @@ public record World
 -- Get user's worlds (cross-partition query, cache results)
 SELECT * FROM w
 WHERE w.OwnerId = @ownerId
-  AND w.IsDeleted = false
-ORDER BY w.ModifiedDate DESC
+  AND w.isDeleted = false
+ORDER BY w.updatedAt DESC
 -- Cost: ~5-15 RUs (cross-partition)
 
 -- Get world by ID (point read)
@@ -124,8 +160,8 @@ INSERT INTO w VALUE {
   "OwnerId": @ownerId,
   "Name": @name,
   "Description": @description,
-  "CreatedDate": @now,
-  "ModifiedDate": @now,
+  "CreatedAt": @now,
+  "UpdatedAt": @now,
   "IsDeleted": false
 }
 -- Cost: ~5-8 RUs
@@ -133,21 +169,19 @@ INSERT INTO w VALUE {
 
 ## WorldEntity Container
 
-WorldEntity documents store all entities within worlds with hierarchical partition key `[/WorldId, /id]` for hot partition prevention.
+WorldEntity documents store all entities within worlds with partition key `/worldId` for efficient single-world queries.
 
 - **WorldEntity**: Entities within a world such as "Continent", "Country", "Region", "City", "Character", "Campaign", "Session", etc. Entities can be arbitrarily nested to support complex world-building.
 - **Ownership**: Every WorldEntity includes an `OwnerId` property (e.g., a user ID) to indicate the owner.
 - **Document IDs**: All WorldEntities use a GUID for the `id` property to ensure uniqueness.
-- **Partition Key**: The container uses a **hierarchical partition key** (`[/WorldId, /id]`) to:
-  - **Distribution**: Each entity is its own logical partition (avoids hot partitions during active sessions)
-  - **Flexible Queries**: Support both point reads (WorldId + id) and prefix queries (WorldId only)
-  - **Scalability**: No per-world partition limits; scales to unlimited entities per world
-  - **Hot Partition Prevention**: Active worlds with concurrent users distribute load across partitions
+- **Partition Key**: The container uses partition key `/worldId` to:
+  - **Efficient world-scoped queries**: Fetch tree nodes, children, and filtered entities within one world's partition set.
+  - **Simple query model**: WorldId-scoped queries do not require cross-world scans for primary UX paths.
+  - **Operational simplicity**: Lower complexity than hierarchical keys while matching current repository and EF configuration.
 - **Query Optimization**: This partition strategy enables:
-  - Point reads: 1 RU (WorldId + id specified)
-  - World tree queries: ~5-15 RUs (partition key prefix query: `/WorldId/*`)
-  - Children queries: ~2-5 RUs (prefix query with ParentId filter)
-  - No 10K RU/s per-partition limit for busy worlds
+  - Point reads: ~1 RU (WorldId + id specified)
+  - World tree queries: ~5-15 RUs (single world partition query)
+  - Children queries: ~2-5 RUs (WorldId + ParentId filter)
 - **Hierarchy Navigation**: Parent-child relationships maintained through `ParentId` references only - no denormalized arrays to keep in sync
 - **External Indexing**: All WorldEntities are also indexed by Azure AI Search for advanced semantic ranking, hybrid search, and cross-world discovery
 
@@ -161,125 +195,134 @@ public record BaseWorldEntity
 {
     // === Core Identity (REQUIRED) ===
     public required string id { get; init; }           // GUID - unique identifier
-    public required string WorldId { get; init; }      // GUID - root world/tenant ID (partition key level 1)
-    public required string? ParentId { get; init; }    // GUID - parent entity ID, null for root World (partition key level 2)
-    public required string EntityType { get; init; }   // Discriminator for entity-specific properties
-    public string? SchemaId { get; init; }             // References property schema (e.g., "dnd5e-character", "fantasy-location")
+  public required string worldId { get; init; }      // GUID - root world/tenant ID (partition key level 1)
+  public required string? parentId { get; init; }    // GUID - parent entity ID, null for root World
+  public required string entityType { get; init; }   // Discriminator for entity-specific properties
+  public string? schemaId { get; init; }             // References property schema (e.g., "dnd5e-character", "fantasy-location")
     
     // === Hierarchy ===
-    public List<Guid>? Path { get; init; }             // Ancestor entity IDs from root to parent (for hierarchy operations)
-    public required int Depth { get; init; }           // Hierarchy depth (0 = root World)
+    public List<Guid>? path { get; init; }             // Ancestor entity IDs from root to parent (for hierarchy operations)
+    public required int depth { get; init; }           // Hierarchy depth (0 = root World)
     
     // === Core Metadata (REQUIRED) ===
-    public required string Name { get; init; }         // Display name (indexed)
-    public string? Description { get; init; }          // Rich text description
-    public List<string>? Tags { get; init; }           // User-defined tags for search/filtering
+    public required string name { get; init; }         // Display name (indexed)
+    public string? description { get; init; }          // Rich text description
+    public List<string>? tags { get; init; }           // User-defined tags for search/filtering
     
     // === Ownership & Permissions (REQUIRED) ===
-    public required string OwnerId { get; init; }      // User ID who owns this entity
-    public string? CreatedBy { get; init; }            // User ID who created
-    public string? ModifiedBy { get; init; }           // User ID who last modified
+    public required string ownerId { get; init; }      // User ID who owns this entity
+    public string? createdBy { get; init; }            // User ID who created
+    public string? modifiedBy { get; init; }           // User ID who last modified
     
     // === Temporal (REQUIRED) ===
-    public required DateTime CreatedDate { get; init; }   // ISO 8601 timestamp
-    public required DateTime ModifiedDate { get; init; }  // ISO 8601 timestamp
+    public required DateTime createdAt { get; init; }     // ISO 8601 timestamp
+    public required DateTime updatedAt { get; init; }     // ISO 8601 timestamp
     
     // === Schema Versioning (REQUIRED) ===
-    public required int SchemaVersion { get; init; }   // Entity schema version (1-based integer, default: 1)
+    public required int schemaVersion { get; init; }   // Entity schema version (1-based integer, default: 1)
                                                        // Enables lazy migration: entities are upgraded to current version on save
     
     // === Soft Delete (REQUIRED) ===
-    public required bool IsDeleted { get; init; }      // Soft delete flag (default: false)
-    public DateTime? DeletedDate { get; init; }        // ISO 8601 timestamp when deleted
-    public string? DeletedBy { get; init; }            // User ID who deleted
-    public int? Ttl { get; init; }                     // Time-to-live in seconds (Cosmos DB reserved field)
+    public required bool isDeleted { get; init; }      // Soft delete flag (default: false)
+    public DateTime? deletedDate { get; init; }        // ISO 8601 timestamp when deleted
+    public string? deletedBy { get; init; }            // User ID who deleted
+    public int? ttl { get; init; }                     // Time-to-live in seconds (Cosmos DB reserved field)
                                                        // null = omit property (use container default, requires DefaultTimeToLive set)
                                                        // -1 = never expire (override container TTL)
                                                        // >0 = expire N seconds after last modified (_ts)
                                                        // Set to 7776000 (90 days) on soft delete for automatic purge
     
     // === Entity Properties (Flexible Schema) ===
-    public object? Properties { get; init; }           // Common properties (cross-system)
-    public object? SystemProperties { get; init; }     // System-specific properties (D&D 5e, Pathfinder, etc.)
+    public object? properties { get; init; }           // Common properties (cross-system)
+    public object? systemProperties { get; init; }     // System-specific properties (D&D 5e, Pathfinder, etc.)
 }
 ```
 
 ### WorldEntity Subclass Schema
 
-Subclasses of WorldEntity define specific entity types with their own property sets. The `Properties` and `SystemProperties` fields store flexible JSON objects based on the selected `SchemaId`.
+Subclasses of WorldEntity define specific entity types with their own property sets. The `properties` and `systemProperties` fields store flexible JSON objects based on the selected `schemaId`.
+
+#### Properties vs SystemProperties Contract
+
+- `properties` contains baseline fields for an entity type that are expected regardless of game system/ruleset.
+  - Example: `population` on settlement-like entities such as `city` or `town`.
+- `systemProperties` contains game system/ruleset-specific fields.
+  - Example: D&D 5e character mechanics such as `proficiencyBonus`, spell slots, or class feature payloads.
+- The same `entityType` can be used in different worlds with different system payloads in `systemProperties`, while keeping `properties` semantically stable.
+- Validation and UI generation should treat these as separate concerns: baseline entity-type semantics (`properties`) vs ruleset semantics (`systemProperties`).
 
 ```csharp
 // Entity-specific records inherit from base
 // Properties store common cross-system data; SystemProperties store system-specific data
-// SchemaId references which property template/schema to use for property value validation and UI generation
+// schemaId references which property template/schema to use for property value validation and UI generation
 
 // Example: Character entity with hybrid property system
 public record CharacterEntity : BaseWorldEntity
 {
-    // EntityType: "Character", "PlayerCharacter", or "NonPlayerCharacter"
-    // SchemaId: "dnd5e-character", "pathfinder2e-character", "fantasy-character", etc.
+    // entityType: "Character", "PlayerCharacter", or "NonPlayerCharacter"
+    // schemaId: "dnd5e-character", "pathfinder2e-character", "fantasy-character", etc.
     
     // Properties (common across most systems):
-    // - Name, Level, Class, Ancestry/Race, Background, etc.
+    // - name, level, class, ancestry/race, background, etc.
     
-    // SystemProperties (D&D 5e example):
-    // - Stats: { STR: 12, DEX: 18, CON: 14, INT: 13, WIS: 16, CHA: 10 }
-    // - ArmorClass: 16
-    // - HitPoints: { Current: 45, Max: 52 }
-    // - SpellSlots: { "1st": 4, "2nd": 3 }
+    // systemProperties (D&D 5e example):
+    // - stats: { STR: 12, DEX: 18, CON: 14, INT: 13, WIS: 16, CHA: 10 }
+    // - armorClass: 16
+    // - hitPoints: { current: 45, max: 52 }
+    // - spellSlots: { "1st": 4, "2nd": 3 }
 }
 
 // Example: Location entity with hybrid property system
 public record LocationEntity : BaseWorldEntity
 {
-    // EntityType: "Continent", "GeographicRegion", "PoliticalRegion", "Country", "City", "Dungeon", etc.
-    // SchemaId: "fantasy-location", "scifi-location", "modern-location", etc.
+    // entityType: "Continent", "GeographicRegion", "PoliticalRegion", "Country", "City", "Dungeon", etc.
+    // schemaId: "fantasy-location", "scifi-location", "modern-location", etc.
     
-    // Properties (common):
-    // - Population, Climate, Terrain, Government, etc.
+    // properties (common):
+    // - population, climate, terrain, government, etc.
     
-    // SystemProperties (fantasy example):
-    // - MagicLevel: "High"
-    // - Resources: ["mithril", "ancient artifacts"]
-    // - Coordinates: { Latitude: 45.5, Longitude: -122.6 }
+    // systemProperties (fantasy example):
+    // - magicLevel: "High"
+    // - resources: ["mithril", "ancient artifacts"]
+    // - coordinates: { latitude: 45.5, longitude: -122.6 }
 }
 
 // Example: GeographicRegion entity for organizational grouping
 public record GeographicRegionEntity : BaseWorldEntity
 {
-    // EntityType: "GeographicRegion"
-    // SchemaId: "geographic-region"
+    // entityType: "GeographicRegion"
+    // schemaId: "geographic-region"
     
-    // Properties (common):
-    // - Area: 2500000 (km²)
-    // - Climate: "Temperate"
-    // - Terrain: "Mixed"
-    // - Population: 195000000 (aggregate)
+    // properties (common):
+    // - area: 2500000 (km²)
+    // - climate: "Temperate"
+    // - terrain: "Mixed"
+    // - population: 195000000 (aggregate)
     
-    // SystemProperties (optional):
-    // - DefiningFeatures: ["Atlantic coastline", "Major river systems"]
-    // - EconomicZone: "Industrial"
+    // systemProperties (optional):
+    // - definingFeatures: ["Atlantic coastline", "Major river systems"]
+    // - economicZone: "Industrial"
 }
 
 // Example: Campaign entity with hybrid property system
 public record CampaignEntity : BaseWorldEntity
 {
-    // EntityType: "Campaign", "Scenario", "Session", "Scene"
-    // SchemaId: "dnd5e-campaign", "generic-campaign", etc.
+    // entityType: "Campaign", "Scenario", "Session", "Scene"
+    // schemaId: "dnd5e-campaign", "generic-campaign", etc.
     
-    // Properties (common):
-    // - Status: "active", StartDate, PlayerCount, SessionCount, etc.
+    // properties (common):
+    // - status: "active", startDate, playerCount, sessionCount, etc.
     
-    // SystemProperties (system-specific):
-    // - Players: [{ UserId: "user1", CharacterId: "char1", JoinedDate: "2024-01-15" }]
-    // - CampaignArcs: [{ Name: "Arc 1", Status: "completed" }]
-    // - HouseRules: { "CriticalHits": "maximize damage" }
+    // systemProperties (system-specific):
+    // - players: [{ userId: "user1", characterId: "char1", joinedDate: "2024-01-15" }]
+    // - campaignArcs: [{ name: "Arc 1", status: "completed" }]
+    // - houseRules: { "criticalHits": "maximize damage" }
 }
 ```
 
 ### Schema Evolution Guidelines
 
-The `SchemaVersion` field enables lazy migration of entity schemas without requiring database-wide migrations. Entities are upgraded to the current schema version when saved, allowing gradual migration of the entire world as users interact with their data.
+The `schemaVersion` field enables lazy migration of entity schemas without requiring database-wide migrations. Entities are upgraded to the current schema version when saved, allowing gradual migration of the entire world as users interact with their data.
 
 #### Version Strategy
 
@@ -301,7 +344,7 @@ public int SchemaVersion { get; private set; }
 
 public void UpdateSchemaVersion(int schemaVersion)
 {
-    var currentVersion = EntitySchemaVersionConfig.GetSchemaVersion(EntityType);
+    var currentVersion = EntitySchemaVersionConfig.GetSchemaVersion(entityType);
     SchemaVersionValidator.Validate(schemaVersion, currentVersion);
     SchemaVersion = schemaVersion;
 }
@@ -359,7 +402,7 @@ createWorldEntity: builder.mutation({
 const handleSubmit = async (data: FormData) => {
   const payload = {
     ...data,
-    schemaVersion: getSchemaVersion(entityType as WorldEntityType),
+    schemaVersion: getSchemaVersion(entityType as WorldentityType),
   };
   await createWorldEntity(payload);
 };
@@ -405,13 +448,13 @@ public record PropertySchema
 {
     public required string id { get; init; }           // "dnd5e-character", "geographic-region"
     public required string Name { get; init; }         // "D&D 5e Character", "Geographic Region"
-    public required string EntityType { get; init; }   // "Character", "GeographicRegion"
+    public required string entityType { get; init; }   // "Character", "GeographicRegion"
     public string? Description { get; init; }          // "Properties for D&D 5th Edition characters"
-    public List<PropertyDefinition>? CommonProperties { get; init; }  // Common property definitions
-    public List<PropertyDefinition>? SystemProperties { get; init; }  // System-specific definitions
-    public List<string>? RecommendedChildTypes { get; init; }  // UI hint: recommended child EntityTypes (shown first in selector)
-    public DateTime CreatedDate { get; init; }
-    public DateTime ModifiedDate { get; init; }
+    public List<PropertyDefinition>? CommonProperties { get; init; }  // Entity-type baseline properties (always included regardless system)
+    public List<PropertyDefinition>? SystemProperties { get; init; }  // System/ruleset-specific properties
+    public List<string>? RecommendedChildTypes { get; init; }  // UI hint: recommended child entityTypes (shown first in selector)
+    public DateTime CreatedAt { get; init; }
+    public DateTime UpdatedAt { get; init; }
 }
 
 public record PropertyDefinition
@@ -429,7 +472,7 @@ public record PropertyDefinition
 {
     "id": "geographic-region",
     "Name": "Geographic Region",
-    "EntityType": "GeographicRegion",
+    "entityType": "GeographicRegion",
     "Description": "Organizational grouping for geographic areas",
     "CommonProperties": [
         { "Name": "Area", "DataType": "number", "DisplayName": "Area (km²)", "Description": "Total area in square kilometers" },
@@ -439,8 +482,8 @@ public record PropertyDefinition
     ],
     "SystemProperties": [],
     "RecommendedChildTypes": ["Country", "Province", "Region", "GeographicRegion"],
-    "CreatedDate": "2024-01-01T00:00:00Z",
-    "ModifiedDate": "2024-01-01T00:00:00Z"
+    "CreatedAt": "2024-01-01T00:00:00Z",
+    "UpdatedAt": "2024-01-01T00:00:00Z"
 }
 ```
 
@@ -464,7 +507,7 @@ public async Task<IEnumerable<EntityNode>> GetChildren(
         { 
             Id = e.id, 
             Name = e.Name, 
-            EntityType = e.EntityType,
+            entityType = e.entityType,
             IconAssetId = e.IconAssetId 
         });
     
@@ -531,7 +574,7 @@ Asset metadata is stored in a dedicated `Asset` container (separate from WorldEn
 - **Enable Asset Queries**: Query assets across entities without scanning all WorldEntities
 - **Simplify Lifecycle**: Assets can be managed independently (cleanup, migration, archival)
 
-**Partition Key Strategy**: The Asset container uses hierarchical partition key `[/WorldId, /EntityId]` to:
+**Partition Key Strategy**: The Asset container uses hierarchical partition key `[/worldId, /entityId]` to:
 
 - **Efficient Entity Queries**: All assets for an entity in single partition (2-5 RUs)
 - **Hot Partition Prevention**: Assets distributed by entity, not aggregated per world
@@ -544,59 +587,42 @@ Asset metadata is stored in a dedicated `Asset` container (separate from WorldEn
 public record Asset
 {
     // === Core Identity (REQUIRED) ===
-    public required string id { get; init; }              // Unique asset ID (GUID)
-    public required string WorldId { get; init; }         // Partition key level 1 - tenant isolation
-    public required string EntityId { get; init; }        // Partition key level 2 - parent WorldEntity ID
-    public required string EntityType { get; init; }      // Entity type (for context)
-    
-    // === Asset Metadata (REQUIRED) ===
-    public required string Type { get; init; }            // "image", "audio", "video", "document", "map", "model3d"
-    public string? Purpose { get; init; }                 // "portrait", "banner", "icon", "background", "thumbnail"
-    public required string FileName { get; init; }        // Original filename
-    public required string ContentType { get; init; }     // MIME type: "image/png", "audio/mp3"
-    public required long Size { get; init; }              // File size in bytes
-    
-    // === Blob Storage Reference (REQUIRED) ===
-    public required string BlobPath { get; init; }        // Relative path: {worldId}/{entityType}/{entityId}/{assetId}.ext
-    public required string Url { get; init; }             // Full blob URL (with SAS token placeholder)
-    public string? ThumbnailBlobPath { get; init; }       // Thumbnail path (for images)
-    public string? ThumbnailUrl { get; init; }            // Thumbnail URL
+  public required string id { get; init; }              // Unique asset ID (GUID)
+    public required string worldId { get; init; }         // Partition key level 1 - tenant isolation
+    public required string entityId { get; init; }        // Partition key level 2 - parent WorldEntity ID
+
+  // === Asset Metadata (REQUIRED) ===
+    public required string fileName { get; init; }        // Original filename
+    public required string contentType { get; init; }     // MIME type: "image/png", "audio/mp3"
+  public required long sizeBytes { get; init; }         // File size in bytes
+  public required string blobUrl { get; init; }         // Full blob URL
+  public required string assetType { get; init; }       // "Image", "Audio", "Video", "Document"
     
     // === Type-Specific Metadata ===
     // Images
-    public ImageDimensions? Dimensions { get; init; }     // Width and height for images
-    // Audio/Video
-    public double? Duration { get; init; }                // Duration in seconds
-    public string? Codec { get; init; }                   // Audio/video codec info
-    // Documents
-    public int? PageCount { get; init; }                  // For PDFs, etc.
-    public string? Format { get; init; }                  // "pdf", "docx", "markdown"
+    public ImageDimensions? imageDimensions { get; init; } // Width and height for image assets
     
     // === Metadata (REQUIRED) ===
-    public required string UploadedBy { get; init; }      // User ID who uploaded
-    public required DateTime UploadedDate { get; init; }  // ISO 8601 timestamp
-    public List<string>? Tags { get; init; }              // Searchable tags
-    public string? Description { get; init; }             // Alt text, caption, or description
-    
-    // === Processing ===
-    public string? Status { get; init; }                  // "pending", "processing", "ready", "failed"
-    public string? ProcessingError { get; init; }         // Error message if processing failed
+    public required DateTime createdAt { get; init; }     // ISO 8601 timestamp
+    public DateTime? updatedAt { get; init; }             // ISO 8601 timestamp
+    public List<string>? tags { get; init; }              // Searchable tags
+    public string? description { get; init; }             // Alt text, caption, or description
     
     // === Soft Delete (REQUIRED) ===
-    public required bool IsDeleted { get; init; }         // Soft delete flag (default: false)
-    public DateTime? DeletedDate { get; init; }           // When deleted
-    public string? DeletedBy { get; init; }               // User who deleted
-    public int? Ttl { get; init; }                        // Time-to-live in seconds (Cosmos DB reserved field)
+    public required bool isDeleted { get; init; }         // Soft delete flag (default: false)
+    public DateTime? deletedDate { get; init; }           // When deleted
+    public string? deletedBy { get; init; }               // User who deleted
+    public int? ttl { get; init; }                        // Time-to-live in seconds (Cosmos DB reserved field)
                                                           // null = omit property (use container default, requires DefaultTimeToLive set)
                                                           // -1 = never expire (override container TTL)
                                                           // >0 = expire N seconds after last modified (_ts)
                                                           // Set to 7776000 (90 days) on soft delete for automatic purge
 }
 
-public record ImageDimensions(int Width, int Height);
+public record ImageDimensions(int width, int height);
 ```
 
-**Partition Key**: `[/WorldId, /EntityId]` - assets partitioned by entity for efficient entity-scoped queries and hot partition prevention.
+**Partition Key**: `[/worldId, /entityId]` - assets partitioned by entity for efficient entity-scoped queries and hot partition prevention.
 
 ### Query Patterns
 
@@ -612,7 +638,7 @@ WHERE a.WorldId = @worldId
 SELECT * FROM a
 WHERE a.WorldId = @worldId
   AND a.EntityId = @entityId
-  AND a.Type = 'image'
+  AND a.AssetType = 'Image'
   AND a.IsDeleted = false
 -- Cost: ~2-5 RUs (filtered within partition)
 
@@ -687,8 +713,8 @@ Container: world-assets
 **Path Construction**:
 
 ```csharp
-// Primary asset path
-var blobPath = $"{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}.{extension}";
+// Primary blob URL pattern
+var blobUrl = $"https://{storageAccount}.blob.core.windows.net/world-assets/{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}.{extension}";
 
 // Example
 // "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f/character/c9d8e7f6-5a4b-3c2d-1e0f-9a8b7c6d5e4f/portrait-a1b2c3d4.png"
@@ -702,22 +728,16 @@ var blobPath = $"{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}
   "id": "asset-12345678-abcd-efgh-ijkl-mnopqrstuvwx",
   "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
   "EntityId": "location-continent-guid",
-  "EntityType": "Location",
-  "Type": "image",
-  "Purpose": "map",
+  "AssetType": "Image",
   "FileName": "arcanis_map_v2.jpg",
   "ContentType": "image/jpeg",
-  "Size": 5242880,
-  "BlobPath": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f/location/location-continent-guid/map-asset-12345678.jpg",
-  "Url": "https://librismaleficarum.blob.core.windows.net/world-assets/b8e8e7e2.../location/.../map-asset-12345678.jpg",
-  "ThumbnailBlobPath": "thumbnails/asset-12345678-thumb.jpg",
-  "ThumbnailUrl": "https://librismaleficarum.blob.core.windows.net/world-assets/thumbnails/asset-12345678-thumb.jpg",
-  "Dimensions": { "Width": 4096, "Height": 3072 },
-  "UploadedBy": "user-abc",
-  "UploadedDate": "2024-06-15T14:30:00Z",
+  "SizeBytes": 5242880,
+  "BlobUrl": "https://librismaleficarum.blob.core.windows.net/world-assets/b8e8e7e2.../location/.../map-asset-12345678.jpg",
+  "ImageDimensions": { "Width": 4096, "Height": 3072 },
+  "CreatedAt": "2024-06-15T14:30:00Z",
+  "UpdatedAt": "2024-06-15T14:30:00Z",
   "Tags": ["map", "continent", "official"],
   "Description": "High-resolution map for player reference",
-  "Status": "ready",
   "IsDeleted": false
 }
 ```
@@ -730,13 +750,13 @@ var blobPath = $"{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}
   "id": "location-continent-guid",
   "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
   "ParentId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
-  "EntityType": "Continent",
-  "SchemaId": "fantasy-location",
+  "entityType": "Continent",
+  "schemaId": "fantasy-location",
   "Name": "Arcanis",
   "OwnerId": "user-abc",
   "Depth": 1,
-  "CreatedDate": "2024-06-01T10:00:00Z",
-  "ModifiedDate": "2024-06-15T14:30:00Z",
+  "CreatedAt": "2024-06-01T10:00:00Z",
+  "UpdatedAt": "2024-06-15T14:30:00Z",
   "IsDeleted": false,
   "Description": "A vast landmass of ancient forests and towering mountains...",
   "Tags": ["continent", "major-region"],
@@ -757,13 +777,13 @@ var blobPath = $"{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}
   "id": "region-western-arcanis-guid",
   "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
   "ParentId": "location-continent-guid",
-  "EntityType": "GeographicRegion",
-  "SchemaId": "geographic-region",
+  "entityType": "GeographicRegion",
+  "schemaId": "geographic-region",
   "Name": "Western Arcanis",
   "OwnerId": "user-abc",
   "Depth": 2,
-  "CreatedDate": "2024-06-01T10:30:00Z",
-  "ModifiedDate": "2024-06-15T14:30:00Z",
+  "CreatedAt": "2024-06-01T10:30:00Z",
+  "UpdatedAt": "2024-06-15T14:30:00Z",
   "IsDeleted": false,
   "Description": "The western territories of Arcanis, known for coastal trade cities",
   "Tags": ["geographic-region", "coastal", "trade-hub"],
@@ -781,13 +801,13 @@ var blobPath = $"{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}
   "id": "country-valoria-guid",
   "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
   "ParentId": "region-western-arcanis-guid",
-  "EntityType": "Country",
-  "SchemaId": "fantasy-location",
+  "entityType": "Country",
+  "schemaId": "fantasy-location",
   "Name": "Valoria",
   "OwnerId": "user-abc",
   "Depth": 3,
-  "CreatedDate": "2024-06-01T11:00:00Z",
-  "ModifiedDate": "2024-06-15T14:30:00Z",
+  "CreatedAt": "2024-06-01T11:00:00Z",
+  "UpdatedAt": "2024-06-15T14:30:00Z",
   "IsDeleted": false,
   "Description": "A maritime nation famous for its shipbuilding and naval prowess",
   "Tags": ["country", "naval-power", "trade-alliance", "magic-friendly"],
@@ -806,13 +826,13 @@ var blobPath = $"{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}
   "id": "campaign-f2a3b4c5-d6e7-8901-2345-67890abcdef0",
   "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
   "ParentId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
-  "EntityType": "Campaign",
-  "SchemaId": "dnd5e-campaign",
+  "entityType": "Campaign",
+  "schemaId": "dnd5e-campaign",
   "Name": "The Shadow Rising",
   "OwnerId": "user-abc",
   "Depth": 1,
-  "CreatedDate": "2024-05-01T12:00:00Z",
-  "ModifiedDate": "2024-06-25T20:00:00Z",
+  "CreatedAt": "2024-05-01T12:00:00Z",
+  "UpdatedAt": "2024-06-25T20:00:00Z",
   "IsDeleted": false,
   "Description": "An epic campaign where heroes must prevent an ancient evil from awakening",
   "Tags": ["active", "epic", "multi-arc"],
@@ -835,13 +855,13 @@ var blobPath = $"{worldId}/{entityType.ToLower()}/{entityId}/{purpose}-{assetId}
   "id": "char-c9d8e7f6-5a4b-3c2d-1e0f-9a8b7c6d5e4f",
   "WorldId": "b8e8e7e2-1c2d-4c3a-9e7b-2a1b2c3d4e5f",
   "ParentId": "country-valoria-guid",
-  "EntityType": "Character",
-  "SchemaId": "dnd5e-character",
+  "entityType": "Character",
+  "schemaId": "dnd5e-character",
   "Name": "Elara Silverwind",
   "OwnerId": "user-abc",
   "Depth": 4,
-  "CreatedDate": "2024-06-10T15:30:00Z",
-  "ModifiedDate": "2024-06-20T18:45:00Z",
+  "CreatedAt": "2024-06-10T15:30:00Z",
+  "UpdatedAt": "2024-06-20T18:45:00Z",
   "IsDeleted": false,
   "Description": "A skilled elven ranger and diplomat from Valoria",
   "Tags": ["npc", "ranger", "elf", "quest-giver"],
@@ -891,7 +911,7 @@ Total cost: 3-6 RUs
    - Extracts metadata (dimensions, duration, etc.)
    - Moves to permanent location in world-assets container
    - Creates Asset document in Cosmos DB
-1. Frontend polls Asset document for `status: 'ready'`
+1. Frontend polls the Asset endpoint until the new asset metadata is available and accessible
 
 **Change Feed Processor**:
 
@@ -956,7 +976,7 @@ public void SoftDelete(string deletedBy)
     DeletedDate = DateTime.UtcNow;
     DeletedBy = deletedBy;
     Ttl = 7776000; // 90 days in seconds (90 * 24 * 60 * 60)
-    ModifiedDate = DateTime.UtcNow;
+    UpdatedAt = DateTime.UtcNow;
 }
 
 public void Restore()
@@ -965,7 +985,7 @@ public void Restore()
     DeletedDate = null;
     DeletedBy = null;
     Ttl = null; // Omit TTL property (don't serialize to JSON)
-    ModifiedDate = DateTime.UtcNow;
+    UpdatedAt = DateTime.UtcNow;
 }
 
 // WorldEntityConfiguration.cs - EF Core Cosmos DB provider mapping
@@ -1010,7 +1030,7 @@ entity.IsDeleted = false;
 entity.DeletedDate = null;
 entity.DeletedBy = null;
 entity.Ttl = null;  // Omit ttl from JSON (EF Core won't serialize null properties)
-entity.ModifiedDate = DateTime.UtcNow;
+entity.UpdatedAt = DateTime.UtcNow;
 await context.SaveChangesAsync();
 // Cost: ~6-10 RUs (read + write)
 ```
@@ -1089,23 +1109,23 @@ If metrics show query overhead becoming a bottleneck, implement a Change Feed pr
 
 This migration can be implemented without API changes, as the delete/restore logic remains the same from the client perspective.
 
-## WorldEntity.EntityType Hierarchy
+## WorldEntity.entityType Hierarchy
 
-The `EntityType` property defines the type of each WorldEntity. The hierarchy below provides **UI recommendations and defaults** for creating entities—it is purely informational and **does not enforce any restrictions**. Any EntityType can have any other EntityType as a parent.
+The `entityType` property defines the type of each WorldEntity. The hierarchy below provides **UI recommendations and defaults** for creating entities—it is purely informational and **does not enforce any restrictions**. Any entityType can have any other entityType as a parent.
 
 **Purpose of Hierarchy:**
 
-- **UI Defaults**: When creating a child entity, the UI shows recommended EntityTypes first in the selector/dropdown
+- **UI Defaults**: When creating a child entity, the UI shows recommended entityTypes first in the selector/dropdown
 - **AI Suggestions**: Microsoft Agent Framework uses recommendations to suggest likely entity placements
-- **User Freedom**: All EntityTypes remain accessible via search or scrolling—users can choose any type regardless of recommendations
+- **User Freedom**: All entityTypes remain accessible via search or scrolling—users can choose any type regardless of recommendations
 
-**Two Categories of EntityTypes:**
+**Two Categories of entityTypes:**
 
-1. **Container EntityTypes** (e.g., `Locations`, `People`, `Events`, `Lore`, `Items`): Top-level organizational folders typically used as direct children of World
-1. **Standard EntityTypes** (e.g., `Country`, `Character`, `Quest`, `GeographicRegion`, `PoliticalRegion`): All other entity types representing actual world content. Some Standard types (like GeographicRegion, PoliticalRegion) define custom properties stored in the `Properties` JSON field, but functionally they behave identically to other Standard types.
+1. **Container entityTypes** (e.g., `Locations`, `People`, `Events`, `Lore`, `Items`): Top-level organizational folders typically used as direct children of World
+1. **Standard entityTypes** (e.g., `Country`, `Character`, `Quest`, `GeographicRegion`, `PoliticalRegion`): All other entity types representing actual world content. Some Standard types (like GeographicRegion, PoliticalRegion) define custom properties stored in the `Properties` JSON field, but functionally they behave identically to other Standard types.
 
 > [!IMPORTANT]
-> There are **no validation rules** for parent-child relationships. The hierarchy below lists EntityTypes grouped by category for organizational purposes. Recommendations affect only UI presentation order—never restrictions.
+> There are **no validation rules** for parent-child relationships. The hierarchy below lists entityTypes grouped by category for organizational purposes. Recommendations affect only UI presentation order—never restrictions.
 
 ### Hierarchy Structure
 
@@ -1197,7 +1217,7 @@ This hierarchy is extensible and can be expanded as needed for different TTRPG s
 
 ### Container Entity Types
 
-**Container EntityTypes** (e.g., `Locations`, `People`, `Events`, `Lore`, `Items`, `Adventures`) provide organizational structure as top-level folders directly under World. These containers help organize entities by domain area (locations, characters, items, etc.) and influence which EntityTypes appear first in UI dropdowns when creating children.
+**Container entityTypes** (e.g., `Locations`, `People`, `Events`, `Lore`, `Items`, `Adventures`) provide organizational structure as top-level folders directly under World. These containers help organize entities by domain area (locations, characters, items, etc.) and influence which entityTypes appear first in UI dropdowns when creating children.
 
 **Example:**
 
@@ -1219,7 +1239,7 @@ World: Eldoria
 
 ### Organizational Entity Types
 
-**Regional EntityTypes** (GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion) are Standard EntityTypes that support custom properties stored in the flexible `Properties` JSON field. They follow the same BaseWorldEntity schema as all other entity types (Country, Character, etc.), with their custom properties (Climate, Population, Government Type, etc.) defined via PropertySchema templates and stored as JSON.
+**Regional entityTypes** (GeographicRegion, PoliticalRegion, CulturalRegion, MilitaryRegion) are Standard entityTypes that support custom properties stored in the flexible `Properties` JSON field. They follow the same BaseWorldEntity schema as all other entity types (Country, Character, etc.), with their custom properties (Climate, Population, Government Type, etc.) defined via PropertySchema templates and stored as JSON.
 
 **Key Differences from Containers:**
 
@@ -1248,19 +1268,19 @@ World: Eldoria
 
 ### Hierarchy Recommendation Patterns
 
-Recommendations provide **UI defaults and AI suggestions only**—no enforcement. Any EntityType can be a child of any other EntityType.
+Recommendations provide **UI defaults and AI suggestions only**—no enforcement. Any entityType can be a child of any other entityType.
 
 **How It Works:**
 
 1. UI queries parent's `RecommendedChildTypes` from PropertySchema when creating child entity
-1. Recommended types appear first in the EntityType selector dropdown
+1. Recommended types appear first in the entityType selector dropdown
 1. All other types accessible via search or scrolling below recommended types
 1. Microsoft Agent Framework uses recommendations for contextual suggestions
-1. Users can freely choose any EntityType regardless of recommendation status
+1. Users can freely choose any entityType regardless of recommendation status
 
 **Common Recommendation Patterns:**
 
-| Parent EntityType | Recommended Children |
+| Parent entityType | Recommended Children |
 |------------------|---------------------|
 | `Continent` | `GeographicRegion`, `PoliticalRegion`, `CulturalRegion`, `MilitaryRegion`, `Country`, `Region` |
 | `GeographicRegion` | `Country`, `Province`, `Region`, `GeographicRegion` (nested) |

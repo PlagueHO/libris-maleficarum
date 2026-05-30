@@ -54,6 +54,10 @@ builder.AddAzureCosmosClient("cosmosdb",
     {
         options.ConnectionMode = ConnectionMode.Gateway;
         options.RequestTimeout = TimeSpan.FromSeconds(60);
+        options.SerializerOptions = new CosmosSerializationOptions
+        {
+            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase,
+        };
     });
 
 // Register search index and embedding services (Infrastructure implementations of Domain interfaces)

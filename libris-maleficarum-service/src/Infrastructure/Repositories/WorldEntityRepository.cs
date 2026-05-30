@@ -5,15 +5,22 @@ using LibrisMaleficarum.Domain.Exceptions;
 using LibrisMaleficarum.Domain.Interfaces.Repositories;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Domain.ValueObjects;
-using LibrisMaleficarum.Infrastructure.Extensions;
 using LibrisMaleficarum.Infrastructure.Persistence;
+using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
 
 /// <summary>
-/// Repository implementation for WorldEntity using EF Core and Cosmos DB.
+/// Repository implementation for WorldEntity using Cosmos SDK stream operations.
 /// </summary>
 public class WorldEntityRepository : IWorldEntityRepository
 {
+    private const string WorldEntityDiscriminator = "WorldEntity";
+    private const string WorldEntitiesContainerName = "WorldEntities";
+
     private readonly ApplicationDbContext _context;
     private readonly IUserContextService _userContextService;
     private readonly IWorldRepository _worldRepository;
@@ -41,49 +48,17 @@ public class WorldEntityRepository : IWorldEntityRepository
     /// <inheritdoc/>
     public async Task<WorldEntity?> GetByIdAsync(Guid worldId, Guid entityId, CancellationToken cancellationToken = default)
     {
-        // Verify world access authorization
-        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
-        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
-
-        if (world == null)
-        {
-            throw new WorldNotFoundException(worldId);
-        }
-
-        if (world.OwnerId != currentUserId)
-        {
-            throw new UnauthorizedWorldAccessException(worldId, currentUserId);
-        }
-
-        // Query with partition key for efficiency
-        return await _context.WorldEntities
-            .WithPartitionKeyIfCosmos(_context, worldId)
-            .Where(e => e.Id == entityId && !e.IsDeleted)
-            .FirstOrDefaultAsync(cancellationToken);
+        await EnsureWorldAccessAsync(worldId, cancellationToken);
+        var lookup = await GetByIdInternalAsync(worldId, entityId, includeDeleted: false, cancellationToken);
+        return lookup?.Entity;
     }
 
     /// <inheritdoc/>
     public async Task<WorldEntity?> GetByIdIncludingDeletedAsync(Guid worldId, Guid entityId, CancellationToken cancellationToken = default)
     {
-        // Verify world access authorization
-        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
-        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
-
-        if (world == null)
-        {
-            throw new WorldNotFoundException(worldId);
-        }
-
-        if (world.OwnerId != currentUserId)
-        {
-            throw new UnauthorizedWorldAccessException(worldId, currentUserId);
-        }
-
-        // Query with partition key for efficiency, INCLUDE soft-deleted entities
-        return await _context.WorldEntities
-            .WithPartitionKeyIfCosmos(_context, worldId)
-            .Where(e => e.Id == entityId)
-            .FirstOrDefaultAsync(cancellationToken);
+        await EnsureWorldAccessAsync(worldId, cancellationToken);
+        var lookup = await GetByIdInternalAsync(worldId, entityId, includeDeleted: true, cancellationToken);
+        return lookup?.Entity;
     }
 
     /// <inheritdoc/>
@@ -96,74 +71,72 @@ public class WorldEntityRepository : IWorldEntityRepository
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
-        // Verify world access authorization
-        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
-        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+        await EnsureWorldAccessAsync(worldId, cancellationToken);
 
-        if (world == null)
-        {
-            throw new WorldNotFoundException(worldId);
-        }
-
-        if (world.OwnerId != currentUserId)
-        {
-            throw new UnauthorizedWorldAccessException(worldId, currentUserId);
-        }
-
-        // Clamp limit to valid range
         limit = Math.Clamp(limit, 1, 200);
+        var take = limit + 1;
 
-        // Start with partition-scoped query and filters
-        var query = _context.WorldEntities
-            .WithPartitionKeyIfCosmos(_context, worldId)
-            .Where(e => !e.IsDeleted);
+        var sqlBuilder = new StringBuilder(
+            "SELECT TOP @take * FROM c WHERE c._type = @discriminator AND c.worldId = @worldId AND c.isDeleted = false");
 
-        // Apply parentId filter
-        // If parentId is provided (not Guid.Empty), filter by explicit parentId
-        // If parentId is null (default), filter for root entities (ParentId == null)
-        // Note: To get ALL entities regardless of hierarchy, pass Guid.Empty as parentId
+        var parameters = new Dictionary<string, object?>
+        {
+            ["@take"] = take,
+            ["@discriminator"] = WorldEntityDiscriminator,
+            ["@worldId"] = worldId.ToString("D"),
+        };
+
         if (parentId != Guid.Empty)
         {
-            query = query.Where(e => e.ParentId == parentId);
-        }
-
-        // Apply cursor pagination if provided
-        if (!string.IsNullOrWhiteSpace(cursor) && DateTime.TryParse(cursor, null, System.Globalization.DateTimeStyles.RoundtripKind, out var cursorDate))
-        {
-            query = query.Where(e => e.CreatedDate > cursorDate);
-        }
-
-        // Apply entityType filter
-        if (entityType.HasValue)
-        {
-            query = query.Where(e => e.EntityType == entityType.Value);
-        }
-
-        // Apply tags filter (case-sensitive partial match)
-        // Note: Cosmos DB LINQ provider does not support string case conversion methods like ToLowerInvariant()
-        // For case-insensitive search, tags should be stored in lowercase when saving
-        if (tags != null && tags.Any())
-        {
-            foreach (var tag in tags)
+            if (parentId is null)
             {
-                query = query.Where(e => e.Tags.Any(t => t.Contains(tag)));
+                sqlBuilder.Append(" AND (NOT IS_DEFINED(c.parentId) OR IS_NULL(c.parentId))");
+            }
+            else
+            {
+                sqlBuilder.Append(" AND c.parentId = @parentId");
+                parameters["@parentId"] = parentId.Value.ToString("D");
             }
         }
 
-        // Apply ordering AFTER all filters
-        var orderedQuery = query.OrderBy(e => e.CreatedDate).ThenBy(e => e.Id);
+        if (!string.IsNullOrWhiteSpace(cursor) && DateTime.TryParse(cursor, out _))
+        {
+            sqlBuilder.Append(" AND c.createdAt > @cursor");
+            parameters["@cursor"] = cursor;
+        }
 
-        // Fetch limit + 1 to determine if there are more pages
-        var entities = await orderedQuery
-            .Take(limit + 1)
-            .ToListAsync(cancellationToken);
+        if (entityType.HasValue)
+        {
+            sqlBuilder.Append(" AND c.entityType = @entityType");
+            parameters["@entityType"] = entityType.Value.ToString();
+        }
+
+        if (tags is not null && tags.Count > 0)
+        {
+            for (var i = 0; i < tags.Count; i++)
+            {
+                var tagParameterName = $"@tag{i}";
+                sqlBuilder.Append($" AND EXISTS(SELECT VALUE t FROM t IN c.tags WHERE CONTAINS(t, {tagParameterName}, true))");
+                parameters[tagParameterName] = tags[i];
+            }
+        }
+
+        sqlBuilder.Append(" ORDER BY c.createdAt, c.id");
+        var query = new QueryDefinition(sqlBuilder.ToString());
+        foreach (var parameter in parameters)
+        {
+            query.WithParameter(parameter.Key, parameter.Value);
+        }
+
+        var documents = await ExecuteQueryAsync(query, worldId, cancellationToken);
+        var entities = documents.Select(ToDomainEntity).ToList();
 
         string? nextCursor = null;
         if (entities.Count > limit)
         {
-            var lastEntity = entities[limit - 1];
+            var pageBoundary = entities[limit - 1];
             entities.RemoveAt(limit);
-            nextCursor = lastEntity.CreatedDate.ToString("O"); // ISO 8601 format
+            nextCursor = pageBoundary.CreatedAt.ToString("O");
         }
 
         return (entities, nextCursor);
@@ -172,30 +145,15 @@ public class WorldEntityRepository : IWorldEntityRepository
     /// <inheritdoc/>
     public async Task<IEnumerable<WorldEntity>> GetChildrenAsync(Guid worldId, Guid parentId, CancellationToken cancellationToken = default)
     {
-        // Verify world access authorization
-        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
-        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
-
-        if (world == null)
-        {
-            throw new WorldNotFoundException(worldId);
-        }
-
-        if (world.OwnerId != currentUserId)
-        {
-            throw new UnauthorizedWorldAccessException(worldId, currentUserId);
-        }
-
-        // Query children within partition
-        return await _context.WorldEntities
-            .WithPartitionKeyIfCosmos(_context, worldId)
-            .Where(e => e.ParentId == parentId && !e.IsDeleted)
-            .ToListAsync(cancellationToken);
+        await EnsureWorldAccessAsync(worldId, cancellationToken);
+        return await GetChildrenInternalAsync(worldId, parentId, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<WorldEntity>> GetDescendantsAsync(Guid entityId, Guid worldId, CancellationToken cancellationToken = default)
     {
+        await EnsureWorldAccessAsync(worldId, cancellationToken);
+
         var descendants = new List<WorldEntity>();
         var queue = new Queue<Guid>();
         queue.Enqueue(entityId);
@@ -203,17 +161,12 @@ public class WorldEntityRepository : IWorldEntityRepository
         while (queue.Count > 0)
         {
             var currentId = queue.Dequeue();
-
-            // Get all non-deleted children of current entity
-            var children = await _context.WorldEntities
-                .WithPartitionKeyIfCosmos(_context, worldId)
-                .Where(e => e.ParentId == currentId && !e.IsDeleted)
-                .ToListAsync(cancellationToken);
+            var children = await GetChildrenInternalAsync(worldId, currentId, cancellationToken);
 
             foreach (var child in children)
             {
                 descendants.Add(child);
-                queue.Enqueue(child.Id); // Add children to queue for recursive traversal
+                queue.Enqueue(child.Id);
             }
         }
 
@@ -223,40 +176,26 @@ public class WorldEntityRepository : IWorldEntityRepository
     /// <inheritdoc/>
     public async Task<WorldEntity> CreateAsync(WorldEntity entity, CancellationToken cancellationToken = default)
     {
-        if (entity == null)
-        {
-            throw new ArgumentNullException(nameof(entity));
-        }
+        ArgumentNullException.ThrowIfNull(entity);
 
-        // Verify world exists and user owns it
-        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
-        var world = await _worldRepository.GetByIdAsync(entity.WorldId, cancellationToken);
+        var currentUserId = await EnsureWorldAccessAsync(entity.WorldId, cancellationToken);
 
-        if (world == null)
-        {
-            throw new WorldNotFoundException(entity.WorldId);
-        }
-
-        if (world.OwnerId != currentUserId)
-        {
-            throw new UnauthorizedWorldAccessException(entity.WorldId, currentUserId);
-        }
-
-        // Verify parent entity exists if ParentId is specified
         if (entity.ParentId.HasValue)
         {
-            var parent = await GetByIdAsync(entity.WorldId, entity.ParentId.Value, cancellationToken);
-            if (parent == null)
+            var parentLookup = await GetByIdInternalAsync(entity.WorldId, entity.ParentId.Value, includeDeleted: false, cancellationToken);
+            if (parentLookup is null)
             {
-                throw new EntityNotFoundException(entity.WorldId, entity.ParentId.Value,
+                throw new EntityNotFoundException(
+                    entity.WorldId,
+                    entity.ParentId.Value,
                     $"Parent entity with ID '{entity.ParentId.Value}' not found.");
             }
 
-            // Update parent's HasChildren flag if it wasn't set
-            if (!parent.HasChildren)
+            if (!parentLookup.Entity.HasChildren)
             {
-                parent.SetHasChildren(true);
-                // Parent is tracked, so this change will be persisted on SaveChangesAsync
+                parentLookup.Entity.SetHasChildren(true);
+                parentLookup.Entity.UpdateModifiedBy(currentUserId);
+                await ReplaceItemAsync(parentLookup.Entity, parentLookup.ETag, cancellationToken);
             }
         }
 
@@ -271,12 +210,24 @@ public class WorldEntityRepository : IWorldEntityRepository
 
         try
         {
-            await _context.WorldEntities.AddAsync(entity, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            var container = GetWorldEntitiesContainer();
+            using var content = CreateDocumentContent(entity);
+            using var response = await container.CreateItemStreamAsync(
+                content,
+                new PartitionKey(entity.WorldId.ToString("D")),
+                cancellationToken: cancellationToken);
 
-            // Record metric
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new CosmosException(
+                    $"Failed to create world entity. Status code: {response.StatusCode}",
+                    response.StatusCode,
+                    (int)response.StatusCode,
+                    response.Headers.ActivityId,
+                    response.Headers.RequestCharge);
+            }
+
             _telemetryService.RecordEntityCreated(entity.EntityType.ToString());
-
             return entity;
         }
         finally
@@ -288,79 +239,59 @@ public class WorldEntityRepository : IWorldEntityRepository
     /// <inheritdoc/>
     public async Task<WorldEntity> UpdateAsync(WorldEntity entity, string? etag = null, CancellationToken cancellationToken = default)
     {
-        if (entity == null)
-        {
-            throw new ArgumentNullException(nameof(entity));
-        }
+        ArgumentNullException.ThrowIfNull(entity);
 
-        // Retrieve existing entity for authorization and ETag validation
-        var existingEntity = await GetByIdAsync(entity.WorldId, entity.Id, cancellationToken);
-        if (existingEntity == null)
+        await EnsureWorldAccessAsync(entity.WorldId, cancellationToken);
+
+        var existingLookup = await GetByIdInternalAsync(entity.WorldId, entity.Id, includeDeleted: false, cancellationToken);
+        if (existingLookup is null)
         {
             throw new EntityNotFoundException(entity.WorldId, entity.Id);
         }
 
-        // Validate ETag if provided
-        if (!string.IsNullOrWhiteSpace(etag))
+        if (!string.IsNullOrWhiteSpace(etag) && !string.Equals(existingLookup.ETag, etag, StringComparison.Ordinal))
         {
-            var entry = _context.Entry(existingEntity);
-            var currentETag = entry.Property("_etag").CurrentValue?.ToString();
-
-            if (currentETag != etag)
-            {
-                throw new InvalidOperationException(
-                    $"ETag mismatch: Expected '{etag}' but current is '{currentETag}'. The entity may have been modified by another request.");
-            }
+            throw new InvalidOperationException(
+                $"ETag mismatch: Expected '{etag}' but current is '{existingLookup.ETag}'. The entity may have been modified by another request.");
         }
 
-        // Apply changes to the tracked entity
-        var entryEntity = _context.Entry(existingEntity);
-        entryEntity.CurrentValues.SetValues(entity);
-
-        // Detect ParentId change using OriginalValues
-        var oldParentId = entryEntity.OriginalValues.GetValue<Guid?>("ParentId");
+        var oldParentId = existingLookup.Entity.ParentId;
         var newParentId = entity.ParentId;
 
-        // Check for circular reference if ParentId is being changed
         if (newParentId.HasValue && newParentId != oldParentId)
         {
             await ValidateNoCircularReferenceAsync(entity.WorldId, entity.Id, newParentId.Value, cancellationToken);
         }
 
-        // Handle Hierarchy updates for HasChildren flag
         if (oldParentId != newParentId)
         {
-            // 1. Handle New Parent (increment children)
             if (newParentId.HasValue)
             {
-                var newParent = await GetByIdAsync(entity.WorldId, newParentId.Value, cancellationToken);
-                if (newParent != null && !newParent.HasChildren)
+                var newParentLookup = await GetByIdInternalAsync(entity.WorldId, newParentId.Value, includeDeleted: false, cancellationToken);
+                if (newParentLookup != null && !newParentLookup.Entity.HasChildren)
                 {
-                    newParent.SetHasChildren(true);
+                    newParentLookup.Entity.SetHasChildren(true);
+                    await ReplaceItemAsync(newParentLookup.Entity, newParentLookup.ETag, cancellationToken);
                 }
             }
 
-            // 2. Handle Old Parent (decrement children/check empty)
             if (oldParentId.HasValue)
             {
-                var oldParent = await GetByIdAsync(entity.WorldId, oldParentId.Value, cancellationToken);
-                if (oldParent != null)
+                var oldParentLookup = await GetByIdInternalAsync(entity.WorldId, oldParentId.Value, includeDeleted: false, cancellationToken);
+                if (oldParentLookup != null)
                 {
-                    var remainingChildrenAny = await _context.WorldEntities
-                        .WithPartitionKeyIfCosmos(_context, entity.WorldId)
-                        .AnyAsync(e => e.ParentId == oldParentId.Value && !e.IsDeleted && e.Id != entity.Id, cancellationToken);
-
-                    if (!remainingChildrenAny && oldParent.HasChildren)
+                    var remainingChildrenAny = await AnyChildrenExceptAsync(entity.WorldId, oldParentId.Value, entity.Id, cancellationToken);
+                    if (!remainingChildrenAny && oldParentLookup.Entity.HasChildren)
                     {
-                        oldParent.SetHasChildren(false);
+                        oldParentLookup.Entity.SetHasChildren(false);
+                        await ReplaceItemAsync(oldParentLookup.Entity, oldParentLookup.ETag, cancellationToken);
                     }
                 }
             }
         }
 
-        await _context.SaveChangesAsync(cancellationToken);
-
-        return existingEntity;
+        await ReplaceItemAsync(entity, etag, cancellationToken);
+        return entity;
     }
 
     /// <inheritdoc/>
@@ -371,24 +302,27 @@ public class WorldEntityRepository : IWorldEntityRepository
             throw new ArgumentException("DeletedBy is required.", nameof(deletedBy));
         }
 
-        var entity = await GetByIdAsync(worldId, entityId, cancellationToken);
-        if (entity == null)
+        await EnsureWorldAccessAsync(worldId, cancellationToken);
+
+        var entityLookup = await GetByIdInternalAsync(worldId, entityId, includeDeleted: false, cancellationToken);
+        if (entityLookup is null)
         {
             throw new EntityNotFoundException(worldId, entityId);
         }
 
-        // Check if entity has children
-        var children = await GetChildrenAsync(worldId, entityId, cancellationToken);
+        var entity = entityLookup.Entity;
+
+        var children = await GetChildrenInternalAsync(worldId, entityId, cancellationToken);
         var childrenList = children.ToList();
 
-        if (childrenList.Any() && !cascade)
+        if (childrenList.Count > 0 && !cascade)
         {
             throw new InvalidOperationException(
                 $"Cannot delete entity '{entityId}' because it has {childrenList.Count} child entities. " +
                 "Use cascade=true to delete all descendants.");
         }
 
-        int deletedCount = 0;
+        var deletedCount = 0;
 
         using var activity = _telemetryService.StartActivity("DeleteWorldEntity", new Dictionary<string, object>
         {
@@ -402,8 +336,7 @@ public class WorldEntityRepository : IWorldEntityRepository
 
         try
         {
-            // Recursively delete children if cascade is enabled
-            if (cascade && childrenList.Any())
+            if (cascade && childrenList.Count > 0)
             {
                 foreach (var child in childrenList)
                 {
@@ -411,38 +344,24 @@ public class WorldEntityRepository : IWorldEntityRepository
                 }
             }
 
-            // Update parent's HasChildren flag if this was the last child (BEFORE soft-deleting this entity)
             if (entity.ParentId.HasValue)
             {
-                // Materialize parent ID as local variable
-                var parentIdValue = entity.ParentId.Value;
-
-                var parent = await GetByIdAsync(worldId, parentIdValue, cancellationToken);
-                if (parent != null)
+                var parentLookup = await GetByIdInternalAsync(worldId, entity.ParentId.Value, includeDeleted: false, cancellationToken);
+                if (parentLookup != null)
                 {
-                    // Load all children and check in-memory to avoid Cosmos DB LINQ translation issues
-                    var siblings = await _context.WorldEntities
-                        .WithPartitionKeyIfCosmos(_context, worldId)
-                        .Where(e => e.ParentId == parentIdValue && !e.IsDeleted)
-                        .ToListAsync(cancellationToken);
-
-                    // Check if this is the only remaining child (excluding self)
-                    var remainingChildrenExist = siblings.Any(s => s.Id != entityId);
-
-                    if (!remainingChildrenExist && parent.HasChildren)
+                    var remainingChildrenExist = await AnyChildrenExceptAsync(worldId, entity.ParentId.Value, entityId, cancellationToken);
+                    if (!remainingChildrenExist && parentLookup.Entity.HasChildren)
                     {
-                        parent.SetHasChildren(false);
+                        parentLookup.Entity.SetHasChildren(false);
+                        await ReplaceItemAsync(parentLookup.Entity, parentLookup.ETag, cancellationToken);
                     }
                 }
             }
 
-            // Soft delete the entity (AFTER updating parent)
             entity.SoftDelete(deletedBy);
+            await ReplaceItemAsync(entity, entityLookup.ETag, cancellationToken);
             deletedCount++;
 
-            await _context.SaveChangesAsync(cancellationToken);
-
-            // Record metric
             _telemetryService.RecordEntityDeleted(entity.EntityType.ToString());
             activity?.AddTag("deleted_count", deletedCount);
 
@@ -457,32 +376,20 @@ public class WorldEntityRepository : IWorldEntityRepository
     /// <inheritdoc/>
     public async Task<int> CountChildrenAsync(Guid worldId, Guid entityId, CancellationToken cancellationToken = default)
     {
-        // Verify world access authorization
-        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
-        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+        await EnsureWorldAccessAsync(worldId, cancellationToken);
 
-        if (world == null)
-        {
-            throw new WorldNotFoundException(worldId);
-        }
+        var query = new QueryDefinition(
+            "SELECT VALUE COUNT(1) FROM c WHERE c._type = @discriminator AND c.worldId = @worldId AND c.parentId = @parentId AND c.isDeleted = false")
+            .WithParameter("@discriminator", WorldEntityDiscriminator)
+            .WithParameter("@worldId", worldId.ToString("D"))
+            .WithParameter("@parentId", entityId.ToString("D"));
 
-        if (world.OwnerId != currentUserId)
-        {
-            throw new UnauthorizedWorldAccessException(worldId, currentUserId);
-        }
-
-        return await _context.WorldEntities
-            .WithPartitionKeyIfCosmos(_context, worldId)
-            .Where(e => e.ParentId == entityId && !e.IsDeleted)
-            .CountAsync(cancellationToken);
+        var countValues = await ExecuteScalarQueryAsync(query, worldId, cancellationToken);
+        return countValues.FirstOrDefault();
     }
 
-    /// <summary>
-    /// Validates that setting a parent ID will not create a circular reference.
-    /// </summary>
     private async Task ValidateNoCircularReferenceAsync(Guid worldId, Guid entityId, Guid newParentId, CancellationToken cancellationToken)
     {
-        // Traverse up the parent chain to ensure we don't encounter the entity itself
         var currentParentId = newParentId;
         var visited = new HashSet<Guid> { entityId };
 
@@ -496,17 +403,469 @@ public class WorldEntityRepository : IWorldEntityRepository
 
             visited.Add(currentParentId);
 
-            var parent = await _context.WorldEntities
-                .WithPartitionKeyIfCosmos(_context, worldId)
-                .Where(e => e.Id == currentParentId && !e.IsDeleted)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (parent == null)
+            var parent = await GetByIdInternalAsync(worldId, currentParentId, includeDeleted: false, cancellationToken);
+            if (parent is null)
             {
                 break;
             }
 
-            currentParentId = parent.ParentId ?? Guid.Empty;
+            currentParentId = parent.Entity.ParentId ?? Guid.Empty;
         }
     }
+
+    private async Task<string> EnsureWorldAccessAsync(Guid worldId, CancellationToken cancellationToken)
+    {
+        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
+        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+
+        if (world == null)
+        {
+            throw new WorldNotFoundException(worldId);
+        }
+
+        if (!string.Equals(world.OwnerId, currentUserId, StringComparison.Ordinal))
+        {
+            throw new UnauthorizedWorldAccessException(worldId, currentUserId);
+        }
+
+        return currentUserId;
+    }
+
+    private Container GetWorldEntitiesContainer()
+    {
+        var client = _context.Database.GetCosmosClient();
+        var databaseId = _context.Database.GetCosmosDatabaseId();
+        return client.GetContainer(databaseId, WorldEntitiesContainerName);
+    }
+
+    private async Task<WorldEntityLookupResult?> GetByIdInternalAsync(
+        Guid worldId,
+        Guid entityId,
+        bool includeDeleted,
+        CancellationToken cancellationToken)
+    {
+        var container = GetWorldEntitiesContainer();
+
+        try
+        {
+            using var response = await container.ReadItemStreamAsync(
+                entityId.ToString("D"),
+                new PartitionKey(worldId.ToString("D")),
+                cancellationToken: cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+
+                throw new CosmosException(
+                    $"Failed to read world entity. Status code: {response.StatusCode}",
+                    response.StatusCode,
+                    (int)response.StatusCode,
+                    response.Headers.ActivityId,
+                    response.Headers.RequestCharge);
+            }
+
+            using var document = await JsonDocument.ParseAsync(response.Content, cancellationToken: cancellationToken);
+            var root = document.RootElement;
+
+            if (!root.TryGetProperty("_type", out var typeProperty) ||
+                !string.Equals(typeProperty.GetString(), WorldEntityDiscriminator, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            var entity = ToDomainEntity(root);
+            if (!includeDeleted && entity.IsDeleted)
+            {
+                return null;
+            }
+
+            return new WorldEntityLookupResult(entity, response.Headers.ETag);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+    }
+
+    private async Task<List<JsonElement>> ExecuteQueryAsync(QueryDefinition query, Guid worldId, CancellationToken cancellationToken)
+    {
+        var container = GetWorldEntitiesContainer();
+        using var iterator = container.GetItemQueryStreamIterator(
+            query,
+            requestOptions: new QueryRequestOptions
+            {
+                PartitionKey = new PartitionKey(worldId.ToString("D")),
+            });
+
+        var documents = new List<JsonElement>();
+
+        while (iterator.HasMoreResults)
+        {
+            using var response = await iterator.ReadNextAsync(cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new CosmosException(
+                    $"Failed to execute query. Status code: {response.StatusCode}",
+                    response.StatusCode,
+                    (int)response.StatusCode,
+                    response.Headers.ActivityId,
+                    response.Headers.RequestCharge);
+            }
+
+            using var json = await JsonDocument.ParseAsync(response.Content, cancellationToken: cancellationToken);
+            if (!json.RootElement.TryGetProperty("Documents", out var docsElement) || docsElement.ValueKind != JsonValueKind.Array)
+            {
+                continue;
+            }
+
+            documents.AddRange(docsElement.EnumerateArray().Select(doc => doc.Clone()));
+        }
+
+        return documents;
+    }
+
+    private async Task<List<int>> ExecuteScalarQueryAsync(QueryDefinition query, Guid worldId, CancellationToken cancellationToken)
+    {
+        var container = GetWorldEntitiesContainer();
+        using var iterator = container.GetItemQueryStreamIterator(
+            query,
+            requestOptions: new QueryRequestOptions
+            {
+                PartitionKey = new PartitionKey(worldId.ToString("D")),
+            });
+
+        var values = new List<int>();
+
+        while (iterator.HasMoreResults)
+        {
+            using var response = await iterator.ReadNextAsync(cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new CosmosException(
+                    $"Failed to execute scalar query. Status code: {response.StatusCode}",
+                    response.StatusCode,
+                    (int)response.StatusCode,
+                    response.Headers.ActivityId,
+                    response.Headers.RequestCharge);
+            }
+
+            using var json = await JsonDocument.ParseAsync(response.Content, cancellationToken: cancellationToken);
+            if (!json.RootElement.TryGetProperty("Documents", out var docsElement) || docsElement.ValueKind != JsonValueKind.Array)
+            {
+                continue;
+            }
+
+            foreach (var value in docsElement.EnumerateArray())
+            {
+                if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var intValue))
+                {
+                    values.Add(intValue);
+                }
+            }
+        }
+
+        return values;
+    }
+
+    private async Task<List<WorldEntity>> GetChildrenInternalAsync(Guid worldId, Guid parentId, CancellationToken cancellationToken)
+    {
+        var query = new QueryDefinition(
+            "SELECT * FROM c WHERE c._type = @discriminator AND c.worldId = @worldId AND c.parentId = @parentId AND c.isDeleted = false")
+            .WithParameter("@discriminator", WorldEntityDiscriminator)
+            .WithParameter("@worldId", worldId.ToString("D"))
+            .WithParameter("@parentId", parentId.ToString("D"));
+
+        var documents = await ExecuteQueryAsync(query, worldId, cancellationToken);
+        return documents.Select(ToDomainEntity).ToList();
+    }
+
+    private async Task<bool> AnyChildrenExceptAsync(Guid worldId, Guid parentId, Guid exceptEntityId, CancellationToken cancellationToken)
+    {
+        var query = new QueryDefinition(
+            "SELECT TOP 1 VALUE c.id FROM c WHERE c._type = @discriminator AND c.worldId = @worldId AND c.parentId = @parentId AND c.isDeleted = false AND c.id != @exceptId")
+            .WithParameter("@discriminator", WorldEntityDiscriminator)
+            .WithParameter("@worldId", worldId.ToString("D"))
+            .WithParameter("@parentId", parentId.ToString("D"))
+            .WithParameter("@exceptId", exceptEntityId.ToString("D"));
+
+        var container = GetWorldEntitiesContainer();
+        using var iterator = container.GetItemQueryStreamIterator(
+            query,
+            requestOptions: new QueryRequestOptions
+            {
+                PartitionKey = new PartitionKey(worldId.ToString("D")),
+            });
+
+        while (iterator.HasMoreResults)
+        {
+            using var response = await iterator.ReadNextAsync(cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new CosmosException(
+                    $"Failed to query sibling entities. Status code: {response.StatusCode}",
+                    response.StatusCode,
+                    (int)response.StatusCode,
+                    response.Headers.ActivityId,
+                    response.Headers.RequestCharge);
+            }
+
+            using var json = await JsonDocument.ParseAsync(response.Content, cancellationToken: cancellationToken);
+            if (!json.RootElement.TryGetProperty("Documents", out var docsElement) || docsElement.ValueKind != JsonValueKind.Array)
+            {
+                continue;
+            }
+
+            if (docsElement.GetArrayLength() > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private async Task ReplaceItemAsync(WorldEntity entity, string? etag, CancellationToken cancellationToken)
+    {
+        var container = GetWorldEntitiesContainer();
+        var requestOptions = string.IsNullOrWhiteSpace(etag)
+            ? null
+            : new ItemRequestOptions { IfMatchEtag = etag };
+
+        using var content = CreateDocumentContent(entity);
+        using var response = await container.ReplaceItemStreamAsync(
+            content,
+            entity.Id.ToString("D"),
+            new PartitionKey(entity.WorldId.ToString("D")),
+            requestOptions,
+            cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new CosmosException(
+                $"Failed to replace world entity. Status code: {response.StatusCode}",
+                response.StatusCode,
+                (int)response.StatusCode,
+                response.Headers.ActivityId,
+                response.Headers.RequestCharge);
+        }
+    }
+
+    private static MemoryStream CreateDocumentContent(WorldEntity entity)
+    {
+        var payload = new Dictionary<string, object?>
+        {
+            ["id"] = entity.Id.ToString("D"),
+            ["worldId"] = entity.WorldId.ToString("D"),
+            ["parentId"] = entity.ParentId?.ToString("D"),
+            ["entityType"] = entity.EntityType.ToString(),
+            ["schemaId"] = entity.SchemaId,
+            ["name"] = entity.Name,
+            ["description"] = entity.Description,
+            ["tags"] = entity.Tags,
+            ["path"] = entity.Path.Select(pathId => pathId.ToString("D")).ToList(),
+            ["depth"] = entity.Depth,
+            ["hasChildren"] = entity.HasChildren,
+            ["ownerId"] = entity.OwnerId,
+            ["properties"] = entity.Properties,
+            ["systemProperties"] = entity.SystemProperties,
+            ["createdAt"] = entity.CreatedAt,
+            ["updatedAt"] = entity.UpdatedAt,
+            ["isDeleted"] = entity.IsDeleted,
+            ["deletedDate"] = entity.DeletedDate,
+            ["deletedBy"] = entity.DeletedBy,
+            ["createdBy"] = entity.CreatedBy,
+            ["modifiedBy"] = entity.ModifiedBy,
+            ["schemaVersion"] = entity.SchemaVersion,
+            ["ttl"] = entity.Ttl,
+            ["_type"] = WorldEntityDiscriminator,
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        return new MemoryStream(Encoding.UTF8.GetBytes(json));
+    }
+
+    private static WorldEntity ToDomainEntity(JsonElement document)
+    {
+        var worldId = Guid.Parse(document.GetProperty("worldId").GetString()!);
+        var parentId = document.TryGetProperty("parentId", out var parentIdElement) &&
+                       parentIdElement.ValueKind == JsonValueKind.String &&
+                       Guid.TryParse(parentIdElement.GetString(), out var parsedParentId)
+            ? (Guid?)parsedParentId
+            : null;
+
+        var entityType = ParseEntityType(document.GetProperty("entityType"));
+        var name = document.GetProperty("name").GetString()!;
+        var ownerId = document.GetProperty("ownerId").GetString()!;
+        var schemaId = document.TryGetProperty("schemaId", out var schemaIdElement) && schemaIdElement.ValueKind == JsonValueKind.String
+            ? schemaIdElement.GetString()
+            : null;
+        var description = document.TryGetProperty("description", out var descriptionElement) && descriptionElement.ValueKind == JsonValueKind.String
+            ? descriptionElement.GetString()
+            : null;
+
+        var tags = ParseStringList(document, "tags");
+        var path = ParseGuidPath(document, "path");
+        var depth = document.TryGetProperty("depth", out var depthElement) && depthElement.TryGetInt32(out var parsedDepth)
+            ? parsedDepth
+            : 0;
+        var schemaVersion = document.TryGetProperty("schemaVersion", out var schemaVersionElement) && schemaVersionElement.TryGetInt32(out var parsedSchemaVersion)
+            ? parsedSchemaVersion
+            : 1;
+
+        var properties = document.TryGetProperty("properties", out var propertiesElement)
+            ? ParsePropertyBag(propertiesElement)
+            : null;
+        var systemProperties = document.TryGetProperty("systemProperties", out var systemPropertiesElement)
+            ? ParsePropertyBag(systemPropertiesElement)
+            : null;
+
+        var entity = WorldEntity.Create(
+            worldId,
+            entityType,
+            name,
+            ownerId,
+            description,
+            parentId,
+            tags,
+            schemaId,
+            properties,
+            systemProperties,
+            parentPath: parentId.HasValue ? path.Take(Math.Max(path.Count - 1, 0)).ToList() : null,
+            parentDepth: parentId.HasValue ? depth - 1 : -1,
+            schemaVersion: schemaVersion);
+
+        SetPrivateProperty(entity, nameof(WorldEntity.Id), Guid.Parse(document.GetProperty("id").GetString()!));
+        SetPrivateProperty(entity, nameof(WorldEntity.Path), path);
+        SetPrivateProperty(entity, nameof(WorldEntity.Depth), depth);
+        SetPrivateProperty(entity, nameof(WorldEntity.HasChildren), document.TryGetProperty("hasChildren", out var hasChildrenElement) && hasChildrenElement.GetBoolean());
+        SetPrivateProperty(entity, nameof(WorldEntity.CreatedAt), ParseDateTime(document, "createdAt"));
+        SetPrivateProperty(entity, nameof(WorldEntity.UpdatedAt), ParseDateTime(document, "updatedAt"));
+        SetPrivateProperty(entity, nameof(WorldEntity.IsDeleted), document.TryGetProperty("isDeleted", out var isDeletedElement) && isDeletedElement.GetBoolean());
+        SetPrivateProperty(entity, nameof(WorldEntity.DeletedDate), ParseNullableDateTime(document, "deletedDate"));
+        SetPrivateProperty(entity, nameof(WorldEntity.DeletedBy), ParseNullableString(document, "deletedBy"));
+        SetPrivateProperty(entity, nameof(WorldEntity.CreatedBy), ParseNullableString(document, "createdBy"));
+        SetPrivateProperty(entity, nameof(WorldEntity.ModifiedBy), ParseNullableString(document, "modifiedBy"));
+        SetPrivateProperty(entity, nameof(WorldEntity.Ttl), ParseNullableInt(document, "ttl"));
+
+        return entity;
+    }
+
+    private static EntityType ParseEntityType(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.String)
+        {
+            var value = element.GetString();
+            if (Enum.TryParse<EntityType>(value, ignoreCase: true, out var parsedEnum))
+            {
+                return parsedEnum;
+            }
+        }
+
+        if (element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var enumValue))
+        {
+            return (EntityType)enumValue;
+        }
+
+        throw new InvalidOperationException($"Invalid EntityType value '{element.GetRawText()}'.");
+    }
+
+    private static List<string> ParseStringList(JsonElement document, string propertyName)
+    {
+        if (!document.TryGetProperty(propertyName, out var element) || element.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        return element.EnumerateArray()
+            .Where(item => item.ValueKind == JsonValueKind.String)
+            .Select(item => item.GetString()!)
+            .ToList();
+    }
+
+    private static List<Guid> ParseGuidPath(JsonElement document, string propertyName)
+    {
+        if (!document.TryGetProperty(propertyName, out var element) || element.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        var result = new List<Guid>();
+        foreach (var item in element.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.String && Guid.TryParse(item.GetString(), out var parsed))
+            {
+                result.Add(parsed);
+            }
+        }
+
+        return result;
+    }
+
+    private static Dictionary<string, object>? ParsePropertyBag(JsonElement element)
+    {
+        if (element.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        {
+            return null;
+        }
+
+        if (element.ValueKind == JsonValueKind.String)
+        {
+            var raw = element.GetString();
+            return string.IsNullOrWhiteSpace(raw)
+                ? null
+                : JsonSerializer.Deserialize<Dictionary<string, object>>(raw);
+        }
+
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, object>>(element.GetRawText());
+        }
+
+        throw new InvalidOperationException("Expected property bag to be either JSON object, JSON string, or null.");
+    }
+
+    private static DateTime ParseDateTime(JsonElement document, string propertyName)
+    {
+        return document.TryGetProperty(propertyName, out var element) && element.ValueKind == JsonValueKind.String
+            ? DateTime.Parse(element.GetString()!, null, System.Globalization.DateTimeStyles.RoundtripKind)
+            : DateTime.UtcNow;
+    }
+
+    private static DateTime? ParseNullableDateTime(JsonElement document, string propertyName)
+    {
+        if (!document.TryGetProperty(propertyName, out var element) || element.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        return DateTime.Parse(element.GetString()!, null, System.Globalization.DateTimeStyles.RoundtripKind);
+    }
+
+    private static string? ParseNullableString(JsonElement document, string propertyName)
+    {
+        return document.TryGetProperty(propertyName, out var element) && element.ValueKind == JsonValueKind.String
+            ? element.GetString()
+            : null;
+    }
+
+    private static int? ParseNullableInt(JsonElement document, string propertyName)
+    {
+        return document.TryGetProperty(propertyName, out var element) && element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var value)
+            ? value
+            : null;
+    }
+
+    private static void SetPrivateProperty<T>(WorldEntity entity, string propertyName, T value)
+    {
+        var propertyInfo = typeof(WorldEntity).GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException($"Property '{propertyName}' not found on WorldEntity.");
+
+        propertyInfo.SetValue(entity, value);
+    }
+
+    private sealed record WorldEntityLookupResult(WorldEntity Entity, string? ETag);
 }

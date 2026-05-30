@@ -201,9 +201,10 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 
 ### Persistence source of truth
 
-- For any persistence or data-shape work (domain entities, API contracts, Cosmos mappings, import/export schemas, frontend entity types), always consult `docs/design/data_model.md` first.
+- For any persistence or data-shape work (domain entities, API contracts, repositories, data storage/Cosmos mappings, import/export schemas, frontend API client contracts, frontend entity types, frontend form data collection/editing flows), always consult `docs/design/data_model.md` first.
 - Treat `docs/design/data_model.md` as authoritative for persistence naming and field shapes.
 - If there is a conflict between implementation and docs, align implementation to `docs/design/data_model.md` unless the user explicitly directs otherwise.
+- Before finishing work in the scope above, explicitly verify final field names and shapes against `docs/design/data_model.md`.
 
 ## Azure integration
 

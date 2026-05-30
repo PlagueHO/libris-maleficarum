@@ -28,8 +28,8 @@ public class WorldTests
         world.OwnerId.Should().Be(ownerId);
         world.Name.Should().Be(name);
         world.Description.Should().Be(description);
-        world.CreatedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        world.ModifiedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        world.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        world.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         world.IsDeleted.Should().BeFalse();
     }
 
@@ -110,7 +110,7 @@ public class WorldTests
     {
         // Arrange
         var world = World.Create("test-owner-id", "Original Name", "Original Description");
-        var originalModifiedDate = world.ModifiedDate;
+        var originalUpdatedAt = world.UpdatedAt;
         Thread.Sleep(10); // Ensure time difference
 
         var newName = "Updated Name";
@@ -122,7 +122,7 @@ public class WorldTests
         // Assert
         world.Name.Should().Be(newName);
         world.Description.Should().Be(newDescription);
-        world.ModifiedDate.Should().BeAfter(originalModifiedDate);
+        world.UpdatedAt.Should().BeAfter(originalUpdatedAt);
     }
 
     [TestMethod]
@@ -145,7 +145,7 @@ public class WorldTests
     {
         // Arrange
         var world = World.Create("test-owner-id", "Test World", null);
-        var originalModifiedDate = world.ModifiedDate;
+        var originalUpdatedAt = world.UpdatedAt;
         Thread.Sleep(10); // Ensure time difference
 
         // Act
@@ -153,6 +153,6 @@ public class WorldTests
 
         // Assert
         world.IsDeleted.Should().BeTrue();
-        world.ModifiedDate.Should().BeAfter(originalModifiedDate);
+        world.UpdatedAt.Should().BeAfter(originalUpdatedAt);
     }
 }

@@ -67,11 +67,11 @@ public class WorldRepository : IWorldRepository
         // Apply cursor-based pagination if provided
         if (!string.IsNullOrEmpty(cursor) && DateTime.TryParse(cursor, null, System.Globalization.DateTimeStyles.RoundtripKind, out var cursorDate))
         {
-            query = query.Where(w => w.CreatedDate > cursorDate);
+            query = query.Where(w => w.CreatedAt > cursorDate);
         }
 
         // Apply ordering AFTER all filters
-        var orderedQuery = query.OrderBy(w => w.CreatedDate);
+        var orderedQuery = query.OrderBy(w => w.CreatedAt);
 
         // Fetch one extra item to determine if there are more results
         var worlds = await orderedQuery
@@ -84,7 +84,7 @@ public class WorldRepository : IWorldRepository
             // Remove the extra item and set the next cursor
             var lastItem = worlds[limit - 1];
             worlds.RemoveAt(limit);
-            nextCursor = lastItem.CreatedDate.ToString("O"); // ISO 8601 format
+            nextCursor = lastItem.CreatedAt.ToString("O"); // ISO 8601 format
         }
 
         return (worlds, nextCursor);

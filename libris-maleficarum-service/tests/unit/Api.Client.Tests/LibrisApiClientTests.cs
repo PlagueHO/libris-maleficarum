@@ -31,8 +31,8 @@ public class LibrisApiClientTests
             OwnerId = Guid.NewGuid().ToString(),
             Name = "Test World",
             Description = "A test world",
-            CreatedDate = DateTime.UtcNow,
-            ModifiedDate = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
 
         var envelope = new ApiResponse<WorldResponse> { Data = expectedWorld };
@@ -73,8 +73,8 @@ public class LibrisApiClientTests
             HasChildren = false,
             OwnerId = Guid.NewGuid().ToString(),
             Properties = new Dictionary<string, object> { ["level"] = 5 },
-            CreatedDate = DateTime.UtcNow,
-            ModifiedDate = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
             IsDeleted = false,
             SchemaVersion = 1
         };
@@ -190,8 +190,8 @@ public class LibrisApiClientTests
                 Depth = 0,
                 HasChildren = false,
                 OwnerId = Guid.NewGuid().ToString(),
-                CreatedDate = DateTime.UtcNow,
-                ModifiedDate = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
                 IsDeleted = false,
                 SchemaVersion = 1
             }

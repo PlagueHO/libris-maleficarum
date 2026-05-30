@@ -51,7 +51,7 @@ public class ApplicationDbContext : DbContext
 
         // Apply entity configurations
         modelBuilder.ApplyConfiguration(new Configurations.WorldConfiguration());
-        modelBuilder.ApplyConfiguration(new Configurations.WorldEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.WorldEntityConfiguration(isCosmosDb));
         modelBuilder.ApplyConfiguration(new Configurations.AssetConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.DeleteOperationConfiguration(isCosmosDb));
     }

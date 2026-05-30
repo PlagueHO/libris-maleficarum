@@ -4,6 +4,7 @@ using LibrisMaleficarum.Domain.ValueObjects;
 using LibrisMaleficarum.Infrastructure.Persistence;
 using LibrisMaleficarum.IntegrationTests.Shared;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 /// <summary>
 /// Basic API integration tests for WorldEntity Management endpoints.
@@ -233,6 +234,152 @@ public class WorldEntitiesApiIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound, "API should return 404 Not Found for non-existent entity");
+    }
+
+    [TestMethod]
+    public async Task CreateWorldEntity_WithPropertyBags_PreservesObjectPayloadShape()
+    {
+        // Arrange
+        var cancellationToken = TestContext!.CancellationTokenSource.Token;
+        using var httpClient = AppHostFixture.App!.CreateHttpClient("api");
+
+        var worldRequest = new { Name = "Test World for Payload Shape", Description = "World to test payload shape" };
+        using var worldResponse = await httpClient.PostAsJsonAsync("/api/v1/worlds", worldRequest, cancellationToken);
+        worldResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var worldId = worldResponse.Headers.Location!.Segments.Last();
+
+        var createRequest = new
+        {
+            Name = "Shape Test Region",
+            Description = "Validate payload shape",
+            EntityType = EntityType.GeographicRegion,
+            Properties = new
+            {
+                Climate = "Temperate",
+                Population = 100000,
+            },
+            SystemProperties = new
+            {
+                RuleSet = "DND5E",
+                ThreatLevel = "Medium",
+            },
+        };
+
+        // Act
+        using var createResponse = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", createRequest, cancellationToken);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var responseJson = await createResponse.Content.ReadAsStringAsync(cancellationToken);
+        using var document = JsonDocument.Parse(responseJson);
+        var data = document.RootElement.GetProperty("data");
+
+        // Assert
+        data.GetProperty("properties").ValueKind.Should().Be(JsonValueKind.Object);
+        var properties = data.GetProperty("properties");
+        GetPropertyIgnoreCase(properties, "Climate").GetString().Should().Be("Temperate");
+
+        data.GetProperty("systemProperties").ValueKind.Should().Be(JsonValueKind.Object);
+        var systemProperties = data.GetProperty("systemProperties");
+        GetPropertyIgnoreCase(systemProperties, "RuleSet").GetString().Should().Be("DND5E");
+
+        data.GetProperty("path").ValueKind.Should().Be(JsonValueKind.Array);
+
+        static JsonElement GetPropertyIgnoreCase(JsonElement element, string propertyName)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return property.Value;
+                }
+            }
+
+            throw new KeyNotFoundException($"Property '{propertyName}' was not found on JSON object.");
+        }
+    }
+
+    [TestMethod]
+    public async Task UpdateWorldEntity_WithPropertyBags_MergesWithExistingValues()
+    {
+        // Arrange
+        var cancellationToken = TestContext!.CancellationTokenSource.Token;
+        using var httpClient = AppHostFixture.App!.CreateHttpClient("api");
+
+        var worldRequest = new { Name = "Test World for Merge", Description = "World to test merge update" };
+        using var worldResponse = await httpClient.PostAsJsonAsync("/api/v1/worlds", worldRequest, cancellationToken);
+        worldResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var worldId = worldResponse.Headers.Location!.Segments.Last();
+
+        var createRequest = new
+        {
+            Name = "Entity Before Merge",
+            Description = "Initial entity",
+            EntityType = EntityType.Character,
+            Properties = new
+            {
+                Strength = 10,
+                Wisdom = 14,
+            },
+            SystemProperties = new
+            {
+                Source = "Import",
+                Checksum = "abc123",
+            },
+        };
+
+        using var createResponse = await httpClient.PostAsJsonAsync($"/api/v1/worlds/{worldId}/entities", createRequest, cancellationToken);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var entityId = createResponse.Headers.Location!.Segments.Last();
+
+        var updateRequest = new
+        {
+            Name = "Entity After Merge",
+            Description = "Updated entity",
+            EntityType = EntityType.Character,
+            Properties = new
+            {
+                Strength = 12,
+                Agility = 16,
+            },
+            SystemProperties = new
+            {
+                Source = "Manual",
+                Revision = 2,
+            },
+        };
+
+        // Act
+        using var updateResponse = await httpClient.PutAsJsonAsync($"/api/v1/worlds/{worldId}/entities/{entityId}", updateRequest, cancellationToken);
+
+        // Assert
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var responseJson = await updateResponse.Content.ReadAsStringAsync(cancellationToken);
+        using var document = JsonDocument.Parse(responseJson);
+        var data = document.RootElement.GetProperty("data");
+
+        var properties = data.GetProperty("properties");
+        GetPropertyIgnoreCase(properties, "Strength").GetInt32().Should().Be(12);
+        GetPropertyIgnoreCase(properties, "Wisdom").GetInt32().Should().Be(14);
+        GetPropertyIgnoreCase(properties, "Agility").GetInt32().Should().Be(16);
+
+        var systemProperties = data.GetProperty("systemProperties");
+        GetPropertyIgnoreCase(systemProperties, "Source").GetString().Should().Be("Manual");
+        GetPropertyIgnoreCase(systemProperties, "Checksum").GetString().Should().Be("abc123");
+        GetPropertyIgnoreCase(systemProperties, "Revision").GetInt32().Should().Be(2);
+
+        static JsonElement GetPropertyIgnoreCase(JsonElement element, string propertyName)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return property.Value;
+                }
+            }
+
+            throw new KeyNotFoundException($"Property '{propertyName}' was not found on JSON object.");
+        }
     }
 
     /// <summary>

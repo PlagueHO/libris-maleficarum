@@ -318,9 +318,7 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
       expect(capturedRequestBody).not.toBeNull();
       expect(capturedRequestBody!.properties).toBeDefined();
 
-      const parsedProperties = typeof capturedRequestBody!.properties === 'string'
-        ? JSON.parse(capturedRequestBody!.properties)
-        : capturedRequestBody!.properties;
+      const parsedProperties = capturedRequestBody!.properties;
       expect(parsedProperties).toEqual(
         expect.objectContaining({
           Climate: 'Tropical',

@@ -65,10 +65,10 @@ public sealed class AssetResponse
     /// <summary>
     /// Timestamp when the asset was created.
     /// </summary>
-    public required DateTime CreatedDate { get; init; }
+    public required DateTime CreatedAt { get; init; }
 
     /// <summary>
     /// Timestamp when the asset metadata was last modified.
     /// </summary>
-    public DateTime? ModifiedDate { get; init; }
+    public DateTime? UpdatedAt { get; init; }
 }

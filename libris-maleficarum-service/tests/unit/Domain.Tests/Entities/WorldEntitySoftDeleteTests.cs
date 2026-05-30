@@ -34,12 +34,12 @@ public class WorldEntitySoftDeleteTests
     }
 
     [TestMethod]
-    public void SoftDelete_WithValidDeletedBy_ShouldUpdateModifiedDate()
+    public void SoftDelete_WithValidDeletedBy_ShouldUpdateUpdatedAt()
     {
         // Arrange
         var worldId = Guid.NewGuid();
         var entity = WorldEntity.Create(worldId, EntityType.Location, "Test Location", TestOwnerId);
-        var originalModifiedDate = entity.ModifiedDate;
+        var originalUpdatedAt = entity.UpdatedAt;
 
         // Wait to ensure time difference
         Thread.Sleep(10);
@@ -48,8 +48,8 @@ public class WorldEntitySoftDeleteTests
         entity.SoftDelete(TestDeletedBy);
 
         // Assert
-        entity.ModifiedDate.Should().BeAfter(originalModifiedDate);
-        entity.ModifiedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        entity.UpdatedAt.Should().BeAfter(originalUpdatedAt);
+        entity.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     [TestMethod]
@@ -164,13 +164,13 @@ public class WorldEntitySoftDeleteTests
     }
 
     [TestMethod]
-    public void Restore_ShouldUpdateModifiedDate()
+    public void Restore_ShouldUpdateUpdatedAt()
     {
         // Arrange
         var worldId = Guid.NewGuid();
         var entity = WorldEntity.Create(worldId, EntityType.Location, "Test Location", TestOwnerId);
         entity.SoftDelete(TestDeletedBy);
-        var deletedModifiedDate = entity.ModifiedDate;
+        var deletedUpdatedAt = entity.UpdatedAt;
 
         // Wait to ensure time difference
         Thread.Sleep(10);
@@ -179,8 +179,8 @@ public class WorldEntitySoftDeleteTests
         entity.Restore();
 
         // Assert
-        entity.ModifiedDate.Should().BeAfter(deletedModifiedDate);
-        entity.ModifiedDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        entity.UpdatedAt.Should().BeAfter(deletedUpdatedAt);
+        entity.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     [TestMethod]

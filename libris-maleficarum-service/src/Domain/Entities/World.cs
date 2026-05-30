@@ -28,12 +28,12 @@ public class World
     /// <summary>
     /// Gets the UTC timestamp when this world was created.
     /// </summary>
-    public DateTime CreatedDate { get; private set; }
+    public DateTime CreatedAt { get; private set; }
 
     /// <summary>
     /// Gets the UTC timestamp when this world was last modified.
     /// </summary>
-    public DateTime ModifiedDate { get; private set; }
+    public DateTime UpdatedAt { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether this world has been soft-deleted.
@@ -64,8 +64,8 @@ public class World
             OwnerId = ownerId,
             Name = name,
             Description = description,
-            CreatedDate = DateTime.UtcNow,
-            ModifiedDate = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
             IsDeleted = false
         };
 
@@ -105,7 +105,7 @@ public class World
     {
         Name = name;
         Description = description;
-        ModifiedDate = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
 
         Validate();
     }
@@ -116,6 +116,6 @@ public class World
     public void SoftDelete()
     {
         IsDeleted = true;
-        ModifiedDate = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

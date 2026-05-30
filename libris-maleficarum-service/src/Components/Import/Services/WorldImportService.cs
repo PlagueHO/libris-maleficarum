@@ -160,8 +160,8 @@ public sealed class WorldImportService(
                                 ? resolvedParentId
                                 : null,
                         Tags = entity.Definition.Tags,
-                            Properties = entity.Definition.Properties,
-                            SystemProperties = entity.Definition.SystemProperties,
+                        Properties = entity.Definition.Properties,
+                        SystemProperties = entity.Definition.SystemProperties,
                         SchemaVersion = 1
                     };
 

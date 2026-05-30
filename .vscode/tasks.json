@@ -291,7 +291,9 @@
         "--coverage",
         "--coverage-output-format",
         "cobertura",
-        "--report-trx"
+        "--report-trx",
+        "--ignore-exit-code",
+        "8"
       ],
       "options": {
         "cwd": "${workspaceFolder}/libris-maleficarum-service"

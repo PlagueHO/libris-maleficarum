@@ -217,10 +217,7 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
       expect(createdEntity?.name).toBe('Northern Defense Zone');
       expect(createdEntity?.properties).toBeDefined();
 
-      // Parse and verify properties
-      const props = typeof createdEntity?.properties === 'string'
-        ? JSON.parse(createdEntity.properties)
-        : (createdEntity?.properties ?? {});
+      const props = createdEntity?.properties ?? {};
       expect(props.CommandStructure).toBe('General Blackthorn, 5th Legion');
       expect(props.StrategicImportance).toBe('85'); // Textarea returns string
       expect(props.MilitaryAssets).toEqual(['Fortress', 'Cavalry', 'Archers']);
@@ -352,9 +349,7 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
 
       // properties should either be undefined or an empty object
       if (createdEntity?.properties) {
-        const props = typeof createdEntity.properties === 'string'
-          ? JSON.parse(createdEntity.properties)
-          : createdEntity.properties;
+        const props = createdEntity.properties;
         // All property values should be undefined/empty
         expect(Object.keys(props).length).toBe(0);
       }

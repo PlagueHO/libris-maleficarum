@@ -325,8 +325,8 @@ public sealed class AssetsController : ControllerBase
             Tags = asset.Tags,
             Description = asset.Description,
             ImageDimensions = asset.ImageDimensions,
-            CreatedDate = asset.CreatedDate,
-            ModifiedDate = asset.ModifiedDate
+            CreatedAt = asset.CreatedAt,
+            UpdatedAt = asset.UpdatedAt
         };
     }
 

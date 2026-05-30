@@ -41,12 +41,12 @@ public class MinimalAppHostTests
 
         // Assert
         connectionString.Should().NotBeNullOrWhiteSpace();
-        connectionString.Should().Contain("AccountEndpoint=http://"); // Emulator uses HTTP
+        connectionString.Should().MatchRegex("AccountEndpoint=https?://"); // Emulator may use HTTP or HTTPS depending on host setup
         connectionString.Should().Contain("AccountKey="); // Emulator uses standard key
 
         // Validate account endpoint is accessible
         AppHostFixture.CosmosDbAccountEndpoint.Should().NotBeNullOrWhiteSpace();
-        AppHostFixture.CosmosDbAccountEndpoint.Should().StartWith("http://");
+        AppHostFixture.CosmosDbAccountEndpoint.Should().MatchRegex("^https?://");
 
         // Validate account key is accessible
         AppHostFixture.CosmosDbAccountKey.Should().NotBeNullOrWhiteSpace();

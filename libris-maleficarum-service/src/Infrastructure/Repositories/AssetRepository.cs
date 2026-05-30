@@ -81,11 +81,11 @@ public sealed class AssetRepository : IAssetRepository
         // Apply cursor pagination if provided
         if (!string.IsNullOrEmpty(cursor) && DateTime.TryParse(cursor, null, System.Globalization.DateTimeStyles.RoundtripKind, out var cursorDate))
         {
-            query = query.Where(a => a.CreatedDate > cursorDate);
+            query = query.Where(a => a.CreatedAt > cursorDate);
         }
 
         // Apply ordering AFTER all filters
-        var orderedQuery = query.OrderBy(a => a.CreatedDate).ThenBy(a => a.Id);
+        var orderedQuery = query.OrderBy(a => a.CreatedAt).ThenBy(a => a.Id);
 
         // Fetch limit + 1 to determine if there are more results
         var assets = await orderedQuery.Take(limit + 1).ToListAsync(cancellationToken);
@@ -96,7 +96,7 @@ public sealed class AssetRepository : IAssetRepository
         {
             var lastAsset = assets[limit - 1];
             assets.RemoveAt(limit);
-            nextCursor = lastAsset.CreatedDate.ToString("O");
+            nextCursor = lastAsset.CreatedAt.ToString("O");
         }
 
         return (assets, nextCursor);

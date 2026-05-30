@@ -28,10 +28,10 @@ public class WorldResponse
     /// <summary>
     /// Gets or sets the UTC timestamp when the world was created.
     /// </summary>
-    public required DateTime CreatedDate { get; set; }
+    public required DateTime CreatedAt { get; set; }
 
     /// <summary>
     /// Gets or sets the UTC timestamp when the world was last modified.
     /// </summary>
-    public required DateTime ModifiedDate { get; set; }
+    public required DateTime UpdatedAt { get; set; }
 }

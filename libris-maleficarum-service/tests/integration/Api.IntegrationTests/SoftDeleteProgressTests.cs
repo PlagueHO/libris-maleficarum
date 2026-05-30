@@ -334,13 +334,13 @@ public class SoftDeleteProgressTests
         dataArray.Should().HaveCount(5, "All 5 delete operations should be returned");
 
         // Verify operations are ordered by CreatedAt descending (newest first)
-        var createdDates = dataArray
+        var createdAtValues = dataArray
             .Select(op => DateTime.Parse(op.GetProperty("createdAt").GetString()!))
             .ToList();
 
-        for (var i = 1; i < createdDates.Count; i++)
+        for (var i = 1; i < createdAtValues.Count; i++)
         {
-            createdDates[i - 1].Should().BeOnOrAfter(createdDates[i],
+            createdAtValues[i - 1].Should().BeOnOrAfter(createdAtValues[i],
                 "Operations should be ordered by CreatedAt descending (newest first)");
         }
 

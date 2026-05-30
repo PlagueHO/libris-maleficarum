@@ -171,8 +171,23 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
     dispatch(closeWorldForm());
   };
 
+  const worldDetailFormId = 'world-detail-form-submit';
+
   return (
-    <FormLayout data-testid="world-detail-form" onBack={handleCancel}>
+    <FormLayout
+      data-testid="world-detail-form"
+      onBack={handleCancel}
+      footer={(
+        <FormActions
+          submitLabel={mode === 'create' ? 'Create Realm' : 'Save World'}
+          submitIcon={mode === 'create' ? Plus : Pencil}
+          cancelLabel="Cancel"
+          isLoading={isLoading}
+          onCancel={handleCancel}
+          submitFormId={worldDetailFormId}
+        />
+      )}
+    >
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
           {mode === 'create' ? 'New Realm' : 'Edit Realm'}
@@ -184,7 +199,7 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form id={worldDetailFormId} onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="world-name-input" className="block text-sm font-medium mb-3">
             Realm Name <span className="text-destructive">*</span>
@@ -238,13 +253,6 @@ export function WorldDetailForm({ mode, world, onSuccess }: WorldDetailFormProps
           </p>
         </div>
 
-        <FormActions
-          submitLabel={mode === 'create' ? 'Create Realm' : 'Save World'}
-          submitIcon={mode === 'create' ? Plus : Pencil}
-          cancelLabel="Cancel"
-          isLoading={isLoading}
-          onCancel={handleCancel}
-        />
       </form>
     </FormLayout>
   );

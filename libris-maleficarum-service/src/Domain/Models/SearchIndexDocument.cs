@@ -48,12 +48,12 @@ public class SearchIndexDocument
     /// <summary>
     /// Gets the creation timestamp.
     /// </summary>
-    public required DateTimeOffset CreatedDate { get; init; }
+    public required DateTimeOffset CreatedAt { get; init; }
 
     /// <summary>
     /// Gets the last modification timestamp.
     /// </summary>
-    public required DateTimeOffset ModifiedDate { get; init; }
+    public required DateTimeOffset UpdatedAt { get; init; }
 
     /// <summary>
     /// Gets the ancestor IDs for hierarchy queries.

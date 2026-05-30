@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 /// <summary>
 /// EF Core configuration for DeleteOperation in Cosmos DB.
-/// 
+///
 /// This configuration is provider-aware to support both Cosmos DB (deployed) and InMemory (unit testing).
 /// </summary>
 /// <remarks>
@@ -51,7 +51,7 @@ public class DeleteOperationConfiguration : IEntityTypeConfiguration<DeleteOpera
         // Map to the same container as WorldEntities for co-location with world data
         builder.ToContainer("WorldEntities");
 
-        // Configure partition key to be /WorldId for efficient querying within a world
+        // Configure partition key to be /worldId for efficient querying within a world
         builder.HasPartitionKey(e => e.WorldId);
 
         // Use discriminator to differentiate DeleteOperation from WorldEntity in the same container
@@ -67,37 +67,37 @@ public class DeleteOperationConfiguration : IEntityTypeConfiguration<DeleteOpera
             .IsRequired();
 
         builder.Property(e => e.WorldId)
-            .ToJsonProperty("WorldId")
+            .ToJsonProperty("worldId")
             .IsRequired();
 
         builder.Property(e => e.RootEntityId)
-            .ToJsonProperty("RootEntityId")
+            .ToJsonProperty("rootEntityId")
             .IsRequired();
 
         builder.Property(e => e.RootEntityName)
-            .ToJsonProperty("RootEntityName")
+            .ToJsonProperty("rootEntityName")
             .IsRequired()
             .HasMaxLength(200);
 
         builder.Property(e => e.Status)
-            .ToJsonProperty("Status")
+            .ToJsonProperty("status")
             .HasConversion<string>()
             .IsRequired();
 
         builder.Property(e => e.TotalEntities)
-            .ToJsonProperty("TotalEntities")
+            .ToJsonProperty("totalEntities")
             .IsRequired();
 
         builder.Property(e => e.DeletedCount)
-            .ToJsonProperty("DeletedCount")
+            .ToJsonProperty("deletedCount")
             .IsRequired();
 
         builder.Property(e => e.FailedCount)
-            .ToJsonProperty("FailedCount")
+            .ToJsonProperty("failedCount")
             .IsRequired();
 
         // FailedEntityIds: List<Guid> collection with provider-aware value converter
-        // 
+        //
         // COSMOS DB PATH (Production):
         // - Stores List<Guid> as List<string> for JSON compatibility
         // - Applies value converter: Guid.ToString() / Guid.Parse()
@@ -112,7 +112,7 @@ public class DeleteOperationConfiguration : IEntityTypeConfiguration<DeleteOpera
         if (_isCosmosDb)
         {
             builder.Property(e => e.FailedEntityIds)
-                .ToJsonProperty("FailedEntityIds")
+                .ToJsonProperty("failedEntityIds")
                 .HasConversion(
                     v => v.Select(g => g.ToString()).ToList(), // To DB: Guid[] -> string[]
                     v => v.Select(s => Guid.Parse(s)).ToList()) // From DB: string[] -> Guid[]
@@ -126,28 +126,28 @@ public class DeleteOperationConfiguration : IEntityTypeConfiguration<DeleteOpera
         {
             // For InMemory provider, just configure without converter
             builder.Property(e => e.FailedEntityIds)
-                .ToJsonProperty("FailedEntityIds");
+                .ToJsonProperty("failedEntityIds");
         }
 
         builder.Property(e => e.ErrorDetails)
-            .ToJsonProperty("ErrorDetails");
+            .ToJsonProperty("errorDetails");
 
         builder.Property(e => e.CreatedBy)
-            .ToJsonProperty("CreatedBy")
+            .ToJsonProperty("createdBy")
             .IsRequired();
 
         builder.Property(e => e.CreatedAt)
-            .ToJsonProperty("CreatedAt")
+            .ToJsonProperty("createdAt")
             .IsRequired();
 
         builder.Property(e => e.StartedAt)
-            .ToJsonProperty("StartedAt");
+            .ToJsonProperty("startedAt");
 
         builder.Property(e => e.CompletedAt)
-            .ToJsonProperty("CompletedAt");
+            .ToJsonProperty("completedAt");
 
         builder.Property(e => e.Cascade)
-            .ToJsonProperty("Cascade")
+            .ToJsonProperty("cascade")
             .IsRequired();
 
         // TTL property for automatic cleanup (24 hours)
