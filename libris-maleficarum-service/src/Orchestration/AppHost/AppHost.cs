@@ -29,12 +29,12 @@ static int FindAvailablePort(int startPort)
 // Configure Azure Cosmos DB Emulator for local development
 //
 // CRITICAL: These ports MUST remain fixed at 8081 and 1234.
-// 
+//
 // The Cosmos DB emulator container internally hardcodes these ports in the connection metadata
 // it returns to clients, regardless of what port the container is published on. For example:
 // - If the container publishes on random port 54321, the emulator still tells clients "connect to me on port 8081"
 // - This causes connection failures because the SDK tries port 8081 but nothing is listening there
-// 
+//
 // Solution: Disable port randomization in tests (AppHostFixture.cs uses "DcpPublisher:RandomizePorts=false")
 // so that Aspire publishes the container on these exact ports, matching what the emulator advertises.
 //
@@ -73,7 +73,7 @@ var embeddingDeployment = aiFoundry.AddDeployment("embedding", "text-embedding-3
 
 // Add Azure Storage (Azurite emulator) for local development
 // Azurite provides blob, queue, and table storage emulation
-// 
+//
 // Dynamic port assignment to prevent conflicts when multiple AppHost instances run in parallel
 // (e.g., during integration tests). Each instance gets unique available ports starting from
 // the standard Azurite defaults (10000, 10001, 10002).
@@ -105,6 +105,7 @@ var apiService = builder.AddProject<Projects.LibrisMaleficarum_Api>("api")
     .WaitFor(cosmosDb)
     .WaitFor(cosmosDbDatabase)
     .WaitFor(storage)
+    .WaitFor(aiSearch)
     .WaitFor(chatDeployment)
     .WaitFor(embeddingDeployment);
 
@@ -130,6 +131,7 @@ var searchWorker = builder.AddProject<Projects.LibrisMaleficarum_SearchIndexWork
     .WithReference(embeddingDeployment)
     .WaitFor(cosmosDb)
     .WaitFor(cosmosDbDatabase)
+    .WaitFor(aiSearch)
     .WaitFor(embeddingDeployment);
 
 // Add the React Vite frontend

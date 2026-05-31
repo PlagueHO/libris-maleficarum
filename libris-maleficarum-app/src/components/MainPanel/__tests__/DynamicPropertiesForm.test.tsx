@@ -110,10 +110,10 @@ describe('DynamicPropertiesForm', () => {
     it('should populate fields with existing property values', () => {
       const onChange = vi.fn();
       const existingProperties = {
-        Climate: 'Temperate',
-        Terrain: 'Mountainous',
-        Population: 1000000,
-        Area: 150000.5,
+        climate: 'Temperate',
+        terrain: 'Mountainous',
+        population: 1000000,
+        area: 150000.5,
       };
 
       render(
@@ -123,7 +123,7 @@ describe('DynamicPropertiesForm', () => {
           onChange={onChange}
         />
       );
-      
+
       // Textareas for Climate and Terrain
       expect(screen.getByLabelText('Climate')).toHaveValue('Temperate');
       expect(screen.getByLabelText('Terrain')).toHaveValue('Mountainous');
@@ -151,7 +151,7 @@ describe('DynamicPropertiesForm', () => {
       render(
         <DynamicPropertiesForm
           entityType="PoliticalRegion"
-          value={{ GovernmentType: undefined }}
+          value={{ governmentType: undefined }}
           onChange={onChange}
         />
       );
@@ -165,8 +165,8 @@ describe('DynamicPropertiesForm', () => {
       const user = userEvent.setup();
       const onChange = vi.fn();
       const existingProperties = {
-        Climate: 'Temperate',
-        Terrain: 'Mountainous',
+        climate: 'Temperate',
+        terrain: 'Mountainous',
       };
 
       render(
@@ -184,8 +184,8 @@ describe('DynamicPropertiesForm', () => {
       // Last call should have both existing (Terrain) and new (Climate) values
       // Note: undefined values are filtered out
       expect(onChange).toHaveBeenLastCalledWith({
-        Climate: 'Tropical',
-        Terrain: 'Mountainous',
+        climate: 'Tropical',
+        terrain: 'Mountainous',
       });
     });
 
@@ -223,8 +223,8 @@ describe('DynamicPropertiesForm', () => {
 
       // Last call should include both fields after re-rendering with updated value
       expect(onChange).toHaveBeenLastCalledWith({
-        Climate: 'Arid',
-        Terrain: 'Desert',
+        climate: 'Arid',
+        terrain: 'Desert',
       });
     });
 
@@ -235,7 +235,7 @@ describe('DynamicPropertiesForm', () => {
       render(
         <DynamicPropertiesForm
           entityType="PoliticalRegion"
-          value={{ GovernmentType: 'Democracy' }}
+          value={{ governmentType: 'Democracy' }}
           onChange={onChange}
         />
       );
@@ -246,9 +246,9 @@ describe('DynamicPropertiesForm', () => {
 
       // Should only include defined values (GovernmentType, not MemberStates/EstablishedDate which are undefined)
       const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0];
-      expect(lastCall).toHaveProperty('GovernmentType', 'Republic');
-      expect(lastCall).not.toHaveProperty('MemberStates');
-      expect(lastCall).not.toHaveProperty('EstablishedDate');
+      expect(lastCall).toHaveProperty('governmentType', 'Republic');
+      expect(lastCall).not.toHaveProperty('memberStates');
+      expect(lastCall).not.toHaveProperty('establishedDate');
     });
 
     it('should include numeric zero values (not filter as falsy)', async () => {
@@ -267,7 +267,7 @@ describe('DynamicPropertiesForm', () => {
       await user.type(populationInput, '0');
 
       const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0];
-      expect(lastCall).toHaveProperty('Population', 0);
+      expect(lastCall).toHaveProperty('population', 0);
     });
 
     it('should include empty arrays for tagArray fields', async () => {
@@ -277,7 +277,7 @@ describe('DynamicPropertiesForm', () => {
       render(
         <DynamicPropertiesForm
           entityType="CulturalRegion"
-          value={{ Languages: [] }}
+          value={{ languages: [] }}
           onChange={onChange}
         />
       );
@@ -286,8 +286,8 @@ describe('DynamicPropertiesForm', () => {
       await user.type(langInput, 'English{Enter}');
 
       const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0];
-      expect(lastCall).toHaveProperty('Languages');
-      expect(Array.isArray(lastCall.Languages)).toBe(true);
+      expect(lastCall).toHaveProperty('languages');
+      expect(Array.isArray(lastCall.languages)).toBe(true);
     });
   });
 

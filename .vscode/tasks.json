@@ -94,7 +94,7 @@
       },
       "group": "test",
       "icon": {
-        "id": "accessibility",
+        "id": "beaker",
         "color": "terminal.ansiMagenta"
       }
     },
@@ -416,7 +416,7 @@
       "args": [
         "-reports:TestResults/**/*.cobertura.xml",
         "-targetdir:TestResults/CoverageReport",
-        "-reporttypes:'Html;MarkdownSummaryGithub;'",
+        "-reporttypes:Html;MarkdownSummaryGithub",
         "-assemblyfilters:+LibrisMaleficarum.*"
       ],
       "options": {

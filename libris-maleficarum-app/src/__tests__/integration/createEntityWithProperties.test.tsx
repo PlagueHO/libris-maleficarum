@@ -218,9 +218,9 @@ describe('T039: Integration - Create MilitaryRegion Entity with Custom Propertie
       expect(createdEntity?.properties).toBeDefined();
 
       const props = createdEntity?.properties ?? {};
-      expect(props.CommandStructure).toBe('General Blackthorn, 5th Legion');
-      expect(props.StrategicImportance).toBe('85'); // Textarea returns string
-      expect(props.MilitaryAssets).toEqual(['Fortress', 'Cavalry', 'Archers']);
+      expect(props.commandStructure).toBe('General Blackthorn, 5th Legion');
+      expect(props.strategicImportance).toBe('85'); // Textarea returns string
+      expect(props.militaryAssets).toEqual(['Fortress', 'Cavalry', 'Archers']);
     });
   });
 

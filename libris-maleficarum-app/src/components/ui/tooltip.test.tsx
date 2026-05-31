@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import userEvent from '@testing-library/user-event';
 import {
@@ -26,6 +26,12 @@ function renderTooltip(content = 'Tooltip text') {
       </Tooltip>
     </TooltipProvider>
   );
+}
+
+async function flushRadixUpdates() {
+  await act(async () => {
+    await Promise.resolve();
+  });
 }
 
 describe('Tooltip', () => {
@@ -52,6 +58,7 @@ describe('Tooltip', () => {
 
   it('has no accessibility violations', async () => {
     const { container } = renderTooltip();
+    await flushRadixUpdates();
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
@@ -71,6 +78,7 @@ describe('Tooltip', () => {
 
     const trigger = screen.getByRole('button', { name: 'Hover target' });
     await user.hover(trigger);
+    await flushRadixUpdates();
     expect(await screen.findByRole('tooltip')).toHaveTextContent(
       'Visible tooltip'
     );

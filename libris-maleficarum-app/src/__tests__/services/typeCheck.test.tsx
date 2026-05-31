@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { setupServer } from 'msw/node';
@@ -152,15 +152,21 @@ describe('TypeScript Type Safety', () => {
       };
 
       const [createWorld] = result.current;
-      const promise = createWorld(validRequest);
+      let promise: ReturnType<typeof createWorld>;
+      await act(async () => {
+        promise = createWorld(validRequest);
+      });
 
-      await waitFor(() => expect(promise).resolves.toBeDefined());
+      await waitFor(() => expect(promise!).resolves.toBeDefined());
 
       // TypeScript compilation check: The following would cause an error
       // because CreateWorldRequest doesn't have an 'id' property
-      // @ts-expect-error - Testing that invalid mutation args are caught
-      const _invalidPromise = createWorld({ id: 'invalid', name: 'Test' });
-      expect(_invalidPromise).toBeDefined();
+      let _invalidPromise: ReturnType<typeof createWorld>;
+      await act(async () => {
+        // @ts-expect-error - Testing that invalid mutation args are caught
+        _invalidPromise = createWorld({ id: 'invalid', name: 'Test' });
+      });
+      expect(_invalidPromise!).toBeDefined();
     });
 
     it('should provide correct types for mutation results', async () => {
@@ -169,14 +175,17 @@ describe('TypeScript Type Safety', () => {
       });
 
       const [createWorld] = result.current;
-      const response = await createWorld({
-        name: 'Test World',
-        description: 'Test',
+      let response: Awaited<ReturnType<typeof createWorld>>;
+      await act(async () => {
+        response = await createWorld({
+          name: 'Test World',
+          description: 'Test',
+        });
       });
 
-      if ('data' in response && response.data) {
+      if ('data' in response! && response!.data) {
         // Response should be typed as World
-        const world = response.data;
+        const world = response!.data;
         expect(typeof world.id).toBe('string');
         expect(typeof world.name).toBe('string');
 

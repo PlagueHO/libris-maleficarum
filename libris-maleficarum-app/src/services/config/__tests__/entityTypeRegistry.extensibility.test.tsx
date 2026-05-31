@@ -39,7 +39,7 @@ const MOCK_ECONOMIC_REGION_CONFIG: EntityTypeConfig = {
   suggestedChildren: ['Country', 'City'],
   propertySchema: [
     {
-      key: 'GDP',
+      key: 'gdp',
       label: 'GDP (billion USD)',
       type: 'decimal',
       placeholder: 'e.g., 500.50',
@@ -49,7 +49,7 @@ const MOCK_ECONOMIC_REGION_CONFIG: EntityTypeConfig = {
       },
     },
     {
-      key: 'Industries',
+      key: 'industries',
       label: 'Major Industries',
       type: 'tagArray',
       placeholder: 'Add an industry...',
@@ -57,14 +57,14 @@ const MOCK_ECONOMIC_REGION_CONFIG: EntityTypeConfig = {
       maxLength: 50,
     },
     {
-      key: 'TradeAgreements',
+      key: 'tradeAgreements',
       label: 'Trade Agreements',
       type: 'textarea',
       placeholder: 'List active trade agreements and partnerships...',
       maxLength: 300,
     },
     {
-      key: 'Currency',
+      key: 'currency',
       label: 'Official Currency',
       type: 'text',
       placeholder: 'e.g., Gold Pieces, Credits',
@@ -123,7 +123,7 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
     it('should handle user input and validation for new entity type', async () => {
       const user = userEvent.setup();
       const onChange = vi.fn();
-      
+
       // Track current value to make the form controlled
       let currentValue: Record<string, unknown> = {};
       const handleChange = (newValue: Record<string, unknown> | null) => {
@@ -142,7 +142,7 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
       // Fill in required Currency field
       const currencyInput = screen.getByLabelText(/Official Currency/i);
       await user.type(currencyInput, 'Gold Pieces');
-      
+
       // Rerender with updated value to maintain state
       rerender(
         <DynamicPropertiesForm
@@ -155,14 +155,14 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
       // Verify onChange was called with Currency value
       expect(onChange).toHaveBeenCalledWith(
         expect.objectContaining({
-          Currency: 'Gold Pieces',
+          currency: 'Gold Pieces',
         })
       );
 
       // Fill in GDP (decimal field with validation)
       const gdpInput = screen.getByLabelText('GDP (billion USD)');
       await user.type(gdpInput, '500.50');
-      
+
       // Rerender with updated value
       rerender(
         <DynamicPropertiesForm
@@ -175,8 +175,8 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
       // Verify both values are now present in the final state
       expect(currentValue).toEqual(
         expect.objectContaining({
-          GDP: 500.5,
-          Currency: 'Gold Pieces',
+          gdp: 500.5,
+          currency: 'Gold Pieces',
         })
       );
     });
@@ -199,10 +199,10 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
   describe('DynamicPropertiesView renders hypothetical EconomicRegion', () => {
     it('should display all property values without dedicated component', () => {
       const properties = {
-        GDP: 1234.56,
-        Industries: ['Technology', 'Finance', 'Manufacturing'],
-        TradeAgreements: 'Free trade pact with neighboring kingdoms\nTariff reduction treaty with overseas empires',
-        Currency: 'Gold Pieces',
+        gdp: 1234.56,
+        industries: ['Technology', 'Finance', 'Manufacturing'],
+        tradeAgreements: 'Free trade pact with neighboring kingdoms\nTariff reduction treaty with overseas empires',
+        currency: 'Gold Pieces',
       };
 
       render(
@@ -233,10 +233,10 @@ describe('T057a / SC-002: Entity Type Registry Extensibility', () => {
 
     it('should have no accessibility violations for hypothetical entity type', async () => {
       const properties = {
-        GDP: 1000.0,
-        Industries: ['Agriculture'],
-        TradeAgreements: 'None',
-        Currency: 'Silver Coins',
+        gdp: 1000.0,
+        industries: ['Agriculture'],
+        tradeAgreements: 'None',
+        currency: 'Silver Coins',
       };
 
       const { container } = render(

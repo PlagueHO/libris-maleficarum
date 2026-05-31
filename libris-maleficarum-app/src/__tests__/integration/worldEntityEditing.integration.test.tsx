@@ -207,10 +207,10 @@ describe('World Entity Editing Integration (T013)', () => {
         entityType: WorldEntityType.Campaign,
         name: 'The Shadow War',
         properties: {
-          Setting: 'Forgotten Realms',
-          GameSystem: 'D&D 5th Edition',
-          PartySize: 5,
-          StartDate: '1492 DR',
+          setting: 'Forgotten Realms',
+          gameSystem: 'D&D 5th Edition',
+          partySize: 5,
+          startDate: '1492 DR',
         },
       };
 

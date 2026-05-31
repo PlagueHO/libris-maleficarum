@@ -1,0 +1,1440 @@
+[
+  {
+    "type": "Continent",
+    "label": "Continent",
+    "description": "A large continental landmass",
+    "category": "Geography",
+    "icon": "Globe",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "GeographicRegion",
+      "PoliticalRegion",
+      "MilitaryRegion",
+      "Country",
+      "Region",
+      "Faction",
+      "Character",
+      "Event"
+    ],
+    "canBeRoot": true,
+    "propertySchema": [
+      {
+        "key": "area",
+        "label": "Area (sq km)",
+        "type": "decimal",
+        "placeholder": "e.g., 25,000,000.00",
+        "description": "Total landmass area"
+      },
+      {
+        "key": "population",
+        "label": "Population",
+        "type": "integer",
+        "placeholder": "e.g., 50,000,000",
+        "description": "Total population across the continent"
+      },
+      {
+        "key": "climateZones",
+        "label": "Climate Zones",
+        "type": "tagArray",
+        "placeholder": "Add a climate zone...",
+        "description": "Major climate zones (e.g., Tropical, Temperate, Arctic)",
+        "maxLength": 50
+      },
+      {
+        "key": "majorLandmarks",
+        "label": "Major Landmarks",
+        "type": "textarea",
+        "placeholder": "Notable geographic features, monuments, or legendary locations...",
+        "maxLength": 500
+      },
+      {
+        "key": "dominantRaces",
+        "label": "Dominant Races",
+        "type": "tagArray",
+        "placeholder": "Add a race...",
+        "description": "Most common ancestries/races",
+        "maxLength": 50
+      }
+    ]
+  },
+  {
+    "type": "Country",
+    "label": "Country",
+    "description": "A nation or political territory",
+    "category": "Geography",
+    "icon": "Map",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Region",
+      "City",
+      "Location",
+      "Faction",
+      "Event"
+    ],
+    "propertySchema": [
+      {
+        "key": "governmentType",
+        "label": "Government Type",
+        "type": "text",
+        "placeholder": "e.g., Monarchy, Republic, Theocracy, Empire...",
+        "maxLength": 100
+      },
+      {
+        "key": "capital",
+        "label": "Capital City",
+        "type": "text",
+        "placeholder": "Name of the capital city",
+        "maxLength": 100
+      },
+      {
+        "key": "population",
+        "label": "Population",
+        "type": "integer",
+        "placeholder": "e.g., 5,000,000",
+        "description": "Total population"
+      },
+      {
+        "key": "languages",
+        "label": "Languages",
+        "type": "tagArray",
+        "placeholder": "Add a language...",
+        "description": "Official or commonly spoken languages",
+        "maxLength": 50
+      },
+      {
+        "key": "currency",
+        "label": "Currency",
+        "type": "text",
+        "placeholder": "e.g., Gold Pieces, Crown, Dragon...",
+        "maxLength": 100
+      },
+      {
+        "key": "majorCities",
+        "label": "Major Cities",
+        "type": "tagArray",
+        "placeholder": "Add a city...",
+        "description": "Important cities and settlements",
+        "maxLength": 50
+      },
+      {
+        "key": "allies",
+        "label": "Allied Nations",
+        "type": "tagArray",
+        "placeholder": "Add an ally...",
+        "description": "Nations with formal alliances",
+        "maxLength": 50
+      },
+      {
+        "key": "rivals",
+        "label": "Rival Nations",
+        "type": "tagArray",
+        "placeholder": "Add a rival...",
+        "description": "Nations with conflicts or tensions",
+        "maxLength": 50
+      }
+    ]
+  },
+  {
+    "type": "Region",
+    "label": "Region",
+    "description": "A geographic area within a country",
+    "category": "Geography",
+    "icon": "MapPin",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "City",
+      "Location",
+      "Character",
+      "Faction"
+    ],
+    "propertySchema": [
+      {
+        "key": "climate",
+        "label": "Climate",
+        "type": "text",
+        "placeholder": "e.g., Temperate, Tropical, Arid, Cold...",
+        "maxLength": 100
+      },
+      {
+        "key": "terrain",
+        "label": "Terrain",
+        "type": "textarea",
+        "placeholder": "Describe the terrain (e.g., mountainous, forested, coastal, plains)...",
+        "maxLength": 300
+      },
+      {
+        "key": "population",
+        "label": "Population",
+        "type": "integer",
+        "placeholder": "e.g., 100,000",
+        "description": "Total population in this region"
+      },
+      {
+        "key": "notableLocations",
+        "label": "Notable Locations",
+        "type": "tagArray",
+        "placeholder": "Add a location...",
+        "description": "Important landmarks, dungeons, or points of interest",
+        "maxLength": 50
+      },
+      {
+        "key": "resources",
+        "label": "Natural Resources",
+        "type": "tagArray",
+        "placeholder": "Add a resource...",
+        "description": "Minerals, crops, or other valuable resources",
+        "maxLength": 50
+      },
+      {
+        "key": "dangers",
+        "label": "Dangers",
+        "type": "tagArray",
+        "placeholder": "Add a danger...",
+        "description": "Monsters, hazards, or threats in the region",
+        "maxLength": 50
+      }
+    ]
+  },
+  {
+    "type": "City",
+    "label": "City",
+    "description": "A city, town, or settlement",
+    "category": "Geography",
+    "icon": "Building",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Building",
+      "Location",
+      "Character",
+      "PlayerCharacter",
+      "Faction",
+      "Event"
+    ],
+    "propertySchema": [
+      {
+        "key": "population",
+        "label": "Population",
+        "type": "integer",
+        "placeholder": "e.g., 25,000",
+        "description": "Number of residents"
+      },
+      {
+        "key": "governmentType",
+        "label": "Government Type",
+        "type": "text",
+        "placeholder": "e.g., Mayor, Council, Lord, Guild-run...",
+        "maxLength": 100
+      },
+      {
+        "key": "demographics",
+        "label": "Demographics",
+        "type": "textarea",
+        "placeholder": "Racial makeup and social classes (e.g., 60% Human, 20% Elf, 15% Dwarf, 5% Other)...",
+        "maxLength": 300
+      },
+      {
+        "key": "economy",
+        "label": "Economy",
+        "type": "textarea",
+        "placeholder": "Main industries, trade goods, and economic status...",
+        "maxLength": 300
+      },
+      {
+        "key": "districts",
+        "label": "Districts/Quarters",
+        "type": "tagArray",
+        "placeholder": "Add a district...",
+        "description": "Named neighborhoods or districts",
+        "maxLength": 50
+      },
+      {
+        "key": "notableLocations",
+        "label": "Notable Locations",
+        "type": "tagArray",
+        "placeholder": "Add a location...",
+        "description": "Important buildings, landmarks, or establishments",
+        "maxLength": 50
+      },
+      {
+        "key": "defenses",
+        "label": "Defenses",
+        "type": "textarea",
+        "placeholder": "Walls, guards, magical wards, or other protective measures...",
+        "maxLength": 200
+      }
+    ]
+  },
+  {
+    "type": "Building",
+    "label": "Building",
+    "description": "A building or structure",
+    "category": "Geography",
+    "icon": "Building",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Room",
+      "Character",
+      "Item",
+      "Event"
+    ],
+    "propertySchema": [
+      {
+        "key": "buildingType",
+        "label": "Building Type",
+        "type": "text",
+        "placeholder": "e.g., Tavern, Temple, Shop, Manor, Warehouse...",
+        "maxLength": 100
+      },
+      {
+        "key": "owner",
+        "label": "Owner",
+        "type": "text",
+        "placeholder": "Name of the owner or controlling entity",
+        "maxLength": 100
+      },
+      {
+        "key": "condition",
+        "label": "Condition",
+        "type": "text",
+        "placeholder": "e.g., Pristine, Well-maintained, Worn, Ruined...",
+        "maxLength": 100
+      },
+      {
+        "key": "floors",
+        "label": "Number of Floors",
+        "type": "integer",
+        "placeholder": "e.g., 2",
+        "description": "Total floors including basement"
+      },
+      {
+        "key": "purpose",
+        "label": "Purpose",
+        "type": "textarea",
+        "placeholder": "Primary function and activities conducted here...",
+        "maxLength": 300
+      },
+      {
+        "key": "notableFeatures",
+        "label": "Notable Features",
+        "type": "tagArray",
+        "placeholder": "Add a feature...",
+        "description": "Architectural details, hidden passages, magical wards, etc.",
+        "maxLength": 50
+      },
+      {
+        "key": "occupants",
+        "label": "Occupants",
+        "type": "tagArray",
+        "placeholder": "Add an occupant...",
+        "description": "People or creatures who live or work here",
+        "maxLength": 50
+      }
+    ]
+  },
+  {
+    "type": "Room",
+    "label": "Room",
+    "description": "A room or interior space",
+    "category": "Geography",
+    "icon": "Home",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Character",
+      "Item",
+      "Event"
+    ],
+    "propertySchema": [
+      {
+        "key": "purpose",
+        "label": "Purpose",
+        "type": "text",
+        "placeholder": "e.g., Bedroom, Kitchen, Armory, Throne Room...",
+        "maxLength": 100
+      },
+      {
+        "key": "dimensions",
+        "label": "Dimensions",
+        "type": "text",
+        "placeholder": "e.g., 20ft x 30ft, 6m x 9m",
+        "maxLength": 100
+      },
+      {
+        "key": "lighting",
+        "label": "Lighting",
+        "type": "text",
+        "placeholder": "e.g., Well-lit, Dim, Dark, Magical illumination...",
+        "maxLength": 100
+      },
+      {
+        "key": "contents",
+        "label": "Contents",
+        "type": "textarea",
+        "placeholder": "Furniture, decorations, and other items in the room...",
+        "maxLength": 500
+      },
+      {
+        "key": "exits",
+        "label": "Exits",
+        "type": "tagArray",
+        "placeholder": "Add an exit...",
+        "description": "Doors, windows, or other ways to leave",
+        "maxLength": 50
+      },
+      {
+        "key": "specialFeatures",
+        "label": "Special Features",
+        "type": "tagArray",
+        "placeholder": "Add a feature...",
+        "description": "Traps, treasures, magical effects, or hidden elements",
+        "maxLength": 50
+      }
+    ]
+  },
+  {
+    "type": "Location",
+    "label": "Location",
+    "description": "A generic location or landmark",
+    "category": "Geography",
+    "icon": "MapPin",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Character",
+      "Item",
+      "Event",
+      "Quest"
+    ],
+    "propertySchema": [
+      {
+        "key": "locationType",
+        "label": "Location Type",
+        "type": "text",
+        "placeholder": "e.g., Dungeon, Forest, Cave, Ruins, Temple, Battlefield...",
+        "maxLength": 100
+      },
+      {
+        "key": "accessibility",
+        "label": "Accessibility",
+        "type": "text",
+        "placeholder": "e.g., Easy to reach, Requires climbing, Hidden, Magically sealed...",
+        "maxLength": 100
+      },
+      {
+        "key": "significance",
+        "label": "Significance",
+        "type": "textarea",
+        "placeholder": "Historical importance, current relevance, or why adventurers would visit...",
+        "maxLength": 300
+      },
+      {
+        "key": "environment",
+        "label": "Environment",
+        "type": "textarea",
+        "placeholder": "Terrain, weather, atmosphere, and physical characteristics...",
+        "maxLength": 300
+      },
+      {
+        "key": "dangers",
+        "label": "Dangers",
+        "type": "tagArray",
+        "placeholder": "Add a danger...",
+        "description": "Monsters, traps, hazards, or other threats",
+        "maxLength": 50
+      },
+      {
+        "key": "treasures",
+        "label": "Treasures",
+        "type": "tagArray",
+        "placeholder": "Add a treasure...",
+        "description": "Loot, artifacts, or valuable resources",
+        "maxLength": 50
+      },
+      {
+        "key": "inhabitants",
+        "label": "Inhabitants",
+        "type": "tagArray",
+        "placeholder": "Add an inhabitant...",
+        "description": "Creatures or NPCs that live here",
+        "maxLength": 50
+      }
+    ]
+  },
+  {
+    "type": "Character",
+    "label": "Character",
+    "description": "A person, NPC, or creature",
+    "category": "Characters & Factions",
+    "icon": "User",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Item",
+      "Quest"
+    ],
+    "propertySchema": [
+      {
+        "key": "race",
+        "label": "Race/Species",
+        "type": "text",
+        "placeholder": "e.g., Human, Elf, Dwarf, Dragon, Goblin...",
+        "maxLength": 100
+      },
+      {
+        "key": "class",
+        "label": "Class/Profession",
+        "type": "text",
+        "placeholder": "e.g., Fighter, Wizard, Rogue, Merchant, Noble...",
+        "maxLength": 100
+      },
+      {
+        "key": "level",
+        "label": "Level/CR",
+        "type": "integer",
+        "placeholder": "e.g., 5",
+        "description": "Character level or Challenge Rating"
+      },
+      {
+        "key": "alignment",
+        "label": "Alignment",
+        "type": "text",
+        "placeholder": "e.g., Lawful Good, Chaotic Neutral, Neutral Evil...",
+        "maxLength": 50
+      },
+      {
+        "key": "faction",
+        "label": "Faction",
+        "type": "text",
+        "placeholder": "Organization or group affiliation",
+        "maxLength": 100
+      },
+      {
+        "key": "personalityTraits",
+        "label": "Personality Traits",
+        "type": "textarea",
+        "placeholder": "Key personality characteristics, quirks, or behavior patterns...",
+        "maxLength": 300
+      },
+      {
+        "key": "background",
+        "label": "Background",
+        "type": "textarea",
+        "placeholder": "History, motivations, and important life events...",
+        "maxLength": 500
+      },
+      {
+        "key": "abilitiesAndSkills",
+        "label": "Abilities & Skills",
+        "type": "tagArray",
+        "placeholder": "Add an ability...",
+        "description": "Special abilities, spells, or notable skills",
+        "maxLength": 50
+      },
+      {
+        "key": "equipment",
+        "label": "Equipment",
+        "type": "tagArray",
+        "placeholder": "Add an item...",
+        "description": "Weapons, armor, and important possessions",
+        "maxLength": 50
+      },
+      {
+        "key": "relationships",
+        "label": "Relationships",
+        "type": "tagArray",
+        "placeholder": "Add a relationship...",
+        "description": "Allies, enemies, family, or other connections",
+        "maxLength": 50
+      }
+    ]
+  },
+  {
+    "type": "PlayerCharacter",
+    "label": "Player Character",
+    "description": "A player-controlled D&D 5e character with roleplaying attributes",
+    "category": "Characters & Factions",
+    "icon": "UserCheck",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Item",
+      "Quest"
+    ],
+    "canBeRoot": true,
+    "propertySchema": [
+      {
+        "key": "playerName",
+        "label": "Player Name",
+        "type": "text",
+        "placeholder": "e.g., Jane, Alex, Sam...",
+        "maxLength": 100
+      },
+      {
+        "key": "race",
+        "label": "Race/Species",
+        "type": "text",
+        "placeholder": "e.g., Human, High Elf, Half-Orc...",
+        "maxLength": 100
+      },
+      {
+        "key": "class",
+        "label": "Class",
+        "type": "text",
+        "placeholder": "e.g., Fighter, Wizard, Rogue...",
+        "maxLength": 100
+      },
+      {
+        "key": "subclass",
+        "label": "Subclass",
+        "type": "text",
+        "placeholder": "e.g., Champion, School of Evocation, Arcane Trickster...",
+        "maxLength": 100
+      },
+      {
+        "key": "level",
+        "label": "Level",
+        "type": "integer",
+        "placeholder": "e.g., 7",
+        "description": "Character level"
+      },
+      {
+        "key": "background",
+        "label": "Background",
+        "type": "text",
+        "placeholder": "e.g., Sage, Noble, Criminal...",
+        "maxLength": 100
+      },
+      {
+        "key": "alignment",
+        "label": "Alignment",
+        "type": "text",
+        "placeholder": "e.g., Lawful Good, Neutral, Chaotic Evil...",
+        "maxLength": 50
+      },
+      {
+        "key": "personalityTraits",
+        "label": "Personality Traits",
+        "type": "textarea",
+        "placeholder": "Describe key personality characteristics and mannerisms...",
+        "maxLength": 500
+      },
+      {
+        "key": "ideals",
+        "label": "Ideals",
+        "type": "textarea",
+        "placeholder": "Describe the principles and beliefs that guide this character...",
+        "maxLength": 500
+      },
+      {
+        "key": "bonds",
+        "label": "Bonds",
+        "type": "textarea",
+        "placeholder": "Describe important attachments to people, places, or causes...",
+        "maxLength": 500
+      },
+      {
+        "key": "flaws",
+        "label": "Flaws",
+        "type": "textarea",
+        "placeholder": "Describe character weaknesses and vulnerabilities...",
+        "maxLength": 500
+      },
+      {
+        "key": "backstory",
+        "label": "Backstory",
+        "type": "textarea",
+        "placeholder": "Character history, origin, and formative life events...",
+        "maxLength": 2000
+      },
+      {
+        "key": "appearance",
+        "label": "Appearance",
+        "type": "textarea",
+        "placeholder": "Physical description and notable visual traits...",
+        "maxLength": 500
+      },
+      {
+        "key": "factions",
+        "label": "Factions",
+        "type": "tagArray",
+        "placeholder": "Add a faction...",
+        "description": "Organizations, guilds, or groups this character is affiliated with",
+        "maxLength": 50
+      },
+      {
+        "key": "notableEquipment",
+        "label": "Notable Equipment",
+        "type": "tagArray",
+        "placeholder": "Add equipment...",
+        "description": "Signature gear and important possessions",
+        "maxLength": 50
+      },
+      {
+        "key": "signatureAbilities",
+        "label": "Signature Abilities",
+        "type": "tagArray",
+        "placeholder": "Add an ability...",
+        "description": "Key abilities, spells, or iconic talents",
+        "maxLength": 50
+      },
+      {
+        "key": "languages",
+        "label": "Languages",
+        "type": "tagArray",
+        "placeholder": "Add a language...",
+        "description": "Languages known by the character",
+        "maxLength": 50
+      },
+      {
+        "key": "relationships",
+        "label": "Relationships",
+        "type": "tagArray",
+        "placeholder": "Add a relationship...",
+        "description": "Important allies, rivals, mentors, or family ties",
+        "maxLength": 50
+      }
+    ]
+  },
+  {
+    "type": "Faction",
+    "label": "Faction",
+    "description": "An organization, guild, or political group",
+    "category": "Characters & Factions",
+    "icon": "Users",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Character",
+      "PlayerCharacter",
+      "Location",
+      "Event",
+      "Quest"
+    ],
+    "propertySchema": [
+      {
+        "key": "factionType",
+        "label": "Faction Type",
+        "type": "text",
+        "placeholder": "e.g., Guild, Religious Order, Political Party, Criminal Organization...",
+        "maxLength": 100
+      },
+      {
+        "key": "alignment",
+        "label": "Alignment",
+        "type": "text",
+        "placeholder": "e.g., Lawful Good, Neutral, Chaotic Evil...",
+        "maxLength": 50
+      },
+      {
+        "key": "goals",
+        "label": "Goals",
+        "type": "textarea",
+        "placeholder": "Primary objectives, ambitions, or mission statement...",
+        "maxLength": 300
+      },
+      {
+        "key": "leadership",
+        "label": "Leadership",
+        "type": "textarea",
+        "placeholder": "Leaders, hierarchy, and decision-making structure...",
+        "maxLength": 300
+      },
+      {
+        "key": "membership",
+        "label": "Membership Size",
+        "type": "integer",
+        "placeholder": "e.g., 500",
+        "description": "Approximate number of members"
+      },
+      {
+        "key": "resources",
+        "label": "Resources",
+        "type": "tagArray",
+        "placeholder": "Add a resource...",
+        "description": "Wealth, properties, assets, or capabilities",
+        "maxLength": 50
+      },
+      {
+        "key": "reputation",
+        "label": "Reputation",
+        "type": "textarea",
+        "placeholder": "How this faction is viewed by the public and other organizations...",
+        "maxLength": 300
+      },
+      {
+        "key": "allies",
+        "label": "Allied Factions",
+        "type": "tagArray",
+        "placeholder": "Add an ally...",
+        "description": "Friendly or cooperative organizations",
+        "maxLength": 50
+      },
+      {
+        "key": "enemies",
+        "label": "Enemy Factions",
+        "type": "tagArray",
+        "placeholder": "Add an enemy...",
+        "description": "Rival or hostile organizations",
+        "maxLength": 50
+      }
+    ]
+  },
+  {
+    "type": "Event",
+    "label": "Event",
+    "description": "A happening, battle, or historical moment",
+    "category": "Events & Quests",
+    "icon": "Calendar",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Character",
+      "Location",
+      "Item"
+    ],
+    "propertySchema": [
+      {
+        "key": "eventType",
+        "label": "Event Type",
+        "type": "text",
+        "placeholder": "e.g., Battle, Festival, Assassination, Natural Disaster, Ritual...",
+        "maxLength": 100
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text",
+        "placeholder": "e.g., 15th of Mirtul, Year 1492 DR, 3rd Age...",
+        "description": "Free-form date (supports fantasy calendars)",
+        "maxLength": 100
+      },
+      {
+        "key": "location",
+        "label": "Location",
+        "type": "text",
+        "placeholder": "Where the event took place",
+        "maxLength": 100
+      },
+      {
+        "key": "participants",
+        "label": "Participants",
+        "type": "tagArray",
+        "placeholder": "Add a participant...",
+        "description": "Key individuals, factions, or groups involved",
+        "maxLength": 50
+      },
+      {
+        "key": "outcome",
+        "label": "Outcome",
+        "type": "textarea",
+        "placeholder": "What happened as a result of this event...",
+        "maxLength": 300
+      },
+      {
+        "key": "significance",
+        "label": "Significance",
+        "type": "textarea",
+        "placeholder": "Long-term impact, historical importance, or consequences...",
+        "maxLength": 300
+      },
+      {
+        "key": "casualties",
+        "label": "Casualties",
+        "type": "integer",
+        "placeholder": "e.g., 1000",
+        "description": "Number of deaths or losses (if applicable)"
+      }
+    ]
+  },
+  {
+    "type": "Quest",
+    "label": "Quest",
+    "description": "A mission, objective, or adventure hook",
+    "category": "Events & Quests",
+    "icon": "Scroll",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Character",
+      "Item",
+      "Location",
+      "Event"
+    ],
+    "propertySchema": [
+      {
+        "key": "questGiver",
+        "label": "Quest Giver",
+        "type": "text",
+        "placeholder": "Name of the NPC or entity providing the quest",
+        "maxLength": 100
+      },
+      {
+        "key": "questType",
+        "label": "Quest Type",
+        "type": "text",
+        "placeholder": "e.g., Main Quest, Side Quest, Fetch, Rescue, Investigation...",
+        "maxLength": 100
+      },
+      {
+        "key": "difficulty",
+        "label": "Difficulty",
+        "type": "text",
+        "placeholder": "e.g., Easy, Medium, Hard, Deadly",
+        "maxLength": 50
+      },
+      {
+        "key": "recommendedLevel",
+        "label": "Recommended Level",
+        "type": "integer",
+        "placeholder": "e.g., 5",
+        "description": "Suggested party level"
+      },
+      {
+        "key": "objectives",
+        "label": "Objectives",
+        "type": "textarea",
+        "placeholder": "What the party needs to accomplish...",
+        "maxLength": 500
+      },
+      {
+        "key": "rewards",
+        "label": "Rewards",
+        "type": "tagArray",
+        "placeholder": "Add a reward...",
+        "description": "Gold, items, experience, reputation, or other benefits",
+        "maxLength": 50
+      },
+      {
+        "key": "status",
+        "label": "Status",
+        "type": "text",
+        "placeholder": "e.g., Not Started, In Progress, Completed, Failed...",
+        "maxLength": 50
+      },
+      {
+        "key": "timeLimit",
+        "label": "Time Limit",
+        "type": "text",
+        "placeholder": "e.g., 3 days, Before the full moon, None...",
+        "maxLength": 100
+      },
+      {
+        "key": "complications",
+        "label": "Complications",
+        "type": "textarea",
+        "placeholder": "Obstacles, twists, or challenges the party might face...",
+        "maxLength": 300
+      }
+    ]
+  },
+  {
+    "type": "Item",
+    "label": "Item",
+    "description": "An object, artifact, or piece of equipment",
+    "category": "Items",
+    "icon": "Package",
+    "schemaVersion": 1,
+    "suggestedChildren": [],
+    "propertySchema": [
+      {
+        "key": "itemType",
+        "label": "Item Type",
+        "type": "text",
+        "placeholder": "e.g., Weapon, Armor, Potion, Wondrous Item, Tool...",
+        "maxLength": 100
+      },
+      {
+        "key": "rarity",
+        "label": "Rarity",
+        "type": "text",
+        "placeholder": "e.g., Common, Uncommon, Rare, Very Rare, Legendary, Artifact...",
+        "maxLength": 50
+      },
+      {
+        "key": "value",
+        "label": "Value (GP)",
+        "type": "integer",
+        "placeholder": "e.g., 500",
+        "description": "Estimated value in gold pieces"
+      },
+      {
+        "key": "weight",
+        "label": "Weight (lbs)",
+        "type": "decimal",
+        "placeholder": "e.g., 10.5",
+        "description": "Weight in pounds"
+      },
+      {
+        "key": "requiresAttunement",
+        "label": "Requires Attunement",
+        "type": "text",
+        "placeholder": "e.g., Yes, No, Yes (by a spellcaster)...",
+        "maxLength": 100
+      },
+      {
+        "key": "magicProperties",
+        "label": "Magic Properties",
+        "type": "textarea",
+        "placeholder": "Magical effects, bonuses, or special abilities...",
+        "maxLength": 500
+      },
+      {
+        "key": "history",
+        "label": "History",
+        "type": "textarea",
+        "placeholder": "Origin, previous owners, or legendary tales...",
+        "maxLength": 500
+      },
+      {
+        "key": "appearance",
+        "label": "Appearance",
+        "type": "textarea",
+        "placeholder": "Physical description and distinguishing features...",
+        "maxLength": 300
+      }
+    ]
+  },
+  {
+    "type": "Campaign",
+    "label": "Campaign",
+    "description": "A campaign, story arc, or adventure series",
+    "category": "Campaigns",
+    "icon": "Scroll",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Session",
+      "Quest",
+      "Event",
+      "Character",
+      "PlayerCharacter",
+      "Location",
+      "Faction"
+    ],
+    "canBeRoot": true,
+    "propertySchema": [
+      {
+        "key": "setting",
+        "label": "Setting",
+        "type": "text",
+        "placeholder": "e.g., Forgotten Realms, Homebrew World, Eberron...",
+        "maxLength": 100
+      },
+      {
+        "key": "gameSystem",
+        "label": "Game System",
+        "type": "text",
+        "placeholder": "e.g., D&D 5e, Pathfinder 2e, Custom Rules...",
+        "maxLength": 100
+      },
+      {
+        "key": "partySize",
+        "label": "Party Size",
+        "type": "integer",
+        "placeholder": "e.g., 4",
+        "description": "Number of player characters"
+      },
+      {
+        "key": "startDate",
+        "label": "Start Date",
+        "type": "text",
+        "placeholder": "e.g., January 2026, Year 1492 DR...",
+        "maxLength": 100
+      },
+      {
+        "key": "theme",
+        "label": "Theme",
+        "type": "textarea",
+        "placeholder": "Main themes, tone, or story focus (e.g., political intrigue, dungeon crawl, epic quest)...",
+        "maxLength": 300
+      },
+      {
+        "key": "plotHooks",
+        "label": "Plot Hooks",
+        "type": "tagArray",
+        "placeholder": "Add a plot hook...",
+        "description": "Main storylines or adventure threads",
+        "maxLength": 50
+      },
+      {
+        "key": "dmNotes",
+        "label": "DM Notes",
+        "type": "textarea",
+        "placeholder": "Private notes, future plans, or important reminders...",
+        "maxLength": 1000
+      }
+    ]
+  },
+  {
+    "type": "Session",
+    "label": "Session",
+    "description": "A game session or play session",
+    "category": "Campaigns",
+    "icon": "Calendar",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Event",
+      "Location",
+      "PlayerCharacter"
+    ],
+    "propertySchema": [
+      {
+        "key": "sessionNumber",
+        "label": "Session Number",
+        "type": "integer",
+        "placeholder": "e.g., 15",
+        "description": "Sequential session number"
+      },
+      {
+        "key": "startDateTime",
+        "label": "Session Start Date/Time",
+        "type": "datetime",
+        "description": "When the session started"
+      },
+      {
+        "key": "duration",
+        "label": "Duration (hours)",
+        "type": "decimal",
+        "placeholder": "e.g., 4.5",
+        "description": "Session length in hours"
+      },
+      {
+        "key": "summary",
+        "label": "Summary",
+        "type": "textarea",
+        "placeholder": "What happened during this session...",
+        "maxLength": 1000
+      },
+      {
+        "key": "attendance",
+        "label": "Attendance",
+        "type": "tagArray",
+        "placeholder": "Add a player...",
+        "description": "Players who attended",
+        "maxLength": 50
+      },
+      {
+        "key": "xpAwarded",
+        "label": "XP Awarded",
+        "type": "integer",
+        "placeholder": "e.g., 1500",
+        "description": "Experience points awarded"
+      },
+      {
+        "key": "treasureFound",
+        "label": "Treasure Found",
+        "type": "tagArray",
+        "placeholder": "Add a treasure...",
+        "description": "Gold, items, or other rewards obtained",
+        "maxLength": 50
+      },
+      {
+        "key": "nextSessionNotes",
+        "label": "Next Session Notes",
+        "type": "textarea",
+        "placeholder": "Plot threads, cliffhangers, or preparation needed for next time...",
+        "maxLength": 500
+      }
+    ]
+  },
+  {
+    "type": "Folder",
+    "label": "Folder",
+    "description": "General organizational container for any entity types",
+    "category": "Containers",
+    "icon": "Folder",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Folder",
+      "Continent",
+      "Country",
+      "Region",
+      "City",
+      "Location",
+      "Character",
+      "PlayerCharacter",
+      "Faction",
+      "Event",
+      "Quest",
+      "Campaign",
+      "Item"
+    ],
+    "canBeRoot": true
+  },
+  {
+    "type": "Locations",
+    "label": "Locations",
+    "description": "Container for geographic and spatial entities",
+    "category": "Containers",
+    "icon": "FolderOpen",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Continent",
+      "GeographicRegion",
+      "PoliticalRegion",
+      "Country",
+      "Region",
+      "City",
+      "Location",
+      "Building"
+    ],
+    "canBeRoot": true
+  },
+  {
+    "type": "People",
+    "label": "People",
+    "description": "Container for characters, factions, and organizations",
+    "category": "Containers",
+    "icon": "Users",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Character",
+      "PlayerCharacter",
+      "Faction"
+    ],
+    "canBeRoot": true
+  },
+  {
+    "type": "Events",
+    "label": "Events",
+    "description": "Container for events, quests, and happenings",
+    "category": "Containers",
+    "icon": "CalendarDays",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Event",
+      "Quest"
+    ],
+    "canBeRoot": true
+  },
+  {
+    "type": "History",
+    "label": "History",
+    "description": "Container for historical events and timelines",
+    "category": "Containers",
+    "icon": "BookOpen",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Event"
+    ],
+    "canBeRoot": true
+  },
+  {
+    "type": "Lore",
+    "label": "Lore",
+    "description": "Container for lore, mythology, and cultural knowledge",
+    "category": "Containers",
+    "icon": "BookMarked",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Item"
+    ],
+    "canBeRoot": true
+  },
+  {
+    "type": "Bestiary",
+    "label": "Bestiary",
+    "description": "Container for creatures and monsters",
+    "category": "Containers",
+    "icon": "Bug",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Character"
+    ],
+    "canBeRoot": true
+  },
+  {
+    "type": "Items",
+    "label": "Items",
+    "description": "Container for items and artifacts",
+    "category": "Containers",
+    "icon": "Box",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Item"
+    ],
+    "canBeRoot": true
+  },
+  {
+    "type": "Adventures",
+    "label": "Adventures",
+    "description": "Container for campaigns and adventures",
+    "category": "Containers",
+    "icon": "Compass",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Campaign",
+      "Session",
+      "Quest"
+    ],
+    "canBeRoot": true
+  },
+  {
+    "type": "Geographies",
+    "label": "Geographies",
+    "description": "Container for geographic features",
+    "category": "Containers",
+    "icon": "Mountain",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Location"
+    ],
+    "canBeRoot": true
+  },
+  {
+    "type": "GeographicRegion",
+    "label": "Geographic Region",
+    "description": "Natural geographic area with climate and terrain properties",
+    "category": "Geography",
+    "icon": "Globe",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Country",
+      "Region",
+      "GeographicRegion",
+      "MilitaryRegion",
+      "Character"
+    ],
+    "propertySchema": [
+      {
+        "key": "climate",
+        "label": "Climate",
+        "type": "textarea",
+        "placeholder": "Describe the climate (e.g., temperate, tropical, arid)...",
+        "maxLength": 200
+      },
+      {
+        "key": "terrain",
+        "label": "Terrain",
+        "type": "textarea",
+        "placeholder": "Describe the terrain (e.g., mountainous, coastal, plains)...",
+        "maxLength": 200
+      },
+      {
+        "key": "population",
+        "label": "Population",
+        "type": "integer",
+        "placeholder": "e.g., 1,000,000",
+        "description": "Whole number only"
+      },
+      {
+        "key": "area",
+        "label": "Area (sq km)",
+        "type": "decimal",
+        "placeholder": "e.g., 150,000.50",
+        "description": "Decimal values allowed"
+      }
+    ]
+  },
+  {
+    "type": "PoliticalRegion",
+    "label": "Political Region",
+    "description": "Political boundary or governance structure",
+    "category": "Geography",
+    "icon": "Shield",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Country",
+      "PoliticalRegion"
+    ],
+    "propertySchema": [
+      {
+        "key": "governmentType",
+        "label": "Government Type",
+        "type": "textarea",
+        "placeholder": "e.g., Democracy, Monarchy, Federation, Empire...",
+        "maxLength": 200
+      },
+      {
+        "key": "memberStates",
+        "label": "Member States",
+        "type": "tagArray",
+        "placeholder": "Add a member state...",
+        "description": "States, provinces, or territories within this political region",
+        "maxLength": 50
+      },
+      {
+        "key": "establishedDate",
+        "label": "Established Date",
+        "type": "text",
+        "placeholder": "e.g., Year 1456, 3rd Age, Spring 2024...",
+        "description": "Free-form date (supports fantasy calendars)",
+        "maxLength": 100
+      }
+    ]
+  },
+  {
+    "type": "CulturalRegion",
+    "label": "Cultural Region",
+    "description": "Cultural sphere with shared language and heritage",
+    "category": "Geography",
+    "icon": "Users",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "Country",
+      "CulturalRegion"
+    ],
+    "propertySchema": [
+      {
+        "key": "languages",
+        "label": "Languages",
+        "type": "tagArray",
+        "placeholder": "Add a language...",
+        "description": "Spoken or written languages in this cultural region",
+        "maxLength": 50
+      },
+      {
+        "key": "religions",
+        "label": "Religions",
+        "type": "tagArray",
+        "placeholder": "Add a religion...",
+        "description": "Religious beliefs and practices in this region",
+        "maxLength": 50
+      },
+      {
+        "key": "culturalTraits",
+        "label": "Cultural Traits",
+        "type": "textarea",
+        "placeholder": "Describe unique cultural characteristics, customs, traditions, arts...",
+        "maxLength": 500
+      }
+    ]
+  },
+  {
+    "type": "MilitaryRegion",
+    "label": "Military Region",
+    "description": "Military zone or command structure",
+    "category": "Geography",
+    "icon": "Shield",
+    "schemaVersion": 1,
+    "suggestedChildren": [
+      "MilitaryRegion"
+    ],
+    "propertySchema": [
+      {
+        "key": "commandStructure",
+        "label": "Command Structure",
+        "type": "textarea",
+        "placeholder": "Describe the military hierarchy and leadership (e.g., General → Colonel → Captain)...",
+        "maxLength": 300
+      },
+      {
+        "key": "strategicImportance",
+        "label": "Strategic Importance",
+        "type": "textarea",
+        "placeholder": "Explain why this region is strategically important (e.g., border defense, resource control)...",
+        "maxLength": 300
+      },
+      {
+        "key": "militaryAssets",
+        "label": "Military Assets",
+        "type": "tagArray",
+        "placeholder": "Add a military asset...",
+        "description": "Fortifications, bases, units, equipment, or other military resources",
+        "maxLength": 50
+      }
+    ]
+  },
+  {
+    "type": "Other",
+    "label": "Other",
+    "description": "Any other entity type",
+    "category": "Other",
+    "icon": "HelpCircle",
+    "schemaVersion": 1,
+    "suggestedChildren": [],
+    "canBeRoot": true
+  }
+]

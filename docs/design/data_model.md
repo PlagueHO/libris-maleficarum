@@ -327,7 +327,7 @@ The `schemaVersion` field enables lazy migration of entity schemas without requi
 #### Version Strategy
 
 - **Version Numbers**: 1-based integers (initial version: 1)
-- **Current Version**: Defined per entity type in `EntitySchemaVersionConfig` (backend) and `ENTITY_SCHEMA_VERSIONS` map (frontend)
+- **Current Version**: Canonical source is `registries/entity-types.json` (validated by `schemas/registries/entity-type-registry.schema.json`), then surfaced as `ENTITY_SCHEMA_VERSIONS` (frontend) and `EntitySchemaVersionConfig` (backend)
 - **Lazy Migration**: Entities retain their schema version until saved; on save, they upgrade to the current version
 - **Validation Rules**:
   - `schemaVersion` must be a positive integer
@@ -382,7 +382,7 @@ export interface BaseWorldEntity {
 **API Client** (`worldEntityApi.ts`):
 
 ```typescript
-import { getSchemaVersion } from './constants/entitySchemaVersions';
+import { ENTITY_SCHEMA_VERSIONS } from '@/services/types/worldEntity.types';
 
 // Auto-inject current schema version on create
 createWorldEntity: builder.mutation({
@@ -441,6 +441,8 @@ Property schemas/templates are stored in a separate container or configuration s
 
 > [!NOTE]
 > The `ValidationRule` field validates **property values** (e.g., ensuring Level is 1-20), not parent-child entity relationships. Entity hierarchy has no validation—see Hierarchy Recommendation Patterns section.
+
+For the current frontend implementation, entity baseline `propertySchema` definitions are authored in `registries/entity-types.json`, validated against `schemas/registries/entity-type-registry.schema.json`, and compiled into `entityTypeRegistry.generated.ts` during build-time code generation.
 
 ```csharp
 // Property Schema/Template Document (stored separately in Cosmos DB)

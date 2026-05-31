@@ -23,10 +23,10 @@ describe('T036: DynamicPropertiesView - Schema-Based Rendering', () => {
   describe('Geographic Region', () => {
     it('should render all Geographic Region properties with proper formatting', () => {
       const properties = {
-        Climate: 'Tropical monsoon climate',
-        Terrain: 'Dense rainforest\nwith river valleys',
-        Population: 1500000,
-        Area: 2500.75,
+        climate: 'Tropical monsoon climate',
+        terrain: 'Dense rainforest\nwith river valleys',
+        population: 1500000,
+        area: 2500.75,
       };
 
       render(
@@ -58,8 +58,8 @@ describe('T036: DynamicPropertiesView - Schema-Based Rendering', () => {
 
     it('should handle large numbers with proper formatting', () => {
       const properties = {
-        Population: 123456789,
-        Area: 987654.321,
+        population: 123456789,
+        area: 987654.321,
       };
 
       render(
@@ -77,9 +77,9 @@ describe('T036: DynamicPropertiesView - Schema-Based Rendering', () => {
   describe('Political Region', () => {
     it('should render Political Region properties with tagArray as badges', () => {
       const properties = {
-        GovernmentType: 'Federal republic\nwith parliamentary democracy',
-        MemberStates: ['State A', 'State B', 'State C'],
-        EstablishedDate: '1776-07-04',
+        governmentType: 'Federal republic\nwith parliamentary democracy',
+        memberStates: ['State A', 'State B', 'State C'],
+        establishedDate: '1776-07-04',
       };
 
       render(
@@ -108,9 +108,9 @@ describe('T036: DynamicPropertiesView - Schema-Based Rendering', () => {
 
     it('should handle empty tagArray gracefully', () => {
       const properties = {
-        GovernmentType: 'Monarchy',
-        MemberStates: [],
-        EstablishedDate: '1000-01-01',
+        governmentType: 'Monarchy',
+        memberStates: [],
+        establishedDate: '1000-01-01',
       };
 
       render(
@@ -128,9 +128,9 @@ describe('T036: DynamicPropertiesView - Schema-Based Rendering', () => {
   describe('Cultural Region', () => {
     it('should render Cultural Region properties with multiple tagArrays', () => {
       const properties = {
-        Languages: ['English', 'Spanish', 'French'],
-        Religions: ['Christianity', 'Islam'],
-        CulturalTraits: 'Rich artistic heritage\nStrong oral traditions',
+        languages: ['English', 'Spanish', 'French'],
+        religions: ['Christianity', 'Islam'],
+        culturalTraits: 'Rich artistic heritage\nStrong oral traditions',
       };
 
       render(
@@ -162,9 +162,9 @@ describe('T036: DynamicPropertiesView - Schema-Based Rendering', () => {
   describe('Military Region', () => {
     it('should render Military Region properties', () => {
       const properties = {
-        CommandStructure: 'Unified command\nUnder central authority',
-        StrategicImportance: 'Critical defensive position\nControls key trade routes',
-        MilitaryAssets: ['Fort Alpha', 'Naval Base Beta', 'Airfield Gamma'],
+        commandStructure: 'Unified command\nUnder central authority',
+        strategicImportance: 'Critical defensive position\nControls key trade routes',
+        militaryAssets: ['Fort Alpha', 'Naval Base Beta', 'Airfield Gamma'],
       };
 
       render(
@@ -245,9 +245,9 @@ describe('DynamicPropertiesView - Edge Cases', () => {
 
   it('should skip undefined fields in schema-based rendering', () => {
     const properties = {
-      Climate: 'Temperate',
+      climate: 'Temperate',
       // Population and Area are undefined (not in object)
-      Terrain: 'Mountainous',
+      terrain: 'Mountainous',
     };
 
     render(
@@ -268,8 +268,8 @@ describe('DynamicPropertiesView - Edge Cases', () => {
 
   it('should display "Not set" for null field values', () => {
     const properties = {
-      Climate: null,
-      Terrain: 'Desert',
+      climate: null,
+      terrain: 'Desert',
     };
 
     render(
@@ -285,7 +285,7 @@ describe('DynamicPropertiesView - Edge Cases', () => {
 
   it('should preserve multiline text formatting', () => {
     const properties = {
-      Terrain: 'Line 1\nLine 2\nLine 3',
+      terrain: 'Line 1\nLine 2\nLine 3',
     };
 
     render(
@@ -304,10 +304,10 @@ describe('DynamicPropertiesView - Edge Cases', () => {
 describe('DynamicPropertiesView - Accessibility', () => {
   it('should have no accessibility violations with schema-based rendering', async () => {
     const properties = {
-      Climate: 'Tropical',
-      Terrain: 'Rainforest',
-      Population: 1000000,
-      Area: 5000.5,
+      climate: 'Tropical',
+      terrain: 'Rainforest',
+      population: 1000000,
+      area: 5000.5,
     };
 
     const { container } = render(
@@ -323,9 +323,9 @@ describe('DynamicPropertiesView - Accessibility', () => {
 
   it('should have no accessibility violations with tagArray rendering', async () => {
     const properties = {
-      Languages: ['English', 'Spanish', 'French'],
-      Religions: ['Christianity', 'Buddhism'],
-      CulturalTraits: 'Diverse traditions',
+      languages: ['English', 'Spanish', 'French'],
+      religions: ['Christianity', 'Buddhism'],
+      culturalTraits: 'Diverse traditions',
     };
 
     const { container } = render(
@@ -358,7 +358,7 @@ describe('DynamicPropertiesView - Accessibility', () => {
 
   it('should use semantic HTML with proper heading hierarchy', () => {
     const properties = {
-      Climate: 'Temperate',
+      climate: 'Temperate',
     };
 
     render(

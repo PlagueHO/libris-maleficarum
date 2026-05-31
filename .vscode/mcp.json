@@ -5,8 +5,8 @@
       "type": "stdio",
       "command": "aspire",
       "args": [
-        "mcp",
-        "start"
+        "agent",
+        "mcp"
       ]
     },
     "context7": {

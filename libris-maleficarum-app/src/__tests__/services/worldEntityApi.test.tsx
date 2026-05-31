@@ -13,7 +13,7 @@ import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import type { ReactNode } from 'react';
 
 // Import the worldEntity API slice and types
@@ -269,10 +269,12 @@ describe('WorldEntity API - Schema Versioning', () => {
       };
 
       // Execute the mutation
-      await createEntity({
-        worldId: '550e8400-e29b-41d4-a716-446655440000',
-        data: requestData,
-      }).unwrap();
+      await act(async () => {
+        await createEntity({
+          worldId: '550e8400-e29b-41d4-a716-446655440000',
+          data: requestData,
+        }).unwrap();
+      });
 
       // Wait for the request to be captured
       await waitFor(() => {
@@ -299,10 +301,12 @@ describe('WorldEntity API - Schema Versioning', () => {
         schemaVersion: 2, // Explicitly set (hypothetical future version)
       };
 
-      await createEntity({
-        worldId: '550e8400-e29b-41d4-a716-446655440000',
-        data: requestData,
-      }).unwrap();
+      await act(async () => {
+        await createEntity({
+          worldId: '550e8400-e29b-41d4-a716-446655440000',
+          data: requestData,
+        }).unwrap();
+      });
 
       await waitFor(() => {
         expect(lastCreateRequest).toBeDefined();
@@ -334,10 +338,12 @@ describe('WorldEntity API - Schema Versioning', () => {
         },
       };
 
-      await createEntity({
-        worldId: '550e8400-e29b-41d4-a716-446655440000',
-        data: requestData,
-      }).unwrap();
+      await act(async () => {
+        await createEntity({
+          worldId: '550e8400-e29b-41d4-a716-446655440000',
+          data: requestData,
+        }).unwrap();
+      });
 
       await waitFor(() => {
         expect(lastCreateRequest).toBeDefined();
@@ -373,12 +379,14 @@ describe('WorldEntity API - Schema Versioning', () => {
         schemaVersion: 1, // Provided by component (EntityDetailForm)
       };
 
-      await updateEntity({
-        worldId: '550e8400-e29b-41d4-a716-446655440000',
-        entityId: '123e4567-e89b-12d3-a456-426614174000',
-        data: requestData,
-        currentEntityType: WorldEntityType.Continent,
-      }).unwrap();
+      await act(async () => {
+        await updateEntity({
+          worldId: '550e8400-e29b-41d4-a716-446655440000',
+          entityId: '123e4567-e89b-12d3-a456-426614174000',
+          data: requestData,
+          currentEntityType: WorldEntityType.Continent,
+        }).unwrap();
+      });
 
       await waitFor(() => {
         expect(lastUpdateRequest).toBeDefined();
@@ -400,12 +408,14 @@ describe('WorldEntity API - Schema Versioning', () => {
         // schemaVersion omitted - API client will use current version from config
       };
 
-      await updateEntity({
-        worldId: '550e8400-e29b-41d4-a716-446655440000',
-        entityId: '123e4567-e89b-12d3-a456-426614174000',
-        data: requestData,
-        currentEntityType: WorldEntityType.Continent,
-      }).unwrap();
+      await act(async () => {
+        await updateEntity({
+          worldId: '550e8400-e29b-41d4-a716-446655440000',
+          entityId: '123e4567-e89b-12d3-a456-426614174000',
+          data: requestData,
+          currentEntityType: WorldEntityType.Continent,
+        }).unwrap();
+      });
 
       await waitFor(() => {
         expect(lastUpdateRequest).toBeDefined();
@@ -433,12 +443,14 @@ describe('WorldEntity API - Schema Versioning', () => {
         },
       };
 
-      await updateEntity({
-        worldId: '550e8400-e29b-41d4-a716-446655440000',
-        entityId: '123e4567-e89b-12d3-a456-426614174000',
-        data: requestData,
-        currentEntityType: WorldEntityType.Character,
-      }).unwrap();
+      await act(async () => {
+        await updateEntity({
+          worldId: '550e8400-e29b-41d4-a716-446655440000',
+          entityId: '123e4567-e89b-12d3-a456-426614174000',
+          data: requestData,
+          currentEntityType: WorldEntityType.Character,
+        }).unwrap();
+      });
 
       await waitFor(() => {
         expect(lastUpdateRequest).toBeDefined();

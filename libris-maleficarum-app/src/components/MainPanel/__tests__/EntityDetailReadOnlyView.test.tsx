@@ -77,10 +77,10 @@ describe('T037: EntityDetailReadOnlyView - Custom Properties with DynamicPropert
       entityType: WorldEntityType.GeographicRegion,
       name: 'Tropical Rainforest',
       properties: {
-        Climate: 'Tropical monsoon',
-        Terrain: 'Dense rainforest',
-        Population: 500000,
-        Area: 2500.75,
+        climate: 'Tropical monsoon',
+        terrain: 'Dense rainforest',
+        population: 500000,
+        area: 2500.75,
       },
     });
 
@@ -99,9 +99,9 @@ describe('T037: EntityDetailReadOnlyView - Custom Properties with DynamicPropert
       entityType: WorldEntityType.PoliticalRegion,
       name: 'Federation',
       properties: {
-        GovernmentType: 'Federal republic',
-        MemberStates: ['State A', 'State B', 'State C'],
-        EstablishedDate: '1776-07-04',
+        governmentType: 'Federal republic',
+        memberStates: ['State A', 'State B', 'State C'],
+        establishedDate: '1776-07-04',
       },
     });
 
@@ -118,9 +118,9 @@ describe('T037: EntityDetailReadOnlyView - Custom Properties with DynamicPropert
       entityType: WorldEntityType.CulturalRegion,
       name: 'Cultural Heartland',
       properties: {
-        Languages: ['English', 'Spanish'],
-        Religions: ['Christianity', 'Islam'],
-        CulturalTraits: 'Diverse traditions',
+        languages: ['English', 'Spanish'],
+        religions: ['Christianity', 'Islam'],
+        culturalTraits: 'Diverse traditions',
       },
     });
 
@@ -162,8 +162,8 @@ describe('EntityDetailReadOnlyView - Accessibility', () => {
     const entity = createEntity({
       entityType: WorldEntityType.GeographicRegion,
       properties: {
-        Climate: 'Temperate',
-        Population: 1000000,
+        climate: 'Temperate',
+        population: 1000000,
       },
     });
 
@@ -177,7 +177,7 @@ describe('EntityDetailReadOnlyView - Accessibility', () => {
     const entity = createEntity({
       entityType: WorldEntityType.GeographicRegion,
       name: 'Test Region',
-      properties: { Climate: 'Temperate' },
+      properties: { climate: 'Temperate' },
     });
 
     render(<EntityDetailReadOnlyView entity={entity} onEditClick={vi.fn()} />);

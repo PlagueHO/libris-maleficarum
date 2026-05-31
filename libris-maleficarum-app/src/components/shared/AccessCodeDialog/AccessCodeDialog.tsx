@@ -62,18 +62,16 @@ export function AccessCodeDialog({
         showCloseButton={false}
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
-        aria-labelledby="access-code-dialog-title"
-        aria-describedby="access-code-dialog-description"
       >
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <div className="flex items-center gap-2">
               <Lock className="size-5 text-muted-foreground" aria-hidden="true" />
-              <DialogTitle id="access-code-dialog-title">
+              <DialogTitle>
                 Access Code Required
               </DialogTitle>
             </div>
-            <DialogDescription id="access-code-dialog-description">
+            <DialogDescription>
               Enter the access code to continue using the application.
             </DialogDescription>
           </DialogHeader>

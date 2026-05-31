@@ -497,9 +497,9 @@ describe('WorldEntityForm - Custom Properties Integration', () => {
         updatedAt: '2026-01-13T12:00:00Z',
         isDeleted: false,
         properties: JSON.stringify({
-          GovernmentType: 'Confederacy',
-          MemberStates: ['State A', 'State B', 'State C'],
-          EstablishedDate: 'Year 1200, Second Age',
+          governmentType: 'Confederacy',
+          memberStates: ['State A', 'State B', 'State C'],
+          establishedDate: 'Year 1200, Second Age',
         }),
       };
 
