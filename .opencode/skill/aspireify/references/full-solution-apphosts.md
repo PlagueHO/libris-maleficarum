@@ -70,9 +70,9 @@ For solutions with 5 or more runnable services, recommend starting with a **core
 The core loop is typically:
 
 1. The primary API service
-2. Its database dependency
-3. Any authentication/identity service
-4. The essential cache (Redis, etc.)
+1. Its database dependency
+1. Any authentication/identity service
+1. The essential cache (Redis, etc.)
 
 Present this explicitly:
 
@@ -81,10 +81,10 @@ Present this explicitly:
 **After the core loop succeeds with `aspire start`:**
 
 1. Stop the AppHost
-2. Add the next batch of services (2-3 at a time) to the AppHost
-3. Run `aspire start` again to validate
-4. If it fails, diagnose and fix before adding more
-5. Repeat until all selected services are wired
+1. Add the next batch of services (2-3 at a time) to the AppHost
+1. Run `aspire start` again to validate
+1. If it fails, diagnose and fix before adding more
+1. Repeat until all selected services are wired
 
 Present progress to the user as you go:
 
@@ -111,7 +111,7 @@ var api = builder.AddProject<Projects.Api>("api")
     .WaitForCompletion(migrator);  // api waits for migrations to finish
 ```
 
-2. **Leave as manual** — the developer runs migrations separately before `aspire start`. Note this in an AppHost comment:
+1. **Leave as manual** — the developer runs migrations separately before `aspire start`. Note this in an AppHost comment:
 
 ```csharp
 // Run migrations manually: dotnet run --project ../util/Migrator
@@ -145,8 +145,8 @@ Some repos use `#if` / `#endif` to maintain multiple build variants from the sam
 When you detect conditional compilation in `Program.cs` or `Startup.cs`:
 
 1. **Surface it early** — *"Your services use `#if OSS` conditional compilation, which means the app behaves differently depending on the build configuration. Which variant should the AppHost target — OSS or commercial?"*
-2. **Don't try to model both** — pick the variant the user selects and wire accordingly
-3. **Note the other variant** — leave a comment in the AppHost: `// This AppHost targets the OSS build. For commercial, adjust service registrations.`
+1. **Don't try to model both** — pick the variant the user selects and wire accordingly
+1. **Note the other variant** — leave a comment in the AppHost: `// This AppHost targets the OSS build. For commercial, adjust service registrations.`
 
 This is not a priority to solve perfectly — just make sure the agent doesn't silently pick the wrong variant.
 
@@ -163,8 +163,8 @@ If the repo's root `global.json` pins an older SDK and the AppHost is in full pr
 Steps:
 
 1. Keep the repo root `global.json` unchanged.
-2. Check if a `global.json` already exists in the AppHost directory — if so, skip this.
-3. Create a `global.json` next to the AppHost `.csproj` that pins the Aspire-supported SDK:
+1. Check if a `global.json` already exists in the AppHost directory — if so, skip this.
+1. Create a `global.json` next to the AppHost `.csproj` that pins the Aspire-supported SDK:
 
 ```json
 {
@@ -175,7 +175,7 @@ Steps:
 }
 ```
 
-4. Leave existing services targeting their current TFM unless the user explicitly asks to migrate them.
+1. Leave existing services targeting their current TFM unless the user explicitly asks to migrate them.
 
 ### Important solution caveat
 
@@ -194,16 +194,16 @@ A discovered solution means the AppHost was created in project mode, but that do
 Use this decision order:
 
 1. If the root solution already includes the services being modeled and is the normal local entry point, prefer adding the AppHost and ServiceDefaults there.
-2. If the root solution is tightly coupled to an older SDK/toolchain and adding a `net10.0` AppHost is likely to break routine builds, keep the AppHost outside the solution or in a safer sibling solution boundary.
-3. If you're unsure, ask instead of guessing.
+1. If the root solution is tightly coupled to an older SDK/toolchain and adding a `net10.0` AppHost is likely to break routine builds, keep the AppHost outside the solution or in a safer sibling solution boundary.
+1. If you're unsure, ask instead of guessing.
 
 ## ServiceDefaults in solution-backed repos
 
 Before creating or wiring ServiceDefaults:
 
 1. Look for an existing ServiceDefaults project or equivalent shared bootstrap code.
-2. Check whether selected services already have tracing, health checks, or service discovery setup.
-3. Check whether the service bootstrap is modern enough for `AddServiceDefaults()` and `MapDefaultEndpoints()`.
+1. Check whether selected services already have tracing, health checks, or service discovery setup.
+1. Check whether the service bootstrap is modern enough for `AddServiceDefaults()` and `MapDefaultEndpoints()`.
 
 If a ServiceDefaults project already exists, reuse it instead of creating another one.
 
@@ -242,7 +242,7 @@ There are exactly two options. Present them clearly:
    - No code changes to the service project needed
    - Health checks, service discovery, and OTel from ServiceDefaults are deferred
 
-2. **Modernize the service's bootstrap** (larger change, per-service)
+1. **Modernize the service's bootstrap** (larger change, per-service)
    - Convert `Program.cs` from `Host.CreateDefaultBuilder()` to `WebApplication.CreateBuilder()`
    - Inline the `Startup.ConfigureServices()` into `builder.Services.*` calls
    - Inline the `Startup.Configure()` into the `app.*` middleware pipeline
@@ -313,11 +313,11 @@ This keeps solution-backed AppHosts easier to navigate and build.
 Before declaring success:
 
 1. The AppHost project builds under its intended SDK boundary.
-2. The root solution still behaves the way the user expects, or the user has explicitly accepted any tradeoff.
-3. Any ServiceDefaults changes compile in the selected services.
-4. `aspire start` works from the AppHost context, and long-lived app resources are healthy rather than merely `Finished`.
-5. Legacy `IHostBuilder` services were either modernized intentionally or explicitly left unchanged.
-6. Migration runners, if modeled, complete successfully before dependent services start.
+1. The root solution still behaves the way the user expects, or the user has explicitly accepted any tradeoff.
+1. Any ServiceDefaults changes compile in the selected services.
+1. `aspire start` works from the AppHost context, and long-lived app resources are healthy rather than merely `Finished`.
+1. Legacy `IHostBuilder` services were either modernized intentionally or explicitly left unchanged.
+1. Migration runners, if modeled, complete successfully before dependent services start.
 
 ## When to ask the user instead of deciding
 

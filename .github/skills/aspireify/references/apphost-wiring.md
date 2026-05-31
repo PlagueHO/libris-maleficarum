@@ -110,7 +110,7 @@ After adding, run `aspire restore` (TypeScript) or `dotnet restore` (C#) to upda
 **`WithReference()`** is the primary way to connect services. It does two things:
 
 1. Injects the referenced resource's connection information (connection string or URL) into the consuming service
-2. Enables Aspire service discovery — .NET services can resolve the referenced resource by name
+1. Enables Aspire service discovery — .NET services can resolve the referenced resource by name
 
 ```csharp
 // C#: api gets the database connection string injected automatically
@@ -131,6 +131,7 @@ const api = await builder.addCSharpApp("api", "./src/Api")
 ```
 
 **How services consume references**: Services receive connection info as environment variables. The naming convention is:
+
 - Connection strings: `ConnectionStrings__<resourceName>` (e.g., `ConnectionStrings__mydb=Host=...`)
 - Service URLs: `services__<resourceName>__<endpointName>__0` (e.g., `services__api__http__0=http://localhost:5123`)
 
@@ -143,6 +144,7 @@ var api = builder.AddCSharpApp("api", "../src/Api")
 ```
 
 **When to use which:**
+
 - Connecting service A to service B or a database/cache/queue → `WithReference()`
 - Passing configuration values, feature flags, API keys → `WithEnvironment()`
 - Never manually construct connection strings with `WithEnvironment()` when `WithReference()` would work
@@ -219,6 +221,7 @@ var frontend = builder.AddViteApp("frontend", "../frontend")
 ```
 
 **Port injection**: Many frameworks (Express, Vite, Flask) need to know which port to listen on. Use the `env:` parameter:
+
 - `withHttpsEndpoint({ env: "PORT" })` (TypeScript)
 - `.WithHttpsEndpoint(env: "PORT")` (C#)
 

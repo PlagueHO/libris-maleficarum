@@ -13,6 +13,7 @@ The `Aspire.Hosting.JavaScript` package provides three resource types. Pick the 
 | App has a specific Node entry file (`.js`/`.ts`) and uses a dev script like `ts-node-dev` | `AddNodeApp(name, dir, "entry.js")` + `.WithRunScript("start:dev")` | Express/Fastify API, Socket.IO server |
 
 **Key distinctions:**
+
 - `AddNodeApp` is for apps that run a **specific file** with Node (e.g., an Express server at `src/index.ts`). Use `.WithRunScript("start:dev")` to override the dev-time command (e.g., `ts-node-dev`).
 - `AddJavaScriptApp` runs a **package.json script** — simpler, good when the script handles everything.
 - `AddViteApp` is `AddJavaScriptApp` with Vite-specific defaults (auto-HTTPS config augmentation, `dev` as default script).
@@ -56,7 +57,7 @@ In monorepos that use **yarn workspaces** or **pnpm workspaces**, all workspace 
 
 1. **Concurrent install conflicts (Windows)**: `.withYarn()` runs `yarn install` before each resource starts. When multiple resources start concurrently, each triggers a root-level `yarn install` that tries to write to the shared `node_modules/`. On Windows, this causes `EPERM: operation not permitted` errors when one resource's running process (e.g., `esbuild.exe`) holds a file lock while another `yarn install` tries to overwrite it.
 
-2. **Redundant installs**: In a properly set up workspace, `yarn` at the root installs everything for all workspaces. Running `yarn install` per-resource is redundant and slow.
+1. **Redundant installs**: In a properly set up workspace, `yarn` at the root installs everything for all workspaces. Running `yarn install` per-resource is redundant and slow.
 
 **The fix: don't use `.withYarn()` on individual workspace resources.** Instead, ensure dependencies are installed once at the root before starting:
 

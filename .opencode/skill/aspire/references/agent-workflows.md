@@ -28,10 +28,10 @@ Keep these points in mind:
 Inspect the live app before editing code:
 
 1. `aspire describe` to check resource state.
-2. `aspire otel logs <resource>` to inspect structured logs.
-3. `aspire logs <resource>` to inspect console output.
-4. `aspire otel traces <resource>` to follow cross-service activity.
-5. `aspire export` when you need a zipped telemetry snapshot for deeper analysis or handoff.
+1. `aspire otel logs <resource>` to inspect structured logs.
+1. `aspire logs <resource>` to inspect console output.
+1. `aspire otel traces <resource>` to follow cross-service activity.
+1. `aspire export` when you need a zipped telemetry snapshot for deeper analysis or handoff.
 
 ## Scenario: I Need To Add An Integration, Understand An API, Or Add A Custom Command Safely
 

@@ -219,6 +219,7 @@ interface GameSystemConfig {
 Format: `{systemId}-{entityType}` (all lowercase, hyphen-separated)
 
 Examples:
+
 - `dnd5e-character`
 - `pathfinder2e-character`
 - `generic-fantasy-location`
@@ -238,7 +239,7 @@ Formal JSON Schema documents will be published under `schemas/` for use by:
 
 ### Directory Structure (Planned)
 
-```
+```text
 schemas/
   entity-types/
     geographic-region.schema.json

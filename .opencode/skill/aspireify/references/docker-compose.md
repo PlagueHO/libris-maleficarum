@@ -35,10 +35,10 @@ services:
 When profiles are present:
 
 1. **List them clearly** — show the user which profiles exist and what services each activates
-2. **Ask which to target** — *"Your docker-compose has profiles: cloud, mssql, postgres, storage, redis, mail. Which ones represent your typical local dev stack?"*
-3. **Model only selected profiles** — services in unselected profiles are skipped entirely
-4. **Services without profiles always run** — if a service has no `profiles:` key, include it regardless of profile selection
-5. **Profile-specific infrastructure implies choices** — `mssql` vs `postgres` profiles often mean the repo supports multiple database backends. Ask which one to model in the AppHost.
+1. **Ask which to target** — *"Your docker-compose has profiles: cloud, mssql, postgres, storage, redis, mail. Which ones represent your typical local dev stack?"*
+1. **Model only selected profiles** — services in unselected profiles are skipped entirely
+1. **Services without profiles always run** — if a service has no `profiles:` key, include it regardless of profile selection
+1. **Profile-specific infrastructure implies choices** — `mssql` vs `postgres` profiles often mean the repo supports multiple database backends. Ask which one to model in the AppHost.
 
 ## Image-to-integration mapping
 
@@ -89,9 +89,9 @@ Use `aspire docs get <integration-slug>` to check what each typed integration ma
 When you see a `${VAR}` pattern in compose:
 
 1. **Check if it maps to a typed integration** — if `POSTGRES_PASSWORD`, `MSSQL_SA_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `RABBITMQ_DEFAULT_PASS`, etc. are used by a typed Aspire integration, **skip them** — Aspire manages these
-2. **Trace non-integration variables** — find them in the `.env` or `.env.example` file
-3. **Classify** — is it a secret (API key, token) or plain config?
-4. **Model it** — secrets become `AddParameter(name, secret: true)`, plain config becomes `AddParameter(name)` with a default or `WithEnvironment()` directly
+1. **Trace non-integration variables** — find them in the `.env` or `.env.example` file
+1. **Classify** — is it a secret (API key, token) or plain config?
+1. **Model it** — secrets become `AddParameter(name, secret: true)`, plain config becomes `AddParameter(name)` with a default or `WithEnvironment()` directly
 
 ## Volume mapping
 
@@ -165,9 +165,9 @@ Repos often have setup scripts alongside their compose files:
 1. **Model as a lifecycle command on the relevant resource** — for example, a database migration script can be a startup command on the database resource. This runs automatically when the resource starts.
    → *"Your repo has a migrate.ps1 that runs SQL migrations against the database. I can model this as a startup lifecycle hook on the database resource so migrations run automatically when you `aspire start`. Want that?"*
 
-2. **Model as a standalone executable resource** — for scripts that don't map cleanly to a single resource, use `AddExecutable()` with `WaitForCompletion()` so dependent services wait for the script to finish.
+1. **Model as a standalone executable resource** — for scripts that don't map cleanly to a single resource, use `AddExecutable()` with `WaitForCompletion()` so dependent services wait for the script to finish.
 
-3. **Leave as manual** — some setup scripts are one-time-only (like certificate generation) and don't need to run every time. Note them in the AppHost as a comment and move on.
+1. **Leave as manual** — some setup scripts are one-time-only (like certificate generation) and don't need to run every time. Note them in the AppHost as a comment and move on.
 
 The right choice depends on the script. Present the tradeoff and let the user decide.
 

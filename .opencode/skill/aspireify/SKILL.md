@@ -35,11 +35,12 @@ Sometimes a small code change unlocks significantly better Aspire integration. W
   → Ask: *"Your API exports traces to Jaeger directly. I can leave that, or switch it to use the OTEL_EXPORTER_OTLP_ENDPOINT env var so traces show up in the Aspire dashboard. The Jaeger endpoint would still work in non-Aspire environments. Want me to update it?"*
 
 **Format for presenting tradeoffs:**
+
 1. Explain what the current code does
-2. Show the zero-change option and what it gives you
-3. Show the small-change option and the extra benefits
-4. Ask which they prefer
-5. If they decline the change, implement the zero-change option without complaint
+1. Show the zero-change option and what it gives you
+1. Show the small-change option and the extra benefits
+1. Ask which they prefer
+1. If they decline the change, implement the zero-change option without complaint
 
 ### When in doubt, ask
 
@@ -150,8 +151,8 @@ Present this as a recommendation. Walk through the `.env` contents with the user
 Migration approach:
 
 1. **Inventory existing secrets** — check `secrets.json.example` files or setup scripts to understand what secrets the repo expects
-2. **Classify each secret** — same as `.env` migration: connection strings become Aspire resources, API keys become parameters, plain config becomes `WithEnvironment()`
-3. **Present the migration** — show the user which secrets will become AppHost parameters and which will become Aspire resources:
+1. **Classify each secret** — same as `.env` migration: connection strings become Aspire resources, API keys become parameters, plain config becomes `WithEnvironment()`
+1. **Present the migration** — show the user which secrets will become AppHost parameters and which will become Aspire resources:
    → *"Your services use dotnet user-secrets with 8 configured values. I'll migrate the SQL connection string to an Aspire Postgres resource, the 3 API keys to secret parameters, and the remaining config to environment variables. The secrets will still be stored in user-secrets but centralized under the AppHost. Sound good?"*
 
 **Important:** Don't delete or modify existing `UserSecretsId` entries in service `.csproj` files — other tooling or non-Aspire workflows may still depend on them.
@@ -266,9 +267,9 @@ Analyze the repository to discover all projects and services that could be model
 - **Docker Compose**: `docker-compose.yml` or `compose.yml` files — these are a goldmine. Parse them to extract:
   - **Profiles**: if any service has a `profiles:` key, the compose file uses profiles to organize services into groups (e.g., `cloud`, `storage`, `mssql`, `postgres`). When profiles exist:
     1. List the available profiles and what services each includes
-    2. Ask the user which profile(s) to target for the AppHost (e.g., *"Your docker-compose uses profiles: cloud, mssql, postgres, storage, redis. Which represent your local dev stack?"*)
-    3. Only model services that belong to the selected profile(s) — skip the rest
-    4. If a service has no `profiles:` key, it runs in all profiles — always include it
+    1. Ask the user which profile(s) to target for the AppHost (e.g., *"Your docker-compose uses profiles: cloud, mssql, postgres, storage, redis. Which represent your local dev stack?"*)
+    1. Only model services that belong to the selected profile(s) — skip the rest
+    1. If a service has no `profiles:` key, it runs in all profiles — always include it
   - **Services**: each named service (in the selected profiles) maps to a potential AppHost resource
   - **Images**: container images used (e.g., `postgres:16`, `redis:7`) → these become `AddContainer()` or typed Aspire integrations (e.g., `AddPostgres()`, `AddRedis()`)
   - **Ports**: published port mappings → `WithHttpsEndpoint()` or `WithEndpoint()`
@@ -300,6 +301,7 @@ aspire doctor
 This checks for a working .NET SDK, container runtime (Docker/Podman), trusted dev certificates, and deprecated workloads. **Fix any failures before proceeding** — discovering that Docker isn't running *after* you've wired 10 services wastes significant time.
 
 Common issues caught by `aspire doctor`:
+
 - **Container runtime not running**: Start Docker Desktop or Podman before proceeding — container resources will fail to start without it.
 - **Deprecated aspire workload installed**: If installed by Visual Studio, it can't be removed via CLI — this is a warning, not a blocker.
 - **Untrusted dev certificate**: Run `aspire certs trust` to fix HTTPS endpoint failures.
@@ -336,7 +338,7 @@ Show the user what you found. For each discovered project/service, show:
 Ask the user:
 
 1. Which projects to include in the AppHost (pre-select all discovered runnable services)
-2. For C# AppHosts: which .NET projects should receive ServiceDefaults references (pre-select all .NET services)
+1. For C# AppHosts: which .NET projects should receive ServiceDefaults references (pre-select all .NET services)
 
 ### Step 4: Create ServiceDefaults (C# only)
 
@@ -607,12 +609,13 @@ Before validating, present the user with optional quality-of-life improvements. 
 
    Use the project/repo name (lowercased) as the subdomain prefix for `applicationUrl`. Use `otlp` and `resources` for the infrastructure URLs. Keep the existing port numbers — just swap `localhost` for the appropriate `*.dev.localhost` subdomain.
 
-2. **Custom URL labels in the dashboard** (display text only): Rename endpoint URLs in the Aspire dashboard for clarity:
+1. **Custom URL labels in the dashboard** (display text only): Rename endpoint URLs in the Aspire dashboard for clarity:
+
    ```csharp
    .WithUrlForEndpoint("https", url => url.DisplayText = "Web UI")
    ```
 
-3. **OpenTelemetry** (if not done in Step 8): "Would you like me to add observability to your services so they appear in the Aspire dashboard's traces and metrics views?"
+1. **OpenTelemetry** (if not done in Step 8): "Would you like me to add observability to your services so they appear in the Aspire dashboard's traces and metrics views?"
 
 Present these as a batch: "I have a few optional dev experience improvements I can make. Want to hear about them?"
 
@@ -625,11 +628,11 @@ aspire start
 Once the app is running, use the Aspire CLI to verify everything is wired up correctly:
 
 1. **Resources are modeled**: `aspire describe` — confirm all expected resources appear with correct types, endpoints, and states.
-2. **Environment flows correctly**: `aspire describe` — check that environment variables (connection strings, ports, secrets from parameters) are injected into each resource as expected. Verify `.env` values that were migrated to parameters are present.
-3. **OTel is flowing** (if configured in Step 8): `aspire otel` — verify that services instrumented with OpenTelemetry are exporting traces and metrics to the Aspire dashboard collector.
-4. **No startup errors**: `aspire logs <resource>` — check logs for each resource to ensure clean startup with no crashes, missing config, or connection failures.
-5. **Dashboard is accessible**: Confirm the dashboard URL is printed and can be opened (remember: include the login token — see "Dashboard URL must include auth token" above).
-6. **Telemetry reaches the dashboard**: After resources are running, verify that traces and structured logs appear in the Aspire dashboard. Open the dashboard, navigate to the Traces view, and confirm at least one trace is visible from a service. If no telemetry flows:
+1. **Environment flows correctly**: `aspire describe` — check that environment variables (connection strings, ports, secrets from parameters) are injected into each resource as expected. Verify `.env` values that were migrated to parameters are present.
+1. **OTel is flowing** (if configured in Step 8): `aspire otel` — verify that services instrumented with OpenTelemetry are exporting traces and metrics to the Aspire dashboard collector.
+1. **No startup errors**: `aspire logs <resource>` — check logs for each resource to ensure clean startup with no crashes, missing config, or connection failures.
+1. **Dashboard is accessible**: Confirm the dashboard URL is printed and can be opened (remember: include the login token — see "Dashboard URL must include auth token" above).
+1. **Telemetry reaches the dashboard**: After resources are running, verify that traces and structured logs appear in the Aspire dashboard. Open the dashboard, navigate to the Traces view, and confirm at least one trace is visible from a service. If no telemetry flows:
    - Check whether the service's OTel setup conditionally disables export (e.g., based on a `selfHosted` flag, a config key like `OpenTelemetry:Enabled`, or an environment check). Many SDKs default OTel OFF for self-hosted/local modes — set the enabling flag explicitly via `WithEnvironment()`.
    - Check that `OTEL_EXPORTER_OTLP_ENDPOINT` is being injected by Aspire (it should be automatic for services modeled with `AddCSharpApp`/`AddProject`).
    - Generate a trace by making an HTTP request to one of the services (e.g., `curl https://localhost:<port>/healthz` or any known endpoint). Some services don't emit traces until they receive traffic.
@@ -651,7 +654,7 @@ If anything lands in an unexpected state, diagnose it, fix it, and run `aspire s
 
 Once everything is healthy, print a summary for the user:
 
-```
+```text
 ✅ Aspire init complete!
 
 Dashboard: <full dashboard URL including login token>
@@ -689,8 +692,8 @@ Ensure both the AppHost and ServiceDefaults projects appear.
 After successful validation:
 
 1. **Leave the AppHost running** — the user gets a fully running app with the dashboard open. Do not call `aspire stop`.
-2. Confirm the evergreen `aspire` skill is present for ongoing AppHost work.
-3. Do not delete the `aspireify/` skill directory unless the user explicitly asks.
+1. Confirm the evergreen `aspire` skill is present for ongoing AppHost work.
+1. Do not delete the `aspireify/` skill directory unless the user explicitly asks.
 
 ## Key rules
 
