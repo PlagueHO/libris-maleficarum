@@ -11,8 +11,16 @@
         "DOTNET_ENVIRONMENT": "Development",
         "CI": "true",
         "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21001",
+        "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL": "https://localhost:21002",
         "ASPIRE_DASHBOARD_MCP_ENDPOINT_URL": "https://localhost:23097",
-        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22205"
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22205",
+        "Azure__Location": "swedencentral",
+        "Azure__CredentialSource": "AzureCli",
+        "Azure__AllowResourceGroupCreation": "true",
+        "MicrosoftFoundry__chatModelName": "gpt-5.3-chat",
+        "MicrosoftFoundry__chatModelVersion": "2026-03-03",
+        "MicrosoftFoundry__embeddingModelName": "text-embedding-3-small",
+        "MicrosoftFoundry__embeddingModelVersion": "1"
       }
     },
     "http": {
@@ -25,8 +33,16 @@
         "DOTNET_ENVIRONMENT": "Development",
         "CI": "true",
         "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:19255",
+        "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL": "http://localhost:19256",
         "ASPIRE_DASHBOARD_MCP_ENDPOINT_URL": "http://localhost:18034",
-        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:20012"
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:20012",
+        "Azure__Location": "swedencentral",
+        "Azure__CredentialSource": "AzureCli",
+        "Azure__AllowResourceGroupCreation": "true",
+        "MicrosoftFoundry__chatModelName": "gpt-5.3-chat",
+        "MicrosoftFoundry__chatModelVersion": "2026-03-03",
+        "MicrosoftFoundry__embeddingModelName": "text-embedding-3-small",
+        "MicrosoftFoundry__embeddingModelVersion": "1"
       }
     }
   }

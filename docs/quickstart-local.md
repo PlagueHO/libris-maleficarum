@@ -57,7 +57,37 @@ git clone https://github.com/PlagueHO/libris-maleficarum.git
 cd libris-maleficarum
 ```
 
-## 2. Start the app
+## 2. Set required Azure user secrets for local provisioning
+
+Aspire provisions Azure AI resources automatically on first run. Authenticate and provide subscription settings via [dotnet user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) so values stay out of source control.
+
+```bash
+# Sign in to Azure CLI (use your tenant ID)
+az login --tenant <tenant-id>
+
+# Verify the correct subscription
+az account show --query "{name:name, id:id, tenantId:tenantId}" -o table
+```
+
+Set required AppHost user secrets:
+
+```bash
+cd libris-maleficarum-service/src/Orchestration/AppHost
+dotnet user-secrets set "Azure:SubscriptionId" "<subscription-id>"
+dotnet user-secrets set "Azure:TenantId" "<tenant-id>"
+dotnet user-secrets set "Azure:Location" "<azure-region>"
+```
+
+> [!TIP]
+> Get your subscription and tenant IDs with `az account show`. Common region values include `eastus2`, `australiaeast`, and `swedencentral`.
+
+Ensure all three keys are set:
+
+* `Azure:SubscriptionId`
+* `Azure:TenantId`
+* `Azure:Location`
+
+## 3. Start the app
 
 Run Aspire AppHost from the service folder:
 
@@ -76,7 +106,7 @@ Aspire will:
 
 First run can take several minutes while resources initialize.
 
-## 3. Open the app
+## 4. Open the app
 
 Use the endpoint links shown in the Aspire Dashboard or terminal output:
 
@@ -86,7 +116,7 @@ Use the endpoint links shown in the Aspire Dashboard or terminal output:
 
 Port values can vary between runs and environments.
 
-## 4. Optional access code protection
+## 5. Optional access code protection
 
 You can protect API access in local development by setting `ACCESS_CODE`.
 
@@ -102,14 +132,9 @@ Bash:
 export ACCESS_CODE="your-access-code"
 ```
 
-You can also set it in API user secrets:
+Set `ACCESS_CODE` in your shell before starting AppHost.
 
-```bash
-cd libris-maleficarum-service/src/Api
-dotnet user-secrets set AccessControl:AccessCode "your-access-code"
-```
-
-## 5. Run tests
+## 6. Run tests
 
 Backend tests:
 

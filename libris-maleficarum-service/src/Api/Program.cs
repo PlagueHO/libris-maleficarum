@@ -117,9 +117,9 @@ builder.Services.AddScoped<IDeleteOperationRepository, DeleteOperationRepository
 builder.Services.AddScoped<IDeleteService, DeleteService>();
 
 // Configure Azure AI Search clients via Aspire client integration
-// Registers SearchIndexClient using the "aisearch" connection from AppHost
+// Registers SearchIndexClient using the "aiSearch" connection from AppHost
 // Uses DefaultAzureCredential (RBAC) — no API keys needed
-builder.AddAzureSearchClient("aisearch");
+builder.AddAzureSearchClient("aiSearch");
 
 // Register SearchClient from SearchIndexClient for query operations
 builder.Services.AddSingleton<SearchClient>(sp =>

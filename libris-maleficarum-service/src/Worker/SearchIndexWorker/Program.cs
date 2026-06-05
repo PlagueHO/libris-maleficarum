@@ -1,5 +1,4 @@
 using LibrisMaleficarum.Domain.Interfaces.Services;
-using LibrisMaleficarum.Infrastructure.Configuration;
 using LibrisMaleficarum.Infrastructure.Services;
 using Azure.AI.OpenAI;
 using Azure.Search.Documents;
@@ -24,8 +23,8 @@ builder.Services.Configure<AppSearchOptions>(
     builder.Configuration.GetSection(AppSearchOptions.SectionName));
 
 // Configure Azure AI Search clients via Aspire client integration
-// Registers SearchIndexClient using the "aisearch" connection from AppHost
-builder.AddAzureSearchClient("aisearch");
+// Registers SearchIndexClient using the "aiSearch" connection from AppHost
+builder.AddAzureSearchClient("aiSearch");
 
 // Register SearchClient from SearchIndexClient for index operations
 builder.Services.AddSingleton<SearchClient>(sp =>

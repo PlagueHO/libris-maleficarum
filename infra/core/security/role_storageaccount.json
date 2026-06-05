@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.43.1.21952",
-      "templateHash": "280053451876917635"
+      "version": "0.43.8.12551",
+      "templateHash": "3271849972945496518"
     },
     "name": "Storage Account Role Assignments",
     "description": "Creates role assignments on an Azure Storage Account."

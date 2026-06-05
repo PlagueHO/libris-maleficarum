@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using Aspire.Hosting.Foundry;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -60,17 +61,38 @@ var cosmosDbDatabase = cosmosDb.AddCosmosDatabase("LibrisMaleficarum");
 // Azure AI Search — uses Aspire hosting integration (Aspire.Hosting.Azure.Search)
 // Azure AI Search does not have a local emulator — uses Azure provisioning or an existing instance
 // See: https://aspire.dev/integrations/cloud/azure/azure-ai-search/azure-ai-search-host/
-var aiSearch = builder.AddAzureSearch("aisearch");
+var aiSearch = builder.AddAzureSearch("aiSearch");
 
-// Azure AI Foundry — uses Aspire hosting integration (Aspire.Hosting.Azure.AIFoundry)
+// Azure AI Foundry — uses Aspire hosting integration (Aspire.Hosting.Foundry)
 // Provides AI model hosting and inference capabilities (embeddings, chat, etc.)
+// Model names and versions must match deployments defined in infra/model-deployments.json
 // See: https://aspire.dev/integrations/cloud/azure/azure-ai-foundry/azure-ai-foundry-host/
-var aiFoundry = builder.AddAzureAIFoundry("aiFoundry");
+var foundry = builder.AddFoundry("foundry");
+var foundryProject = foundry.AddProject("foundryProject");
 
-// Add AI model deployments to the Foundry resource
-var chatDeployment = aiFoundry.AddDeployment("chat", "gpt-5.2-chat", "2026-02-10", "OpenAI");
-var embeddingDeployment = aiFoundry.AddDeployment("embedding", "text-embedding-3-large", "1", "OpenAI");
+// Model deployment configuration — read from MicrosoftFoundry config section with sensible defaults.
+// These are NOT Aspire parameters — just configuration values for the deployment names.
+var chatDeployment = foundryProject.AddModelDeployment(
+    "chat",
+    builder.Configuration["MicrosoftFoundry:chatModelName"] ?? "gpt-5.3-chat",
+    builder.Configuration["MicrosoftFoundry:chatModelVersion"] ?? "2026-03-03",
+    "OpenAI")
+    .WithProperties(deployment =>
+    {
+        deployment.SkuName = "GlobalStandard";
+        deployment.SkuCapacity = 50;
+    });
 
+var embeddingDeployment = foundryProject.AddModelDeployment(
+    "embedding",
+    builder.Configuration["MicrosoftFoundry:embeddingModelName"] ?? "text-embedding-3-small",
+    builder.Configuration["MicrosoftFoundry:embeddingModelVersion"] ?? "1",
+    "OpenAI")
+    .WithProperties(deployment =>
+    {
+        deployment.SkuName = "GlobalStandard";
+        deployment.SkuCapacity = 120;
+    });
 // Add Azure Storage (Azurite emulator) for local development
 // Azurite provides blob, queue, and table storage emulation
 //
@@ -100,6 +122,7 @@ var apiService = builder.AddProject<Projects.LibrisMaleficarum_Api>("api")
     .WithReference(cosmosDb)
     .WithReference(blobs)
     .WithReference(aiSearch)
+    .WithReference(foundryProject)
     .WithReference(chatDeployment)
     .WithReference(embeddingDeployment)
     .WaitFor(cosmosDb)

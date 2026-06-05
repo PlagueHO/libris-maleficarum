@@ -56,6 +56,7 @@ param apiContainerImage string = 'ghcr.io/plagueho/libris-maleficarum-api:latest
 param accessCode string = ''
 
 var abbrs = loadJsonContent('./abbreviations.json')
+var modelDeployments = loadJsonContent('./model-deployments.json')
 
 // tags that should be applied to all resources.
 var tags = {
@@ -134,7 +135,7 @@ module resourceGroup 'br/public:avm/res/resources/resource-group:0.4.3' = {
 }
 
 // Create the Log Analytics workspace using Azure Verified Module (AVM)
-module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.15.0' = {
+module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.15.1' = {
   name: 'logAnalytics-workspace-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -146,7 +147,7 @@ module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
 }
 
 // Create the Application Insights resource using Azure Verified Module (AVM)
-module applicationInsights 'br/public:avm/res/insights/component:0.7.1' = {
+module applicationInsights 'br/public:avm/res/insights/component:0.7.2' = {
   name: 'application-insights-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -159,7 +160,7 @@ module applicationInsights 'br/public:avm/res/insights/component:0.7.1' = {
 }
 
 // Create the Virtual Network and subnets using Azure Verified Modules (AVM)
-module virtualNetwork 'br/public:avm/res/network/virtual-network:0.8.1' = {
+module virtualNetwork 'br/public:avm/res/network/virtual-network:0.9.0' = {
   name: 'virtual-network-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -228,7 +229,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.13.3' = {
 }
 
 // Create a Static Web App for the application using Azure Verified Module (AVM)
-module staticSite 'br/public:avm/res/web/static-site:0.9.4' = {
+module staticSite 'br/public:avm/res/web/static-site:0.9.5' = {
   name: 'static-site-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -252,7 +253,7 @@ module staticSite 'br/public:avm/res/web/static-site:0.9.4' = {
 }
 
 // Create Azure Container Apps Environment in the frontend subnet using Azure Verified Module (AVM)
-module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.2' = {
+module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.3' = {
   name: 'container-apps-environment-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -285,7 +286,7 @@ module aspireDashboard 'aspire-dashboard.bicep' = {
 
 // --------- BACKEND API CONTAINER APP ---------
 // Deploy the backend API as a Container App using Azure Verified Module (AVM)
-module containerApp 'br/public:avm/res/app/container-app:0.22.0' = {
+module containerApp 'br/public:avm/res/app/container-app:0.22.1' = {
   name: 'container-app-api-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [
@@ -370,7 +371,7 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8
 }
 
 // Create a Storage Account with private endpoint in the backend subnet using Azure Verified Module (AVM)
-module storageAccount 'br/public:avm/res/storage/storage-account:0.32.0' = {
+module storageAccount 'br/public:avm/res/storage/storage-account:0.32.1' = {
   name: 'storage-account-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -516,7 +517,7 @@ module aiSearchPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1'
 }
 
 // Create Azure AI Search service with private endpoint in the shared subnet using Azure Verified Module (AVM)
-module aiSearchService 'br/public:avm/res/search/search-service:0.12.0' = {
+module aiSearchService 'br/public:avm/res/search/search-service:0.12.2' = {
   name: 'ai-search-service-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -574,8 +575,9 @@ module aiServicesPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.
   }
 }
 
-// Create Azure AI Foundry instance with private endpoint in the shared subnet using Azure Verified Module (AVM)
-module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.14.2' = {
+// Create Azure AI Foundry instance with private endpoint in the shared subnet.
+// Uses local cognitive-services module to support Foundry features such as RAI policies.
+module aiFoundryAccount './cognitive-services/accounts/main.bicep' = {
   name: 'ai-foundry-account-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -607,20 +609,72 @@ module aiFoundryAccount 'br/public:avm/res/cognitive-services/account:0.14.2' = 
       }
     ]
     publicNetworkAccess: 'Disabled'
-    deployments: [
+    raiPolicies: [
       {
-        name: 'text-embedding-3-small'
-        model: {
-          format: 'OpenAI'
-          name: 'text-embedding-3-small'
-          version: '1'
-        }
-        sku: {
-          name: 'GlobalStandard'
-          capacity: 120
-        }
+        name: 'LibrisMaleficarumContentPolicy'
+        basePolicyName: 'Microsoft.Default'
+        mode: 'Blocking'
+        contentFilters: [
+          {
+            name: 'Hate'
+            enabled: true
+            blocking: true
+            severityThreshold: 'Medium'
+            source: 'Prompt'
+          }
+          {
+            name: 'Sexual'
+            enabled: true
+            blocking: true
+            severityThreshold: 'Medium'
+            source: 'Prompt'
+          }
+          {
+            name: 'Violence'
+            enabled: true
+            blocking: true
+            severityThreshold: 'Medium'
+            source: 'Prompt'
+          }
+          {
+            name: 'SelfHarm'
+            enabled: true
+            blocking: true
+            severityThreshold: 'Medium'
+            source: 'Prompt'
+          }
+          {
+            name: 'Hate'
+            enabled: true
+            blocking: true
+            severityThreshold: 'Medium'
+            source: 'Completion'
+          }
+          {
+            name: 'Sexual'
+            enabled: true
+            blocking: true
+            severityThreshold: 'Medium'
+            source: 'Completion'
+          }
+          {
+            name: 'Violence'
+            enabled: true
+            blocking: true
+            severityThreshold: 'Medium'
+            source: 'Completion'
+          }
+          {
+            name: 'SelfHarm'
+            enabled: true
+            blocking: true
+            severityThreshold: 'Medium'
+            source: 'Completion'
+          }
+        ]
       }
     ]
+    deployments: modelDeployments
   }
 }
 

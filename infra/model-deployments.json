@@ -1,0 +1,28 @@
+[
+  {
+    "name": "chat",
+    "model": {
+      "format": "OpenAI",
+      "name": "gpt-5.3-chat",
+      "version": "2026-03-03"
+    },
+    "sku": {
+      "name": "GlobalStandard",
+      "capacity": 50
+    },
+    "raiPolicyName": "LibrisMaleficarumContentPolicy"
+  },
+  {
+    "name": "embedding",
+    "model": {
+      "format": "OpenAI",
+      "name": "text-embedding-3-small",
+      "version": "1"
+    },
+    "sku": {
+      "name": "GlobalStandard",
+      "capacity": 120
+    },
+    "raiPolicyName": "LibrisMaleficarumContentPolicy"
+  }
+]
