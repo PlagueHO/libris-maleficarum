@@ -257,7 +257,7 @@ public class SearchIndexSyncServiceTests
         document.Depth.Should().Be(2); // parentDepth(1) + 1
         document.Properties.Should().Contain("Elessar");
         document.SchemaVersion.Should().Be(2);
-        document.ContentVector.Length.Should().Be(3);
+        document.ContentVector.Count.Should().Be(3);
     }
 
     [TestMethod]
@@ -315,7 +315,7 @@ public class SearchIndexSyncServiceTests
         var document = SearchIndexSyncService.MapToSearchDocument(entity, vector);
 
         // Assert
-        document.ContentVector.ToArray().Should().BeEquivalentTo(expectedVector);
+        document.ContentVector.Should().BeEquivalentTo(expectedVector);
     }
 
     [TestMethod]
@@ -339,18 +339,18 @@ public class SearchIndexSyncServiceTests
 
     #endregion
 
-        #region TryMapToWorldEntity
+    #region TryMapToWorldEntity
 
-        [TestMethod]
-        public void TryMapToWorldEntity_ValidDocument_ReturnsMappedEntity()
-        {
-                // Arrange
-                var entityId = Guid.NewGuid();
-                var parentId = Guid.NewGuid();
-                var createdAt = DateTime.UtcNow.AddMinutes(-10);
-                var updatedAt = DateTime.UtcNow;
+    [TestMethod]
+    public void TryMapToWorldEntity_ValidDocument_ReturnsMappedEntity()
+    {
+        // Arrange
+        var entityId = Guid.NewGuid();
+        var parentId = Guid.NewGuid();
+        var createdAt = DateTime.UtcNow.AddMinutes(-10);
+        var updatedAt = DateTime.UtcNow;
 
-                var json = $$"""
+        var json = $$"""
                 {
                     "id": "{{entityId}}",
                     "worldId": "{{TestWorldId}}",
@@ -374,39 +374,39 @@ public class SearchIndexSyncServiceTests
                 }
                 """;
 
-                using var document = JsonDocument.Parse(json);
+        using var document = JsonDocument.Parse(json);
 
-                // Act
-                var result = InvokeTryMapToWorldEntity(document.RootElement, out var entity);
+        // Act
+        var result = InvokeTryMapToWorldEntity(document.RootElement, out var entity);
 
-                // Assert
-                result.Should().BeTrue();
-                entity.Should().NotBeNull();
-                entity.Id.Should().Be(entityId);
-                entity.WorldId.Should().Be(TestWorldId);
-                entity.ParentId.Should().Be(parentId);
-                entity.EntityType.Should().Be(EntityType.Character);
-                entity.Name.Should().Be("Drizzt");
-                entity.OwnerId.Should().Be(TestOwnerId);
-                entity.Description.Should().Be("Drow ranger");
-                entity.Tags.Should().BeEquivalentTo(["ranger", "drow"]);
-                entity.Path.Should().BeEquivalentTo([TestWorldId, parentId]);
-                entity.Depth.Should().Be(2);
-                entity.SchemaId.Should().Be("character-v1");
-                entity.SchemaVersion.Should().Be(3);
-                entity.Properties.Should().NotBeNull();
-                entity.Properties!.Should().ContainKey("class");
-                entity.SystemProperties.Should().NotBeNull();
-                entity.SystemProperties!.Should().ContainKey("source");
-                entity.HasChildren.Should().BeTrue();
-                entity.IsDeleted.Should().BeFalse();
-        }
+        // Assert
+        result.Should().BeTrue();
+        entity.Should().NotBeNull();
+        entity.Id.Should().Be(entityId);
+        entity.WorldId.Should().Be(TestWorldId);
+        entity.ParentId.Should().Be(parentId);
+        entity.EntityType.Should().Be(EntityType.Character);
+        entity.Name.Should().Be("Drizzt");
+        entity.OwnerId.Should().Be(TestOwnerId);
+        entity.Description.Should().Be("Drow ranger");
+        entity.Tags.Should().BeEquivalentTo(["ranger", "drow"]);
+        entity.Path.Should().BeEquivalentTo([TestWorldId, parentId]);
+        entity.Depth.Should().Be(2);
+        entity.SchemaId.Should().Be("character-v1");
+        entity.SchemaVersion.Should().Be(3);
+        entity.Properties.Should().NotBeNull();
+        entity.Properties!.Should().ContainKey("class");
+        entity.SystemProperties.Should().NotBeNull();
+        entity.SystemProperties!.Should().ContainKey("source");
+        entity.HasChildren.Should().BeTrue();
+        entity.IsDeleted.Should().BeFalse();
+    }
 
-        [TestMethod]
-        public void TryMapToWorldEntity_MissingDiscriminator_ReturnsFalse()
-        {
-                // Arrange
-                var json = $$"""
+    [TestMethod]
+    public void TryMapToWorldEntity_MissingDiscriminator_ReturnsFalse()
+    {
+        // Arrange
+        var json = $$"""
                 {
                     "id": "{{Guid.NewGuid()}}",
                     "worldId": "{{TestWorldId}}",
@@ -416,21 +416,21 @@ public class SearchIndexSyncServiceTests
                 }
                 """;
 
-                using var document = JsonDocument.Parse(json);
+        using var document = JsonDocument.Parse(json);
 
-                // Act
-                var result = InvokeTryMapToWorldEntity(document.RootElement, out var entity);
+        // Act
+        var result = InvokeTryMapToWorldEntity(document.RootElement, out var entity);
 
-                // Assert
-                result.Should().BeFalse();
-                entity.Should().BeNull();
-        }
+        // Assert
+        result.Should().BeFalse();
+        entity.Should().BeNull();
+    }
 
-        [TestMethod]
-        public void TryMapToWorldEntity_NonWorldEntityDiscriminator_ReturnsFalse()
-        {
-                // Arrange
-                var json = $$"""
+    [TestMethod]
+    public void TryMapToWorldEntity_NonWorldEntityDiscriminator_ReturnsFalse()
+    {
+        // Arrange
+        var json = $$"""
                 {
                     "id": "{{Guid.NewGuid()}}",
                     "worldId": "{{TestWorldId}}",
@@ -441,22 +441,22 @@ public class SearchIndexSyncServiceTests
                 }
                 """;
 
-                using var document = JsonDocument.Parse(json);
+        using var document = JsonDocument.Parse(json);
 
-                // Act
-                var result = InvokeTryMapToWorldEntity(document.RootElement, out var entity);
+        // Act
+        var result = InvokeTryMapToWorldEntity(document.RootElement, out var entity);
 
-                // Assert
-                result.Should().BeFalse();
-                entity.Should().BeNull();
-        }
+        // Assert
+        result.Should().BeFalse();
+        entity.Should().BeNull();
+    }
 
-        [TestMethod]
-        public void TryMapToWorldEntity_NumericEntityType_MapsEnumValue()
-        {
-                // Arrange
-                var numericEntityType = (int)EntityType.Location;
-                var json = $$"""
+    [TestMethod]
+    public void TryMapToWorldEntity_NumericEntityType_MapsEnumValue()
+    {
+        // Arrange
+        var numericEntityType = (int)EntityType.Location;
+        var json = $$"""
                 {
                     "id": "{{Guid.NewGuid()}}",
                     "worldId": "{{TestWorldId}}",
@@ -467,22 +467,22 @@ public class SearchIndexSyncServiceTests
                 }
                 """;
 
-                using var document = JsonDocument.Parse(json);
+        using var document = JsonDocument.Parse(json);
 
-                // Act
-                var result = InvokeTryMapToWorldEntity(document.RootElement, out var entity);
+        // Act
+        var result = InvokeTryMapToWorldEntity(document.RootElement, out var entity);
 
-                // Assert
-                result.Should().BeTrue();
-                entity.Should().NotBeNull();
-                entity.EntityType.Should().Be(EntityType.Location);
-        }
+        // Assert
+        result.Should().BeTrue();
+        entity.Should().NotBeNull();
+        entity.EntityType.Should().Be(EntityType.Location);
+    }
 
-        [TestMethod]
-        public void TryMapToWorldEntity_InvalidEntityType_Throws()
-        {
-                // Arrange
-                var json = $$"""
+    [TestMethod]
+    public void TryMapToWorldEntity_InvalidEntityType_Throws()
+    {
+        // Arrange
+        var json = $$"""
                 {
                     "id": "{{Guid.NewGuid()}}",
                     "worldId": "{{TestWorldId}}",
@@ -493,23 +493,23 @@ public class SearchIndexSyncServiceTests
                 }
                 """;
 
-                using var document = JsonDocument.Parse(json);
+        using var document = JsonDocument.Parse(json);
 
-                // Act
-                Action act = () => InvokeTryMapToWorldEntity(document.RootElement, out _);
+        // Act
+        Action act = () => InvokeTryMapToWorldEntity(document.RootElement, out _);
 
-                // Assert
-                var exception = act.Should().Throw<TargetInvocationException>().Which;
-                exception.InnerException.Should().BeOfType<InvalidOperationException>();
-                exception.InnerException!.Message.Should().Contain("Invalid EntityType value");
-        }
+        // Assert
+        var exception = act.Should().Throw<TargetInvocationException>().Which;
+        exception.InnerException.Should().BeOfType<InvalidOperationException>();
+        exception.InnerException!.Message.Should().Contain("Invalid EntityType value");
+    }
 
-        [TestMethod]
-        public void TryMapToWorldEntity_SoftDeletedDocument_MapsDeletionFields()
-        {
-                // Arrange
-                var deletedDate = DateTime.UtcNow.AddDays(-1);
-                var json = $$"""
+    [TestMethod]
+    public void TryMapToWorldEntity_SoftDeletedDocument_MapsDeletionFields()
+    {
+        // Arrange
+        var deletedDate = DateTime.UtcNow.AddDays(-1);
+        var json = $$"""
                 {
                     "id": "{{Guid.NewGuid()}}",
                     "worldId": "{{TestWorldId}}",
@@ -524,53 +524,53 @@ public class SearchIndexSyncServiceTests
                 }
                 """;
 
-                using var document = JsonDocument.Parse(json);
+        using var document = JsonDocument.Parse(json);
 
-                // Act
-                var result = InvokeTryMapToWorldEntity(document.RootElement, out var entity);
+        // Act
+        var result = InvokeTryMapToWorldEntity(document.RootElement, out var entity);
 
-                // Assert
-                result.Should().BeTrue();
-                entity.Should().NotBeNull();
-                entity.IsDeleted.Should().BeTrue();
-                entity.DeletedDate.Should().NotBeNull();
-                entity.DeletedBy.Should().Be("deleter-user");
-                entity.Ttl.Should().Be(7776000);
-        }
+        // Assert
+        result.Should().BeTrue();
+        entity.Should().NotBeNull();
+        entity.IsDeleted.Should().BeTrue();
+        entity.DeletedDate.Should().NotBeNull();
+        entity.DeletedBy.Should().Be("deleter-user");
+        entity.Ttl.Should().Be(7776000);
+    }
 
-        #endregion
+    #endregion
 
-        private static bool InvokeTryMapToWorldEntity(JsonElement change, out WorldEntity? entity)
-        {
-                var method = typeof(SearchIndexSyncService).GetMethod(
-                        "TryMapToWorldEntity",
-                        BindingFlags.NonPublic | BindingFlags.Static);
+    private static bool InvokeTryMapToWorldEntity(JsonElement change, out WorldEntity? entity)
+    {
+        var method = typeof(SearchIndexSyncService).GetMethod(
+                "TryMapToWorldEntity",
+                BindingFlags.NonPublic | BindingFlags.Static);
 
-                method.Should().NotBeNull("TryMapToWorldEntity should exist for mapping change-feed documents");
+        method.Should().NotBeNull("TryMapToWorldEntity should exist for mapping change-feed documents");
 
-                var args = new object?[] { change, null };
+        var args = new object?[] { change, null };
 
-                var result = method!.Invoke(null, args);
+        var result = method!.Invoke(null, args);
 
-                result.Should().NotBeNull();
-                entity = args[1] as WorldEntity;
-                return (bool)result!;
-        }
+        result.Should().NotBeNull();
+        entity = args[1] as WorldEntity;
+        return (bool)result!;
+    }
 
-            private static bool InvokeTryParseUnixTimestamp(JsonElement document, string propertyName, out long value)
-            {
-                var method = typeof(SearchIndexSyncService).GetMethod(
-                    "TryParseUnixTimestamp",
-                    BindingFlags.NonPublic | BindingFlags.Static);
+    private static bool InvokeTryParseUnixTimestamp(JsonElement document, string propertyName, out long value)
+    {
+        var method = typeof(SearchIndexSyncService).GetMethod(
+            "TryParseUnixTimestamp",
+            BindingFlags.NonPublic | BindingFlags.Static);
 
-                method.Should().NotBeNull("TryParseUnixTimestamp should exist for parsing Cosmos _ts values");
+        method.Should().NotBeNull("TryParseUnixTimestamp should exist for parsing Cosmos _ts values");
 
-                var args = new object?[] { document, propertyName, 0L };
+        var args = new object?[] { document, propertyName, 0L };
 
-                var result = method!.Invoke(null, args);
+        var result = method!.Invoke(null, args);
 
-                result.Should().NotBeNull();
-                value = (long)args[2]!;
-                return (bool)result!;
-            }
+        result.Should().NotBeNull();
+        value = (long)args[2]!;
+        return (bool)result!;
+    }
 }

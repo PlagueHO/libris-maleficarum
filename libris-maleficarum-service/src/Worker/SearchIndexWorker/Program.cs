@@ -2,6 +2,7 @@ using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Infrastructure.Services;
 using LibrisMaleficarum.SearchIndexWorker;
 using Azure.AI.OpenAI;
+using Azure.Identity;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Microsoft.AspNetCore.Builder;
@@ -23,9 +24,18 @@ builder.AddApplicationTelemetry("LibrisMaleficarum.SearchIndexWorker");
 builder.Services.Configure<AppSearchOptions>(
     builder.Configuration.GetSection(AppSearchOptions.SectionName));
 
+// Build a DefaultAzureCredential whose credential chain is controlled by the "Credential" section
+// in appsettings.json (or environment-specific overrides such as appsettings.Development.json).
+// This avoids waiting on credentials that are known to be unavailable in the current environment
+// (e.g. VisualStudioCredential when WAM cannot locate the cached account).
+var credentialOptions = new DefaultAzureCredentialOptions();
+builder.Configuration.GetSection("Credential").Bind(credentialOptions);
+var credential = new DefaultAzureCredential(credentialOptions);
+
 // Configure Azure AI Search clients via Aspire client integration
 // Registers SearchIndexClient using the "aiSearch" connection from AppHost
-builder.AddAzureSearchClient("aiSearch");
+builder.AddAzureSearchClient("aiSearch",
+    configureSettings: settings => settings.Credential = credential);
 
 // Register SearchClient from SearchIndexClient for index operations
 builder.Services.AddSingleton<SearchClient>(sp =>
@@ -37,7 +47,8 @@ builder.Services.AddSingleton<SearchClient>(sp =>
 
 // Configure Azure AI Foundry OpenAI client via Aspire client integration
 // Registers AzureOpenAIClient using the "embedding" deployment connection from AppHost
-builder.AddAzureOpenAIClient("embedding");
+builder.AddAzureOpenAIClient("embedding",
+    configureSettings: settings => settings.Credential = credential);
 
 // Register EmbeddingClient from AzureOpenAIClient for vector embedding generation.
 // EmbeddingDeploymentName must match the Aspire AddModelDeployment resource name ("embedding"),
@@ -56,6 +67,7 @@ builder.Services.AddSingleton<EmbeddingClient>(sp =>
 // Newtonsoft.Json which cannot deserialize into System.Text.Json.JsonElement and silently
 // produces JsonValueKind.Undefined elements, causing every change feed entry to be skipped.
 builder.AddAzureCosmosClient("cosmosdb",
+    configureSettings: settings => settings.Credential = credential,
     configureClientOptions: options =>
     {
         options.ConnectionMode = ConnectionMode.Gateway;

@@ -136,6 +136,31 @@ public class AzureAISearchServiceTests
         service.Should().NotBeNull();
     }
 
+    [TestMethod]
+    [DataRow(VectorCompressionKind.None)]
+    [DataRow(VectorCompressionKind.ScalarQuantization)]
+    [DataRow(VectorCompressionKind.BinaryQuantization)]
+    public void Constructor_WithEachVectorCompressionKind_DoesNotThrow(VectorCompressionKind kind)
+    {
+        // Arrange
+        var options = Options.Create(new AppSearchOptions
+        {
+            EmbeddingDimensions = 1536,
+            EmbeddingModelName = "text-embedding-3-small",
+            IndexName = "test-index",
+            MaxBatchSize = 100,
+            ChangeFeedPollIntervalMs = 1000,
+            VectorCompression = kind
+        });
+
+        // Act
+        var act = () => new AzureAISearchService(
+            _searchIndexClient, _searchClient, _embeddingService, _telemetryService, options, _logger);
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
     #endregion
 
     #region IndexDocumentsBatchAsync - Edge Cases

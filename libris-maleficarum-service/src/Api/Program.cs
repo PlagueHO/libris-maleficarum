@@ -79,6 +79,14 @@ builder.Services.Configure<AccessControlOptions>(
 builder.Services.Configure<AppSearchOptions>(
     builder.Configuration.GetSection(AppSearchOptions.SectionName));
 
+// Build a DefaultAzureCredential whose credential chain is controlled by the "Credential" section
+// in appsettings.json (or environment-specific overrides such as appsettings.Development.json).
+// This avoids waiting on credentials that are known to be unavailable in the current environment
+// (e.g. VisualStudioCredential when WAM cannot locate the cached account).
+var credentialOptions = new DefaultAzureCredentialOptions();
+builder.Configuration.GetSection("Credential").Bind(credentialOptions);
+var credential = new DefaultAzureCredential(credentialOptions);
+
 // Configure DbContext with Cosmos DB via Aspire EF Core Cosmos client integration
 // Registers ApplicationDbContext using the "cosmosdb" connection from AppHost
 // Aspire handles connection string parsing, health checks, logging, tracing, and metrics
@@ -89,7 +97,11 @@ builder.Services.Configure<AppSearchOptions>(
 builder.AddCosmosDbContext<ApplicationDbContext>("cosmosdb", "LibrisMaleficarum",
     configureSettings: settings =>
     {
-        if (!builder.Environment.IsDevelopment())
+        if (builder.Environment.IsDevelopment())
+        {
+            settings.Credential = credential;
+        }
+        else
         {
             settings.Credential = new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned);
         }
@@ -119,7 +131,8 @@ builder.Services.AddScoped<IDeleteService, DeleteService>();
 // Configure Azure AI Search clients via Aspire client integration
 // Registers SearchIndexClient using the "aiSearch" connection from AppHost
 // Uses DefaultAzureCredential (RBAC) — no API keys needed
-builder.AddAzureSearchClient("aiSearch");
+builder.AddAzureSearchClient("aiSearch",
+    configureSettings: settings => settings.Credential = credential);
 
 // Register SearchClient from SearchIndexClient for query operations
 builder.Services.AddSingleton<SearchClient>(sp =>
@@ -131,7 +144,8 @@ builder.Services.AddSingleton<SearchClient>(sp =>
 
 // Configure Azure AI Foundry OpenAI client via Aspire client integration
 // Registers AzureOpenAIClient using the "embedding" deployment connection from AppHost
-builder.AddAzureOpenAIClient("embedding");
+builder.AddAzureOpenAIClient("embedding",
+    configureSettings: settings => settings.Credential = credential);
 
 // Register EmbeddingClient from AzureOpenAIClient for vector embedding generation.
 // EmbeddingDeploymentName must match the Aspire AddModelDeployment resource name ("embedding"),

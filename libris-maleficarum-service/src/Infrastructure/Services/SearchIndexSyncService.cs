@@ -500,7 +500,7 @@ public class SearchIndexSyncService : BackgroundService
             Properties = entity.Properties is not null ? JsonSerializer.Serialize(entity.Properties) : null,
             SystemProperties = entity.SystemProperties is not null ? JsonSerializer.Serialize(entity.SystemProperties) : null,
             SchemaVersion = entity.SchemaVersion,
-            ContentVector = contentVector
+            ContentVector = contentVector.ToArray()
         };
     }
 

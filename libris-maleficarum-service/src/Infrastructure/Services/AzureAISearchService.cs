@@ -8,6 +8,7 @@ using Azure.Search.Documents.Models;
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Domain.Models;
 using LibrisMaleficarum.Infrastructure.Configuration;
+using LibrisMaleficarum.Infrastructure.Search;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using AzureSearchOptions = Azure.Search.Documents.SearchOptions;
@@ -27,6 +28,7 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
     private readonly ITelemetryService _telemetryService;
     private readonly AppSearchOptions _options;
     private readonly ILogger<AzureAISearchService> _logger;
+    private readonly VectorIndexProfile _vectorProfile;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAISearchService"/> class.
@@ -45,6 +47,7 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
         _telemetryService = telemetryService ?? throw new ArgumentNullException(nameof(telemetryService));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _vectorProfile = VectorIndexProfile.From(_options);
     }
 
     /// <inheritdoc/>
@@ -95,6 +98,9 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                 Profiles =
                 {
                     new VectorSearchProfile("vector-profile", "hnsw-algorithm")
+                    {
+                        CompressionName = _vectorProfile.CompressionName
+                    }
                 }
             },
             SemanticSearch = new SemanticSearch
@@ -119,7 +125,12 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
             }
         };
 
-        await _indexClient.CreateOrUpdateIndexAsync(index, cancellationToken: cancellationToken);
+        foreach (var compression in _vectorProfile.Compressions)
+        {
+            index.VectorSearch.Compressions.Add(compression);
+        }
+
+        await _indexClient.CreateOrUpdateIndexAsync(index, allowIndexDowntime: true, cancellationToken: cancellationToken);
         _logger.LogInformation("Search index '{IndexName}' ensured", _options.IndexName);
     }
 
@@ -260,14 +271,7 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                         request.Query, cancellationToken);
                     searchOptions.VectorSearch = new VectorSearchOptions
                     {
-                        Queries =
-                    {
-                        new VectorizedQuery(queryVector)
-                        {
-                            KNearestNeighborsCount = limit,
-                            Fields = { "contentVector" }
-                        }
-                    }
+                        Queries = { BuildVectorizedQuery(queryVector, limit) }
                     };
                     break;
                 }
@@ -280,14 +284,7 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                         request.Query, cancellationToken);
                     searchOptions.VectorSearch = new VectorSearchOptions
                     {
-                        Queries =
-                    {
-                        new VectorizedQuery(queryVector)
-                        {
-                            KNearestNeighborsCount = limit,
-                            Fields = { "contentVector" }
-                        }
-                    }
+                        Queries = { BuildVectorizedQuery(queryVector, limit) }
                     };
                     break;
                 }
@@ -343,6 +340,26 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
             Offset = offset,
             Limit = limit
         };
+    }
+
+    /// <summary>
+    /// Builds a <see cref="VectorizedQuery"/> with k-NN count, target field, and optional oversampling
+    /// from the configured <see cref="VectorIndexProfile"/>.
+    /// </summary>
+    private VectorizedQuery BuildVectorizedQuery(ReadOnlyMemory<float> queryVector, int limit)
+    {
+        var query = new VectorizedQuery(queryVector)
+        {
+            KNearestNeighborsCount = limit,
+            Fields = { "contentVector" }
+        };
+
+        if (_vectorProfile.QueryOversampling is { } oversampling)
+        {
+            query.Oversampling = oversampling;
+        }
+
+        return query;
     }
 
     /// <summary>

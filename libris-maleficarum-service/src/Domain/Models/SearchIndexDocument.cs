@@ -88,5 +88,5 @@ public class SearchIndexDocument
     /// <summary>
     /// Gets the vector embedding for semantic search.
     /// </summary>
-    public required ReadOnlyMemory<float> ContentVector { get; init; }
+    public required IReadOnlyList<float> ContentVector { get; init; }
 }

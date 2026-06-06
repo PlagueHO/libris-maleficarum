@@ -1,5 +1,6 @@
 namespace LibrisMaleficarum.Worker.Tests.Configuration;
 
+using FluentAssertions;
 using LibrisMaleficarum.Infrastructure.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,9 @@ public class SearchOptionsConfigurationTests
         options.EmbeddingDimensions.Should().Be(1536);
         options.MaxBatchSize.Should().Be(100);
         options.ChangeFeedPollIntervalMs.Should().Be(1000);
+        options.VectorCompression.Should().Be(VectorCompressionKind.ScalarQuantization);
+        options.EnableRescoring.Should().BeTrue();
+        options.DefaultOversampling.Should().Be(10.0);
     }
 
     [TestMethod]
@@ -39,6 +43,9 @@ public class SearchOptionsConfigurationTests
                 ["Search:EmbeddingDimensions"] = "768",
                 ["Search:MaxBatchSize"] = "50",
                 ["Search:ChangeFeedPollIntervalMs"] = "5000",
+                ["Search:VectorCompression"] = "None",
+                ["Search:EnableRescoring"] = "false",
+                ["Search:DefaultOversampling"] = "5.5",
             })
             .Build();
 
@@ -55,6 +62,9 @@ public class SearchOptionsConfigurationTests
         options.EmbeddingDimensions.Should().Be(768);
         options.MaxBatchSize.Should().Be(50);
         options.ChangeFeedPollIntervalMs.Should().Be(5000);
+        options.VectorCompression.Should().Be(VectorCompressionKind.None);
+        options.EnableRescoring.Should().BeFalse();
+        options.DefaultOversampling.Should().Be(5.5);
     }
 
     [TestMethod]
@@ -81,6 +91,9 @@ public class SearchOptionsConfigurationTests
         options.EmbeddingDimensions.Should().Be(1536);
         options.MaxBatchSize.Should().Be(100);
         options.ChangeFeedPollIntervalMs.Should().Be(1000);
+        options.VectorCompression.Should().Be(VectorCompressionKind.ScalarQuantization);
+        options.EnableRescoring.Should().BeTrue();
+        options.DefaultOversampling.Should().Be(10.0);
     }
 
     [TestMethod]
@@ -104,6 +117,9 @@ public class SearchOptionsConfigurationTests
         options.EmbeddingDimensions.Should().Be(1536);
         options.MaxBatchSize.Should().Be(100);
         options.ChangeFeedPollIntervalMs.Should().Be(1000);
+        options.VectorCompression.Should().Be(VectorCompressionKind.ScalarQuantization);
+        options.EnableRescoring.Should().BeTrue();
+        options.DefaultOversampling.Should().Be(10.0);
     }
 
     [TestMethod]
