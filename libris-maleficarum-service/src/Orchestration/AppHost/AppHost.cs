@@ -56,6 +56,13 @@ var cosmosDb = builder.AddAzureCosmosDB("cosmosdb")
 
 // Add the database to the Cosmos DB account
 var cosmosDbDatabase = cosmosDb.AddCosmosDatabase("LibrisMaleficarum");
+
+// Intentionally do not create application containers in AppHost.
+// Container creation is owned by EF Core model configuration and happens during API startup
+// via ApplicationDbContext.Database.EnsureCreatedAsync(), so container mappings and partition
+// keys stay centralized in one place (including hierarchical partition keys such as Assets:
+// [/worldId, /entityId]).
+// The Change Feed lease container ('leases') is created separately by SearchIndexSyncService.
 #pragma warning restore ASPIRECOSMOSDB001
 
 // Azure AI Search — uses Aspire hosting integration (Aspire.Hosting.Azure.Search)

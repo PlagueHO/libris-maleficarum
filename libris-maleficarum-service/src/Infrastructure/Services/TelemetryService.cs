@@ -17,9 +17,14 @@ public class TelemetryService : ITelemetryService
     private readonly Counter<int> _documentsIndexed;
     private readonly Counter<int> _indexingFailures;
     private readonly Counter<int> _searchQueries;
+    private readonly Counter<int> _batchDocumentsIndexed;
+    private readonly Counter<int> _batchDocumentsRemoved;
+    private readonly Counter<int> _batchDocumentsSkipped;
+    private readonly Counter<int> _batchFailures;
     private readonly Histogram<double> _syncLagSeconds;
     private readonly Histogram<double> _embeddingLatencyMs;
     private readonly Histogram<double> _searchLatencyMs;
+    private readonly Histogram<double> _batchLatencyMs;
     private readonly ActivitySource _activitySource;
 
     /// <summary>
@@ -36,9 +41,14 @@ public class TelemetryService : ITelemetryService
         _documentsIndexed = meter.CreateCounter<int>("search.documents.indexed", description: "Counts the number of documents indexed in search");
         _indexingFailures = meter.CreateCounter<int>("search.indexing.failures", description: "Counts the number of indexing failures");
         _searchQueries = meter.CreateCounter<int>("search.queries.executed", description: "Counts the number of search queries executed");
+        _batchDocumentsIndexed = meter.CreateCounter<int>("search.batch.documents.indexed", description: "Counts the number of documents indexed in change feed batches");
+        _batchDocumentsRemoved = meter.CreateCounter<int>("search.batch.documents.removed", description: "Counts the number of documents removed in change feed batches");
+        _batchDocumentsSkipped = meter.CreateCounter<int>("search.batch.documents.skipped", description: "Counts the number of changes skipped in change feed batches");
+        _batchFailures = meter.CreateCounter<int>("search.batch.failures", description: "Counts the number of failures in change feed batches");
         _syncLagSeconds = meter.CreateHistogram<double>("search.sync.lag.seconds", "s", "Index sync lag in seconds");
         _embeddingLatencyMs = meter.CreateHistogram<double>("search.embedding.latency.ms", "ms", "Embedding generation latency in milliseconds");
         _searchLatencyMs = meter.CreateHistogram<double>("search.query.latency.ms", "ms", "Search query latency in milliseconds");
+        _batchLatencyMs = meter.CreateHistogram<double>("search.batch.latency.ms", "ms", "Change feed batch latency in milliseconds");
         _activitySource = activitySource;
     }
 
@@ -100,6 +110,36 @@ public class TelemetryService : ITelemetryService
     public void RecordSearchLatency(double latencyMs)
     {
         _searchLatencyMs.Record(latencyMs);
+    }
+
+    /// <inheritdoc />
+    public void RecordBatchProcessed(int indexed, int removed, int skipped, int failures)
+    {
+        if (indexed > 0)
+        {
+            _batchDocumentsIndexed.Add(indexed);
+        }
+
+        if (removed > 0)
+        {
+            _batchDocumentsRemoved.Add(removed);
+        }
+
+        if (skipped > 0)
+        {
+            _batchDocumentsSkipped.Add(skipped);
+        }
+
+        if (failures > 0)
+        {
+            _batchFailures.Add(failures);
+        }
+    }
+
+    /// <inheritdoc />
+    public void RecordBatchLatency(double latencyMs)
+    {
+        _batchLatencyMs.Record(latencyMs);
     }
 
     /// <inheritdoc />

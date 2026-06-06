@@ -133,12 +133,14 @@ builder.Services.AddSingleton<SearchClient>(sp =>
 // Registers AzureOpenAIClient using the "embedding" deployment connection from AppHost
 builder.AddAzureOpenAIClient("embedding");
 
-// Register EmbeddingClient from AzureOpenAIClient for vector embedding generation
+// Register EmbeddingClient from AzureOpenAIClient for vector embedding generation.
+// EmbeddingDeploymentName must match the Aspire AddModelDeployment resource name ("embedding"),
+// not the model name — Azure AI Foundry deployment name and model name are independent.
 builder.Services.AddSingleton<EmbeddingClient>(sp =>
 {
     var openAIClient = sp.GetRequiredService<AzureOpenAIClient>();
     var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AppSearchOptions>>().Value;
-    return openAIClient.GetEmbeddingClient(opts.EmbeddingModelName);
+    return openAIClient.GetEmbeddingClient(opts.EmbeddingDeploymentName);
 });
 
 // Register search services

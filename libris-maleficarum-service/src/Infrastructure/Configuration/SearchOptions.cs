@@ -11,6 +11,12 @@ public class SearchOptions
     public const string SectionName = "Search";
 
     /// <summary>
+    /// Gets or sets the Azure AI Foundry embedding deployment name.
+    /// Must match the deployment name defined in AppHost (AddModelDeployment first argument).
+    /// </summary>
+    public string EmbeddingDeploymentName { get; set; } = "embedding";
+
+    /// <summary>
     /// Gets or sets the Azure AI Services embedding model name.
     /// </summary>
     public string EmbeddingModelName { get; set; } = "text-embedding-3-small";

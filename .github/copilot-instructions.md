@@ -109,6 +109,13 @@ Use these focused rules to be productive quickly in this monorepo. Keep answers 
 - Never hardcode secrets; use Key Vault and managed identity. Disable public network access where supported.
 - If you need Azure best practices, call the Azure guidance tool.
 
+## JSON serialization (C# backend)
+
+- **Always use `System.Text.Json`** for all JSON serialization/deserialization in C# code.
+- **Never use `Newtonsoft.Json`** (`Newtonsoft.Json.JsonConvert`, `JObject`, `JArray`, `JToken`) — it is banned from this codebase.
+- When third-party libraries default to Newtonsoft.Json, configure them explicitly to use `System.Text.Json` equivalents (e.g., `SystemTextJsonCosmosSerializer` for Cosmos DB SDK).
+- Use `JsonNamingPolicy.CamelCase` in `JsonSerializerOptions` when camelCase output is required.
+
 ## Logging security (C# backend)
 
 - **Never log raw user-derived values** — query text, transcription text, access codes, display names, user-authored content. This prevents log injection (CWE-117).

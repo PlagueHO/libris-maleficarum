@@ -93,6 +93,7 @@ public class ControllerTests {
 - **Styling**: **TailwindCSS only** (NOT CSS Modules)
 - **Azure**: Never hardcode secrets (use Key Vault + managed identity); private endpoints; prefer `azd` over `az`
 - **AI**: Microsoft Agent Framework (not Semantic Kernel) for backend; CopilotKit for frontend
+- **JSON**: Always use `System.Text.Json`; **never use `Newtonsoft.Json`** — it is banned. Configure third-party libraries (e.g., Cosmos DB) to use `SystemTextJsonCosmosSerializer` explicitly.
 - **Aspire.NET**: Local dev only (`dotnet run --project src/Orchestration/AppHost`)
 - **Logging (C# only)**: Never log raw user-derived values (query/transcription text, access codes, display names, user-authored content). Log safe metadata only: counts, lengths, durations, GUIDs, HTTP status codes, lifecycle event names. See `docs/design/security_logging.md` and `.github/instructions/logging-security.instructions.md`.
 - **Persistence Source of Truth**: For any persistence, schema, DTO, Cosmos document, or import/export data-shape change, always consult `docs/design/data_model.md` first and treat it as authoritative. If implementation conflicts with docs, align implementation to `docs/design/data_model.md` (not vice versa) unless explicitly directed by the user.

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 using LibrisMaleficarum.ServiceDefaults.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -68,15 +69,11 @@ public static class Extensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation()
-                    // Add custom application meters
-                    .AddMeter("LibrisMaleficarum.Api");
+                    .AddRuntimeInstrumentation();
             })
             .WithTracing(tracing =>
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
-                    // Add custom application activity source
-                    .AddSource("LibrisMaleficarum.Api")
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
                         tracing.Filter = context =>
@@ -104,18 +101,17 @@ public static class Extensions
     private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+        var appInsightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
 
         if (useOtlpExporter)
         {
             builder.Services.AddOpenTelemetry().UseOtlpExporter();
         }
 
-        // Uncomment the following lines to enable the Azure Monitor exporter (requires the Azure.Monitor.OpenTelemetry.AspNetCore package)
-        //if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
-        //{
-        //    builder.Services.AddOpenTelemetry()
-        //       .UseAzureMonitor();
-        //}
+        if (!string.IsNullOrWhiteSpace(appInsightsConnectionString))
+        {
+            builder.Services.AddOpenTelemetry().UseAzureMonitor();
+        }
 
         return builder;
     }
@@ -127,6 +123,8 @@ public static class Extensions
     /// </summary>
     public static TBuilder AddApplicationTelemetry<TBuilder>(this TBuilder builder, string serviceName = "LibrisMaleficarum.Api") where TBuilder : IHostApplicationBuilder
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(serviceName);
+
         // Create custom application meter - counters will be created by TelemetryService as needed
         var applicationMeter = new Meter(serviceName, "1.0.0");
 
@@ -136,6 +134,10 @@ public static class Extensions
         // Register as singletons for dependency injection
         builder.Services.AddSingleton(applicationMeter);
         builder.Services.AddSingleton(applicationActivitySource);
+
+        // Ensure custom instrumentation sources are exported for this service.
+        builder.Services.ConfigureOpenTelemetryMeterProvider(metrics => metrics.AddMeter(serviceName));
+        builder.Services.ConfigureOpenTelemetryTracerProvider(tracing => tracing.AddSource(serviceName));
 
         return builder;
     }

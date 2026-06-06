@@ -76,6 +76,7 @@ var deploymentId = uniqueString(subscription().id, environmentName, location)
 var logAnalyticsName = '${abbrs.operationalInsightsWorkspaces}${environmentName}'
 var sendTologAnalyticsCustomSettingName = 'send-to-${logAnalyticsName}'
 var applicationInsightsName = '${abbrs.insightsComponents}${environmentName}'
+var workbookDisplayName = '${abbrs.insightsWorkbooks}${environmentName}-search-index-worker'
 var virtualNetworkName = '${abbrs.networkVirtualNetworks}${environmentName}'
 var storageAccounName = take(toLower(replace('${abbrs.storageStorageAccounts}${environmentName}', '-', '')), 24)
 var keyVaultName = take(toLower(replace('${abbrs.keyVaultVaults}${environmentName}', '-', '')), 24)
@@ -1063,6 +1064,148 @@ module indexingFailureAlert 'br/public:avm/res/insights/metric-alert:0.4.1' = {
   }
 }
 
+// Alert when worker liveness indicates stopped/unhealthy state.
+module searchWorkerLivenessAlert 'br/public:avm/res/insights/metric-alert:0.4.1' = {
+  name: 'search-worker-liveness-alert-deployment-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  dependsOn: [resourceGroup]
+  params: {
+    name: 'search-worker-liveness-alert-${environmentName}'
+    location: 'global'
+    tags: tags
+    severity: 1
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT5M'
+    criteria: {
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allof: [
+        {
+          name: 'SearchWorkerLivenessLow'
+          metricName: 'search.worker.alive'
+          metricNamespace: 'microsoft.insights/components'
+          operator: 'LessThan'
+          threshold: 1
+          timeAggregation: 'Average'
+          criterionType: 'StaticThresholdCriterion'
+        }
+      ]
+    }
+    scopes: [
+      applicationInsights.outputs.resourceId
+    ]
+  }
+}
+
+// Alert when any batch-level failures are recorded.
+module searchBatchFailureAlert 'br/public:avm/res/insights/metric-alert:0.4.1' = {
+  name: 'search-batch-failure-alert-deployment-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  dependsOn: [resourceGroup]
+  params: {
+    name: 'search-batch-failure-alert-${environmentName}'
+    location: 'global'
+    tags: tags
+    severity: 2
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT5M'
+    criteria: {
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allof: [
+        {
+          name: 'SearchBatchFailures'
+          metricName: 'search.batch.failures'
+          metricNamespace: 'microsoft.insights/components'
+          operator: 'GreaterThan'
+          threshold: 0
+          timeAggregation: 'Total'
+          criterionType: 'StaticThresholdCriterion'
+        }
+      ]
+    }
+    scopes: [
+      applicationInsights.outputs.resourceId
+    ]
+  }
+}
+
+// Alert when embedding latency remains above threshold.
+module searchEmbeddingLatencyAlert 'br/public:avm/res/insights/metric-alert:0.4.1' = {
+  name: 'search-embedding-latency-alert-deployment-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  dependsOn: [resourceGroup]
+  params: {
+    name: 'search-embedding-latency-alert-${environmentName}'
+    location: 'global'
+    tags: tags
+    severity: 2
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT5M'
+    criteria: {
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allof: [
+        {
+          name: 'SearchEmbeddingLatencyHigh'
+          metricName: 'search.embedding.latency.ms'
+          metricNamespace: 'microsoft.insights/components'
+          operator: 'GreaterThan'
+          threshold: 2000
+          timeAggregation: 'Average'
+          criterionType: 'StaticThresholdCriterion'
+        }
+      ]
+    }
+    scopes: [
+      applicationInsights.outputs.resourceId
+    ]
+  }
+}
+
+// Alert when batch processing latency remains above threshold.
+module searchBatchLatencyAlert 'br/public:avm/res/insights/metric-alert:0.4.1' = {
+  name: 'search-batch-latency-alert-deployment-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  dependsOn: [resourceGroup]
+  params: {
+    name: 'search-batch-latency-alert-${environmentName}'
+    location: 'global'
+    tags: tags
+    severity: 3
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT5M'
+    criteria: {
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allof: [
+        {
+          name: 'SearchBatchLatencyHigh'
+          metricName: 'search.batch.latency.ms'
+          metricNamespace: 'microsoft.insights/components'
+          operator: 'GreaterThan'
+          threshold: 5000
+          timeAggregation: 'Average'
+          criterionType: 'StaticThresholdCriterion'
+        }
+      ]
+    }
+    scopes: [
+      applicationInsights.outputs.resourceId
+    ]
+  }
+}
+
+module searchIndexWorkerWorkbook './core/monitoring/workbook.bicep' = {
+  name: 'search-index-worker-workbook-deployment-${deploymentId}'
+  scope: az.resourceGroup(effectiveResourceGroupName)
+  dependsOn: [
+    resourceGroup
+  ]
+  params: {
+    displayName: workbookDisplayName
+    location: location
+    sourceId: applicationInsights.outputs.resourceId
+    tags: tags
+  }
+}
+
 @description('The Azure region where resources are deployed.')
 output AZURE_LOCATION string = location
 
@@ -1089,3 +1232,6 @@ output AZURE_CONTAINER_APP_NAME string = containerApp.outputs.name
 
 @description('The FQDN of the backend API Container App.')
 output AZURE_CONTAINER_APP_FQDN string = containerApp.outputs.fqdn
+
+@description('The resource ID of the Search Index Worker monitoring workbook.')
+output WORKBOOK_RESOURCE_ID string = searchIndexWorkerWorkbook.outputs.resourceId

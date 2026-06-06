@@ -70,6 +70,15 @@ applyTo: "**/*.cs"
 - Implement proper exception filtering with `when` clauses
 - Use `ThrowHelper` patterns for commonly thrown exceptions
 
+### JSON Serialization
+
+- **Always use `System.Text.Json`** (`System.Text.Json.JsonSerializer`, `JsonDocument`, `JsonElement`, `JsonSerializerOptions`)
+- **Never use `Newtonsoft.Json`** (`Newtonsoft.Json.JsonConvert`, `JObject`, `JArray`, `JToken`); it is banned from this codebase
+- Use `[JsonPropertyName]` for property name customization; use `JsonSerializerOptions` for global settings
+- Use `JsonNamingPolicy.CamelCase` when camelCase output is required (e.g., serializing to Cosmos DB or HTTP responses)
+- Prefer `Utf8JsonReader`/`Utf8JsonWriter` for high-performance streaming scenarios
+- When integrating third-party libraries that default to Newtonsoft.Json, configure them explicitly to use `System.Text.Json` equivalents (e.g., `SystemTextJsonCosmosSerializer` for Cosmos DB)
+
 ## Performance Optimizations
 
 ### Memory Efficiency

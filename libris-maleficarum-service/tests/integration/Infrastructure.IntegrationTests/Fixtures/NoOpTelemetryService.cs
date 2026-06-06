@@ -70,6 +70,18 @@ public class NoOpTelemetryService : ITelemetryService
     }
 
     /// <inheritdoc />
+    public void RecordBatchProcessed(int indexed, int removed, int skipped, int failures)
+    {
+        // No-op
+    }
+
+    /// <inheritdoc />
+    public void RecordBatchLatency(double latencyMs)
+    {
+        // No-op
+    }
+
+    /// <inheritdoc />
     public Activity? StartIndexingActivity(string entityId, string entityType)
     {
         return null;

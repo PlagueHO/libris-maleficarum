@@ -69,6 +69,21 @@ public interface ITelemetryService
     void RecordSearchLatency(double latencyMs);
 
     /// <summary>
+    /// Records batch processing counts for search index synchronization.
+    /// </summary>
+    /// <param name="indexed">The number of documents successfully indexed in the batch.</param>
+    /// <param name="removed">The number of documents successfully removed from the index in the batch.</param>
+    /// <param name="skipped">The number of changes skipped during batch processing.</param>
+    /// <param name="failures">The number of failures encountered during batch processing.</param>
+    void RecordBatchProcessed(int indexed, int removed, int skipped, int failures);
+
+    /// <summary>
+    /// Records the latency for processing a change feed batch.
+    /// </summary>
+    /// <param name="latencyMs">The batch processing latency in milliseconds.</param>
+    void RecordBatchLatency(double latencyMs);
+
+    /// <summary>
     /// Starts a new activity for indexing operations.
     /// </summary>
     /// <param name="entityId">The entity identifier being indexed.</param>

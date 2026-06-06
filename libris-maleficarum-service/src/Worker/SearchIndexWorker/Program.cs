@@ -1,5 +1,6 @@
 using LibrisMaleficarum.Domain.Interfaces.Services;
 using LibrisMaleficarum.Infrastructure.Services;
+using LibrisMaleficarum.SearchIndexWorker;
 using Azure.AI.OpenAI;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
@@ -38,25 +39,31 @@ builder.Services.AddSingleton<SearchClient>(sp =>
 // Registers AzureOpenAIClient using the "embedding" deployment connection from AppHost
 builder.AddAzureOpenAIClient("embedding");
 
-// Register EmbeddingClient from AzureOpenAIClient for vector embedding generation
+// Register EmbeddingClient from AzureOpenAIClient for vector embedding generation.
+// EmbeddingDeploymentName must match the Aspire AddModelDeployment resource name ("embedding"),
+// not the model name — Azure AI Foundry deployment name and model name are independent.
 builder.Services.AddSingleton<EmbeddingClient>(sp =>
 {
     var openAIClient = sp.GetRequiredService<AzureOpenAIClient>();
     var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AppSearchOptions>>().Value;
-    return openAIClient.GetEmbeddingClient(opts.EmbeddingModelName);
+    return openAIClient.GetEmbeddingClient(opts.EmbeddingDeploymentName);
 });
 
 // Register Cosmos DB client for Change Feed Processor via Aspire client integration
-// Registers CosmosClient using the "cosmosdb" connection from AppHost
+// Registers CosmosClient using the "cosmosdb" connection from AppHost.
+// SystemTextJsonCosmosSerializer is required so that GetChangeFeedProcessorBuilder<JsonElement>
+// produces properly populated JsonElement values. The default CosmosSerializationOptions uses
+// Newtonsoft.Json which cannot deserialize into System.Text.Json.JsonElement and silently
+// produces JsonValueKind.Undefined elements, causing every change feed entry to be skipped.
 builder.AddAzureCosmosClient("cosmosdb",
     configureClientOptions: options =>
     {
         options.ConnectionMode = ConnectionMode.Gateway;
         options.RequestTimeout = TimeSpan.FromSeconds(60);
-        options.SerializerOptions = new CosmosSerializationOptions
+        options.Serializer = new SystemTextJsonCosmosSerializer(new System.Text.Json.JsonSerializerOptions
         {
-            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase,
-        };
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+        });
     });
 
 // Register search index and embedding services (Infrastructure implementations of Domain interfaces)

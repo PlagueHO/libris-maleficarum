@@ -19,6 +19,8 @@ using AppSearchOptions = LibrisMaleficarum.Infrastructure.Configuration.SearchOp
 /// </summary>
 public class AzureAISearchService : ISearchIndexService, ISearchService
 {
+    private static readonly IndexDocumentsOptions FailOnAnyIndexingError = new() { ThrowOnAnyError = true };
+
     private readonly SearchIndexClient _indexClient;
     private readonly SearchClient _searchClient;
     private readonly IEmbeddingService _embeddingService;
@@ -129,7 +131,12 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
         var actions = new IndexDocumentsBatch<SearchIndexDocument>();
         actions.Actions.Add(IndexDocumentsAction.MergeOrUpload(document));
 
-        await _searchClient.IndexDocumentsAsync(actions, cancellationToken: cancellationToken);
+        var response = await _searchClient.IndexDocumentsAsync(
+            actions,
+            FailOnAnyIndexingError,
+            cancellationToken);
+        EnsureAllIndexActionsSucceeded(response.Value, expectedCount: 1);
+
         _telemetryService.RecordDocumentIndexed(document.EntityType);
     }
 
@@ -149,7 +156,11 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                 actions.Actions.Add(IndexDocumentsAction.MergeOrUpload(doc));
             }
 
-            await _searchClient.IndexDocumentsAsync(actions, cancellationToken: cancellationToken);
+            var response = await _searchClient.IndexDocumentsAsync(
+                actions,
+                FailOnAnyIndexingError,
+                cancellationToken);
+            EnsureAllIndexActionsSucceeded(response.Value, chunk.Length);
 
             foreach (var doc in chunk)
             {
@@ -339,4 +350,26 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
     /// </summary>
     private static string EscapeODataString(string value) =>
         value.Replace("'", "''");
+
+    private void EnsureAllIndexActionsSucceeded(IndexDocumentsResult result, int expectedCount)
+    {
+        var failed = result.Results
+            .Where(r => !r.Succeeded)
+            .ToList();
+
+        if (failed.Count == 0)
+        {
+            return;
+        }
+
+        _logger.LogError(
+            "Azure AI Search indexing returned failures: FailedCount={FailedCount}, ExpectedCount={ExpectedCount}, FirstFailedStatus={FirstFailedStatus}, FirstFailedKey={FirstFailedKey}",
+            failed.Count,
+            expectedCount,
+            failed[0].Status,
+            failed[0].Key);
+
+        throw new InvalidOperationException(
+            $"Azure AI Search indexing failed for {failed.Count} of {expectedCount} documents.");
+    }
 }

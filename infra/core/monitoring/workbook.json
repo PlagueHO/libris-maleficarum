@@ -1,0 +1,151 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.43.8.12551",
+      "templateHash": "18283365460174991085"
+    }
+  },
+  "parameters": {
+    "displayName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Display name for the workbook."
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Azure region for the workbook resource."
+      }
+    },
+    "sourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Source resource ID for workbook queries (for example, an Application Insights component ID)."
+      }
+    },
+    "description": {
+      "type": "string",
+      "defaultValue": "Operational dashboard for SearchIndexWorker metrics.",
+      "metadata": {
+        "description": "Optional. Description shown in the workbook metadata."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Optional. Tags to apply to the workbook resource."
+      }
+    }
+  },
+  "variables": {
+    "$fxv#0": {
+      "version": "Notebook/1.0",
+      "items": [
+        {
+          "type": 1,
+          "name": "header",
+          "content": {
+            "json": "# Search Index Worker Monitoring\nMonitors throughput, failures, latency, sync lag, and worker liveness telemetry from SearchIndexWorker.",
+            "style": "info"
+          }
+        },
+        {
+          "type": 3,
+          "name": "batch-throughput",
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customMetrics\n| where name in ('search.batch.documents.indexed', 'search.batch.documents.removed', 'search.batch.documents.skipped')\n| extend metricValue = todouble(coalesce(valueSum, value))\n| summarize total = sum(metricValue) by name, bin(timestamp, 5m)\n| render timechart",
+            "size": 0,
+            "title": "Batch throughput (indexed / removed / skipped)",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components"
+          }
+        },
+        {
+          "type": 3,
+          "name": "batch-failures",
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customMetrics\n| where name in ('search.batch.failures', 'search.indexing.failures')\n| extend metricValue = todouble(coalesce(valueSum, value))\n| summarize total = sum(metricValue) by name, bin(timestamp, 5m)\n| render timechart",
+            "size": 0,
+            "title": "Failure metrics",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components"
+          }
+        },
+        {
+          "type": 3,
+          "name": "embedding-latency",
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customMetrics\n| where name == 'search.embedding.latency.ms'\n| extend metricValue = todouble(coalesce(valueSum, value))\n| summarize p50 = percentile(metricValue, 50), p95 = percentile(metricValue, 95), p99 = percentile(metricValue, 99) by bin(timestamp, 5m)\n| render timechart",
+            "size": 0,
+            "title": "Embedding latency (p50/p95/p99)",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components"
+          }
+        },
+        {
+          "type": 3,
+          "name": "sync-lag",
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customMetrics\n| where name == 'search.sync.lag.seconds'\n| extend metricValue = todouble(coalesce(valueSum, value))\n| summarize p50 = percentile(metricValue, 50), p95 = percentile(metricValue, 95) by bin(timestamp, 5m)\n| render timechart",
+            "size": 0,
+            "title": "Sync lag (seconds, p50/p95)",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components"
+          }
+        },
+        {
+          "type": 3,
+          "name": "worker-liveness",
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customMetrics\n| where name == 'search.worker.alive'\n| extend metricValue = todouble(coalesce(valueSum, value))\n| summarize minAlive = min(metricValue), maxAlive = max(metricValue) by bin(timestamp, 5m)\n| render timechart",
+            "size": 0,
+            "title": "Worker liveness (0 = stopped, 1 = running)",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components"
+          }
+        }
+      ],
+      "isLocked": false,
+      "fallbackResourceIds": []
+    },
+    "workbookSchemaVersion": "Notebook/1.0",
+    "workbookJson": "[string(variables('$fxv#0'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Insights/workbooks",
+      "apiVersion": "2023-06-01",
+      "name": "[guid(resourceGroup().id, 'Microsoft.Insights/workbooks', parameters('displayName'))]",
+      "location": "[parameters('location')]",
+      "kind": "shared",
+      "tags": "[parameters('tags')]",
+      "properties": {
+        "category": "workbook",
+        "description": "[parameters('description')]",
+        "displayName": "[parameters('displayName')]",
+        "serializedData": "[variables('workbookJson')]",
+        "sourceId": "[parameters('sourceId')]",
+        "version": "[variables('workbookSchemaVersion')]"
+      }
+    }
+  ],
+  "outputs": {
+    "resourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the workbook."
+      },
+      "value": "[resourceId('Microsoft.Insights/workbooks', guid(resourceGroup().id, 'Microsoft.Insights/workbooks', parameters('displayName')))]"
+    }
+  }
+}

@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.43.8.12551",
-      "templateHash": "4154766413214899696"
+      "templateHash": "17156533964975650509"
     }
   },
   "parameters": {
@@ -148,6 +148,7 @@
       "hybridComputeMachines": "arcs-",
       "insightsActionGroups": "ag-",
       "insightsComponents": "appi-",
+      "insightsWorkbooks": "wbk-",
       "keyVaultVaults": "kv-",
       "kubernetesConnectedClusters": "arck",
       "kustoClusters": "dec",
@@ -272,6 +273,7 @@
     "logAnalyticsName": "[format('{0}{1}', variables('abbrs').operationalInsightsWorkspaces, parameters('environmentName'))]",
     "sendTologAnalyticsCustomSettingName": "[format('send-to-{0}', variables('logAnalyticsName'))]",
     "applicationInsightsName": "[format('{0}{1}', variables('abbrs').insightsComponents, parameters('environmentName'))]",
+    "workbookDisplayName": "[format('{0}{1}-search-index-worker', variables('abbrs').insightsWorkbooks, parameters('environmentName'))]",
     "virtualNetworkName": "[format('{0}{1}', variables('abbrs').networkVirtualNetworks, parameters('environmentName'))]",
     "storageAccounName": "[take(toLower(replace(format('{0}{1}', variables('abbrs').storageStorageAccounts, parameters('environmentName')), '-', '')), 24)]",
     "keyVaultName": "[take(toLower(replace(format('{0}{1}', variables('abbrs').keyVaultVaults, parameters('environmentName')), '-', '')), 24)]",
@@ -66393,6 +66395,2487 @@
         "aiSearchService",
         "resourceGroup"
       ]
+    },
+    "searchWorkerLivenessAlert": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('search-worker-liveness-alert-deployment-{0}', variables('deploymentId'))]",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('search-worker-liveness-alert-{0}', parameters('environmentName'))]"
+          },
+          "location": {
+            "value": "global"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "severity": {
+            "value": 1
+          },
+          "evaluationFrequency": {
+            "value": "PT5M"
+          },
+          "windowSize": {
+            "value": "PT5M"
+          },
+          "criteria": {
+            "value": {
+              "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria",
+              "allof": [
+                {
+                  "name": "SearchWorkerLivenessLow",
+                  "metricName": "search.worker.alive",
+                  "metricNamespace": "microsoft.insights/components",
+                  "operator": "LessThan",
+                  "threshold": 1,
+                  "timeAggregation": "Average",
+                  "criterionType": "StaticThresholdCriterion"
+                }
+              ]
+            }
+          },
+          "scopes": {
+            "value": [
+              "[reference('applicationInsights').outputs.resourceId.value]"
+            ]
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.38.33.27573",
+              "templateHash": "10896455469002632588"
+            },
+            "name": "Metric Alerts",
+            "description": "This module deploys a Metric Alert."
+          },
+          "definitions": {
+            "alertType": {
+              "type": "object",
+              "discriminator": {
+                "propertyName": "odata.type",
+                "mapping": {
+                  "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria": {
+                    "$ref": "#/definitions/alertWebtestType"
+                  },
+                  "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria": {
+                    "$ref": "#/definitions/alertResourceType"
+                  },
+                  "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria": {
+                    "$ref": "#/definitions/alertMultiResourceType"
+                  }
+                }
+              },
+              "metadata": {
+                "__bicep_export!": true
+              }
+            },
+            "alertResourceType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "allof": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "metadata": {
+                    "description": "Required. The list of metric criteria for this 'all of' operation."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for a single resource scenario."
+              }
+            },
+            "alertMultiResourceType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "allof": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "metadata": {
+                    "description": "Required. The list of multiple metric criteria for this 'all of' operation."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for multiple resources scenario."
+              }
+            },
+            "alertWebtestType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "componentResourceId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The Application Insights resource ID."
+                  }
+                },
+                "failedLocationCount": {
+                  "type": "int",
+                  "metadata": {
+                    "description": "Required. The number of failed locations."
+                  }
+                },
+                "webTestResourceId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The Application Insights web test resource ID."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for a web test scenario."
+              }
+            },
+            "lockType": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the name of lock."
+                  }
+                },
+                "kind": {
+                  "type": "string",
+                  "allowedValues": [
+                    "CanNotDelete",
+                    "None",
+                    "ReadOnly"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the type of lock."
+                  }
+                },
+                "notes": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the notes of the lock."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "An AVM-aligned type for a lock.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.0"
+                }
+              }
+            },
+            "roleAssignmentType": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The name (as GUID) of the role assignment. If not provided, a GUID will be generated."
+                  }
+                },
+                "roleDefinitionIdOrName": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The role to assign. You can provide either the display name of the role definition, the role definition GUID, or its fully qualified ID in the following format: '/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11'."
+                  }
+                },
+                "principalId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The principal ID of the principal (user/group/identity) to assign the role to."
+                  }
+                },
+                "principalType": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Device",
+                    "ForeignGroup",
+                    "Group",
+                    "ServicePrincipal",
+                    "User"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The principal type of the assigned principal ID."
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The description of the role assignment."
+                  }
+                },
+                "condition": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The conditions on the role assignment. This limits the resources it can be assigned to. e.g.: @Resource[Microsoft.Storage/storageAccounts/blobServices/containers:ContainerName] StringEqualsIgnoreCase \"foo_storage_container\"."
+                  }
+                },
+                "conditionVersion": {
+                  "type": "string",
+                  "allowedValues": [
+                    "2.0"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Version of the condition."
+                  }
+                },
+                "delegatedManagedIdentityResourceId": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The Resource Id of the delegated managed identity resource."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "An AVM-aligned type for a role assignment.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.5.1"
+                }
+              }
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. The name of the alert."
+              }
+            },
+            "alertDescription": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional. Description of the alert."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "global",
+              "metadata": {
+                "description": "Optional. Location for all resources."
+              }
+            },
+            "enabled": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. Indicates whether this alert is enabled."
+              }
+            },
+            "severity": {
+              "type": "int",
+              "defaultValue": 3,
+              "allowedValues": [
+                0,
+                1,
+                2,
+                3,
+                4
+              ],
+              "metadata": {
+                "description": "Optional. The severity of the alert."
+              }
+            },
+            "evaluationFrequency": {
+              "type": "string",
+              "defaultValue": "PT5M",
+              "allowedValues": [
+                "PT1M",
+                "PT5M",
+                "PT15M",
+                "PT30M",
+                "PT1H"
+              ],
+              "metadata": {
+                "description": "Optional. how often the metric alert is evaluated represented in ISO 8601 duration format."
+              }
+            },
+            "windowSize": {
+              "type": "string",
+              "defaultValue": "PT15M",
+              "allowedValues": [
+                "PT1M",
+                "PT5M",
+                "PT15M",
+                "PT30M",
+                "PT1H",
+                "PT6H",
+                "PT12H",
+                "P1D"
+              ],
+              "metadata": {
+                "description": "Optional. the period of time (in ISO 8601 duration format) that is used to monitor alert activity based on the threshold."
+              }
+            },
+            "scopes": {
+              "type": "array",
+              "defaultValue": [
+                "[subscription().id]"
+              ],
+              "metadata": {
+                "description": "Optional. the list of resource IDs that this metric alert is scoped to."
+              }
+            },
+            "targetResourceType": {
+              "type": "string",
+              "nullable": true,
+              "metadata": {
+                "description": "Conditional. The resource type of the target resource(s) on which the alert is created/updated. Required if alertCriteriaType is MultipleResourceMultipleMetricCriteria."
+              }
+            },
+            "targetResourceRegion": {
+              "type": "string",
+              "nullable": true,
+              "metadata": {
+                "description": "Conditional. The region of the target resource(s) on which the alert is created/updated. Required if alertCriteriaType is MultipleResourceMultipleMetricCriteria."
+              }
+            },
+            "autoMitigate": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. The flag that indicates whether the alert should be auto resolved or not."
+              }
+            },
+            "actions": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Optional. The list of actions to take when alert triggers."
+              }
+            },
+            "criteria": {
+              "$ref": "#/definitions/alertType",
+              "metadata": {
+                "description": "Required. Maps to the 'odata.type' field. Specifies the type of the alert criteria."
+              }
+            },
+            "lock": {
+              "$ref": "#/definitions/lockType",
+              "nullable": true,
+              "metadata": {
+                "description": "Optional. The lock settings of the service."
+              }
+            },
+            "roleAssignments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/roleAssignmentType"
+              },
+              "nullable": true,
+              "metadata": {
+                "description": "Optional. Array of role assignments to create."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "__bicep_resource_derived_type!": {
+                  "source": "Microsoft.Insights/metricAlerts@2018-03-01#properties/tags"
+                },
+                "description": "Optional. Tags of the resource."
+              },
+              "nullable": true
+            },
+            "enableTelemetry": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. Enable/Disable usage telemetry for module."
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "actionGroups",
+                "count": "[length(parameters('actions'))]",
+                "input": {
+                  "actionGroupId": "[coalesce(tryGet(parameters('actions')[copyIndex('actionGroups')], 'actionGroupId'), parameters('actions')[copyIndex('actionGroups')])]",
+                  "webHookProperties": "[tryGet(parameters('actions')[copyIndex('actionGroups')], 'webHookProperties')]"
+                }
+              },
+              {
+                "name": "formattedRoleAssignments",
+                "count": "[length(coalesce(parameters('roleAssignments'), createArray()))]",
+                "input": "[union(coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')], createObject('roleDefinitionId', coalesce(tryGet(variables('builtInRoleNames'), coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName), if(contains(coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName, '/providers/Microsoft.Authorization/roleDefinitions/'), coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName)))))]"
+              }
+            ],
+            "builtInRoleNames": {
+              "Contributor": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+              "Owner": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+              "Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+              "Role Based Access Control Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f58310d9-a9f6-439a-9e8d-f62e7b41a168')]",
+              "User Access Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')]"
+            }
+          },
+          "resources": {
+            "avmTelemetry": {
+              "condition": "[parameters('enableTelemetry')]",
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2024-03-01",
+              "name": "[format('46d3xbcp.res.insights-metricalert.{0}.{1}', replace('0.4.1', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4))]",
+              "properties": {
+                "mode": "Incremental",
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "resources": [],
+                  "outputs": {
+                    "telemetry": {
+                      "type": "String",
+                      "value": "For more information, see https://aka.ms/avm/TelemetryInfo"
+                    }
+                  }
+                }
+              }
+            },
+            "metricAlert": {
+              "type": "Microsoft.Insights/metricAlerts",
+              "apiVersion": "2018-03-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "description": "[parameters('alertDescription')]",
+                "severity": "[parameters('severity')]",
+                "enabled": "[parameters('enabled')]",
+                "scopes": "[parameters('scopes')]",
+                "evaluationFrequency": "[parameters('evaluationFrequency')]",
+                "windowSize": "[parameters('windowSize')]",
+                "targetResourceType": "[parameters('targetResourceType')]",
+                "targetResourceRegion": "[parameters('targetResourceRegion')]",
+                "criteria": "[shallowMerge(createArray(createObject('odata.type', parameters('criteria')['odata.type']), if(contains(parameters('criteria'), 'allof'), createObject('allof', parameters('criteria').allof), createObject()), if(contains(parameters('criteria'), 'componentResourceId'), createObject('componentId', parameters('criteria').componentResourceId), createObject()), if(contains(parameters('criteria'), 'failedLocationCount'), createObject('failedLocationCount', parameters('criteria').failedLocationCount), createObject()), if(contains(parameters('criteria'), 'webTestResourceId'), createObject('webTestId', parameters('criteria').webTestResourceId), createObject())))]",
+                "autoMitigate": "[parameters('autoMitigate')]",
+                "actions": "[variables('actionGroups')]"
+              }
+            },
+            "metricAlert_lock": {
+              "condition": "[and(not(empty(coalesce(parameters('lock'), createObject()))), not(equals(tryGet(parameters('lock'), 'kind'), 'None')))]",
+              "type": "Microsoft.Authorization/locks",
+              "apiVersion": "2020-05-01",
+              "scope": "[format('Microsoft.Insights/metricAlerts/{0}', parameters('name'))]",
+              "name": "[coalesce(tryGet(parameters('lock'), 'name'), format('lock-{0}', parameters('name')))]",
+              "properties": {
+                "level": "[coalesce(tryGet(parameters('lock'), 'kind'), '')]",
+                "notes": "[coalesce(tryGet(parameters('lock'), 'notes'), if(equals(tryGet(parameters('lock'), 'kind'), 'CanNotDelete'), 'Cannot delete resource or child resources.', 'Cannot delete or modify the resource or child resources.'))]"
+              },
+              "dependsOn": [
+                "metricAlert"
+              ]
+            },
+            "metricAlert_roleAssignments": {
+              "copy": {
+                "name": "metricAlert_roleAssignments",
+                "count": "[length(coalesce(variables('formattedRoleAssignments'), createArray()))]"
+              },
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Insights/metricAlerts/{0}', parameters('name'))]",
+              "name": "[coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'name'), guid(resourceId('Microsoft.Insights/metricAlerts', parameters('name')), coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId, coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId))]",
+              "properties": {
+                "roleDefinitionId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId]",
+                "principalId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId]",
+                "description": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'description')]",
+                "principalType": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'principalType')]",
+                "condition": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition')]",
+                "conditionVersion": "[if(not(empty(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition'))), coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'conditionVersion'), '2.0'), null())]",
+                "delegatedManagedIdentityResourceId": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'delegatedManagedIdentityResourceId')]"
+              },
+              "dependsOn": [
+                "metricAlert"
+              ]
+            }
+          },
+          "outputs": {
+            "resourceGroupName": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource group the metric alert was deployed into."
+              },
+              "value": "[resourceGroup().name]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the metric alert."
+              },
+              "value": "[parameters('name')]"
+            },
+            "resourceId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the metric alert."
+              },
+              "value": "[resourceId('Microsoft.Insights/metricAlerts', parameters('name'))]"
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "The location the resource was deployed into."
+              },
+              "value": "[reference('metricAlert', '2018-03-01', 'full').location]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "applicationInsights",
+        "resourceGroup"
+      ]
+    },
+    "searchBatchFailureAlert": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('search-batch-failure-alert-deployment-{0}', variables('deploymentId'))]",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('search-batch-failure-alert-{0}', parameters('environmentName'))]"
+          },
+          "location": {
+            "value": "global"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "severity": {
+            "value": 2
+          },
+          "evaluationFrequency": {
+            "value": "PT5M"
+          },
+          "windowSize": {
+            "value": "PT5M"
+          },
+          "criteria": {
+            "value": {
+              "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria",
+              "allof": [
+                {
+                  "name": "SearchBatchFailures",
+                  "metricName": "search.batch.failures",
+                  "metricNamespace": "microsoft.insights/components",
+                  "operator": "GreaterThan",
+                  "threshold": 0,
+                  "timeAggregation": "Total",
+                  "criterionType": "StaticThresholdCriterion"
+                }
+              ]
+            }
+          },
+          "scopes": {
+            "value": [
+              "[reference('applicationInsights').outputs.resourceId.value]"
+            ]
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.38.33.27573",
+              "templateHash": "10896455469002632588"
+            },
+            "name": "Metric Alerts",
+            "description": "This module deploys a Metric Alert."
+          },
+          "definitions": {
+            "alertType": {
+              "type": "object",
+              "discriminator": {
+                "propertyName": "odata.type",
+                "mapping": {
+                  "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria": {
+                    "$ref": "#/definitions/alertWebtestType"
+                  },
+                  "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria": {
+                    "$ref": "#/definitions/alertResourceType"
+                  },
+                  "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria": {
+                    "$ref": "#/definitions/alertMultiResourceType"
+                  }
+                }
+              },
+              "metadata": {
+                "__bicep_export!": true
+              }
+            },
+            "alertResourceType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "allof": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "metadata": {
+                    "description": "Required. The list of metric criteria for this 'all of' operation."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for a single resource scenario."
+              }
+            },
+            "alertMultiResourceType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "allof": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "metadata": {
+                    "description": "Required. The list of multiple metric criteria for this 'all of' operation."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for multiple resources scenario."
+              }
+            },
+            "alertWebtestType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "componentResourceId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The Application Insights resource ID."
+                  }
+                },
+                "failedLocationCount": {
+                  "type": "int",
+                  "metadata": {
+                    "description": "Required. The number of failed locations."
+                  }
+                },
+                "webTestResourceId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The Application Insights web test resource ID."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for a web test scenario."
+              }
+            },
+            "lockType": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the name of lock."
+                  }
+                },
+                "kind": {
+                  "type": "string",
+                  "allowedValues": [
+                    "CanNotDelete",
+                    "None",
+                    "ReadOnly"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the type of lock."
+                  }
+                },
+                "notes": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the notes of the lock."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "An AVM-aligned type for a lock.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.0"
+                }
+              }
+            },
+            "roleAssignmentType": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The name (as GUID) of the role assignment. If not provided, a GUID will be generated."
+                  }
+                },
+                "roleDefinitionIdOrName": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The role to assign. You can provide either the display name of the role definition, the role definition GUID, or its fully qualified ID in the following format: '/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11'."
+                  }
+                },
+                "principalId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The principal ID of the principal (user/group/identity) to assign the role to."
+                  }
+                },
+                "principalType": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Device",
+                    "ForeignGroup",
+                    "Group",
+                    "ServicePrincipal",
+                    "User"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The principal type of the assigned principal ID."
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The description of the role assignment."
+                  }
+                },
+                "condition": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The conditions on the role assignment. This limits the resources it can be assigned to. e.g.: @Resource[Microsoft.Storage/storageAccounts/blobServices/containers:ContainerName] StringEqualsIgnoreCase \"foo_storage_container\"."
+                  }
+                },
+                "conditionVersion": {
+                  "type": "string",
+                  "allowedValues": [
+                    "2.0"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Version of the condition."
+                  }
+                },
+                "delegatedManagedIdentityResourceId": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The Resource Id of the delegated managed identity resource."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "An AVM-aligned type for a role assignment.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.5.1"
+                }
+              }
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. The name of the alert."
+              }
+            },
+            "alertDescription": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional. Description of the alert."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "global",
+              "metadata": {
+                "description": "Optional. Location for all resources."
+              }
+            },
+            "enabled": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. Indicates whether this alert is enabled."
+              }
+            },
+            "severity": {
+              "type": "int",
+              "defaultValue": 3,
+              "allowedValues": [
+                0,
+                1,
+                2,
+                3,
+                4
+              ],
+              "metadata": {
+                "description": "Optional. The severity of the alert."
+              }
+            },
+            "evaluationFrequency": {
+              "type": "string",
+              "defaultValue": "PT5M",
+              "allowedValues": [
+                "PT1M",
+                "PT5M",
+                "PT15M",
+                "PT30M",
+                "PT1H"
+              ],
+              "metadata": {
+                "description": "Optional. how often the metric alert is evaluated represented in ISO 8601 duration format."
+              }
+            },
+            "windowSize": {
+              "type": "string",
+              "defaultValue": "PT15M",
+              "allowedValues": [
+                "PT1M",
+                "PT5M",
+                "PT15M",
+                "PT30M",
+                "PT1H",
+                "PT6H",
+                "PT12H",
+                "P1D"
+              ],
+              "metadata": {
+                "description": "Optional. the period of time (in ISO 8601 duration format) that is used to monitor alert activity based on the threshold."
+              }
+            },
+            "scopes": {
+              "type": "array",
+              "defaultValue": [
+                "[subscription().id]"
+              ],
+              "metadata": {
+                "description": "Optional. the list of resource IDs that this metric alert is scoped to."
+              }
+            },
+            "targetResourceType": {
+              "type": "string",
+              "nullable": true,
+              "metadata": {
+                "description": "Conditional. The resource type of the target resource(s) on which the alert is created/updated. Required if alertCriteriaType is MultipleResourceMultipleMetricCriteria."
+              }
+            },
+            "targetResourceRegion": {
+              "type": "string",
+              "nullable": true,
+              "metadata": {
+                "description": "Conditional. The region of the target resource(s) on which the alert is created/updated. Required if alertCriteriaType is MultipleResourceMultipleMetricCriteria."
+              }
+            },
+            "autoMitigate": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. The flag that indicates whether the alert should be auto resolved or not."
+              }
+            },
+            "actions": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Optional. The list of actions to take when alert triggers."
+              }
+            },
+            "criteria": {
+              "$ref": "#/definitions/alertType",
+              "metadata": {
+                "description": "Required. Maps to the 'odata.type' field. Specifies the type of the alert criteria."
+              }
+            },
+            "lock": {
+              "$ref": "#/definitions/lockType",
+              "nullable": true,
+              "metadata": {
+                "description": "Optional. The lock settings of the service."
+              }
+            },
+            "roleAssignments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/roleAssignmentType"
+              },
+              "nullable": true,
+              "metadata": {
+                "description": "Optional. Array of role assignments to create."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "__bicep_resource_derived_type!": {
+                  "source": "Microsoft.Insights/metricAlerts@2018-03-01#properties/tags"
+                },
+                "description": "Optional. Tags of the resource."
+              },
+              "nullable": true
+            },
+            "enableTelemetry": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. Enable/Disable usage telemetry for module."
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "actionGroups",
+                "count": "[length(parameters('actions'))]",
+                "input": {
+                  "actionGroupId": "[coalesce(tryGet(parameters('actions')[copyIndex('actionGroups')], 'actionGroupId'), parameters('actions')[copyIndex('actionGroups')])]",
+                  "webHookProperties": "[tryGet(parameters('actions')[copyIndex('actionGroups')], 'webHookProperties')]"
+                }
+              },
+              {
+                "name": "formattedRoleAssignments",
+                "count": "[length(coalesce(parameters('roleAssignments'), createArray()))]",
+                "input": "[union(coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')], createObject('roleDefinitionId', coalesce(tryGet(variables('builtInRoleNames'), coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName), if(contains(coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName, '/providers/Microsoft.Authorization/roleDefinitions/'), coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName)))))]"
+              }
+            ],
+            "builtInRoleNames": {
+              "Contributor": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+              "Owner": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+              "Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+              "Role Based Access Control Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f58310d9-a9f6-439a-9e8d-f62e7b41a168')]",
+              "User Access Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')]"
+            }
+          },
+          "resources": {
+            "avmTelemetry": {
+              "condition": "[parameters('enableTelemetry')]",
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2024-03-01",
+              "name": "[format('46d3xbcp.res.insights-metricalert.{0}.{1}', replace('0.4.1', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4))]",
+              "properties": {
+                "mode": "Incremental",
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "resources": [],
+                  "outputs": {
+                    "telemetry": {
+                      "type": "String",
+                      "value": "For more information, see https://aka.ms/avm/TelemetryInfo"
+                    }
+                  }
+                }
+              }
+            },
+            "metricAlert": {
+              "type": "Microsoft.Insights/metricAlerts",
+              "apiVersion": "2018-03-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "description": "[parameters('alertDescription')]",
+                "severity": "[parameters('severity')]",
+                "enabled": "[parameters('enabled')]",
+                "scopes": "[parameters('scopes')]",
+                "evaluationFrequency": "[parameters('evaluationFrequency')]",
+                "windowSize": "[parameters('windowSize')]",
+                "targetResourceType": "[parameters('targetResourceType')]",
+                "targetResourceRegion": "[parameters('targetResourceRegion')]",
+                "criteria": "[shallowMerge(createArray(createObject('odata.type', parameters('criteria')['odata.type']), if(contains(parameters('criteria'), 'allof'), createObject('allof', parameters('criteria').allof), createObject()), if(contains(parameters('criteria'), 'componentResourceId'), createObject('componentId', parameters('criteria').componentResourceId), createObject()), if(contains(parameters('criteria'), 'failedLocationCount'), createObject('failedLocationCount', parameters('criteria').failedLocationCount), createObject()), if(contains(parameters('criteria'), 'webTestResourceId'), createObject('webTestId', parameters('criteria').webTestResourceId), createObject())))]",
+                "autoMitigate": "[parameters('autoMitigate')]",
+                "actions": "[variables('actionGroups')]"
+              }
+            },
+            "metricAlert_lock": {
+              "condition": "[and(not(empty(coalesce(parameters('lock'), createObject()))), not(equals(tryGet(parameters('lock'), 'kind'), 'None')))]",
+              "type": "Microsoft.Authorization/locks",
+              "apiVersion": "2020-05-01",
+              "scope": "[format('Microsoft.Insights/metricAlerts/{0}', parameters('name'))]",
+              "name": "[coalesce(tryGet(parameters('lock'), 'name'), format('lock-{0}', parameters('name')))]",
+              "properties": {
+                "level": "[coalesce(tryGet(parameters('lock'), 'kind'), '')]",
+                "notes": "[coalesce(tryGet(parameters('lock'), 'notes'), if(equals(tryGet(parameters('lock'), 'kind'), 'CanNotDelete'), 'Cannot delete resource or child resources.', 'Cannot delete or modify the resource or child resources.'))]"
+              },
+              "dependsOn": [
+                "metricAlert"
+              ]
+            },
+            "metricAlert_roleAssignments": {
+              "copy": {
+                "name": "metricAlert_roleAssignments",
+                "count": "[length(coalesce(variables('formattedRoleAssignments'), createArray()))]"
+              },
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Insights/metricAlerts/{0}', parameters('name'))]",
+              "name": "[coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'name'), guid(resourceId('Microsoft.Insights/metricAlerts', parameters('name')), coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId, coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId))]",
+              "properties": {
+                "roleDefinitionId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId]",
+                "principalId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId]",
+                "description": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'description')]",
+                "principalType": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'principalType')]",
+                "condition": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition')]",
+                "conditionVersion": "[if(not(empty(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition'))), coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'conditionVersion'), '2.0'), null())]",
+                "delegatedManagedIdentityResourceId": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'delegatedManagedIdentityResourceId')]"
+              },
+              "dependsOn": [
+                "metricAlert"
+              ]
+            }
+          },
+          "outputs": {
+            "resourceGroupName": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource group the metric alert was deployed into."
+              },
+              "value": "[resourceGroup().name]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the metric alert."
+              },
+              "value": "[parameters('name')]"
+            },
+            "resourceId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the metric alert."
+              },
+              "value": "[resourceId('Microsoft.Insights/metricAlerts', parameters('name'))]"
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "The location the resource was deployed into."
+              },
+              "value": "[reference('metricAlert', '2018-03-01', 'full').location]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "applicationInsights",
+        "resourceGroup"
+      ]
+    },
+    "searchEmbeddingLatencyAlert": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('search-embedding-latency-alert-deployment-{0}', variables('deploymentId'))]",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('search-embedding-latency-alert-{0}', parameters('environmentName'))]"
+          },
+          "location": {
+            "value": "global"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "severity": {
+            "value": 2
+          },
+          "evaluationFrequency": {
+            "value": "PT5M"
+          },
+          "windowSize": {
+            "value": "PT5M"
+          },
+          "criteria": {
+            "value": {
+              "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria",
+              "allof": [
+                {
+                  "name": "SearchEmbeddingLatencyHigh",
+                  "metricName": "search.embedding.latency.ms",
+                  "metricNamespace": "microsoft.insights/components",
+                  "operator": "GreaterThan",
+                  "threshold": 2000,
+                  "timeAggregation": "Average",
+                  "criterionType": "StaticThresholdCriterion"
+                }
+              ]
+            }
+          },
+          "scopes": {
+            "value": [
+              "[reference('applicationInsights').outputs.resourceId.value]"
+            ]
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.38.33.27573",
+              "templateHash": "10896455469002632588"
+            },
+            "name": "Metric Alerts",
+            "description": "This module deploys a Metric Alert."
+          },
+          "definitions": {
+            "alertType": {
+              "type": "object",
+              "discriminator": {
+                "propertyName": "odata.type",
+                "mapping": {
+                  "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria": {
+                    "$ref": "#/definitions/alertWebtestType"
+                  },
+                  "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria": {
+                    "$ref": "#/definitions/alertResourceType"
+                  },
+                  "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria": {
+                    "$ref": "#/definitions/alertMultiResourceType"
+                  }
+                }
+              },
+              "metadata": {
+                "__bicep_export!": true
+              }
+            },
+            "alertResourceType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "allof": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "metadata": {
+                    "description": "Required. The list of metric criteria for this 'all of' operation."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for a single resource scenario."
+              }
+            },
+            "alertMultiResourceType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "allof": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "metadata": {
+                    "description": "Required. The list of multiple metric criteria for this 'all of' operation."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for multiple resources scenario."
+              }
+            },
+            "alertWebtestType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "componentResourceId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The Application Insights resource ID."
+                  }
+                },
+                "failedLocationCount": {
+                  "type": "int",
+                  "metadata": {
+                    "description": "Required. The number of failed locations."
+                  }
+                },
+                "webTestResourceId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The Application Insights web test resource ID."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for a web test scenario."
+              }
+            },
+            "lockType": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the name of lock."
+                  }
+                },
+                "kind": {
+                  "type": "string",
+                  "allowedValues": [
+                    "CanNotDelete",
+                    "None",
+                    "ReadOnly"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the type of lock."
+                  }
+                },
+                "notes": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the notes of the lock."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "An AVM-aligned type for a lock.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.0"
+                }
+              }
+            },
+            "roleAssignmentType": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The name (as GUID) of the role assignment. If not provided, a GUID will be generated."
+                  }
+                },
+                "roleDefinitionIdOrName": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The role to assign. You can provide either the display name of the role definition, the role definition GUID, or its fully qualified ID in the following format: '/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11'."
+                  }
+                },
+                "principalId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The principal ID of the principal (user/group/identity) to assign the role to."
+                  }
+                },
+                "principalType": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Device",
+                    "ForeignGroup",
+                    "Group",
+                    "ServicePrincipal",
+                    "User"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The principal type of the assigned principal ID."
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The description of the role assignment."
+                  }
+                },
+                "condition": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The conditions on the role assignment. This limits the resources it can be assigned to. e.g.: @Resource[Microsoft.Storage/storageAccounts/blobServices/containers:ContainerName] StringEqualsIgnoreCase \"foo_storage_container\"."
+                  }
+                },
+                "conditionVersion": {
+                  "type": "string",
+                  "allowedValues": [
+                    "2.0"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Version of the condition."
+                  }
+                },
+                "delegatedManagedIdentityResourceId": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The Resource Id of the delegated managed identity resource."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "An AVM-aligned type for a role assignment.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.5.1"
+                }
+              }
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. The name of the alert."
+              }
+            },
+            "alertDescription": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional. Description of the alert."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "global",
+              "metadata": {
+                "description": "Optional. Location for all resources."
+              }
+            },
+            "enabled": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. Indicates whether this alert is enabled."
+              }
+            },
+            "severity": {
+              "type": "int",
+              "defaultValue": 3,
+              "allowedValues": [
+                0,
+                1,
+                2,
+                3,
+                4
+              ],
+              "metadata": {
+                "description": "Optional. The severity of the alert."
+              }
+            },
+            "evaluationFrequency": {
+              "type": "string",
+              "defaultValue": "PT5M",
+              "allowedValues": [
+                "PT1M",
+                "PT5M",
+                "PT15M",
+                "PT30M",
+                "PT1H"
+              ],
+              "metadata": {
+                "description": "Optional. how often the metric alert is evaluated represented in ISO 8601 duration format."
+              }
+            },
+            "windowSize": {
+              "type": "string",
+              "defaultValue": "PT15M",
+              "allowedValues": [
+                "PT1M",
+                "PT5M",
+                "PT15M",
+                "PT30M",
+                "PT1H",
+                "PT6H",
+                "PT12H",
+                "P1D"
+              ],
+              "metadata": {
+                "description": "Optional. the period of time (in ISO 8601 duration format) that is used to monitor alert activity based on the threshold."
+              }
+            },
+            "scopes": {
+              "type": "array",
+              "defaultValue": [
+                "[subscription().id]"
+              ],
+              "metadata": {
+                "description": "Optional. the list of resource IDs that this metric alert is scoped to."
+              }
+            },
+            "targetResourceType": {
+              "type": "string",
+              "nullable": true,
+              "metadata": {
+                "description": "Conditional. The resource type of the target resource(s) on which the alert is created/updated. Required if alertCriteriaType is MultipleResourceMultipleMetricCriteria."
+              }
+            },
+            "targetResourceRegion": {
+              "type": "string",
+              "nullable": true,
+              "metadata": {
+                "description": "Conditional. The region of the target resource(s) on which the alert is created/updated. Required if alertCriteriaType is MultipleResourceMultipleMetricCriteria."
+              }
+            },
+            "autoMitigate": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. The flag that indicates whether the alert should be auto resolved or not."
+              }
+            },
+            "actions": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Optional. The list of actions to take when alert triggers."
+              }
+            },
+            "criteria": {
+              "$ref": "#/definitions/alertType",
+              "metadata": {
+                "description": "Required. Maps to the 'odata.type' field. Specifies the type of the alert criteria."
+              }
+            },
+            "lock": {
+              "$ref": "#/definitions/lockType",
+              "nullable": true,
+              "metadata": {
+                "description": "Optional. The lock settings of the service."
+              }
+            },
+            "roleAssignments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/roleAssignmentType"
+              },
+              "nullable": true,
+              "metadata": {
+                "description": "Optional. Array of role assignments to create."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "__bicep_resource_derived_type!": {
+                  "source": "Microsoft.Insights/metricAlerts@2018-03-01#properties/tags"
+                },
+                "description": "Optional. Tags of the resource."
+              },
+              "nullable": true
+            },
+            "enableTelemetry": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. Enable/Disable usage telemetry for module."
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "actionGroups",
+                "count": "[length(parameters('actions'))]",
+                "input": {
+                  "actionGroupId": "[coalesce(tryGet(parameters('actions')[copyIndex('actionGroups')], 'actionGroupId'), parameters('actions')[copyIndex('actionGroups')])]",
+                  "webHookProperties": "[tryGet(parameters('actions')[copyIndex('actionGroups')], 'webHookProperties')]"
+                }
+              },
+              {
+                "name": "formattedRoleAssignments",
+                "count": "[length(coalesce(parameters('roleAssignments'), createArray()))]",
+                "input": "[union(coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')], createObject('roleDefinitionId', coalesce(tryGet(variables('builtInRoleNames'), coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName), if(contains(coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName, '/providers/Microsoft.Authorization/roleDefinitions/'), coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName)))))]"
+              }
+            ],
+            "builtInRoleNames": {
+              "Contributor": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+              "Owner": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+              "Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+              "Role Based Access Control Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f58310d9-a9f6-439a-9e8d-f62e7b41a168')]",
+              "User Access Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')]"
+            }
+          },
+          "resources": {
+            "avmTelemetry": {
+              "condition": "[parameters('enableTelemetry')]",
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2024-03-01",
+              "name": "[format('46d3xbcp.res.insights-metricalert.{0}.{1}', replace('0.4.1', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4))]",
+              "properties": {
+                "mode": "Incremental",
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "resources": [],
+                  "outputs": {
+                    "telemetry": {
+                      "type": "String",
+                      "value": "For more information, see https://aka.ms/avm/TelemetryInfo"
+                    }
+                  }
+                }
+              }
+            },
+            "metricAlert": {
+              "type": "Microsoft.Insights/metricAlerts",
+              "apiVersion": "2018-03-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "description": "[parameters('alertDescription')]",
+                "severity": "[parameters('severity')]",
+                "enabled": "[parameters('enabled')]",
+                "scopes": "[parameters('scopes')]",
+                "evaluationFrequency": "[parameters('evaluationFrequency')]",
+                "windowSize": "[parameters('windowSize')]",
+                "targetResourceType": "[parameters('targetResourceType')]",
+                "targetResourceRegion": "[parameters('targetResourceRegion')]",
+                "criteria": "[shallowMerge(createArray(createObject('odata.type', parameters('criteria')['odata.type']), if(contains(parameters('criteria'), 'allof'), createObject('allof', parameters('criteria').allof), createObject()), if(contains(parameters('criteria'), 'componentResourceId'), createObject('componentId', parameters('criteria').componentResourceId), createObject()), if(contains(parameters('criteria'), 'failedLocationCount'), createObject('failedLocationCount', parameters('criteria').failedLocationCount), createObject()), if(contains(parameters('criteria'), 'webTestResourceId'), createObject('webTestId', parameters('criteria').webTestResourceId), createObject())))]",
+                "autoMitigate": "[parameters('autoMitigate')]",
+                "actions": "[variables('actionGroups')]"
+              }
+            },
+            "metricAlert_lock": {
+              "condition": "[and(not(empty(coalesce(parameters('lock'), createObject()))), not(equals(tryGet(parameters('lock'), 'kind'), 'None')))]",
+              "type": "Microsoft.Authorization/locks",
+              "apiVersion": "2020-05-01",
+              "scope": "[format('Microsoft.Insights/metricAlerts/{0}', parameters('name'))]",
+              "name": "[coalesce(tryGet(parameters('lock'), 'name'), format('lock-{0}', parameters('name')))]",
+              "properties": {
+                "level": "[coalesce(tryGet(parameters('lock'), 'kind'), '')]",
+                "notes": "[coalesce(tryGet(parameters('lock'), 'notes'), if(equals(tryGet(parameters('lock'), 'kind'), 'CanNotDelete'), 'Cannot delete resource or child resources.', 'Cannot delete or modify the resource or child resources.'))]"
+              },
+              "dependsOn": [
+                "metricAlert"
+              ]
+            },
+            "metricAlert_roleAssignments": {
+              "copy": {
+                "name": "metricAlert_roleAssignments",
+                "count": "[length(coalesce(variables('formattedRoleAssignments'), createArray()))]"
+              },
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Insights/metricAlerts/{0}', parameters('name'))]",
+              "name": "[coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'name'), guid(resourceId('Microsoft.Insights/metricAlerts', parameters('name')), coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId, coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId))]",
+              "properties": {
+                "roleDefinitionId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId]",
+                "principalId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId]",
+                "description": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'description')]",
+                "principalType": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'principalType')]",
+                "condition": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition')]",
+                "conditionVersion": "[if(not(empty(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition'))), coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'conditionVersion'), '2.0'), null())]",
+                "delegatedManagedIdentityResourceId": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'delegatedManagedIdentityResourceId')]"
+              },
+              "dependsOn": [
+                "metricAlert"
+              ]
+            }
+          },
+          "outputs": {
+            "resourceGroupName": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource group the metric alert was deployed into."
+              },
+              "value": "[resourceGroup().name]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the metric alert."
+              },
+              "value": "[parameters('name')]"
+            },
+            "resourceId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the metric alert."
+              },
+              "value": "[resourceId('Microsoft.Insights/metricAlerts', parameters('name'))]"
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "The location the resource was deployed into."
+              },
+              "value": "[reference('metricAlert', '2018-03-01', 'full').location]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "applicationInsights",
+        "resourceGroup"
+      ]
+    },
+    "searchBatchLatencyAlert": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('search-batch-latency-alert-deployment-{0}', variables('deploymentId'))]",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('search-batch-latency-alert-{0}', parameters('environmentName'))]"
+          },
+          "location": {
+            "value": "global"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "severity": {
+            "value": 3
+          },
+          "evaluationFrequency": {
+            "value": "PT5M"
+          },
+          "windowSize": {
+            "value": "PT5M"
+          },
+          "criteria": {
+            "value": {
+              "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria",
+              "allof": [
+                {
+                  "name": "SearchBatchLatencyHigh",
+                  "metricName": "search.batch.latency.ms",
+                  "metricNamespace": "microsoft.insights/components",
+                  "operator": "GreaterThan",
+                  "threshold": 5000,
+                  "timeAggregation": "Average",
+                  "criterionType": "StaticThresholdCriterion"
+                }
+              ]
+            }
+          },
+          "scopes": {
+            "value": [
+              "[reference('applicationInsights').outputs.resourceId.value]"
+            ]
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.38.33.27573",
+              "templateHash": "10896455469002632588"
+            },
+            "name": "Metric Alerts",
+            "description": "This module deploys a Metric Alert."
+          },
+          "definitions": {
+            "alertType": {
+              "type": "object",
+              "discriminator": {
+                "propertyName": "odata.type",
+                "mapping": {
+                  "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria": {
+                    "$ref": "#/definitions/alertWebtestType"
+                  },
+                  "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria": {
+                    "$ref": "#/definitions/alertResourceType"
+                  },
+                  "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria": {
+                    "$ref": "#/definitions/alertMultiResourceType"
+                  }
+                }
+              },
+              "metadata": {
+                "__bicep_export!": true
+              }
+            },
+            "alertResourceType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "allof": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "metadata": {
+                    "description": "Required. The list of metric criteria for this 'all of' operation."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for a single resource scenario."
+              }
+            },
+            "alertMultiResourceType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "allof": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "metadata": {
+                    "description": "Required. The list of multiple metric criteria for this 'all of' operation."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for multiple resources scenario."
+              }
+            },
+            "alertWebtestType": {
+              "type": "object",
+              "properties": {
+                "odata.type": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria"
+                  ],
+                  "metadata": {
+                    "description": "Required. The type of the alert criteria."
+                  }
+                },
+                "componentResourceId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The Application Insights resource ID."
+                  }
+                },
+                "failedLocationCount": {
+                  "type": "int",
+                  "metadata": {
+                    "description": "Required. The number of failed locations."
+                  }
+                },
+                "webTestResourceId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The Application Insights web test resource ID."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "The alert type for a web test scenario."
+              }
+            },
+            "lockType": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the name of lock."
+                  }
+                },
+                "kind": {
+                  "type": "string",
+                  "allowedValues": [
+                    "CanNotDelete",
+                    "None",
+                    "ReadOnly"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the type of lock."
+                  }
+                },
+                "notes": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Specify the notes of the lock."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "An AVM-aligned type for a lock.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.0"
+                }
+              }
+            },
+            "roleAssignmentType": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The name (as GUID) of the role assignment. If not provided, a GUID will be generated."
+                  }
+                },
+                "roleDefinitionIdOrName": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The role to assign. You can provide either the display name of the role definition, the role definition GUID, or its fully qualified ID in the following format: '/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11'."
+                  }
+                },
+                "principalId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The principal ID of the principal (user/group/identity) to assign the role to."
+                  }
+                },
+                "principalType": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Device",
+                    "ForeignGroup",
+                    "Group",
+                    "ServicePrincipal",
+                    "User"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The principal type of the assigned principal ID."
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The description of the role assignment."
+                  }
+                },
+                "condition": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The conditions on the role assignment. This limits the resources it can be assigned to. e.g.: @Resource[Microsoft.Storage/storageAccounts/blobServices/containers:ContainerName] StringEqualsIgnoreCase \"foo_storage_container\"."
+                  }
+                },
+                "conditionVersion": {
+                  "type": "string",
+                  "allowedValues": [
+                    "2.0"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Version of the condition."
+                  }
+                },
+                "delegatedManagedIdentityResourceId": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The Resource Id of the delegated managed identity resource."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "An AVM-aligned type for a role assignment.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.5.1"
+                }
+              }
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. The name of the alert."
+              }
+            },
+            "alertDescription": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional. Description of the alert."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "global",
+              "metadata": {
+                "description": "Optional. Location for all resources."
+              }
+            },
+            "enabled": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. Indicates whether this alert is enabled."
+              }
+            },
+            "severity": {
+              "type": "int",
+              "defaultValue": 3,
+              "allowedValues": [
+                0,
+                1,
+                2,
+                3,
+                4
+              ],
+              "metadata": {
+                "description": "Optional. The severity of the alert."
+              }
+            },
+            "evaluationFrequency": {
+              "type": "string",
+              "defaultValue": "PT5M",
+              "allowedValues": [
+                "PT1M",
+                "PT5M",
+                "PT15M",
+                "PT30M",
+                "PT1H"
+              ],
+              "metadata": {
+                "description": "Optional. how often the metric alert is evaluated represented in ISO 8601 duration format."
+              }
+            },
+            "windowSize": {
+              "type": "string",
+              "defaultValue": "PT15M",
+              "allowedValues": [
+                "PT1M",
+                "PT5M",
+                "PT15M",
+                "PT30M",
+                "PT1H",
+                "PT6H",
+                "PT12H",
+                "P1D"
+              ],
+              "metadata": {
+                "description": "Optional. the period of time (in ISO 8601 duration format) that is used to monitor alert activity based on the threshold."
+              }
+            },
+            "scopes": {
+              "type": "array",
+              "defaultValue": [
+                "[subscription().id]"
+              ],
+              "metadata": {
+                "description": "Optional. the list of resource IDs that this metric alert is scoped to."
+              }
+            },
+            "targetResourceType": {
+              "type": "string",
+              "nullable": true,
+              "metadata": {
+                "description": "Conditional. The resource type of the target resource(s) on which the alert is created/updated. Required if alertCriteriaType is MultipleResourceMultipleMetricCriteria."
+              }
+            },
+            "targetResourceRegion": {
+              "type": "string",
+              "nullable": true,
+              "metadata": {
+                "description": "Conditional. The region of the target resource(s) on which the alert is created/updated. Required if alertCriteriaType is MultipleResourceMultipleMetricCriteria."
+              }
+            },
+            "autoMitigate": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. The flag that indicates whether the alert should be auto resolved or not."
+              }
+            },
+            "actions": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Optional. The list of actions to take when alert triggers."
+              }
+            },
+            "criteria": {
+              "$ref": "#/definitions/alertType",
+              "metadata": {
+                "description": "Required. Maps to the 'odata.type' field. Specifies the type of the alert criteria."
+              }
+            },
+            "lock": {
+              "$ref": "#/definitions/lockType",
+              "nullable": true,
+              "metadata": {
+                "description": "Optional. The lock settings of the service."
+              }
+            },
+            "roleAssignments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/roleAssignmentType"
+              },
+              "nullable": true,
+              "metadata": {
+                "description": "Optional. Array of role assignments to create."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "__bicep_resource_derived_type!": {
+                  "source": "Microsoft.Insights/metricAlerts@2018-03-01#properties/tags"
+                },
+                "description": "Optional. Tags of the resource."
+              },
+              "nullable": true
+            },
+            "enableTelemetry": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. Enable/Disable usage telemetry for module."
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "actionGroups",
+                "count": "[length(parameters('actions'))]",
+                "input": {
+                  "actionGroupId": "[coalesce(tryGet(parameters('actions')[copyIndex('actionGroups')], 'actionGroupId'), parameters('actions')[copyIndex('actionGroups')])]",
+                  "webHookProperties": "[tryGet(parameters('actions')[copyIndex('actionGroups')], 'webHookProperties')]"
+                }
+              },
+              {
+                "name": "formattedRoleAssignments",
+                "count": "[length(coalesce(parameters('roleAssignments'), createArray()))]",
+                "input": "[union(coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')], createObject('roleDefinitionId', coalesce(tryGet(variables('builtInRoleNames'), coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName), if(contains(coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName, '/providers/Microsoft.Authorization/roleDefinitions/'), coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName)))))]"
+              }
+            ],
+            "builtInRoleNames": {
+              "Contributor": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+              "Owner": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+              "Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+              "Role Based Access Control Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f58310d9-a9f6-439a-9e8d-f62e7b41a168')]",
+              "User Access Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')]"
+            }
+          },
+          "resources": {
+            "avmTelemetry": {
+              "condition": "[parameters('enableTelemetry')]",
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2024-03-01",
+              "name": "[format('46d3xbcp.res.insights-metricalert.{0}.{1}', replace('0.4.1', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4))]",
+              "properties": {
+                "mode": "Incremental",
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "resources": [],
+                  "outputs": {
+                    "telemetry": {
+                      "type": "String",
+                      "value": "For more information, see https://aka.ms/avm/TelemetryInfo"
+                    }
+                  }
+                }
+              }
+            },
+            "metricAlert": {
+              "type": "Microsoft.Insights/metricAlerts",
+              "apiVersion": "2018-03-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "description": "[parameters('alertDescription')]",
+                "severity": "[parameters('severity')]",
+                "enabled": "[parameters('enabled')]",
+                "scopes": "[parameters('scopes')]",
+                "evaluationFrequency": "[parameters('evaluationFrequency')]",
+                "windowSize": "[parameters('windowSize')]",
+                "targetResourceType": "[parameters('targetResourceType')]",
+                "targetResourceRegion": "[parameters('targetResourceRegion')]",
+                "criteria": "[shallowMerge(createArray(createObject('odata.type', parameters('criteria')['odata.type']), if(contains(parameters('criteria'), 'allof'), createObject('allof', parameters('criteria').allof), createObject()), if(contains(parameters('criteria'), 'componentResourceId'), createObject('componentId', parameters('criteria').componentResourceId), createObject()), if(contains(parameters('criteria'), 'failedLocationCount'), createObject('failedLocationCount', parameters('criteria').failedLocationCount), createObject()), if(contains(parameters('criteria'), 'webTestResourceId'), createObject('webTestId', parameters('criteria').webTestResourceId), createObject())))]",
+                "autoMitigate": "[parameters('autoMitigate')]",
+                "actions": "[variables('actionGroups')]"
+              }
+            },
+            "metricAlert_lock": {
+              "condition": "[and(not(empty(coalesce(parameters('lock'), createObject()))), not(equals(tryGet(parameters('lock'), 'kind'), 'None')))]",
+              "type": "Microsoft.Authorization/locks",
+              "apiVersion": "2020-05-01",
+              "scope": "[format('Microsoft.Insights/metricAlerts/{0}', parameters('name'))]",
+              "name": "[coalesce(tryGet(parameters('lock'), 'name'), format('lock-{0}', parameters('name')))]",
+              "properties": {
+                "level": "[coalesce(tryGet(parameters('lock'), 'kind'), '')]",
+                "notes": "[coalesce(tryGet(parameters('lock'), 'notes'), if(equals(tryGet(parameters('lock'), 'kind'), 'CanNotDelete'), 'Cannot delete resource or child resources.', 'Cannot delete or modify the resource or child resources.'))]"
+              },
+              "dependsOn": [
+                "metricAlert"
+              ]
+            },
+            "metricAlert_roleAssignments": {
+              "copy": {
+                "name": "metricAlert_roleAssignments",
+                "count": "[length(coalesce(variables('formattedRoleAssignments'), createArray()))]"
+              },
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Insights/metricAlerts/{0}', parameters('name'))]",
+              "name": "[coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'name'), guid(resourceId('Microsoft.Insights/metricAlerts', parameters('name')), coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId, coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId))]",
+              "properties": {
+                "roleDefinitionId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId]",
+                "principalId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId]",
+                "description": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'description')]",
+                "principalType": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'principalType')]",
+                "condition": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition')]",
+                "conditionVersion": "[if(not(empty(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition'))), coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'conditionVersion'), '2.0'), null())]",
+                "delegatedManagedIdentityResourceId": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'delegatedManagedIdentityResourceId')]"
+              },
+              "dependsOn": [
+                "metricAlert"
+              ]
+            }
+          },
+          "outputs": {
+            "resourceGroupName": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource group the metric alert was deployed into."
+              },
+              "value": "[resourceGroup().name]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the metric alert."
+              },
+              "value": "[parameters('name')]"
+            },
+            "resourceId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the metric alert."
+              },
+              "value": "[resourceId('Microsoft.Insights/metricAlerts', parameters('name'))]"
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "The location the resource was deployed into."
+              },
+              "value": "[reference('metricAlert', '2018-03-01', 'full').location]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "applicationInsights",
+        "resourceGroup"
+      ]
+    },
+    "searchIndexWorkerWorkbook": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('search-index-worker-workbook-deployment-{0}', variables('deploymentId'))]",
+      "resourceGroup": "[variables('effectiveResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "displayName": {
+            "value": "[variables('workbookDisplayName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "sourceId": {
+            "value": "[reference('applicationInsights').outputs.resourceId.value]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "18283365460174991085"
+            }
+          },
+          "parameters": {
+            "displayName": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Display name for the workbook."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Azure region for the workbook resource."
+              }
+            },
+            "sourceId": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Source resource ID for workbook queries (for example, an Application Insights component ID)."
+              }
+            },
+            "description": {
+              "type": "string",
+              "defaultValue": "Operational dashboard for SearchIndexWorker metrics.",
+              "metadata": {
+                "description": "Optional. Description shown in the workbook metadata."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. Tags to apply to the workbook resource."
+              }
+            }
+          },
+          "variables": {
+            "$fxv#0": {
+              "version": "Notebook/1.0",
+              "items": [
+                {
+                  "type": 1,
+                  "name": "header",
+                  "content": {
+                    "json": "# Search Index Worker Monitoring\nMonitors throughput, failures, latency, sync lag, and worker liveness telemetry from SearchIndexWorker.",
+                    "style": "info"
+                  }
+                },
+                {
+                  "type": 3,
+                  "name": "batch-throughput",
+                  "content": {
+                    "version": "KqlItem/1.0",
+                    "query": "customMetrics\n| where name in ('search.batch.documents.indexed', 'search.batch.documents.removed', 'search.batch.documents.skipped')\n| extend metricValue = todouble(coalesce(valueSum, value))\n| summarize total = sum(metricValue) by name, bin(timestamp, 5m)\n| render timechart",
+                    "size": 0,
+                    "title": "Batch throughput (indexed / removed / skipped)",
+                    "queryType": 0,
+                    "resourceType": "microsoft.insights/components"
+                  }
+                },
+                {
+                  "type": 3,
+                  "name": "batch-failures",
+                  "content": {
+                    "version": "KqlItem/1.0",
+                    "query": "customMetrics\n| where name in ('search.batch.failures', 'search.indexing.failures')\n| extend metricValue = todouble(coalesce(valueSum, value))\n| summarize total = sum(metricValue) by name, bin(timestamp, 5m)\n| render timechart",
+                    "size": 0,
+                    "title": "Failure metrics",
+                    "queryType": 0,
+                    "resourceType": "microsoft.insights/components"
+                  }
+                },
+                {
+                  "type": 3,
+                  "name": "embedding-latency",
+                  "content": {
+                    "version": "KqlItem/1.0",
+                    "query": "customMetrics\n| where name == 'search.embedding.latency.ms'\n| extend metricValue = todouble(coalesce(valueSum, value))\n| summarize p50 = percentile(metricValue, 50), p95 = percentile(metricValue, 95), p99 = percentile(metricValue, 99) by bin(timestamp, 5m)\n| render timechart",
+                    "size": 0,
+                    "title": "Embedding latency (p50/p95/p99)",
+                    "queryType": 0,
+                    "resourceType": "microsoft.insights/components"
+                  }
+                },
+                {
+                  "type": 3,
+                  "name": "sync-lag",
+                  "content": {
+                    "version": "KqlItem/1.0",
+                    "query": "customMetrics\n| where name == 'search.sync.lag.seconds'\n| extend metricValue = todouble(coalesce(valueSum, value))\n| summarize p50 = percentile(metricValue, 50), p95 = percentile(metricValue, 95) by bin(timestamp, 5m)\n| render timechart",
+                    "size": 0,
+                    "title": "Sync lag (seconds, p50/p95)",
+                    "queryType": 0,
+                    "resourceType": "microsoft.insights/components"
+                  }
+                },
+                {
+                  "type": 3,
+                  "name": "worker-liveness",
+                  "content": {
+                    "version": "KqlItem/1.0",
+                    "query": "customMetrics\n| where name == 'search.worker.alive'\n| extend metricValue = todouble(coalesce(valueSum, value))\n| summarize minAlive = min(metricValue), maxAlive = max(metricValue) by bin(timestamp, 5m)\n| render timechart",
+                    "size": 0,
+                    "title": "Worker liveness (0 = stopped, 1 = running)",
+                    "queryType": 0,
+                    "resourceType": "microsoft.insights/components"
+                  }
+                }
+              ],
+              "isLocked": false,
+              "fallbackResourceIds": []
+            },
+            "workbookSchemaVersion": "Notebook/1.0",
+            "workbookJson": "[string(variables('$fxv#0'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Insights/workbooks",
+              "apiVersion": "2023-06-01",
+              "name": "[guid(resourceGroup().id, 'Microsoft.Insights/workbooks', parameters('displayName'))]",
+              "location": "[parameters('location')]",
+              "kind": "shared",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "category": "workbook",
+                "description": "[parameters('description')]",
+                "displayName": "[parameters('displayName')]",
+                "serializedData": "[variables('workbookJson')]",
+                "sourceId": "[parameters('sourceId')]",
+                "version": "[variables('workbookSchemaVersion')]"
+              }
+            }
+          ],
+          "outputs": {
+            "resourceId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the workbook."
+              },
+              "value": "[resourceId('Microsoft.Insights/workbooks', guid(resourceGroup().id, 'Microsoft.Insights/workbooks', parameters('displayName')))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "applicationInsights",
+        "resourceGroup"
+      ]
     }
   },
   "outputs": {
@@ -66458,6 +68941,13 @@
         "description": "The FQDN of the backend API Container App."
       },
       "value": "[reference('containerApp').outputs.fqdn.value]"
+    },
+    "WORKBOOK_RESOURCE_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the Search Index Worker monitoring workbook."
+      },
+      "value": "[reference('searchIndexWorkerWorkbook').outputs.resourceId.value]"
     }
   }
 }
