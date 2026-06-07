@@ -234,6 +234,80 @@ describe('World Entity Editing Integration (T013)', () => {
       expect(screen.getByLabelText(/start date/i)).toHaveValue('1492 DR');
     });
 
+    it('should prefill Character custom properties including integer level when opening edit mode', async () => {
+      const store = createMockStore({
+          selectedWorldId: 'world-1',
+          selectedEntityId: 'entity-1',
+          editingEntityId: 'entity-1',
+          mainPanelMode: 'editing_entity'
+      });
+
+      currentMockEntity = {
+        ...mockEntity,
+        entityType: WorldEntityType.Character,
+        name: 'Aria Brightblade',
+        properties: {
+          race: 'Half-Elf',
+          class: 'Ranger',
+          alignment: 'Neutral Good',
+          level: 12,
+        },
+      };
+
+      render(
+        <Provider store={store}>
+          <MainPanel />
+        </Provider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: /edit entry/i })).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Character Properties')).toBeInTheDocument();
+      });
+
+      expect(screen.getByLabelText(/race/i)).toHaveValue('Half-Elf');
+      expect(screen.getByLabelText(/class/i)).toHaveValue('Ranger');
+      expect(screen.getByLabelText(/alignment/i)).toHaveValue('Neutral Good');
+      expect(screen.getByLabelText(/level\/cr/i)).toHaveValue('12');
+    });
+
+    it('should prefill Character integer level when stored as string (data consistency fix)', async () => {
+      const store = createMockStore({
+          selectedWorldId: 'world-1',
+          selectedEntityId: 'entity-1',
+          editingEntityId: 'entity-1',
+          mainPanelMode: 'editing_entity'
+      });
+
+      currentMockEntity = {
+        ...mockEntity,
+        entityType: WorldEntityType.Character,
+        name: 'Aria Brightblade',
+        properties: {
+          level: '12', // Stored as string instead of number
+        },
+      };
+
+      render(
+        <Provider store={store}>
+          <MainPanel />
+        </Provider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: /edit entry/i })).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Character Properties')).toBeInTheDocument();
+      });
+
+      expect(screen.getByLabelText(/level\/cr/i)).toHaveValue('12');
+    });
+
     it('should not render dynamic properties section for schema-less entity types in edit mode', async () => {
       const store = createMockStore({
           selectedWorldId: 'world-1',

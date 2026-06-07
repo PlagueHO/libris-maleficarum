@@ -321,6 +321,9 @@ public class WorldsControllerTests
     {
         // Arrange
         var request = new SearchEntitiesRequest { Q = "test" };
+        var world = World.Create(TestOwnerId, "Owned World", "Owned description");
+        _userContextService.GetCurrentUserIdAsync().Returns(TestOwnerId);
+        _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>()).Returns(world);
         var resultSet = new SearchResultSet
         {
             Results =
@@ -332,6 +335,8 @@ public class WorldsControllerTests
                     EntityType = "Character",
                     RelevanceScore = 0.95,
                     WorldId = _worldId,
+                    Path = [],
+                    Depth = 0,
                     Tags = ["npc"],
                     OwnerId = TestOwnerId,
                     CreatedAt = DateTimeOffset.UtcNow,
@@ -358,10 +363,94 @@ public class WorldsControllerTests
     }
 
     [TestMethod]
+    public async Task SearchEntities_WithPathAndDepth_ReturnsPathAndDepthInResponse()
+    {
+        // Arrange
+        var request = new SearchEntitiesRequest { Q = "test" };
+        var world = World.Create(TestOwnerId, "Owned World", "Owned description");
+        _userContextService.GetCurrentUserIdAsync().Returns(TestOwnerId);
+        _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>()).Returns(world);
+
+        var resultSet = new SearchResultSet
+        {
+            Results =
+            [
+                new SearchResult
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Test Character",
+                    EntityType = "Character",
+                    RelevanceScore = 0.95,
+                    WorldId = _worldId,
+                    Path = ["world-1", "region-2"],
+                    Depth = 2,
+                    Tags = ["npc"],
+                    OwnerId = TestOwnerId,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                }
+            ],
+            TotalCount = 1,
+            Offset = 0,
+            Limit = 50
+        };
+
+        _searchService.SearchAsync(Arg.Any<SearchRequest>(), Arg.Any<CancellationToken>())
+            .Returns(resultSet);
+
+        // Act
+        var result = await _controller.SearchEntities(_worldId, request, CancellationToken.None);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = okResult.Value.Should().BeOfType<SearchResponse>().Subject;
+        response.Data.Should().ContainSingle();
+        response.Data[0].Path.Should().Equal("world-1", "region-2");
+        response.Data[0].Depth.Should().Be(2);
+    }
+
+    [TestMethod]
+    public async Task SearchEntities_WithMissingWorld_ReturnsNotFound()
+    {
+        // Arrange
+        var request = new SearchEntitiesRequest { Q = "test" };
+        _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>()).Returns((World?)null);
+
+        // Act
+        var result = await _controller.SearchEntities(_worldId, request, CancellationToken.None);
+
+        // Assert
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        var errorResponse = notFoundResult.Value.Should().BeOfType<ErrorResponse>().Subject;
+        errorResponse.Error.Code.Should().Be("WORLD_NOT_FOUND");
+    }
+
+    [TestMethod]
+    public async Task SearchEntities_WithDifferentOwner_ReturnsForbidden()
+    {
+        // Arrange
+        var request = new SearchEntitiesRequest { Q = "test" };
+        var world = World.Create("other-user", "Owned World", "Owned description");
+        _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>()).Returns(world);
+
+        // Act
+        var result = await _controller.SearchEntities(_worldId, request, CancellationToken.None);
+
+        // Assert
+        var forbiddenResult = result.Should().BeOfType<ObjectResult>().Subject;
+        forbiddenResult.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+        var errorResponse = forbiddenResult.Value.Should().BeOfType<ErrorResponse>().Subject;
+        errorResponse.Error.Code.Should().Be("FORBIDDEN");
+    }
+
+    [TestMethod]
     public async Task SearchEntities_WithEmptyQuery_ReturnsBadRequest()
     {
         // Arrange
         var request = new SearchEntitiesRequest { Q = "" };
+        var world = World.Create(TestOwnerId, "Owned World", "Owned description");
+        _userContextService.GetCurrentUserIdAsync().Returns(TestOwnerId);
+        _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>()).Returns(world);
 
         // Act
         var result = await _controller.SearchEntities(_worldId, request, CancellationToken.None);
@@ -378,6 +467,9 @@ public class WorldsControllerTests
     {
         // Arrange
         var request = new SearchEntitiesRequest { Q = null! };
+        var world = World.Create(TestOwnerId, "Owned World", "Owned description");
+        _userContextService.GetCurrentUserIdAsync().Returns(TestOwnerId);
+        _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>()).Returns(world);
 
         // Act
         var result = await _controller.SearchEntities(_worldId, request, CancellationToken.None);
@@ -399,6 +491,9 @@ public class WorldsControllerTests
             Limit = 100,
             Offset = 10
         };
+        var world = World.Create(TestOwnerId, "Owned World", "Owned description");
+        _userContextService.GetCurrentUserIdAsync().Returns(TestOwnerId);
+        _worldRepository.GetByIdAsync(_worldId, Arg.Any<CancellationToken>()).Returns(world);
         var resultSet = new SearchResultSet
         {
             Results = [],

@@ -57,6 +57,16 @@ public class SearchResultItem
     public Guid? ParentId { get; set; }
 
     /// <summary>
+    /// Gets or sets the ancestor path for hierarchy expansion.
+    /// </summary>
+    public List<string> Path { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the hierarchy depth.
+    /// </summary>
+    public int Depth { get; set; }
+
+    /// <summary>
     /// Gets or sets the tags associated with the entity.
     /// </summary>
     public required List<string> Tags { get; set; }

@@ -24,6 +24,7 @@ import type {
   CreateWorldRequest,
   UpdateWorldRequest,
 } from '@/services/types/world.types';
+import type { SearchResponse } from '@/services/types';
 
 /**
  * In-memory mock database for World items
@@ -172,6 +173,70 @@ const baseUrl = import.meta.env.MODE === 'test' ? 'http://localhost:5000' : '';
  * NOTE: Using baseUrl to support both Node (tests) and Browser (dev) environments.
  */
 export const worldHandlers = [
+  /**
+   * GET /api/v1/worlds/:worldId/search
+   *
+   * Returns a lightweight search projection that mirrors the canonical
+   * backend contract used by the active search box.
+   */
+  http.get(`${baseUrl}/api/v1/worlds/:worldId/search`, ({ params, request }) => {
+    const { worldId } = params;
+    const url = new URL(request.url);
+    const query = (url.searchParams.get('q') ?? '').trim().toLowerCase();
+    const entityType = url.searchParams.get('entityType') ?? undefined;
+
+    const filteredEntities = Array.from(mockEntities.values()).filter((entity) => {
+      if (entity.worldId !== worldId) {
+        return false;
+      }
+
+      if (entity.isDeleted) {
+        return false;
+      }
+
+      if (entityType && entity.entityType !== entityType) {
+        return false;
+      }
+
+      if (!query) {
+        return true;
+      }
+
+      const description = entity.description ?? '';
+
+      return (
+        entity.name.toLowerCase().includes(query) ||
+        description.toLowerCase().includes(query) ||
+        entity.tags.some((tag) => tag.toLowerCase().includes(query))
+      );
+    });
+
+    const response: SearchResponse = {
+      data: filteredEntities.slice(0, 8).map((entity) => ({
+        id: entity.id,
+        name: entity.name,
+        entityType: entity.entityType,
+        descriptionSnippet: entity.description,
+        relevanceScore: 1,
+        worldId: entity.worldId,
+        parentId: entity.parentId,
+        path: entity.path,
+        depth: entity.depth,
+        tags: entity.tags,
+        ownerId: entity.ownerId,
+        createdAt: entity.createdAt,
+        updatedAt: entity.updatedAt,
+      })),
+      meta: {
+        totalCount: filteredEntities.length,
+        offset: 0,
+        limit: 8,
+      },
+    };
+
+    return HttpResponse.json(response);
+  }),
+
   /**
    * GET /api/v1/worlds
    *

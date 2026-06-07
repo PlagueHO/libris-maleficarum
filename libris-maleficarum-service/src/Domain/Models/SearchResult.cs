@@ -41,6 +41,16 @@ public class SearchResult
     public Guid? ParentId { get; init; }
 
     /// <summary>
+    /// Gets the ancestor path for hierarchy expansion.
+    /// </summary>
+    public required List<string> Path { get; init; }
+
+    /// <summary>
+    /// Gets the hierarchy depth.
+    /// </summary>
+    public required int Depth { get; init; }
+
+    /// <summary>
     /// Gets the tags associated with the entity.
     /// </summary>
     public required List<string> Tags { get; init; }

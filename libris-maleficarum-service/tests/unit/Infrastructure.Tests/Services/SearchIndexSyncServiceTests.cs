@@ -257,7 +257,8 @@ public class SearchIndexSyncServiceTests
         document.Depth.Should().Be(2); // parentDepth(1) + 1
         document.Properties.Should().Contain("Elessar");
         document.SchemaVersion.Should().Be(2);
-        document.ContentVector.Count.Should().Be(3);
+        Assert.IsNotNull(document.ContentVector);
+        document.ContentVector.Should().HaveCount(3);
     }
 
     [TestMethod]

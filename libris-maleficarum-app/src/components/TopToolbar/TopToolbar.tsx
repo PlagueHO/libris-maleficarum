@@ -5,6 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import { useDispatch } from 'react-redux';
 import { resetToHome } from '@/store/worldSidebarSlice';
 import { NotificationBell, NotificationCenter } from '@/components/NotificationCenter';
+import { GlobalSearch } from '@/components/GlobalSearch/GlobalSearch';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
 import appIcon from '@/assets/libris-maleficarum-icon.png';
@@ -41,9 +42,12 @@ export function TopToolbar({ onOpenSettings }: TopToolbarProps) {
             <h1 className="text-lg font-semibold">Libris Maleficarum</h1>
           </button>
 
-          <div className="ml-auto flex items-center gap-2">
-            <ThemeToggle />
+          <div className="ml-auto flex flex-1 items-center justify-end gap-2 min-w-0">
+            <div className="min-w-[200px] w-1/2">
+              <GlobalSearch />
+            </div>
             <NotificationBell onClick={() => setNotificationCenterOpen(true)} />
+            <ThemeToggle />
             <UserMenu onOpenSettings={onOpenSettings} />
           </div>
         </div>

@@ -136,12 +136,17 @@ export function DynamicPropertyField({
   // Initialize local value from prop
   React.useEffect(() => {
     if (schema.type === 'integer' || schema.type === 'decimal') {
-      // Format numeric values for display
+      const decimals = schema.type === 'decimal' ? 2 : 0;
       if (typeof value === 'number') {
-        const decimals = schema.type === 'decimal' ? 2 : 0;
         // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronizing local display value with external prop change
         setLocalValue(formatNumericDisplay(value, decimals));
+      } else if (typeof value === 'string' && value !== '') {
+        // Handle numeric strings (e.g. data stored as string instead of number)
+        const parsed = decimals > 0 ? parseFloat(value) : parseInt(value, 10);
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronizing local display value with external prop change
+        setLocalValue(!isNaN(parsed) ? formatNumericDisplay(parsed, decimals) : value);
       } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronizing local display value with external prop change
         setLocalValue('');
       }
     } else if (schema.type === 'text' || schema.type === 'textarea') {
@@ -306,9 +311,10 @@ export function DynamicPropertyField({
     };
 
     const handleBlur = () => {
-      // Format on blur if valid number
-      if (typeof value === 'number') {
-        setLocalValue(formatNumericDisplay(value));
+      // Format on blur if localValue is a valid number
+      const parsed = parseInt(localValue.replace(/,/g, ''), 10);
+      if (!isNaN(parsed)) {
+        setLocalValue(formatNumericDisplay(parsed));
       }
     };
 
@@ -385,9 +391,10 @@ export function DynamicPropertyField({
     };
 
     const handleBlur = () => {
-      // Format on blur if valid number
-      if (typeof value === 'number') {
-        setLocalValue(formatNumericDisplay(value, 2));
+      // Format on blur if localValue is a valid number
+      const parsed = parseFloat(localValue.replace(/,/g, ''));
+      if (!isNaN(parsed)) {
+        setLocalValue(formatNumericDisplay(parsed, 2));
       }
     };
 

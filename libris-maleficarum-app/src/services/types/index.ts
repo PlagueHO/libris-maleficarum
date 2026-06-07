@@ -33,3 +33,11 @@ export type {
 } from './world.types';
 
 export { WorldEntityType } from './world.types';
+
+// Entity search types
+export type {
+  SearchEntitiesArg,
+  SearchMeta,
+  SearchResponse,
+  SearchResultItem,
+} from './search.types';

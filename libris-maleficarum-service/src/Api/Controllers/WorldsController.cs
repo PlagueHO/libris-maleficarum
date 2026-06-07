@@ -122,6 +122,33 @@ public class WorldsController : ControllerBase
         [FromQuery] SearchEntitiesRequest request,
         CancellationToken cancellationToken = default)
     {
+        var currentUserId = await _userContextService.GetCurrentUserIdAsync();
+        var world = await _worldRepository.GetByIdAsync(worldId, cancellationToken);
+
+        if (world is null)
+        {
+            return NotFound(new ErrorResponse
+            {
+                Error = new ErrorDetail
+                {
+                    Code = "WORLD_NOT_FOUND",
+                    Message = $"World with ID '{worldId}' was not found."
+                }
+            });
+        }
+
+        if (!string.Equals(world.OwnerId, currentUserId, StringComparison.Ordinal))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new ErrorResponse
+            {
+                Error = new ErrorDetail
+                {
+                    Code = "FORBIDDEN",
+                    Message = "Access denied."
+                }
+            });
+        }
+
         if (string.IsNullOrWhiteSpace(request.Q))
         {
             return BadRequest(new ErrorResponse
@@ -202,6 +229,8 @@ public class WorldsController : ControllerBase
                 RelevanceScore = r.RelevanceScore,
                 WorldId = r.WorldId,
                 ParentId = r.ParentId,
+                Path = r.Path,
+                Depth = r.Depth,
                 Tags = r.Tags,
                 OwnerId = r.OwnerId,
                 CreatedAt = r.CreatedAt,

@@ -254,7 +254,7 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
             Size = limit,
             Skip = offset,
             IncludeTotalCount = true,
-            Select = { "id", "worldId", "entityType", "name", "description", "tags", "parentId", "ownerId", "createdAt", "updatedAt" }
+            Select = { "id", "worldId", "entityType", "name", "description", "tags", "parentId", "ownerId", "createdAt", "updatedAt", "path", "depth" }
         };
 
         // Configure search mode
@@ -267,8 +267,11 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
             case Domain.Models.SearchMode.Vector:
                 {
                     // Vector-only search
+                    // Use CancellationToken.None: credential acquisition (DefaultAzureCredential/AzureCliCredential)
+                    // must not be cancelled by the HTTP request token — the az CLI subprocess cannot be
+                    // interrupted mid-flight without leaving it in a broken state.
                     var queryVector = await _embeddingService.GenerateEmbeddingAsync(
-                        request.Query, cancellationToken);
+                        request.Query, CancellationToken.None);
                     searchOptions.VectorSearch = new VectorSearchOptions
                     {
                         Queries = { BuildVectorizedQuery(queryVector, limit) }
@@ -280,8 +283,9 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
             default:
                 {
                     // Hybrid search — text + vector
+                    // Use CancellationToken.None: same reason as Vector above.
                     var queryVector = await _embeddingService.GenerateEmbeddingAsync(
-                        request.Query, cancellationToken);
+                        request.Query, CancellationToken.None);
                     searchOptions.VectorSearch = new VectorSearchOptions
                     {
                         Queries = { BuildVectorizedQuery(queryVector, limit) }
@@ -293,10 +297,16 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
         // For text and hybrid modes, use the query string; vector-only uses "*" for match-all
         var searchText = request.Mode == Domain.Models.SearchMode.Vector ? "*" : request.Query;
 
+        // Use CancellationToken.None for the search call itself: DefaultAzureCredential acquires
+        // an access token inside this call and the AzureCliCredential spawns an `az` subprocess.
+        // Cancelling that mid-flight (e.g. because the frontend debounced to a new query) causes
+        // a TaskCanceledException inside the credential chain which surfaces as a 500 error.
+        // The network I/O is fast once the token is cached; cancellation is re-applied when
+        // iterating results below, so abandoned requests are still cleaned up promptly.
         var response = await _searchClient.SearchAsync<SearchIndexDocument>(
             searchText,
             searchOptions,
-            cancellationToken);
+            CancellationToken.None);
 
         var results = new List<SearchResult>();
         await foreach (var result in response.Value.GetResultsAsync())
@@ -313,6 +323,8 @@ public class AzureAISearchService : ISearchIndexService, ISearchService
                 RelevanceScore = result.Score ?? 0,
                 WorldId = Guid.Parse(doc.WorldId),
                 ParentId = string.IsNullOrEmpty(doc.ParentId) ? null : Guid.Parse(doc.ParentId),
+                Path = doc.Path ?? [],
+                Depth = doc.Depth,
                 Tags = doc.Tags,
                 OwnerId = doc.OwnerId,
                 CreatedAt = doc.CreatedAt,
