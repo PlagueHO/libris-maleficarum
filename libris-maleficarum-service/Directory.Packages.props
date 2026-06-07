@@ -16,7 +16,7 @@
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="13.4.2" />
     <PackageVersion Include="Aspire.Hosting.Azure.Storage" Version="13.4.2" />
     <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.4.2" />
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.3.5" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.4.2" />
 
     <!-- Azure SDK packages -->
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
