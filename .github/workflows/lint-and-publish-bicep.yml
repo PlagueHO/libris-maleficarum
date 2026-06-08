@@ -23,7 +23,19 @@ jobs:
 
       - name: Lint Bicep
         run: |
-          az bicep lint --file ./infra/main.bicep
+          for attempt in 1 2 3 4 5; do
+            if az bicep lint --file ./infra/main.bicep; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 5 ]; then
+              echo "Bicep lint failed after 5 attempts."
+              exit 1
+            fi
+
+            echo "Bicep lint failed on attempt $attempt, retrying in 10 seconds..."
+            sleep 10
+          done
 
       - name: Publish Bicep as Workflow Artifact
         uses: actions/upload-artifact@v7
