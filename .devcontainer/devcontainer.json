@@ -12,7 +12,7 @@
       "extensions": "azure-devops"
     },
     "ghcr.io/azure/azure-dev/azd:latest": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:3": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {
       "version": "latest",
       "moby": true,
       "dockerDashComposeVersion": "v2"
