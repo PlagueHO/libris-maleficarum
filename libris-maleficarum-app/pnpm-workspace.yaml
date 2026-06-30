@@ -8,3 +8,4 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - shadcn@4.8.2
+  - electron-to-chromium
