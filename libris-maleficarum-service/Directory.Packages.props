@@ -4,14 +4,14 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Aspire integration packages -->
-    <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="13.4.2-preview.1.26303.6" />
+    <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="13.4.6-preview.1.26319.6" />
     <PackageVersion Include="Aspire.Azure.Search.Documents" Version="13.4.6" />
     <PackageVersion Include="Aspire.Azure.Storage.Blobs" Version="13.4.6" />
     <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.4.6" />
     <PackageVersion Include="Aspire.Microsoft.EntityFrameworkCore.Cosmos" Version="13.4.6" />
 
     <!-- Aspire hosting packages -->
-    <PackageVersion Include="Aspire.Hosting.Foundry" Version="13.4.2-preview.1.26303.6" />
+    <PackageVersion Include="Aspire.Hosting.Foundry" Version="13.4.6-preview.1.26319.6" />
     <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.Azure.Storage" Version="13.4.6" />

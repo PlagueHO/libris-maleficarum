@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.43.8.12551",
-      "templateHash": "17156533964975650509"
+      "version": "0.44.1.10279",
+      "templateHash": "8757152453414355406"
     }
   },
   "parameters": {
@@ -20350,8 +20350,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.8.12551",
-              "templateHash": "9565984019580362882"
+              "version": "0.44.1.10279",
+              "templateHash": "10606892369653181653"
             }
           },
           "parameters": {
@@ -52281,8 +52281,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.8.12551",
-              "templateHash": "13842324619170547612"
+              "version": "0.44.1.10279",
+              "templateHash": "2904069075510913407"
             },
             "name": "Cognitive Services",
             "description": "This module deploys a Cognitive Service account.\nThis is a temporary module for deploying Azure Foundry Cognitive Services accounts.\nIt is intended to be replaced by the Azure Verified Module (AVM) for Microsoft.CognitiveServices accounts\nonce it supports Foundry V2 (projects, connections etc)\nhttps://github.com/Azure/bicep-registry-modules/issues/5390\n"
@@ -56240,8 +56240,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.43.8.12551",
-                      "templateHash": "13945818048402565346"
+                      "version": "0.44.1.10279",
+                      "templateHash": "7087916796247707694"
                     },
                     "name": "Cognitive Services Project",
                     "description": "This module deploys a Project within a Cognitive Services account.\nIt allows for the creation of a Foundry Project with optional managed identities and role assignments.\n"
@@ -58106,8 +58106,8 @@
                           "metadata": {
                             "_generator": {
                               "name": "bicep",
-                              "version": "0.43.8.12551",
-                              "templateHash": "3297884855853428227"
+                              "version": "0.44.1.10279",
+                              "templateHash": "847360724783805621"
                             },
                             "name": "Cognitive Services Project Capability Host",
                             "description": "This module creates a capability host in a Cognitive Services project.\nProject-level capability hosts configure per-project storage backends for threads, vectors, and files,\nallowing different projects to use different storage connections.\nSee: https://learn.microsoft.com/en-us/azure/templates/microsoft.cognitiveservices/accounts/projects/capabilityhosts\n"
@@ -58368,8 +58368,8 @@
                           "metadata": {
                             "_generator": {
                               "name": "bicep",
-                              "version": "0.43.8.12551",
-                              "templateHash": "14737880377875745139"
+                              "version": "0.44.1.10279",
+                              "templateHash": "14998039396843864102"
                             },
                             "name": "Cognitive Services Application",
                             "description": "This module creates an application within a Cognitive Services project.\nApplications are agentic application instances that can contain agent deployments.\nSee: https://learn.microsoft.com/en-us/azure/templates/microsoft.cognitiveservices/accounts/projects/applications\n"
@@ -59089,8 +59089,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.43.8.12551",
-                      "templateHash": "15719580604094780953"
+                      "version": "0.44.1.10279",
+                      "templateHash": "8484532575009196653"
                     },
                     "name": "Machine Learning Services Workspaces Connections",
                     "description": "This module creates a connection in a Machine Learning Services workspace."
@@ -59996,8 +59996,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.43.8.12551",
-                      "templateHash": "2547187226422030368"
+                      "version": "0.44.1.10279",
+                      "templateHash": "12105410708777230393"
                     },
                     "name": "Cognitive Services Capability Hosts",
                     "description": "This module creates a capability host in a Cognitive Services account.\nCapability hosts enable AI agent functionality by configuring storage for threads, vectors, and files.\nSee: https://learn.microsoft.com/en-us/azure/ai-foundry/agents/concepts/capability-hosts\n"
@@ -60188,8 +60188,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.43.8.12551",
-                      "templateHash": "4555996534717415586"
+                      "version": "0.44.1.10279",
+                      "templateHash": "18372288849360567516"
                     }
                   },
                   "definitions": {
@@ -65000,8 +65000,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.8.12551",
-              "templateHash": "2280918084995031622"
+              "version": "0.44.1.10279",
+              "templateHash": "2121039106466563877"
             },
             "name": "Microsoft Foundry Role Assignments",
             "description": "Creates role assignments on a Microsoft Foundry account."
@@ -65223,8 +65223,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.8.12551",
-              "templateHash": "7071245367873875287"
+              "version": "0.44.1.10279",
+              "templateHash": "14959465664220218188"
             },
             "name": "Cosmos DB SQL Role Assignments",
             "description": "Creates SQL data-plane role assignments on an existing Cosmos DB account without redeploying the account resource."
@@ -65321,8 +65321,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.8.12551",
-              "templateHash": "4367674868231359715"
+              "version": "0.44.1.10279",
+              "templateHash": "2106235090597559677"
             },
             "name": "Azure AI Search Role Assignments",
             "description": "Creates role assignments on an Azure AI Search service."
@@ -65521,8 +65521,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.8.12551",
-              "templateHash": "2280918084995031622"
+              "version": "0.44.1.10279",
+              "templateHash": "2121039106466563877"
             },
             "name": "Microsoft Foundry Role Assignments",
             "description": "Creates role assignments on a Microsoft Foundry account."
@@ -65747,8 +65747,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.8.12551",
-              "templateHash": "7071245367873875287"
+              "version": "0.44.1.10279",
+              "templateHash": "14959465664220218188"
             },
             "name": "Cosmos DB SQL Role Assignments",
             "description": "Creates SQL data-plane role assignments on an existing Cosmos DB account without redeploying the account resource."
@@ -68726,8 +68726,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.8.12551",
-              "templateHash": "18283365460174991085"
+              "version": "0.44.1.10279",
+              "templateHash": "16789038240971320394"
             }
           },
           "parameters": {
