@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.44.1.10279",
-      "templateHash": "8757152453414355406"
+      "templateHash": "7272022819478074571"
     }
   },
   "parameters": {
@@ -52282,7 +52282,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.44.1.10279",
-              "templateHash": "2904069075510913407"
+              "templateHash": "5213472710662833652"
             },
             "name": "Cognitive Services",
             "description": "This module deploys a Cognitive Service account.\nThis is a temporary module for deploying Azure Foundry Cognitive Services accounts.\nIt is intended to be replaced by the Azure Verified Module (AVM) for Microsoft.CognitiveServices accounts\nonce it supports Foundry V2 (projects, connections etc)\nhttps://github.com/Azure/bicep-registry-modules/issues/5390\n"
@@ -55368,24 +55368,7 @@
               "sku": {
                 "name": "[parameters('sku')]"
               },
-              "properties": {
-                "allowProjectManagement": "[parameters('allowProjectManagement')]",
-                "customSubDomainName": "[parameters('customSubDomainName')]",
-                "networkAcls": "[if(not(empty(coalesce(parameters('networkAcls'), createObject()))), createObject('defaultAction', tryGet(parameters('networkAcls'), 'defaultAction'), 'virtualNetworkRules', coalesce(tryGet(parameters('networkAcls'), 'virtualNetworkRules'), createArray()), 'ipRules', coalesce(tryGet(parameters('networkAcls'), 'ipRules'), createArray())), null())]",
-                "networkInjections": "[if(not(empty(parameters('networkInjections'))), createArray(createObject('scenario', tryGet(parameters('networkInjections'), 'scenario'), 'subnetArmId', tryGet(parameters('networkInjections'), 'subnetResourceId'), 'useMicrosoftManagedNetwork', coalesce(tryGet(parameters('networkInjections'), 'useMicrosoftManagedNetwork'), false()))), null())]",
-                "publicNetworkAccess": "[if(not(equals(parameters('publicNetworkAccess'), null())), parameters('publicNetworkAccess'), if(not(empty(parameters('networkAcls'))), 'Enabled', 'Disabled'))]",
-                "allowedFqdnList": "[parameters('allowedFqdnList')]",
-                "apiProperties": "[parameters('apiProperties')]",
-                "disableLocalAuth": "[parameters('disableLocalAuth')]",
-                "encryption": "[if(not(empty(parameters('customerManagedKey'))), createObject('keySource', 'Microsoft.KeyVault', 'keyVaultProperties', createObject('identityClientId', if(not(empty(coalesce(tryGet(parameters('customerManagedKey'), 'userAssignedIdentityResourceId'), ''))), tryGet(if(not(empty(tryGet(parameters('customerManagedKey'), 'userAssignedIdentityResourceId'))), reference('cMKUserAssignedIdentity', '2025-01-31-preview', 'full'), null()), 'properties', 'clientId'), null()), 'keyVaultUri', if(not(variables('isHSMManagedCMK')), tryGet(if(and(not(empty(tryGet(parameters('customerManagedKey'), 'keyVaultResourceId'))), not(variables('isHSMManagedCMK'))), reference('cMKKeyVault', '2025-05-01', 'full'), null()), 'properties', 'vaultUri'), format('https://{0}.managedhsm.azure.net/', last(split(parameters('customerManagedKey').keyVaultResourceId, '/')))), 'keyName', parameters('customerManagedKey').keyName, 'keyVersion', if(not(empty(coalesce(tryGet(parameters('customerManagedKey'), 'keyVersion'), ''))), tryGet(parameters('customerManagedKey'), 'keyVersion'), if(not(variables('isHSMManagedCMK')), last(split(tryGet(if(and(and(not(empty(tryGet(parameters('customerManagedKey'), 'keyVaultResourceId'))), not(variables('isHSMManagedCMK'))), and(and(not(empty(tryGet(parameters('customerManagedKey'), 'keyVaultResourceId'))), not(empty(tryGet(parameters('customerManagedKey'), 'keyName')))), not(variables('isHSMManagedCMK')))), reference('cMKKeyVault::cMKKey', '2025-05-01', 'full'), null()), 'properties', 'keyUriWithVersion'), '/')), fail('Managed HSM CMK encryption requires specifying the ''keyVersion''.'))))), null())]",
-                "migrationToken": "[parameters('migrationToken')]",
-                "restore": "[parameters('restore')]",
-                "restrictOutboundNetworkAccess": "[parameters('restrictOutboundNetworkAccess')]",
-                "userOwnedStorage": "[if(not(empty(parameters('userOwnedStorage'))), parameters('userOwnedStorage'), null())]",
-                "dynamicThrottlingEnabled": "[parameters('dynamicThrottlingEnabled')]",
-                "storedCompletionsDisabled": "[parameters('storedCompletionsDisabled')]",
-                "defaultProject": "[parameters('defaultProject')]"
-              },
+              "properties": "[union(createObject('allowProjectManagement', parameters('allowProjectManagement'), 'customSubDomainName', parameters('customSubDomainName'), 'networkAcls', if(not(empty(coalesce(parameters('networkAcls'), createObject()))), createObject('defaultAction', tryGet(parameters('networkAcls'), 'defaultAction'), 'virtualNetworkRules', coalesce(tryGet(parameters('networkAcls'), 'virtualNetworkRules'), createArray()), 'ipRules', coalesce(tryGet(parameters('networkAcls'), 'ipRules'), createArray())), null()), 'networkInjections', if(not(empty(parameters('networkInjections'))), createArray(createObject('scenario', tryGet(parameters('networkInjections'), 'scenario'), 'subnetArmId', tryGet(parameters('networkInjections'), 'subnetResourceId'), 'useMicrosoftManagedNetwork', coalesce(tryGet(parameters('networkInjections'), 'useMicrosoftManagedNetwork'), false()))), null()), 'publicNetworkAccess', if(not(equals(parameters('publicNetworkAccess'), null())), parameters('publicNetworkAccess'), if(not(empty(parameters('networkAcls'))), 'Enabled', 'Disabled')), 'allowedFqdnList', parameters('allowedFqdnList'), 'apiProperties', parameters('apiProperties'), 'disableLocalAuth', parameters('disableLocalAuth'), 'encryption', if(not(empty(parameters('customerManagedKey'))), createObject('keySource', 'Microsoft.KeyVault', 'keyVaultProperties', createObject('identityClientId', if(not(empty(coalesce(tryGet(parameters('customerManagedKey'), 'userAssignedIdentityResourceId'), ''))), tryGet(if(not(empty(tryGet(parameters('customerManagedKey'), 'userAssignedIdentityResourceId'))), reference('cMKUserAssignedIdentity', '2025-01-31-preview', 'full'), null()), 'properties', 'clientId'), null()), 'keyVaultUri', if(not(variables('isHSMManagedCMK')), tryGet(if(and(not(empty(tryGet(parameters('customerManagedKey'), 'keyVaultResourceId'))), not(variables('isHSMManagedCMK'))), reference('cMKKeyVault', '2025-05-01', 'full'), null()), 'properties', 'vaultUri'), format('https://{0}.managedhsm.azure.net/', last(split(parameters('customerManagedKey').keyVaultResourceId, '/')))), 'keyName', parameters('customerManagedKey').keyName, 'keyVersion', if(not(empty(coalesce(tryGet(parameters('customerManagedKey'), 'keyVersion'), ''))), tryGet(parameters('customerManagedKey'), 'keyVersion'), if(not(variables('isHSMManagedCMK')), last(split(tryGet(if(and(and(not(empty(tryGet(parameters('customerManagedKey'), 'keyVaultResourceId'))), not(variables('isHSMManagedCMK'))), and(and(not(empty(tryGet(parameters('customerManagedKey'), 'keyVaultResourceId'))), not(empty(tryGet(parameters('customerManagedKey'), 'keyName')))), not(variables('isHSMManagedCMK')))), reference('cMKKeyVault::cMKKey', '2025-05-01', 'full'), null()), 'properties', 'keyUriWithVersion'), '/')), fail('Managed HSM CMK encryption requires specifying the ''keyVersion''.'))))), null()), 'migrationToken', parameters('migrationToken'), 'restore', parameters('restore'), 'restrictOutboundNetworkAccess', parameters('restrictOutboundNetworkAccess'), 'userOwnedStorage', if(not(empty(parameters('userOwnedStorage'))), parameters('userOwnedStorage'), null()), 'dynamicThrottlingEnabled', parameters('dynamicThrottlingEnabled'), 'storedCompletionsDisabled', parameters('storedCompletionsDisabled')), if(not(empty(coalesce(parameters('defaultProject'), ''))), createObject('defaultProject', parameters('defaultProject')), createObject()))]",
               "dependsOn": [
                 "cMKKeyVault",
                 "cMKKeyVault::cMKKey",
@@ -60353,12 +60336,32 @@
               },
               "value": "[tryGet(tryGet(reference('cognitiveService', '2025-10-01-preview', 'full'), 'identity'), 'principalId')]"
             },
+            "projectSystemAssignedMIPrincipalIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "metadata": {
+                "description": "The system-assigned managed identity principal IDs of the created projects, in the same order as the projects input array. Empty strings indicate projects without a system-assigned identity."
+              },
+              "copy": {
+                "count": "[length(coalesce(parameters('projects'), createArray()))]",
+                "input": "[coalesce(tryGet(tryGet(reference(format('cognitiveService_projects[{0}]', copyIndex())).outputs, 'systemAssignedMIPrincipalId'), 'value'), '')]"
+              }
+            },
             "location": {
               "type": "string",
               "metadata": {
                 "description": "The location the resource was deployed into."
               },
               "value": "[reference('cognitiveService', '2025-10-01-preview', 'full').location]"
+            },
+            "customSubDomainName": {
+              "type": "string",
+              "metadata": {
+                "description": "The custom subdomain name of the cognitive services account."
+              },
+              "value": "[coalesce(reference('cognitiveService').customSubDomainName, '')]"
             },
             "exportedSecrets": {
               "$ref": "#/definitions/secretsOutputType",
