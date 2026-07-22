@@ -14,7 +14,7 @@
     "lint:md:ci": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#libris-maleficarum-app\" \"#libris-maleficarum-service\""
   },
   "devDependencies": {
-    "markdownlint-cli2": "^0.23.0"
+    "markdownlint-cli2": "^0.23.1"
   },
   "description": "Libris Maleficarum - AI-powered world-building application",
   "repository": {
