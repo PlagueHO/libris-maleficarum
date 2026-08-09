@@ -43,7 +43,7 @@
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.14.2" />
 
     <!-- Other Azure packages -->
-    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.62.0" />
+    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.62.1" />
 
     <!-- Validation packages -->
     <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.1" />
