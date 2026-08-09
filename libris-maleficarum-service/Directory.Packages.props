@@ -65,6 +65,6 @@
     <!-- Testing packages -->
     <PackageVersion Include="FluentAssertions" Version="8.10.0" />
     <PackageVersion Include="MSTest.TestFramework" Version="4.3.3" />
-    <PackageVersion Include="NSubstitute" Version="6.0.0" />
+    <PackageVersion Include="NSubstitute" Version="6.1.0" />
   </ItemGroup>
 </Project>
