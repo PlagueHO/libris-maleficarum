@@ -5,30 +5,30 @@
   <ItemGroup>
     <!-- Aspire integration packages -->
     <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="13.4.6-preview.1.26319.6" />
-    <PackageVersion Include="Aspire.Azure.Search.Documents" Version="13.4.6" />
-    <PackageVersion Include="Aspire.Azure.Storage.Blobs" Version="13.4.6" />
-    <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.4.6" />
-    <PackageVersion Include="Aspire.Microsoft.EntityFrameworkCore.Cosmos" Version="13.4.6" />
+    <PackageVersion Include="Aspire.Azure.Search.Documents" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Azure.Storage.Blobs" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Microsoft.EntityFrameworkCore.Cosmos" Version="13.6.0" />
 
     <!-- Aspire hosting packages -->
     <PackageVersion Include="Aspire.Hosting.Foundry" Version="13.4.6-preview.1.26319.6" />
-    <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.4.6" />
-    <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="13.4.6" />
-    <PackageVersion Include="Aspire.Hosting.Azure.Storage" Version="13.4.6" />
-    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.4.6" />
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.4.6" />
+    <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Hosting.Azure.Storage" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.6.0" />
 
     <!-- Azure SDK packages -->
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="12.0.0" />
-    <PackageVersion Include="Azure.Storage.Blobs" Version="12.29.1" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.29.2" />
 
     <!-- Microsoft.Extensions packages -->
     <PackageVersion Include="Microsoft.Extensions.AI" Version="10.9.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.9.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.9.0" />
 
     <!-- Entity Framework Core packages -->
@@ -43,7 +43,7 @@
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.14.2" />
 
     <!-- Other Azure packages -->
-    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.62.1" />
+    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.63.0" />
 
     <!-- Validation packages -->
     <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.1" />
