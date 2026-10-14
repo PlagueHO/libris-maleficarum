@@ -58,6 +58,7 @@ jobs:
         if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && always()
         uses: marocchino/sticky-pull-request-comment@v3
         with:
+          header: Frontend Code Coverage
           recreate: true
           path: libris-maleficarum-app/TestResults/CoverageReport/SummaryGithub.md
 
