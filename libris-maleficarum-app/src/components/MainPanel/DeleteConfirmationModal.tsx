@@ -17,7 +17,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { closeDeleteConfirmation } from '@/store/worldSidebarSlice';
 import { useInitiateEntityDeleteMutation } from '@/services/asyncOperationsApi';
-import { useOptimisticDelete } from '@/components/WorldSidebar/OptimisticDeleteContext';
+import { useOptimisticDelete } from '@/components/WorldSidebar/useOptimisticDelete';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
