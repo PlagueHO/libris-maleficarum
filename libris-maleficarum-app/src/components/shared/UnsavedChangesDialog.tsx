@@ -91,14 +91,10 @@ export function UnsavedChangesDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className="max-w-md"
-        aria-labelledby="unsaved-changes-title"
-        aria-describedby="unsaved-changes-description"
       >
         <DialogHeader>
-          <DialogTitle id="unsaved-changes-title">
-            Unsealed Changes
-          </DialogTitle>
-          <DialogDescription id="unsaved-changes-description">
+          <DialogTitle>Unsealed Changes</DialogTitle>
+          <DialogDescription>
             Your inscription is not yet sealed. Would you like to preserve your work before continuing?
           </DialogDescription>
         </DialogHeader>
