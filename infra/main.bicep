@@ -126,7 +126,7 @@ var subnets = [  {
 ]
 
 // Organize resources in a resource group using Azure Verified Module (AVM)
-module resourceGroup 'br/public:avm/res/resources/resource-group:0.4.3' = {
+module resourceGroup 'br/public:avm/res/resources/resource-group:0.4.4' = {
   name: 'resource-group-deployment-${deploymentId}'
   params: {
     name: effectiveResourceGroupName
@@ -230,7 +230,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.13.3' = {
 }
 
 // Create a Static Web App for the application using Azure Verified Module (AVM)
-module staticSite 'br/public:avm/res/web/static-site:0.9.5' = {
+module staticSite 'br/public:avm/res/web/static-site:0.9.6' = {
   name: 'static-site-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -287,7 +287,7 @@ module aspireDashboard 'aspire-dashboard.bicep' = {
 
 // --------- BACKEND API CONTAINER APP ---------
 // Deploy the backend API as a Container App using Azure Verified Module (AVM)
-module containerApp 'br/public:avm/res/app/container-app:0.22.1' = {
+module containerApp 'br/public:avm/res/app/container-app:0.23.0' = {
   name: 'container-app-api-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [
@@ -372,7 +372,7 @@ module storageBlobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8
 }
 
 // Create a Storage Account with private endpoint in the backend subnet using Azure Verified Module (AVM)
-module storageAccount 'br/public:avm/res/storage/storage-account:0.32.1' = {
+module storageAccount 'br/public:avm/res/storage/storage-account:0.33.1' = {
   name: 'storage-account-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -696,7 +696,7 @@ module bastionHost 'br/public:avm/res/network/bastion-host:0.8.2' = if (createBa
 // Create Network Security Groups for each subnet using Azure Verified Modules (AVM)
 
 // Container Apps NSG for backend API services
-module containerAppsNsg 'br/public:avm/res/network/network-security-group:0.5.3' = {
+module containerAppsNsg 'br/public:avm/res/network/network-security-group:0.5.4' = {
   name: 'container-apps-nsg-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -762,7 +762,7 @@ module containerAppsNsg 'br/public:avm/res/network/network-security-group:0.5.3'
 }
 
 // Backend NSG for backend services and databases
-module backendNsg 'br/public:avm/res/network/network-security-group:0.5.3' = {
+module backendNsg 'br/public:avm/res/network/network-security-group:0.5.4' = {
   name: 'backend-nsg-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -802,7 +802,7 @@ module backendNsg 'br/public:avm/res/network/network-security-group:0.5.3' = {
 }
 
 // Gateway NSG for application gateways and load balancers
-module gatewayNsg 'br/public:avm/res/network/network-security-group:0.5.3' = {
+module gatewayNsg 'br/public:avm/res/network/network-security-group:0.5.4' = {
   name: 'gateway-nsg-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]
@@ -842,7 +842,7 @@ module gatewayNsg 'br/public:avm/res/network/network-security-group:0.5.3' = {
 }
 
 // Shared NSG for shared services
-module sharedNsg 'br/public:avm/res/network/network-security-group:0.5.3' = {
+module sharedNsg 'br/public:avm/res/network/network-security-group:0.5.4' = {
   name: 'shared-nsg-deployment-${deploymentId}'
   scope: az.resourceGroup(effectiveResourceGroupName)
   dependsOn: [resourceGroup]

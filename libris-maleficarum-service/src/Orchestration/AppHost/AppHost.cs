@@ -81,8 +81,8 @@ var foundryProject = foundry.AddProject("foundryProject");
 // These are NOT Aspire parameters — just configuration values for the deployment names.
 var chatDeployment = foundryProject.AddModelDeployment(
     "chat",
-    builder.Configuration["MicrosoftFoundry:chatModelName"] ?? "gpt-5.3-chat",
-    builder.Configuration["MicrosoftFoundry:chatModelVersion"] ?? "2026-03-03",
+    builder.Configuration["MicrosoftFoundry:chatModelName"] ?? "gpt-6-luna",
+    builder.Configuration["MicrosoftFoundry:chatModelVersion"] ?? "2026-09-22",
     "OpenAI")
     .WithProperties(deployment =>
     {

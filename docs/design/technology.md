@@ -31,6 +31,26 @@
 - **Azure Application Insights**
   Application performance monitoring and diagnostics.
 
+### Foundry Model Deployments
+
+- The chat deployment uses `gpt-6-luna` version `2026-09-22` with the
+  `GlobalStandard` SKU. The Foundry catalog lists it as generally available
+  and supports chat completion, Responses API, streaming, and tool calling.
+  `GlobalStandard` is listed for Sweden Central, the configured account region.
+  It is selected as an efficient model for high-volume workloads. The catalog
+  was checked on 18 October 2026.
+- The embedding deployment remains `text-embedding-3-small` version `1` with
+  `GlobalStandard`. Azure AI Search uses 1,536-dimensional vectors; this model
+  is retained until a retrieval-quality, cost, and latency comparison supports
+  a change and a complete re-embedding migration is planned. Vectors from
+  different embedding models must not be mixed.
+- The configured deployment capacities remain 50 for chat and 120 for
+  embeddings. Validate subscription quota and representative throughput before
+  deployment; these values have not been verified against a live subscription.
+- Recheck model versions, lifecycle, region availability, and quota before
+  deployment. See [Foundry model region availability](https://learn.microsoft.com/azure/foundry/foundry-models/concepts/models-sold-directly-by-azure-region-availability#global-standard)
+  and [models sold directly by Azure](https://learn.microsoft.com/azure/foundry/foundry-models/concepts/models-sold-directly-by-azure).
+
 ### Infrastructure as Code
 
 - **Bicep with Azure Verified Modules (AVM)**
