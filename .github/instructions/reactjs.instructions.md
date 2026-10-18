@@ -24,7 +24,7 @@ Instructions for building high-quality ReactJS applications with modern patterns
 - **Utilities/helpers**: camelCase (e.g., `apiClient.ts`, `testUtils.ts`)
 - **Type files**: camelCase (e.g., `worldEntity.types.ts`)
 - **Test files**: Match source file name with `.test` suffix (e.g., `WorldEntityForm.test.tsx`)
-- **CSS/style files**: Match component name (e.g., `WorldEntityForm.module.css`)
+- **Styles**: Use Tailwind CSS classes in components; do not create CSS Modules.
 - **Shadcn/UI components**: kebab-case in `/components/ui/` (e.g., `button.tsx`, `dialog.tsx`, `scroll-area.tsx`)
   - These are third-party UI primitives from <https://ui.shadcn.com/>
   - kebab-case naming matches Shadcn CLI defaults for easier updates
@@ -83,9 +83,9 @@ The project uses a structured component organization:
 - Use `useState` for local component state
 - Implement `useReducer` for complex state logic
 - Leverage `useContext` for sharing state across component trees
-- Consider external state management (Redux Toolkit, Zustand) for complex applications
+- Use Redux Toolkit for shared application state.
 - Implement proper state normalization and data structures
-- Use React Query or SWR for server state management
+- Use the existing RTK Query API for server state.
 
 ### Hooks and Effects
 
@@ -98,12 +98,10 @@ The project uses a structured component organization:
 
 ### Styling
 
-- Use CSS Modules, Styled Components, or modern CSS-in-JS solutions
-- Implement responsive design with mobile-first approach
-- Follow BEM methodology or similar naming conventions for CSS classes
-- Use CSS custom properties (variables) for theming
-- Implement consistent spacing, typography, and color systems
-- Ensure accessibility with proper ARIA attributes and semantic HTML
+- Use Tailwind CSS for application styles.
+- Use Shadcn/UI components with Radix UI primitives.
+- Do not add CSS Modules, Styled Components, or CSS-in-JS.
+- Use `cn()` from `@/lib/utils` for conditional classes.
 
 ### Performance Optimization
 
@@ -116,7 +114,7 @@ The project uses a structured component organization:
 
 ### Data Fetching
 
-- Use modern data fetching libraries (React Query, SWR, Apollo Client)
+- Use the existing RTK Query API for data fetching.
 - Implement proper loading, error, and success states
 - Handle race conditions and request cancellation
 - Use optimistic updates for better user experience
@@ -154,7 +152,7 @@ The project uses a structured component organization:
 
 - Write unit tests for components using React Testing Library
 - Test component behavior, not implementation details
-- Use Jest for test runner and assertion library
+- Use Vitest for the test runner and assertions.
 - Implement integration tests for complex component interactions
 - Mock external dependencies and API calls appropriately
 - Test accessibility features and keyboard navigation
