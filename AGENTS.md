@@ -156,3 +156,15 @@ When mirroring a pattern from another repo (e.g., `prompt-babbler`, `marginalia`
 ## Docs
 
 See `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md`, `docs/design/*.md` for details.
+
+## Documentation and change records
+
+- Review documentation and release notes for each change.
+- Record notable changes in the `[Unreleased]` section of `CHANGELOG.md`.
+- Use the existing changelog format and section names.
+- Include required migration steps for breaking changes.
+- Update `README.md` and affected files in `docs/` when behavior or requirements change.
+- Update affected examples, setup commands, and configuration guidance.
+- Keep pull request release notes consistent with `CHANGELOG.md`.
+- Do not rewrite released changelog entries.
+- Change release versions only when the task requires a release.
