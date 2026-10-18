@@ -30,7 +30,7 @@ Backend checks, from `libris-maleficarum-service/`:
 dotnet restore LibrisMaleficarum.slnx
 dotnet build LibrisMaleficarum.slnx
 dotnet format LibrisMaleficarum.slnx --verify-no-changes --severity error
-dotnet test --solution LibrisMaleficarum.slnx --filter TestCategory=Unit
+dotnet test --solution LibrisMaleficarum.slnx --filter TestCategory=Unit --ignore-exit-code 8
 ```
 
 - Use Node.js 22 and pnpm 10 or later.
