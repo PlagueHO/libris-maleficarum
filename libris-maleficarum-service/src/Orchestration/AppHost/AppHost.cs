@@ -43,12 +43,11 @@ static int FindAvailablePort(int startPort)
 var cosmosDbGatewayPort = 8081;
 var cosmosDbDataExplorerPort = 1234;
 
-// Add Azure Cosmos DB Linux-based Emulator (preview) for local development
+// Add Azure Cosmos DB Linux-based (vNext) emulator for local development
 // Configure emulator using documented environment variables
 // See: https://learn.microsoft.com/en-us/azure/cosmos-db/emulator-linux#docker-commands
-#pragma warning disable ASPIRECOSMOSDB001 // Suppress experimental diagnostic for preview emulator
 var cosmosDb = builder.AddAzureCosmosDB("cosmosdb")
-    .RunAsPreviewEmulator(emulator =>
+    .RunAsEmulator(emulator =>
     {
         emulator.WithGatewayPort(cosmosDbGatewayPort);
         emulator.WithDataExplorer(cosmosDbDataExplorerPort);
@@ -63,7 +62,6 @@ var cosmosDbDatabase = cosmosDb.AddCosmosDatabase("LibrisMaleficarum");
 // keys stay centralized in one place (including hierarchical partition keys such as Assets:
 // [/worldId, /entityId]).
 // The Change Feed lease container ('leases') is created separately by SearchIndexSyncService.
-#pragma warning restore ASPIRECOSMOSDB001
 
 // Azure AI Search — uses Aspire hosting integration (Aspire.Hosting.Azure.Search)
 // Azure AI Search does not have a local emulator — uses Azure provisioning or an existing instance

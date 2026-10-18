@@ -108,6 +108,20 @@ public class AppHostTests
     }
 
     [TestMethod]
+    public void AppHost_CosmosDbEmulatorUsesFixedPorts()
+    {
+        AppHostFixture.App.Should().NotBeNull("AppHost should be initialized by ClassInitialize");
+
+        var gatewayEndpoint = new Uri(AppHostFixture.CosmosDbAccountEndpoint);
+        var dataExplorerEndpoint = AppHostFixture.App!.GetEndpoint("cosmosdb", "data-explorer");
+
+        gatewayEndpoint.Port.Should().Be(8081,
+            "the gateway port must match the endpoint advertised by the Cosmos DB emulator");
+        dataExplorerEndpoint.Port.Should().Be(1234,
+            "the Cosmos DB Data Explorer must retain its configured port");
+    }
+
+    [TestMethod]
     public async Task AppHost_CosmosDbEndpointResponds()
     {
         // Arrange
