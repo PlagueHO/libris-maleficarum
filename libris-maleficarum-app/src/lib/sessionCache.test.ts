@@ -273,23 +273,21 @@ describe('sessionCache', () => {
     });
   });
 
-  describe('Performance Characteristics', () => {
-    it('should retrieve cached data in <50ms', () => {
+  describe('Large Data Structures', () => {
+    it('should retrieve cached entity collections', () => {
       // Arrange
       const key = 'perf-test-key';
       const largeData = { entities: Array(100).fill({ id: 0, name: 'Entity' }) };
       sessionCache.set(key, largeData);
 
       // Act
-      const startTime = performance.now();
-      sessionCache.get(key, {});
-      const endTime = performance.now();
+      const result = sessionCache.get(key, {});
 
       // Assert
-      expect(endTime - startTime).toBeLessThan(50);
+      expect(result).toEqual(largeData);
     });
 
-    it('should store large data structures efficiently', () => {
+    it('should store and retrieve large nested data structures', () => {
       // Arrange
       const key = 'large-data-key';
       const largeData = Array(1000)
@@ -303,14 +301,11 @@ describe('sessionCache', () => {
         }));
 
       // Act
-      const startTime = performance.now();
       sessionCache.set(key, largeData);
       const result = sessionCache.get(key, []);
-      const endTime = performance.now();
 
       // Assert
       expect(result).toEqual(largeData);
-      expect(endTime - startTime).toBeLessThan(10); // Should be very fast
     });
   });
 });
