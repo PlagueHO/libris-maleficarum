@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Aligned Dependabot with `dependabot-monthly-v1`: monthly Auckland routine updates, canonical per-ecosystem groups, and event-driven security updates.
+
 ### Fixed
 
 - Removed duplicate frontend lockfile entries that prevented the Aspire frontend installer from starting.
