@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Removed duplicate frontend lockfile entries that prevented the Aspire frontend installer from starting.
+
 ## [0.1.3] - 2026-05-29
 
 ### Changed
