@@ -64,6 +64,12 @@ cd ..
 pnpm lint:md:ci
 ```
 
+## Dependency Maintenance
+
+Dependabot routine version updates use the shared `dependabot-monthly-v1` policy: scans are scheduled for the first day of each month at 09:00 `Pacific/Auckland`, including weekends. Minor and patch updates are grouped per configured ecosystem and directory as `<package-ecosystem>-minor-and-patch`; major updates remain individual pull requests. The canonical group pairs are `github-actions-minor-and-patch` / `github-actions-security`, `devcontainers-minor-and-patch` / `devcontainers-security`, `docker-minor-and-patch` / `docker-security`, `dotnet-sdk-minor-and-patch` / `dotnet-sdk-security`, `nuget-minor-and-patch` / `nuget-security`, and `npm-minor-and-patch` / `npm-security`. Each entry uses a three-day release-age cooldown, so a newly released version may wait for a later scan.
+
+Security updates are the exception: they remain event-driven and use the `<package-ecosystem>-security` group, independent of the routine schedule and cooldown. For an out-of-window routine check, use Dependabot's **Check for updates** action from the repository's dependency graph/Dependabot view. Manual checks can create activity outside the monthly window, and the release-age cooldown still applies.
+
 ## Pull Requests
 
 When submitting a pull request:
